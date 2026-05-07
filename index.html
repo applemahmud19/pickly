@@ -3,482 +3,457 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>গ্যালাক্সি মার্ট BD — আপনার বিশ্বস্ত অনলাইন শপ</title>
+<title>গ্যালাক্সি মার্ট BD</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root {
-  --blue: #007AFF;
-  --blue-dark: #0055CC;
-  --blue-light: #F0F7FF;
-  --blue-mid: #DAEEFF;
-  --white: #FFFFFF;
-  --border: #E1E8ED;
-  --text: #1E293B;
-  --text-mid: #475569;
-  --text-light: #94A3B8;
-  --gold: #F59E0B;
-  --green: #10B981;
-  --red: #EF4444;
-  --orange: #F97316;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --glow: 0 0 0 3px rgba(0,122,255,0.12), 0 6px 28px rgba(0,122,255,0.10);
-  --card-shadow: 0 0 0 1px #E1E8ED, 0 4px 20px rgba(0,122,255,0.06);
-  --t: 0.2s cubic-bezier(0.4,0,0.2,1);
+:root{
+  --blue:#007AFF;--blue-dark:#0055CC;--blue-light:#F0F7FF;--blue-mid:#DAEEFF;
+  --white:#fff;--border:#E1E8ED;--text:#1E293B;--text-mid:#475569;--text-light:#94A3B8;
+  --gold:#F59E0B;--green:#10B981;--red:#EF4444;--orange:#F97316;
+  --radius:12px;--radius-sm:8px;
+  --glow:0 0 0 3px rgba(0,122,255,.12),0 6px 28px rgba(0,122,255,.10);
+  --card-shadow:0 0 0 1px #E1E8ED,0 4px 20px rgba(0,122,255,.06);
+  --t:.2s cubic-bezier(.4,0,.2,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Sora',sans-serif;background:#F8FAFC;color:var(--text);overflow-x:hidden}
 .bn{font-family:'Hind Siliguri',sans-serif}
 
-/* ── HEADER ── */
-header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:box-shadow var(--t)}
-header.scrolled{box-shadow:0 2px 20px rgba(0,122,255,0.10)}
-.header-top{display:flex;align-items:center;gap:16px;padding:12px 24px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
-.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem}
-.logo-text{font-family:'Hind Siliguri',sans-serif;font-size:1.1rem;font-weight:700;color:var(--blue);line-height:1.1}
-.logo-text small{display:block;font-size:0.6rem;color:var(--text-light);font-weight:500;letter-spacing:0.05em}
-.search-wrap{flex:1;max-width:500px}
-.search-box{display:flex;align-items:center;background:var(--blue-light);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t)}
-.search-box:focus-within{border-color:var(--blue);background:white;box-shadow:var(--glow)}
-.search-box i{padding:0 14px;color:var(--text-light);font-size:0.85rem}
-.search-box input{flex:1;border:none;background:transparent;font-family:'Sora',sans-serif;font-size:0.875rem;color:var(--text);padding:11px 0;outline:none}
-.search-box input::placeholder{color:var(--text-light)}
-.search-btn{padding:11px 18px;background:var(--blue);color:white;border:none;cursor:pointer;font-size:0.8rem;font-weight:600;font-family:'Sora',sans-serif;transition:background var(--t)}
-.search-btn:hover{background:var(--blue-dark)}
-.header-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
-.hbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border:none;background:transparent;cursor:pointer;border-radius:var(--radius-sm);color:var(--text-mid);transition:all var(--t);font-family:'Sora',sans-serif;position:relative}
-.hbtn i{font-size:1.1rem}
-.hbtn span{font-size:0.6rem;font-weight:600}
-.hbtn:hover{background:var(--blue-light);color:var(--blue)}
-.hbtn.active{color:var(--blue)}
-.badge{position:absolute;top:4px;right:4px;background:var(--red);color:white;font-size:0.55rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white}
+/* ── LOADING SCREEN ── */
+#loadingScreen{position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
+#loadingScreen.hide{opacity:0;pointer-events:none}
+.loader-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:16px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.8rem;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.loader-text{font-family:'Hind Siliguri',sans-serif;font-size:.9rem;color:var(--text-light)}
+.loader-bar{width:200px;height:3px;background:var(--blue-mid);border-radius:2px;overflow:hidden}
+.loader-bar-inner{height:100%;width:0;background:var(--blue);border-radius:2px;animation:load 1.8s ease forwards}
+@keyframes load{to{width:100%}}
 
-/* NAV */
-.nav-cats{display:flex;gap:0;padding:0 24px;border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+/* ── SOCIAL BAR ── */
+.social-bar{background:var(--blue);padding:7px 24px;display:flex;align-items:center;justify-content:space-between}
+.social-bar span{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:rgba(255,255,255,.9)}
+.social-links{display:flex;gap:4px}
+.slink{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;transition:background var(--t)}
+.slink:hover{background:rgba(255,255,255,.3)}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:box-shadow var(--t)}
+header.scrolled{box-shadow:0 2px 20px rgba(0,122,255,.10)}
+.header-top{display:flex;align-items:center;gap:14px;padding:11px 22px}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:1rem}
+.logo-text{font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--blue);line-height:1.1}
+.logo-text small{display:block;font-size:.58rem;color:var(--text-light);font-weight:500}
+.search-box{flex:1;max-width:480px;display:flex;align-items:center;background:var(--blue-light);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t)}
+.search-box:focus-within{border-color:var(--blue);background:white;box-shadow:var(--glow)}
+.search-box i{padding:0 13px;color:var(--text-light);font-size:.82rem}
+.search-box input{flex:1;border:none;background:transparent;font-family:'Sora',sans-serif;font-size:.85rem;color:var(--text);padding:10px 0;outline:none}
+.search-box input::placeholder{color:var(--text-light)}
+.search-btn{padding:10px 16px;background:var(--blue);color:white;border:none;cursor:pointer;font-size:.78rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;transition:background var(--t)}
+.search-btn:hover{background:var(--blue-dark)}
+.hactions{display:flex;align-items:center;gap:5px;margin-left:auto}
+.hbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 10px;border:none;background:transparent;cursor:pointer;border-radius:var(--radius-sm);color:var(--text-mid);transition:all var(--t);font-family:'Sora',sans-serif;position:relative}
+.hbtn i{font-size:1rem}
+.hbtn span{font-size:.58rem;font-weight:600;font-family:'Hind Siliguri',sans-serif}
+.hbtn:hover{background:var(--blue-light);color:var(--blue)}
+.hbadge{position:absolute;top:3px;right:3px;background:var(--red);color:white;font-size:.5rem;font-weight:700;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white}
+
+/* ── AUTH BUTTON ── */
+.auth-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:white;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;color:var(--text);transition:all var(--t)}
+.auth-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.auth-btn img{width:18px;height:18px;border-radius:50%}
+
+/* ── NAV CATS ── */
+.nav-cats{display:flex;padding:0 22px;border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
 .nav-cats::-webkit-scrollbar{display:none}
-.ncat{display:flex;align-items:center;gap:6px;padding:10px 16px;border:none;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;font-weight:500;color:var(--text-mid);white-space:nowrap;border-bottom:2px solid transparent;transition:all var(--t)}
-.ncat i{font-size:0.78rem}
+.ncat{display:flex;align-items:center;gap:6px;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:500;color:var(--text-mid);white-space:nowrap;border-bottom:2px solid transparent;transition:all var(--t)}
+.ncat i{font-size:.75rem}
 .ncat:hover{color:var(--blue)}
 .ncat.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
 
-/* SOCIAL BAR */
-.social-bar{background:var(--blue);padding:8px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.social-bar .marquee-text{font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;color:rgba(255,255,255,0.9);display:flex;align-items:center;gap:8px}
-.social-bar .marquee-text i{font-size:0.7rem}
-.social-links{display:flex;align-items:center;gap:4px}
-.social-link{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.15);color:white;display:flex;align-items:center;justify-content:center;font-size:0.78rem;text-decoration:none;transition:background var(--t)}
-.social-link:hover{background:rgba(255,255,255,0.3)}
-
-/* HERO */
-.hero{background:linear-gradient(135deg,#EBF4FF 0%,#F0F7FF 60%,#FAFCFF 100%);padding:40px 24px;display:flex;align-items:center;gap:32px;position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;right:-80px;bottom:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(0,122,255,0.07) 0%,transparent 70%);pointer-events:none}
-.hero-left{flex:1;max-width:540px}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,122,255,0.10);color:var(--blue);padding:5px 14px;border-radius:100px;font-size:0.75rem;font-weight:600;margin-bottom:16px;font-family:'Hind Siliguri',sans-serif}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.hero h1{font-family:'Hind Siliguri',sans-serif;font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:700;line-height:1.25;color:var(--text);margin-bottom:12px}
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#EBF4FF 0%,#F0F7FF 60%,#FAFCFF 100%);padding:36px 22px;display:flex;align-items:center;gap:28px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-80px;bottom:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(0,122,255,.07) 0%,transparent 70%);pointer-events:none}
+.hero-left{flex:1;max-width:500px}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,122,255,.10);color:var(--blue);padding:4px 13px;border-radius:100px;font-size:.73rem;font-weight:600;margin-bottom:14px;font-family:'Hind Siliguri',sans-serif}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'Hind Siliguri',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;line-height:1.25;color:var(--text);margin-bottom:10px}
 .hero h1 em{color:var(--blue);font-style:normal}
-.hero p{font-family:'Hind Siliguri',sans-serif;font-size:0.92rem;color:var(--text-mid);line-height:1.7;margin-bottom:24px}
-.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:white;padding:12px 24px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:0.875rem;font-weight:600;border:none;cursor:pointer;transition:all var(--t);text-decoration:none}
-.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,0.3)}
-.btn-outline{display:inline-flex;align-items:center;gap:8px;background:white;color:var(--blue);padding:12px 24px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:0.875rem;font-weight:600;border:1.5px solid var(--border);cursor:pointer;transition:all var(--t)}
+.hero p{font-family:'Hind Siliguri',sans-serif;font-size:.88rem;color:var(--text-mid);line-height:1.7;margin-bottom:20px}
+.hero-btns{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:24px}
+.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:white;padding:11px 22px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all var(--t);text-decoration:none}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.3)}
+.btn-outline{display:inline-flex;align-items:center;gap:7px;background:white;color:var(--blue);padding:11px 22px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;border:1.5px solid var(--border);cursor:pointer;transition:all var(--t)}
 .btn-outline:hover{border-color:var(--blue);background:var(--blue-light)}
-.hero-stats{display:flex;gap:24px}
-.hstat .num{font-size:1.4rem;font-weight:700;color:var(--blue)}
-.hstat .lbl{font-family:'Hind Siliguri',sans-serif;font-size:0.72rem;color:var(--text-light);margin-top:1px}
-.hero-cards{display:flex;gap:10px;flex-shrink:0}
-.hero-card{width:120px;background:white;border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;box-shadow:var(--card-shadow);transition:transform var(--t)}
-.hero-card:hover{transform:translateY(-6px)}
-.hero-card .icon{width:44px;height:44px;border-radius:10px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:white}
-.hero-card .lbl{font-family:'Hind Siliguri',sans-serif;font-size:0.68rem;font-weight:600;color:var(--text-mid)}
+.hero-stats{display:flex;gap:20px}
+.hstat .num{font-size:1.3rem;font-weight:700;color:var(--blue)}
+.hstat .lbl{font-family:'Hind Siliguri',sans-serif;font-size:.68rem;color:var(--text-light);margin-top:1px}
 
-/* LAYOUT */
+/* ── MAIN LAYOUT ── */
 .main{display:flex;min-height:80vh}
 
-/* SIDEBAR */
-.sidebar{width:256px;flex-shrink:0;background:white;border-right:1px solid var(--border);padding:20px 16px;position:sticky;top:112px;height:calc(100vh - 112px);overflow-y:auto}
+/* ── SIDEBAR ── */
+.sidebar{width:248px;flex-shrink:0;background:white;border-right:1px solid var(--border);padding:18px 14px;position:sticky;top:108px;height:calc(100vh - 108px);overflow-y:auto}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.filter-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.filter-head h3{font-family:'Hind Siliguri',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text)}
-.clear-all{background:none;border:none;font-family:'Hind Siliguri',sans-serif;font-size:0.72rem;color:var(--blue);cursor:pointer;font-weight:600}
-.fsec{margin-bottom:20px}
-.fsec-title{font-family:'Hind Siliguri',sans-serif;font-size:0.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
-.fchip{width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);border:1.5px solid transparent;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;color:var(--text-mid);transition:all var(--t);text-align:left}
-.fchip i{width:16px;text-align:center;font-size:0.78rem;color:var(--text-light)}
+.fhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.fhead h3{font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700}
+.clear-btn{background:none;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.7rem;color:var(--blue);cursor:pointer;font-weight:600}
+.fsec{margin-bottom:18px}
+.fsec-title{font-family:'Hind Siliguri',sans-serif;font-size:.65rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.fchip{width:100%;display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--radius-sm);border:1.5px solid transparent;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid);transition:all var(--t);text-align:left}
+.fchip i{width:15px;text-align:center;font-size:.75rem;color:var(--text-light)}
 .fchip:hover{background:var(--blue-light);color:var(--text)}
-.fchip.active{background:var(--blue-light);border-color:rgba(0,122,255,0.3);color:var(--blue);font-weight:600}
+.fchip.active{background:var(--blue-light);border-color:rgba(0,122,255,.3);color:var(--blue);font-weight:600}
 .fchip.active i{color:var(--blue)}
-.fchip .cnt{margin-left:auto;background:var(--blue-mid);color:var(--blue);font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:100px}
-.price-inputs{display:flex;gap:8px;margin-bottom:10px}
-.price-inp{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:0.78rem;color:var(--text);outline:none;transition:border-color var(--t);text-align:center}
-.price-inp:focus{border-color:var(--blue)}
-.range-slider{width:100%;accent-color:var(--blue);cursor:pointer}
-.star-filter{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);border:1.5px solid transparent}
-.star-filter:hover{background:var(--blue-light)}
-.star-filter.active{background:var(--blue-light);border-color:rgba(0,122,255,0.3)}
-.stars-gold{color:var(--gold);font-size:0.75rem;letter-spacing:1px}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--t);font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;color:var(--text-mid)}
-.toggle-row:hover{background:var(--blue-light)}
-.sw{width:36px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background var(--t);flex-shrink:0}
+.fchip .cnt{margin-left:auto;background:var(--blue-mid);color:var(--blue);font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:100px}
+.price-inputs{display:flex;gap:7px;margin-bottom:9px}
+.price-inp{flex:1;padding:7px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Sora',sans-serif;font-size:.75rem;color:var(--text);outline:none;transition:border-color var(--t);text-align:center;background:var(--blue-light)}
+.price-inp:focus{border-color:var(--blue);background:white}
+.rslider{width:100%;accent-color:var(--blue);cursor:pointer}
+.star-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);border:1.5px solid transparent}
+.star-row:hover{background:var(--blue-light)}
+.star-row.active{background:var(--blue-light);border-color:rgba(0,122,255,.3)}
+.gold-stars{color:var(--gold);font-size:.72rem}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--t);font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)}
+.trow:hover{background:var(--blue-light)}
+.sw{width:34px;height:19px;border-radius:10px;background:var(--border);position:relative;transition:background var(--t);flex-shrink:0}
 .sw.on{background:var(--blue)}
-.sw::after{content:'';position:absolute;width:14px;height:14px;background:white;border-radius:50%;top:3px;left:3px;transition:transform var(--t);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
-.sw.on::after{transform:translateX(16px)}
+.sw::after{content:'';position:absolute;width:13px;height:13px;background:white;border-radius:50%;top:3px;left:3px;transition:transform var(--t);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw.on::after{transform:translateX(15px)}
 
-/* PRODUCTS */
-.product-area{flex:1;padding:20px 22px}
-.parea-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.parea-header h2{font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700}
-.parea-header h2 span{color:var(--text-light);font-size:0.8rem;font-weight:400;margin-left:6px}
-.sort-row{display:flex;align-items:center;gap:8px}
-.sort-sel{padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;color:var(--text);background:white;outline:none;cursor:pointer}
-.sort-sel:focus{border-color:var(--blue)}
+/* ── PRODUCT AREA ── */
+.product-area{flex:1;padding:18px 20px}
+.parea-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:9px}
+.parea-header h2{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700}
+.parea-header h2 span{color:var(--text-light);font-size:.75rem;font-weight:400;margin-left:5px}
+.sort-sel{padding:7px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:var(--text);background:white;outline:none;cursor:pointer}
 
-/* PRODUCT CARD */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+/* ── FEATURED ── */
+.feat{background:linear-gradient(120deg,var(--blue),var(--blue-dark));border-radius:var(--radius);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;position:relative;overflow:hidden;color:white}
+.feat::before{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;background:rgba(255,255,255,.06);border-radius:50%}
+.feat-tag{display:inline-block;background:rgba(255,255,255,.18);padding:2px 11px;border-radius:100px;font-family:'Hind Siliguri',sans-serif;font-size:.65rem;font-weight:700;margin-bottom:7px}
+.feat h3{font-family:'Hind Siliguri',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:5px}
+.feat p{font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.8;margin-bottom:12px}
+.feat-btn{display:inline-flex;align-items:center;gap:6px;background:white;color:var(--blue);padding:8px 18px;border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:700;border:none;cursor:pointer;transition:all var(--t)}
+.feat-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.feat-icons{display:flex;gap:9px;position:relative;z-index:1}
+.fibox{width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:transform var(--t)}
+.feat:hover .fibox:nth-child(1){transform:rotate(-8deg) translateY(-5px)}
+.feat:hover .fibox:nth-child(2){transform:translateY(-8px)}
+.feat:hover .fibox:nth-child(3){transform:rotate(8deg) translateY(-5px)}
+
+/* ── PRODUCT GRID ── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative}
-.pcard:hover{border-color:rgba(0,122,255,0.25);box-shadow:var(--glow);transform:translateY(-4px)}
-.pcard-img{height:170px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
+.pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
+.pcard-img{height:162px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
 .pcard:hover .pcard-img{background:#E3EFFF}
-.pcard-icon{width:80px;height:80px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:2rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.pcard-icon{width:74px;height:74px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10)}
 .pcard:hover .pcard-icon{transform:scale(1.08) rotate(-3deg)}
-.disc-badge{position:absolute;top:10px;left:10px;background:var(--red);color:white;font-size:0.62rem;font-weight:700;padding:3px 8px;border-radius:100px}
-.new-badge{position:absolute;top:10px;left:10px;background:var(--green);color:white;font-size:0.62rem;font-weight:700;padding:3px 8px;border-radius:100px}
-.hot-badge{position:absolute;top:10px;left:10px;background:var(--orange);color:white;font-size:0.62rem;font-weight:700;padding:3px 8px;border-radius:100px}
-.wish-btn{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:white;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.78rem;cursor:pointer;transition:all var(--t);opacity:0;color:var(--text-light)}
+.disc-badge,.new-badge,.hot-badge{position:absolute;top:9px;left:9px;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;color:white}
+.disc-badge{background:var(--red)}
+.new-badge{background:var(--green)}
+.hot-badge{background:var(--orange)}
+.wish-btn{position:absolute;top:7px;right:7px;width:28px;height:28px;border-radius:50%;background:white;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;cursor:pointer;transition:all var(--t);opacity:0;color:var(--text-light)}
 .pcard:hover .wish-btn{opacity:1}
-.wish-btn:hover,.wish-btn.active{background:#FEF2F2;border-color:#FCA5A5;color:var(--red);opacity:1}
-.pcard-body{padding:12px}
-.pcard-cat{font-family:'Hind Siliguri',sans-serif;font-size:0.65rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px}
-.pcard-name{font-family:'Hind Siliguri',sans-serif;font-size:0.875rem;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.pcard-brand{font-size:0.72rem;color:var(--text-light);margin-bottom:8px}
-.pcard-rating{display:flex;align-items:center;gap:5px;margin-bottom:10px}
-.pcard-stars{color:var(--gold);font-size:0.7rem}
-.pcard-rating span{font-size:0.68rem;color:var(--text-light)}
-.pcard-footer{display:flex;align-items:flex-end;justify-content:space-between;gap:6px}
-.price-block .old{font-size:0.7rem;color:var(--text-light);text-decoration:line-through}
-.price-block .new{font-size:1rem;font-weight:700;color:var(--text)}
-.price-block .disc-pct{font-size:0.65rem;font-weight:700;color:var(--red);background:#FEF2F2;padding:1px 6px;border-radius:4px;margin-left:4px}
-.card-btns{display:flex;flex-direction:column;gap:4px}
-.btn-cart{display:flex;align-items:center;gap:5px;padding:7px 10px;border-radius:var(--radius-sm);background:var(--blue-light);color:var(--blue);border:1.5px solid rgba(0,122,255,0.2);font-family:'Hind Siliguri',sans-serif;font-size:0.7rem;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap}
+.wish-btn:hover,.wish-btn.liked{background:#FEF2F2;border-color:#FCA5A5;color:var(--red);opacity:1}
+.pcard-body{padding:11px}
+.pcat{font-family:'Hind Siliguri',sans-serif;font-size:.62rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.pname{font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pbrand{font-size:.7rem;color:var(--text-light);margin-bottom:7px}
+.prating{display:flex;align-items:center;gap:4px;margin-bottom:9px}
+.pstars{color:var(--gold);font-size:.68rem}
+.prating span{font-size:.65rem;color:var(--text-light)}
+.pfooter{display:flex;align-items:flex-end;justify-content:space-between;gap:5px}
+.price-block .old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
+.price-block .new{font-size:.95rem;font-weight:700;color:var(--text)}
+.disc-pct{font-size:.62rem;font-weight:700;color:var(--red);background:#FEF2F2;padding:1px 5px;border-radius:4px;margin-left:3px}
+.card-btns{display:flex;flex-direction:column;gap:3px}
+.btn-cart{display:flex;align-items:center;gap:4px;padding:6px 9px;border-radius:var(--radius-sm);background:var(--blue-light);color:var(--blue);border:1.5px solid rgba(0,122,255,.2);font-family:'Hind Siliguri',sans-serif;font-size:.67rem;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap}
 .btn-cart:hover{background:var(--blue);color:white;border-color:var(--blue)}
-.btn-buy{display:flex;align-items:center;gap:5px;padding:7px 10px;border-radius:var(--radius-sm);background:var(--orange);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:0.7rem;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap}
-.btn-buy:hover{background:#EA6C00;transform:scale(1.03)}
+.btn-buy{display:flex;align-items:center;gap:4px;padding:6px 9px;border-radius:var(--radius-sm);background:var(--orange);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.67rem;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap}
+.btn-buy:hover{background:#EA6C00}
 
-/* FEATURED BANNER */
-.feat-banner{background:linear-gradient(120deg,var(--blue),var(--blue-dark));border-radius:var(--radius);padding:24px 28px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:relative;overflow:hidden;color:white}
-.feat-banner::before{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:rgba(255,255,255,0.06);border-radius:50%}
-.feat-banner::after{content:'';position:absolute;left:30%;bottom:-60px;width:160px;height:160px;background:rgba(255,255,255,0.04);border-radius:50%}
-.feat-tag{display:inline-block;background:rgba(255,255,255,0.18);padding:3px 12px;border-radius:100px;font-family:'Hind Siliguri',sans-serif;font-size:0.68rem;font-weight:700;margin-bottom:8px;letter-spacing:0.05em}
-.feat-banner h3{font-family:'Hind Siliguri',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:6px}
-.feat-banner p{font-family:'Hind Siliguri',sans-serif;font-size:0.8rem;opacity:0.8;margin-bottom:14px}
-.feat-btn{display:inline-flex;align-items:center;gap:7px;background:white;color:var(--blue);padding:9px 20px;border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.8rem;font-weight:700;border:none;cursor:pointer;transition:all var(--t)}
-.feat-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.2)}
-.feat-icons{display:flex;gap:10px;align-items:center;position:relative;z-index:1}
-.feat-icon-box{width:54px;height:54px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;transition:transform var(--t)}
-.feat-banner:hover .feat-icon-box:nth-child(1){transform:rotate(-8deg) translateY(-4px)}
-.feat-banner:hover .feat-icon-box:nth-child(2){transform:translateY(-8px)}
-.feat-banner:hover .feat-icon-box:nth-child(3){transform:rotate(8deg) translateY(-4px)}
-
-/* PRODUCT MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(15,23,42,0.55);backdrop-filter:blur(6px)}
-.modal-overlay.open{display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease}
+/* ── MODALS BASE ── */
+.overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.overlay.open{display:flex;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal-box{width:90vw;max-width:700px;background:white;border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.22);animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1);max-height:90vh;display:flex;flex-direction:column}
+.modal-box{background:white;border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.22);animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
 @keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.modal-header h3{font-family:'Hind Siliguri',sans-serif;font-size:0.9rem;font-weight:700}
-.modal-close{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--text-mid);transition:all var(--t)}
-.modal-close:hover{background:var(--blue-light);color:var(--blue);border-color:var(--blue)}
-.modal-body{display:flex;gap:0;overflow:hidden;flex:1}
-.modal-img{width:260px;flex-shrink:0;background:var(--blue-light);display:flex;align-items:center;justify-content:center;padding:32px}
-.modal-img .big-icon{width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.12)}
-.modal-info{flex:1;padding:24px;overflow-y:auto}
-.modal-cat{font-family:'Hind Siliguri',sans-serif;font-size:0.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
-.modal-name{font-family:'Hind Siliguri',sans-serif;font-size:1.2rem;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px}
-.modal-brand{font-size:0.8rem;color:var(--text-light);margin-bottom:12px}
-.modal-rating{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.modal-stars{color:var(--gold);font-size:0.9rem}
-.modal-rating span{font-size:0.82rem;color:var(--text-mid)}
-.modal-price{margin-bottom:16px}
-.modal-price .old{font-size:0.85rem;color:var(--text-light);text-decoration:line-through;margin-bottom:3px}
-.modal-price .new{font-size:1.8rem;font-weight:700;color:var(--text)}
-.modal-price .disc{display:inline-block;background:#FEF2F2;color:var(--red);font-size:0.72rem;font-weight:700;padding:2px 9px;border-radius:5px;margin-left:8px}
-.modal-desc{font-family:'Hind Siliguri',sans-serif;font-size:0.83rem;color:var(--text-mid);line-height:1.7;margin-bottom:18px}
-.modal-stock{display:flex;align-items:center;gap:7px;font-family:'Hind Siliguri',sans-serif;font-size:0.8rem;font-weight:600;color:var(--green);margin-bottom:18px}
-.modal-stock i{font-size:0.72rem}
-.qty-row{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.qty-label{font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;font-weight:600;color:var(--text)}
-.qty-ctrl{display:flex;align-items:center;gap:8px}
-.qbtn{width:30px;height:30px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--blue-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:var(--text);transition:all var(--t)}
+.modal-hd{padding:15px 19px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700}
+.close-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--text-mid);transition:all var(--t)}
+.close-btn:hover{background:var(--blue-light);color:var(--blue)}
+
+/* ── PRODUCT DETAIL MODAL ── */
+#productModal .modal-box{width:90vw;max-width:660px;max-height:90vh;display:flex;flex-direction:column}
+.modal-body{display:flex;overflow:hidden;flex:1}
+.modal-img{width:240px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:28px}
+.modal-info{flex:1;padding:22px;overflow-y:auto}
+.modal-cat{font-family:'Hind Siliguri',sans-serif;font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.modal-name{font-family:'Hind Siliguri',sans-serif;font-size:1.1rem;font-weight:700;line-height:1.3;margin-bottom:3px}
+.modal-brand{font-size:.78rem;color:var(--text-light);margin-bottom:10px}
+.modal-rating-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.modal-stars{color:var(--gold);font-size:.88rem}
+.modal-price-block{margin-bottom:14px}
+.modal-old{font-size:.82rem;color:var(--text-light);text-decoration:line-through;margin-bottom:3px}
+.modal-new{font-size:1.7rem;font-weight:700;color:var(--text)}
+.modal-disc{display:inline-block;background:#FEF2F2;color:var(--red);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:5px;margin-left:7px}
+.modal-desc{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid);line-height:1.7;margin-bottom:16px}
+.stock-row{display:flex;align-items:center;gap:6px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;color:var(--green);margin-bottom:16px}
+.qty-row{display:flex;align-items:center;gap:9px;margin-bottom:16px}
+.qty-lbl{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:600}
+.qty-ctrl{display:flex;align-items:center;gap:7px}
+.qbtn{width:28px;height:28px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--blue-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.88rem;transition:all var(--t)}
 .qbtn:hover{border-color:var(--blue);background:white;color:var(--blue)}
-.qval{font-weight:700;min-width:24px;text-align:center}
-.modal-btns{display:flex;gap:10px}
+.modal-btns{display:flex;gap:9px}
 .modal-btns .btn-primary{flex:1;justify-content:center}
-.modal-btns .btn-buy-lg{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--orange);color:white;padding:12px 24px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:0.875rem;font-weight:600;border:none;cursor:pointer;transition:all var(--t)}
-.modal-btns .btn-buy-lg:hover{background:#EA6C00;transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,0.3)}
+.btn-buy-lg{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--orange);color:white;padding:11px 22px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all var(--t)}
+.btn-buy-lg:hover{background:#EA6C00;transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,.3)}
 
-/* CART PANEL */
-.cart-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px)}
-.cart-overlay.open{display:block;animation:fadeIn 0.2s ease}
-.cart-panel{position:absolute;right:0;top:0;bottom:0;width:380px;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,0.14);animation:slideFromRight 0.3s cubic-bezier(0.4,0,0.2,1)}
-@keyframes slideFromRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
-.cart-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.cart-head h3{font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700}
-.cart-items-list{flex:1;overflow-y:auto;padding:14px 20px}
-.ci{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--blue-light)}
+/* ── CART OVERLAY ── */
+#cartOverlay{background:rgba(15,23,42,.4);backdrop-filter:blur(4px)}
+#cartOverlay.open{display:block;animation:fadeIn .2s ease}
+.cart-panel{position:absolute;right:0;top:0;bottom:0;width:365px;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.14);animation:slideRight .3s cubic-bezier(.4,0,.2,1)}
+@keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.cart-hd{padding:17px 19px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cart-hd h3{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700}
+.cart-items{flex:1;overflow-y:auto;padding:13px 19px}
+.ci{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--blue-light)}
 .ci:last-child{border-bottom:none}
-.ci-icon{width:52px;height:52px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.ci-icon{width:48px;height:48px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
 .ci-info{flex:1}
-.ci-name{font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;font-weight:600;margin-bottom:3px;color:var(--text)}
-.ci-brand{font-size:0.7rem;color:var(--text-light);margin-bottom:6px}
-.ci-qty{display:flex;align-items:center;gap:7px}
-.ci-qbtn{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:var(--blue-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.8rem;transition:all var(--t)}
-.ci-qbtn:hover{border-color:var(--blue);background:white;color:var(--blue)}
-.ci-del{margin-left:auto;background:none;border:none;color:var(--text-light);cursor:pointer;font-size:0.78rem;transition:color var(--t)}
+.ci-name{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:600;margin-bottom:2px}
+.ci-brand{font-size:.68rem;color:var(--text-light);margin-bottom:5px}
+.ci-qty{display:flex;align-items:center;gap:6px}
+.ciqbtn{width:20px;height:20px;border-radius:5px;border:1px solid var(--border);background:var(--blue-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.78rem;transition:all var(--t)}
+.ciqbtn:hover{border-color:var(--blue);color:var(--blue)}
+.ci-del{margin-left:auto;background:none;border:none;color:var(--text-light);cursor:pointer;font-size:.75rem;transition:color var(--t)}
 .ci-del:hover{color:var(--red)}
-.ci-price{font-weight:700;font-size:0.9rem;color:var(--text);align-self:flex-start;white-space:nowrap}
-.cart-foot{padding:16px 20px;border-top:1px solid var(--border)}
-.cart-promo{display:flex;gap:8px;margin-bottom:12px}
-.promo-inp{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;color:var(--text);outline:none;transition:border-color var(--t)}
-.promo-inp:focus{border-color:var(--blue)}
-.promo-btn{padding:9px 14px;border-radius:var(--radius-sm);background:var(--blue-light);color:var(--blue);border:1.5px solid rgba(0,122,255,0.2);font-family:'Hind Siliguri',sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer;transition:all var(--t)}
+.ci-price{font-weight:700;font-size:.88rem;align-self:flex-start;white-space:nowrap}
+.cart-foot{padding:15px 19px;border-top:1px solid var(--border)}
+.promo-row{display:flex;gap:7px;margin-bottom:11px}
+.promo-inp{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.76rem;color:var(--text);outline:none;background:var(--blue-light);transition:border-color var(--t)}
+.promo-inp:focus{border-color:var(--blue);background:white}
+.promo-btn{padding:8px 13px;border-radius:var(--radius-sm);background:var(--blue-light);color:var(--blue);border:1.5px solid rgba(0,122,255,.2);font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all var(--t)}
 .promo-btn:hover{background:var(--blue);color:white}
-.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.cart-total-row .lbl{font-family:'Hind Siliguri',sans-serif;font-size:0.85rem;color:var(--text-mid)}
-.cart-total-row .amt{font-size:1.4rem;font-weight:700;color:var(--text)}
-.cart-cod{background:var(--blue-light);border-radius:var(--radius-sm);padding:8px 12px;font-family:'Hind Siliguri',sans-serif;font-size:0.75rem;color:var(--text-mid);display:flex;align-items:center;gap:7px;margin-bottom:12px}
-.checkout-btn{width:100%;padding:13px;border-radius:var(--radius);background:var(--blue);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:8px}
-.checkout-btn:hover{background:var(--blue-dark);box-shadow:0 8px 24px rgba(0,122,255,0.3)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cart-total-row .lbl{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid)}
+.cart-total-row .amt{font-size:1.3rem;font-weight:700}
+.cod-note{background:var(--blue-light);border-radius:var(--radius-sm);padding:7px 11px;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-mid);display:flex;align-items:center;gap:6px;margin-bottom:11px}
+.checkout-btn{width:100%;padding:12px;border-radius:var(--radius);background:var(--blue);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:7px}
+.checkout-btn:hover{background:var(--blue-dark);box-shadow:0 8px 24px rgba(0,122,255,.3)}
 
-/* TRACK MODAL */
-.track-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(15,23,42,0.5);backdrop-filter:blur(6px);align-items:center;justify-content:center}
-.track-modal.open{display:flex;animation:fadeIn 0.2s ease}
-.track-box{width:90vw;max-width:520px;background:white;border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.2);animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1)}
-.track-hd{background:linear-gradient(135deg,var(--blue),var(--blue-dark));padding:22px 24px;color:white;display:flex;justify-content:space-between;align-items:flex-start}
-.track-hd h3{font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;margin-bottom:3px}
-.track-hd p{font-family:'Hind Siliguri',sans-serif;font-size:0.75rem;opacity:0.75}
-.track-body{padding:24px}
-.track-inp-row{display:flex;gap:8px;margin-bottom:22px}
-.track-inp{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.85rem;color:var(--text);outline:none;background:var(--blue-light);transition:all var(--t)}
+/* ── CHECKOUT MODAL ── */
+#checkoutModal .modal-box{width:90vw;max-width:500px;max-height:92vh;overflow-y:auto}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.form-group label{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-mid)}
+.form-inp{padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);outline:none;background:var(--blue-light);transition:border-color var(--t)}
+.form-inp:focus{border-color:var(--blue);background:white}
+.form-sel{padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);background:var(--blue-light);outline:none;cursor:pointer}
+
+/* ── TRACK MODAL ── */
+#trackModal .modal-box{width:90vw;max-width:500px}
+.track-hd-bar{background:linear-gradient(135deg,var(--blue),var(--blue-dark));padding:20px 22px;color:white;display:flex;justify-content:space-between;align-items:flex-start}
+.track-hd-bar h3{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:3px}
+.track-hd-bar p{font-family:'Hind Siliguri',sans-serif;font-size:.72rem;opacity:.75}
+.track-body{padding:22px}
+.track-inp-row{display:flex;gap:7px;margin-bottom:20px}
+.track-inp{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);outline:none;background:var(--blue-light);transition:all var(--t)}
 .track-inp:focus{border-color:var(--blue);background:white;box-shadow:var(--glow)}
-.track-go{padding:10px 18px;border-radius:var(--radius-sm);background:var(--blue);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;transition:background var(--t)}
+.track-go{padding:9px 17px;border-radius:var(--radius-sm);background:var(--blue);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background var(--t)}
 .track-go:hover{background:var(--blue-dark)}
-.order-info{background:var(--blue-light);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:20px}
-.order-info .oid{font-size:0.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
-.order-info .oname{font-family:'Hind Siliguri',sans-serif;font-size:0.9rem;font-weight:700;margin-bottom:3px}
-.order-info .oeta{font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;color:var(--text-mid)}
-.order-info .oeta strong{color:var(--blue)}
-.timeline{padding-left:24px;position:relative}
-.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
-.titem{position:relative;margin-bottom:20px}
+.order-info-card{background:var(--blue-light);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:18px}
+.oid-lbl{font-size:.65rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.oname{font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:2px}
+.oeta{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:var(--text-mid)}
+.oeta strong{color:var(--blue)}
+.timeline{padding-left:22px;position:relative}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.titem{position:relative;margin-bottom:18px}
 .titem:last-child{margin-bottom:0}
-.tdot{position:absolute;left:-22px;top:3px;width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:white;z-index:1}
-.titem.done .tdot{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,0.15)}
+.tdot{position:absolute;left:-20px;top:3px;width:13px;height:13px;border-radius:50%;border:2px solid var(--border);background:white;z-index:1}
+.titem.done .tdot{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,.15)}
 .titem.active .tdot{border-color:var(--blue);animation:blink 1.5s infinite}
-.ttitle{font-family:'Hind Siliguri',sans-serif;font-size:0.83rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.ttitle{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;margin-bottom:1px}
 .titem:not(.done):not(.active) .ttitle{color:var(--text-light)}
-.tdesc{font-family:'Hind Siliguri',sans-serif;font-size:0.72rem;color:var(--text-light)}
-.ttime{font-size:0.65rem;color:var(--blue);font-weight:600;margin-top:2px}
+.tdesc{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;color:var(--text-light)}
+.ttime{font-size:.63rem;color:var(--blue);font-weight:600;margin-top:2px}
 
-/* ADMIN DASHBOARD */
-.admin-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(15,23,42,0.55);backdrop-filter:blur(8px)}
-.admin-overlay.open{display:flex;animation:fadeIn 0.2s ease}
-.admin-panel{width:100%;max-width:1100px;height:90vh;background:white;border-radius:20px;margin:auto;display:flex;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.25);animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1)}
-.admin-sidebar{width:200px;flex-shrink:0;background:var(--text);padding:20px 14px;display:flex;flex-direction:column;gap:4px}
-.admin-logo{display:flex;align-items:center;gap:8px;color:white;font-family:'Hind Siliguri',sans-serif;font-size:0.9rem;font-weight:700;padding:8px 10px;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:14px}
-.admin-logo i{color:var(--blue);font-size:1rem}
-.amenu-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius-sm);color:rgba(255,255,255,0.6);font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;font-weight:500;cursor:pointer;transition:all var(--t);border:none;background:transparent;width:100%;text-align:left}
-.amenu-item i{font-size:0.82rem;width:14px}
-.amenu-item:hover{background:rgba(255,255,255,0.08);color:white}
-.amenu-item.active{background:var(--blue);color:white}
+/* ── AUTH MODAL ── */
+#authModal .modal-box{width:90vw;max-width:400px}
+.auth-body{padding:24px}
+.google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:var(--radius);border:1.5px solid var(--border);background:white;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);transition:all var(--t);margin-bottom:14px}
+.google-btn:hover{border-color:var(--blue);background:var(--blue-light);color:var(--blue)}
+.google-btn img{width:20px}
+.auth-divider{text-align:center;font-size:.72rem;color:var(--text-light);margin-bottom:14px;position:relative}
+.auth-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border)}
+.auth-divider span{background:white;padding:0 10px;position:relative}
+.auth-note{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:var(--text-light);text-align:center;line-height:1.6;margin-top:14px}
+
+/* ── ADMIN DASHBOARD ── */
+#adminOverlay{align-items:stretch;justify-content:flex-end}
+#adminOverlay.open{display:flex}
+.admin-panel{width:min(95vw,1050px);height:100vh;background:white;display:flex;overflow:hidden;box-shadow:-20px 0 60px rgba(0,0,0,.2);animation:slideRight .3s cubic-bezier(.4,0,.2,1)}
+.admin-sidebar{width:190px;flex-shrink:0;background:#1E293B;padding:18px 12px;display:flex;flex-direction:column;gap:3px}
+.admin-logo{display:flex;align-items:center;gap:7px;color:white;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;padding:7px 9px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:12px}
+.admin-logo i{color:var(--blue);font-size:.95rem}
+.amenu{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:var(--radius-sm);color:rgba(255,255,255,.6);font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:500;cursor:pointer;transition:all var(--t);border:none;background:transparent;width:100%;text-align:left}
+.amenu i{font-size:.78rem;width:13px}
+.amenu:hover{background:rgba(255,255,255,.08);color:white}
+.amenu.active{background:var(--blue);color:white}
 .admin-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.admin-topbar{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.admin-topbar h2{font-family:'Hind Siliguri',sans-serif;font-size:0.95rem;font-weight:700}
-.admin-close{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--text-mid);transition:all var(--t)}
-.admin-close:hover{background:var(--blue-light);color:var(--blue)}
-.admin-main{flex:1;overflow-y:auto;padding:20px 22px}
+.admin-topbar{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.admin-topbar h2{font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700}
+.admin-main{flex:1;overflow-y:auto;padding:18px 20px}
 .admin-main::-webkit-scrollbar{width:4px}
 .admin-main::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
+/* ADMIN SECTIONS */
+.asec{display:none}
+.asec.visible{display:block}
+.asec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.asec-head h3{font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700}
+.abtn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.75rem;font-weight:600;transition:all var(--t)}
+.abtn.primary{background:var(--blue);color:white}
+.abtn.primary:hover{background:var(--blue-dark)}
+.abtn.outline{background:transparent;border:1.5px solid var(--border);color:var(--text-mid)}
+.abtn.outline:hover{border-color:var(--blue);color:var(--blue)}
+.abtn.danger{background:transparent;border:1.5px solid var(--red);color:var(--red)}
+.abtn.danger:hover{background:var(--red);color:white}
+
 /* KPI */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.kpi{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;transition:all var(--t)}
-.kpi:hover{box-shadow:var(--glow);border-color:rgba(0,122,255,0.2)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
+.kpi{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden;transition:all var(--t)}
+.kpi:hover{box-shadow:var(--glow);border-color:rgba(0,122,255,.2)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .kpi:nth-child(1)::before{background:var(--blue)}
 .kpi:nth-child(2)::before{background:var(--green)}
 .kpi:nth-child(3)::before{background:var(--orange)}
 .kpi:nth-child(4)::before{background:#8B5CF6}
-.kpi-lbl{font-family:'Hind Siliguri',sans-serif;font-size:0.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
-.kpi-val{font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:4px}
-.kpi-ch{font-size:0.7rem;font-weight:600}
+.kpi-lbl{font-family:'Hind Siliguri',sans-serif;font-size:.65rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.kpi-val{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.kpi-ch{font-size:.68rem;font-weight:600}
 .kpi-ch.up{color:var(--green)}
 .kpi-ch.dn{color:var(--red)}
 
-/* ADMIN SECTIONS */
-.admin-section{display:none}
-.admin-section.visible{display:block}
-.asec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.asec-head h3{font-family:'Hind Siliguri',sans-serif;font-size:0.92rem;font-weight:700}
-.abtn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;font-weight:600;transition:all var(--t)}
-.abtn.primary{background:var(--blue);color:white}
-.abtn.primary:hover{background:var(--blue-dark)}
-.abtn.outline{background:transparent;border:1.5px solid var(--border);color:var(--text-mid)}
-.abtn.outline:hover{border-color:var(--blue);color:var(--blue)}
-.atable{width:100%;border-collapse:collapse;font-size:0.78rem}
-.atable th{text-align:left;padding:10px 12px;background:var(--blue-light);font-family:'Hind Siliguri',sans-serif;font-size:0.68rem;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.05em}
+/* TABLES */
+.atable{width:100%;border-collapse:collapse;font-size:.76rem}
+.atable th{text-align:left;padding:9px 11px;background:var(--blue-light);font-family:'Hind Siliguri',sans-serif;font-size:.64rem;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em}
 .atable th:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm)}
 .atable th:last-child{border-radius:0 var(--radius-sm) var(--radius-sm) 0}
-.atable td{padding:10px 12px;border-bottom:1px solid var(--blue-light);color:var(--text);font-family:'Hind Siliguri',sans-serif}
+.atable td{padding:9px 11px;border-bottom:1px solid var(--blue-light);color:var(--text);font-family:'Hind Siliguri',sans-serif}
 .atable tr:last-child td{border-bottom:none}
 .atable tr:hover td{background:#FAFCFF}
-.status-pill{display:inline-block;padding:2px 10px;border-radius:100px;font-size:0.65rem;font-weight:700}
-.sp-delivered{background:#D1FAE5;color:#065F46}
-.sp-processing{background:var(--blue-light);color:var(--blue)}
-.sp-pending{background:#FEF3C7;color:#92400E}
-.sp-cancelled{background:#FEE2E2;color:#991B1B}
-.sp-instock{background:#D1FAE5;color:#065F46}
-.sp-low{background:#FEF3C7;color:#92400E}
-.sp-out{background:#FEE2E2;color:#991B1B}
-.aicon-btn{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--text-mid);transition:all var(--t);margin-right:4px}
-.aicon-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
-.aicon-btn.del:hover{border-color:var(--red);color:var(--red);background:#FEF2F2}
+.spill{display:inline-block;padding:2px 9px;border-radius:100px;font-size:.62rem;font-weight:700}
+.s-ok{background:#D1FAE5;color:#065F46}
+.s-info{background:var(--blue-light);color:var(--blue)}
+.s-warn{background:#FEF3C7;color:#92400E}
+.s-err{background:#FEE2E2;color:#991B1B}
+.aibtn{width:26px;height:26px;border-radius:5px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:.67rem;color:var(--text-mid);transition:all var(--t);margin-right:3px}
+.aibtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.aibtn.del:hover{border-color:var(--red);color:var(--red);background:#FEF2F2}
 
 /* ADD PRODUCT FORM */
-.add-form{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.form-group{display:flex;flex-direction:column;gap:5px}
-.form-group label{font-family:'Hind Siliguri',sans-serif;font-size:0.72rem;font-weight:700;color:var(--text-mid)}
-.form-inp{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;color:var(--text);outline:none;transition:border-color var(--t);background:var(--blue-light)}
-.form-inp:focus{border-color:var(--blue);background:white}
-.form-sel{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;color:var(--text);outline:none;background:var(--blue-light);cursor:pointer}
-.form-sel:focus{border-color:var(--blue)}
-.form-textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;color:var(--text);outline:none;background:var(--blue-light);resize:vertical;min-height:80px;transition:border-color var(--t)}
-.form-textarea:focus{border-color:var(--blue);background:white}
+.add-form{background:var(--blue-light);border:1px solid rgba(0,122,255,.15);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 
 /* CHART */
-.chart-area{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
-.chart-title{font-family:'Hind Siliguri',sans-serif;font-size:0.85rem;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
-.chart-bars{display:flex;align-items:flex-end;gap:8px;height:110px}
-.cbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.cbar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue),rgba(0,122,255,0.5));transition:all var(--t);cursor:pointer;position:relative}
+.chart-card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.chart-title{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}
+.chart-bars{display:flex;align-items:flex-end;gap:7px;height:100px}
+.cbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cbar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue),rgba(0,122,255,.45));transition:all var(--t);cursor:pointer}
 .cbar:hover{background:linear-gradient(180deg,var(--blue-dark),var(--blue))}
-.cbar-lbl{font-family:'Hind Siliguri',sans-serif;font-size:0.6rem;color:var(--text-light);text-align:center}
-.chart-legend{display:flex;gap:14px;margin-top:10px}
-.cleg{display:flex;align-items:center;gap:5px;font-family:'Hind Siliguri',sans-serif;font-size:0.7rem;color:var(--text-mid)}
-.cleg-dot{width:8px;height:8px;border-radius:50%}
-
-/* DISCOUNT MANAGER */
-.disc-list{display:flex;flex-direction:column;gap:10px}
-.disc-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--blue-light);border-radius:var(--radius-sm);border:1.5px solid transparent}
-.disc-item.active-disc{border-color:rgba(0,122,255,0.25)}
-.disc-code{font-size:0.9rem;font-weight:700;color:var(--blue);letter-spacing:0.05em;flex:1}
-.disc-info{font-family:'Hind Siliguri',sans-serif;font-size:0.75rem;color:var(--text-mid);flex:2}
-.disc-pct{font-weight:700;color:var(--red);font-size:0.85rem;flex:1;text-align:right}
+.cbar-lbl{font-family:'Hind Siliguri',sans-serif;font-size:.58rem;color:var(--text-light);text-align:center}
 
 /* TOAST */
-.toast-wrap{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px}
-.toast{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;gap:10px;min-width:270px;box-shadow:0 8px 30px rgba(0,0,0,0.12);animation:slideFromRight 0.3s ease;font-size:0.8rem}
-.toast-ic{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
-.toast-ic.s{background:#D1FAE5;color:var(--green)}
-.toast-ic.i{background:var(--blue-light);color:var(--blue)}
-.toast-ic.w{background:#FEF3C7;color:var(--orange)}
-.toast-t{font-family:'Hind Siliguri',sans-serif;font-weight:700;color:var(--text);margin-bottom:2px}
-.toast-s{font-family:'Hind Siliguri',sans-serif;color:var(--text-light);font-size:0.72rem}
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.toast{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:11px 15px;display:flex;align-items:center;gap:9px;min-width:260px;box-shadow:0 8px 30px rgba(0,0,0,.12);animation:slideRight .3s ease;font-size:.78rem}
+.tic{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0}
+.tic.s{background:#D1FAE5;color:var(--green)}
+.tic.i{background:var(--blue-light);color:var(--blue)}
+.tic.w{background:#FEF3C7;color:var(--orange)}
+.tic.e{background:#FEE2E2;color:var(--red)}
+.tt{font-family:'Hind Siliguri',sans-serif;font-weight:700;color:var(--text);margin-bottom:1px}
+.ts{font-family:'Hind Siliguri',sans-serif;color:var(--text-light);font-size:.7rem}
 
 /* PAGINATION */
-.pagination{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:28px}
-.pgbtn{width:34px;height:34px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:white;font-family:'Sora',sans-serif;font-size:0.78rem;font-weight:600;color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t)}
+.pgn{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:24px}
+.pgbtn{width:32px;height:32px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:white;font-family:'Sora',sans-serif;font-size:.75rem;font-weight:600;color:var(--text-mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t)}
 .pgbtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
 .pgbtn.active{background:var(--blue);border-color:var(--blue);color:white}
 
-/* FOOTER */
-footer{background:var(--text);color:rgba(255,255,255,0.7);padding:32px 24px}
-.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:28px;margin-bottom:24px}
-.footer-brand .logo{margin-bottom:10px;color:white;display:flex;align-items:center;gap:10px}
-.footer-brand p{font-family:'Hind Siliguri',sans-serif;font-size:0.78rem;line-height:1.6;color:rgba(255,255,255,0.5);margin-bottom:12px}
-.footer-social{display:flex;gap:8px}
-.fsocial{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);color:white;display:flex;align-items:center;justify-content:center;font-size:0.82rem;text-decoration:none;transition:background var(--t)}
-.fsocial:hover{background:var(--blue)}
-.footer-col h4{font-family:'Hind Siliguri',sans-serif;font-size:0.82rem;font-weight:700;color:white;margin-bottom:10px}
-.footer-col a{display:block;font-family:'Hind Siliguri',sans-serif;font-size:0.75rem;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:6px;transition:color var(--t)}
-.footer-col a:hover{color:white}
-.footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.footer-bottom p{font-family:'Hind Siliguri',sans-serif;font-size:0.72rem;color:rgba(255,255,255,0.4)}
-.pay-methods{display:flex;gap:6px}
-.pay-icon{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);padding:4px 10px;border-radius:5px;font-size:0.65rem;font-weight:700}
+/* EMPTY STATE */
+.empty-state{grid-column:1/-1;text-align:center;padding:48px;color:var(--text-light)}
+.empty-state i{font-size:2.5rem;display:block;margin-bottom:12px;opacity:.4}
+.empty-state p{font-family:'Hind Siliguri',sans-serif;font-size:.88rem}
 
-@media(max-width:900px){
+/* FOOTER */
+footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
+.foot-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;margin-bottom:20px}
+.foot-brand .flabel{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;line-height:1.65;color:rgba(255,255,255,.5);margin-bottom:11px}
+.fsocials{display:flex;gap:7px}
+.fs{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.1);color:white;display:flex;align-items:center;justify-content:center;font-size:.8rem;text-decoration:none;transition:background var(--t)}
+.fs:hover{background:var(--blue)}
+.foot-col h4{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;color:white;margin-bottom:9px}
+.foot-col a{display:block;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:rgba(255,255,255,.5);text-decoration:none;margin-bottom:5px;transition:color var(--t)}
+.foot-col a:hover{color:white}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px}
+.foot-bottom p{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;color:rgba(255,255,255,.4)}
+.pay-methods{display:flex;gap:5px}
+.pm{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);padding:3px 9px;border-radius:5px;font-size:.62rem;font-weight:700}
+
+@media(max-width:880px){
   .sidebar{display:none}
   .kpi-row{grid-template-columns:repeat(2,1fr)}
-  .footer-top{grid-template-columns:1fr 1fr}
-  .hero{flex-direction:column;gap:20px}
-  .hero-cards{display:none}
+  .foot-top{grid-template-columns:1fr 1fr}
   .modal-img{display:none}
-  .modal-body{flex-direction:column}
-  .form-grid{grid-template-columns:1fr}
-  .admin-sidebar{width:160px}
+  .fgrid{grid-template-columns:1fr}
+  .admin-sidebar{width:150px}
+  .hero{flex-direction:column}
 }
 </style>
 </head>
 <body>
 
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loader-logo"><i class="fa-solid fa-store"></i></div>
+  <div class="loader-text bn">গ্যালাক্সি মার্ট BD লোড হচ্ছে...</div>
+  <div class="loader-bar"><div class="loader-bar-inner"></div></div>
+</div>
+
 <!-- SOCIAL BAR -->
 <div class="social-bar">
-  <div class="marquee-text">
-    <i class="fa-solid fa-truck-fast"></i>
-    <span class="bn">সারা বাংলাদেশে ডেলিভারি · ক্যাশ অন ডেলিভারি · বিশ্বস্ত অনলাইন শপ</span>
-  </div>
+  <span class="bn"><i class="fa-solid fa-truck-fast" style="margin-right:6px"></i>সারা বাংলাদেশে ডেলিভারি · ক্যাশ অন ডেলিভারি · বিশ্বস্ত অনলাইন শপ</span>
   <div class="social-links">
-    <span class="bn" style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-right:8px">ফলো করুন:</span>
-    <a href="#" class="social-link" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-    <a href="#" class="social-link" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-    <a href="#" class="social-link" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-    <a href="#" class="social-link" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
-    <a href="#" class="social-link" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+    <span class="bn" style="font-size:.7rem;color:rgba(255,255,255,.7);margin-right:6px">ফলো করুন:</span>
+    <a href="https://facebook.com/bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
+    <a href="https://instagram.com/bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-instagram"></i></a>
+    <a href="https://tiktok.com/@bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-tiktok"></i></a>
+    <a href="#" class="slink"><i class="fa-brands fa-youtube"></i></a>
+    <a href="#" class="slink"><i class="fa-brands fa-whatsapp"></i></a>
   </div>
 </div>
 
 <!-- HEADER -->
 <header id="mainHeader">
   <div class="header-top">
-    <a class="logo" href="#">
-      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
-      <div class="logo-text">গ্যালাক্সি মার্ট BD<small>আপনার বিশ্বস্ত অনলাইন শপ</small></div>
-    </a>
-    <div class="search-wrap">
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="পণ্য খুঁজুন... (বই, ইলেকট্রনিক্স, ফ্যাশন...)" id="searchInput" oninput="filterProducts()">
-        <button class="search-btn">খুঁজুন</button>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button class="hbtn" onclick="openTrack()">
-        <i class="fa-solid fa-location-dot"></i>
-        <span class="bn">ট্র্যাক</span>
-      </button>
-      <button class="hbtn" onclick="openAdmin()">
-        <i class="fa-solid fa-chart-line"></i>
-        <span class="bn">অ্যাডমিন</span>
-      </button>
-      <button class="hbtn" onclick="openCart()">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span class="bn">কার্ট</span>
-        <span class="badge" id="cartBadge">0</span>
-      </button>
-      <button class="hbtn">
-        <i class="fa-regular fa-user"></i>
-        <span class="bn">অ্যাকাউন্ট</span>
-      </button>
+    <a class="logo" href="#"><div class="logo-icon"><i class="fa-solid fa-store"></i></div><div class="logo-text">গ্যালাক্সি মার্ট BD<small>আপনার বিশ্বস্ত অনলাইন শপ</small></div></a>
+    <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchInput" placeholder="পণ্য খুঁজুন..." oninput="filterProducts()"><button class="search-btn bn">খুঁজুন</button></div>
+    <div class="hactions">
+      <button class="hbtn" onclick="openTrack()"><i class="fa-solid fa-location-dot"></i><span>ট্র্যাক</span></button>
+      <button class="hbtn" id="adminBtn" onclick="openAdmin()" style="display:none"><i class="fa-solid fa-chart-line"></i><span>অ্যাডমিন</span></button>
+      <button class="hbtn" onclick="openCart()"><i class="fa-solid fa-cart-shopping"></i><span>কার্ট</span><span class="hbadge" id="cartBadge">0</span></button>
+      <button class="auth-btn" id="authBtn" onclick="openAuth()"><i class="fa-brands fa-google" style="color:#EA4335"></i><span class="bn" id="authBtnText">লগইন</span></button>
     </div>
   </div>
-  <!-- NAV -->
   <div class="nav-cats">
     <button class="ncat active" onclick="filterCat('সব',this)"><i class="fa-solid fa-border-all"></i> সব পণ্য</button>
     <button class="ncat" onclick="filterCat('বই',this)"><i class="fa-solid fa-book"></i> বই</button>
@@ -495,12 +470,12 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:32px 24px}
 <!-- HERO -->
 <div class="hero">
   <div class="hero-left">
-    <div class="hero-badge"><span class="live-dot"></span><span class="bn">নতুন পণ্য এসেছে — মে ২০২৬</span></div>
+    <div class="hero-badge"><span class="ldot"></span><span class="bn">নতুন পণ্য এসেছে — মে ২০২৬</span></div>
     <h1>সেরা পণ্য, <em>সেরা দামে</em><br>এখনই কিনুন</h1>
     <p>বই থেকে ইলেকট্রনিক্স, ফ্যাশন থেকে হোম ডেকোর — সব কিছু এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
     <div class="hero-btns">
-      <button class="btn-primary"><i class="fa-solid fa-bag-shopping"></i> <span class="bn">এখনই কিনুন</span></button>
-      <button class="btn-outline" onclick="openTrack()"><i class="fa-solid fa-location-dot"></i> <span class="bn">অর্ডার ট্র্যাক করুন</span></button>
+      <button class="btn-primary bn"><i class="fa-solid fa-bag-shopping"></i> এখনই কিনুন</button>
+      <button class="btn-outline bn" onclick="openTrack()"><i class="fa-solid fa-location-dot"></i> অর্ডার ট্র্যাক</button>
     </div>
     <div class="hero-stats">
       <div class="hstat"><div class="num">৫০০+</div><div class="lbl bn">পণ্য</div></div>
@@ -509,258 +484,208 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:32px 24px}
       <div class="hstat"><div class="num">COD</div><div class="lbl bn">পেমেন্ট</div></div>
     </div>
   </div>
-  <div class="hero-cards">
-    <div class="hero-card">
-      <div class="icon" style="background:linear-gradient(135deg,#007AFF,#0055CC)"><i class="fa-solid fa-book"></i></div>
-      <div class="lbl bn">বই</div>
-    </div>
-    <div class="hero-card">
-      <div class="icon" style="background:linear-gradient(135deg,#F97316,#EA580C)"><i class="fa-solid fa-mobile-screen"></i></div>
-      <div class="lbl bn">ইলেকট্রনিক্স</div>
-    </div>
-    <div class="hero-card">
-      <div class="icon" style="background:linear-gradient(135deg,#EC4899,#BE185D)"><i class="fa-solid fa-shirt"></i></div>
-      <div class="lbl bn">ফ্যাশন</div>
-    </div>
-    <div class="hero-card">
-      <div class="icon" style="background:linear-gradient(135deg,#10B981,#059669)"><i class="fa-solid fa-house"></i></div>
-      <div class="lbl bn">হোম</div>
-    </div>
-  </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="filter-head">
-      <h3><i class="fa-solid fa-sliders" style="color:var(--blue);margin-right:6px;font-size:0.85rem"></i> ফিল্টার</h3>
-      <button class="clear-all bn" onclick="clearFilters()">সব মুছুন</button>
-    </div>
-
+    <div class="fhead"><h3 class="bn"><i class="fa-solid fa-sliders" style="color:var(--blue);margin-right:5px;font-size:.82rem"></i>ফিল্টার</h3><button class="clear-btn bn" onclick="clearFilters()">সব মুছুন</button></div>
     <div class="fsec">
       <div class="fsec-title bn">ক্যাটাগরি</div>
-      <button class="fchip active" onclick="filterCatSide('সব',this)"><i class="fa-solid fa-border-all"></i><span class="bn">সব পণ্য</span><span class="cnt">৫০০+</span></button>
-      <button class="fchip" onclick="filterCatSide('বই',this)"><i class="fa-solid fa-book"></i><span class="bn">বই</span><span class="cnt">১২০</span></button>
-      <button class="fchip" onclick="filterCatSide('ইলেকট্রনিক্স',this)"><i class="fa-solid fa-mobile-screen"></i><span class="bn">ইলেকট্রনিক্স</span><span class="cnt">৮৫</span></button>
-      <button class="fchip" onclick="filterCatSide('ফ্যাশন',this)"><i class="fa-solid fa-shirt"></i><span class="bn">ফ্যাশন</span><span class="cnt">১৫০</span></button>
-      <button class="fchip" onclick="filterCatSide('হোম',this)"><i class="fa-solid fa-house"></i><span class="bn">হোম & কিচেন</span><span class="cnt">৭০</span></button>
-      <button class="fchip" onclick="filterCatSide('বিউটি',this)"><i class="fa-solid fa-spa"></i><span class="bn">বিউটি</span><span class="cnt">৬০</span></button>
-      <button class="fchip" onclick="filterCatSide('স্টেশনারি',this)"><i class="fa-solid fa-pen-ruler"></i><span class="bn">স্টেশনারি</span><span class="cnt">৪৫</span></button>
-      <button class="fchip" onclick="filterCatSide('শিশু',this)"><i class="fa-solid fa-child"></i><span class="bn">শিশু পণ্য</span><span class="cnt">৩৮</span></button>
-      <button class="fchip" onclick="filterCatSide('স্পোর্টস',this)"><i class="fa-solid fa-dumbbell"></i><span class="bn">স্পোর্টস</span><span class="cnt">৩২</span></button>
+      <button class="fchip active" onclick="filterCatSide('সব',this)"><i class="fa-solid fa-border-all"></i><span class="bn">সব পণ্য</span><span class="cnt" id="cnt-all">—</span></button>
+      <button class="fchip" onclick="filterCatSide('বই',this)"><i class="fa-solid fa-book"></i><span class="bn">বই</span><span class="cnt" id="cnt-book">—</span></button>
+      <button class="fchip" onclick="filterCatSide('ইলেকট্রনিক্স',this)"><i class="fa-solid fa-mobile-screen"></i><span class="bn">ইলেকট্রনিক্স</span><span class="cnt" id="cnt-elec">—</span></button>
+      <button class="fchip" onclick="filterCatSide('ফ্যাশন',this)"><i class="fa-solid fa-shirt"></i><span class="bn">ফ্যাশন</span><span class="cnt" id="cnt-fashion">—</span></button>
+      <button class="fchip" onclick="filterCatSide('হোম',this)"><i class="fa-solid fa-house"></i><span class="bn">হোম</span><span class="cnt" id="cnt-home">—</span></button>
+      <button class="fchip" onclick="filterCatSide('বিউটি',this)"><i class="fa-solid fa-spa"></i><span class="bn">বিউটি</span><span class="cnt" id="cnt-beauty">—</span></button>
+      <button class="fchip" onclick="filterCatSide('স্টেশনারি',this)"><i class="fa-solid fa-pen-ruler"></i><span class="bn">স্টেশনারি</span><span class="cnt" id="cnt-stat">—</span></button>
+      <button class="fchip" onclick="filterCatSide('শিশু',this)"><i class="fa-solid fa-child"></i><span class="bn">শিশু</span><span class="cnt" id="cnt-kids">—</span></button>
+      <button class="fchip" onclick="filterCatSide('স্পোর্টস',this)"><i class="fa-solid fa-dumbbell"></i><span class="bn">স্পোর্টস</span><span class="cnt" id="cnt-sports">—</span></button>
     </div>
-
     <div class="fsec">
-      <div class="fsec-title bn">মূল্য পরিসীমা</div>
+      <div class="fsec-title bn">মূল্য পরিসীমা (৳)</div>
       <div class="price-inputs">
         <input class="price-inp" type="number" placeholder="সর্বনিম্ন" id="priceMin" oninput="filterProducts()">
         <input class="price-inp" type="number" placeholder="সর্বোচ্চ" id="priceMax" oninput="filterProducts()">
       </div>
-      <input type="range" class="range-slider" min="0" max="5000" value="5000" id="priceSlider" oninput="updateSlider(this.value)">
-      <div style="font-size:0.72rem;color:var(--blue);font-weight:600;text-align:center;margin-top:6px" id="sliderLabel" class="bn">সর্বোচ্চ ৳৫,০০০</div>
+      <input type="range" class="rslider" min="0" max="50000" value="50000" id="priceSlider" oninput="updateSlider(this.value)">
+      <div style="font-size:.7rem;color:var(--blue);font-weight:600;text-align:center;margin-top:5px" id="sliderLbl" class="bn">সর্বোচ্চ ৳৫০,০০০</div>
     </div>
-
     <div class="fsec">
       <div class="fsec-title bn">রেটিং</div>
-      <div class="star-filter active" onclick="filterRating(5,this)"><span class="stars-gold">★★★★★</span><span class="bn" style="font-size:0.78rem;margin-left:4px">৫ তারা</span></div>
-      <div class="star-filter" onclick="filterRating(4,this)"><span class="stars-gold">★★★★☆</span><span class="bn" style="font-size:0.78rem;margin-left:4px">৪+ তারা</span></div>
-      <div class="star-filter" onclick="filterRating(3,this)"><span class="stars-gold">★★★☆☆</span><span class="bn" style="font-size:0.78rem;margin-left:4px">৩+ তারা</span></div>
+      <div class="star-row" onclick="filterRating(0,this)"><span class="gold-stars">★★★★★</span><span class="bn" style="font-size:.76rem;margin-left:4px">সব</span></div>
+      <div class="star-row active" onclick="filterRating(4,this)"><span class="gold-stars">★★★★☆</span><span class="bn" style="font-size:.76rem;margin-left:4px">৪+ তারা</span></div>
+      <div class="star-row" onclick="filterRating(3,this)"><span class="gold-stars">★★★☆☆</span><span class="bn" style="font-size:.76rem;margin-left:4px">৩+ তারা</span></div>
     </div>
-
     <div class="fsec">
       <div class="fsec-title bn">স্টক</div>
-      <div class="toggle-row" onclick="this.querySelector('.sw').classList.toggle('on');filterProducts()">
-        <span class="bn">স্টকে আছে</span>
-        <div class="sw on"></div>
-      </div>
-      <div class="toggle-row" onclick="this.querySelector('.sw').classList.toggle('on')">
-        <span class="bn">অফারে আছে</span>
-        <div class="sw"></div>
-      </div>
+      <div class="trow" onclick="this.querySelector('.sw').classList.toggle('on');filterProducts()"><span class="bn">স্টকে আছে</span><div class="sw on"></div></div>
+      <div class="trow" onclick="this.querySelector('.sw').classList.toggle('on')"><span class="bn">অফারে আছে</span><div class="sw"></div></div>
     </div>
   </aside>
 
-  <!-- PRODUCTS -->
+  <!-- PRODUCT AREA -->
   <div class="product-area">
-    <!-- FEATURED -->
-    <div class="feat-banner">
-      <div class="feat-text" style="position:relative;z-index:1">
+    <div class="feat">
+      <div style="position:relative;z-index:1">
         <div class="feat-tag bn">ঈদ স্পেশাল অফার</div>
-        <h3>৩০% পর্যন্ত ছাড়!</h3>
+        <h3 class="bn">৩০% পর্যন্ত ছাড়!</h3>
         <p class="bn">সীমিত সময়ের জন্য — সব ক্যাটাগরিতে বিশেষ ছাড়</p>
         <button class="feat-btn bn"><i class="fa-solid fa-tag"></i> অফার দেখুন</button>
       </div>
       <div class="feat-icons">
-        <div class="feat-icon-box"><i class="fa-solid fa-book" style="color:white"></i></div>
-        <div class="feat-icon-box"><i class="fa-solid fa-mobile-screen" style="color:white"></i></div>
-        <div class="feat-icon-box"><i class="fa-solid fa-shirt" style="color:white"></i></div>
+        <div class="fibox"><i class="fa-solid fa-book" style="color:white"></i></div>
+        <div class="fibox"><i class="fa-solid fa-mobile-screen" style="color:white"></i></div>
+        <div class="fibox"><i class="fa-solid fa-shirt" style="color:white"></i></div>
       </div>
     </div>
-
     <div class="parea-header">
-      <h2 class="bn">সব পণ্য <span id="productCount"></span></h2>
-      <div class="sort-row">
-        <select class="sort-sel bn" onchange="sortProducts(this.value)">
-          <option value="popular">সবচেয়ে জনপ্রিয়</option>
-          <option value="low">দাম: কম থেকে বেশি</option>
-          <option value="high">দাম: বেশি থেকে কম</option>
-          <option value="newest">নতুন আগে</option>
-          <option value="rating">সেরা রেটিং</option>
-          <option value="discount">সর্বোচ্চ ছাড়</option>
+      <h2 class="bn">পণ্য তালিকা <span id="productCount"></span></h2>
+      <select class="sort-sel bn" onchange="sortProducts(this.value)">
+        <option value="popular">সবচেয়ে জনপ্রিয়</option>
+        <option value="low">দাম: কম থেকে বেশি</option>
+        <option value="high">দাম: বেশি থেকে কম</option>
+        <option value="discount">সর্বোচ্চ ছাড়</option>
+        <option value="rating">সেরা রেটিং</option>
+      </select>
+    </div>
+    <div class="pgrid" id="productGrid"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>পণ্য লোড হচ্ছে...</p></div></div>
+    <div class="pgn" id="pagination"></div>
+  </div>
+</div>
+
+<!-- ── PRODUCT MODAL ── -->
+<div class="overlay" id="productModal" onclick="if(event.target===this)closeModal('productModal')">
+  <div class="modal-box" style="width:90vw;max-width:660px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-hd"><h3 class="bn" id="modalTitle">পণ্যের বিবরণ</h3><button class="close-btn" onclick="closeModal('productModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body" style="overflow:hidden;flex:1">
+      <div class="modal-img" id="modalImgArea" style="width:240px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:28px"><div id="modalIcon" style="width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;box-shadow:0 8px 32px rgba(0,0,0,.12)"></div></div>
+      <div class="modal-info" style="flex:1;padding:22px;overflow-y:auto">
+        <div class="modal-cat bn" id="modalCat"></div>
+        <div class="modal-name bn" id="modalName"></div>
+        <div class="modal-brand" id="modalBrand"></div>
+        <div class="modal-rating-row"><span class="modal-stars" id="modalStars"></span><span id="modalRatingTxt" style="font-size:.8rem;color:var(--text-mid)"></span></div>
+        <div class="modal-price-block"><div class="modal-old" id="modalOld"></div><div><span class="modal-new bn" id="modalNew"></span><span class="modal-disc" id="modalDisc"></span></div></div>
+        <div class="stock-row bn"><i class="fa-solid fa-circle-check"></i><span id="stockTxt">স্টকে আছে</span></div>
+        <div class="modal-desc bn" id="modalDesc"></div>
+        <div class="qty-row"><span class="qty-lbl bn">পরিমাণ:</span><div class="qty-ctrl"><button class="qbtn" onclick="changeQty(-1)">−</button><span id="modalQty" style="font-weight:700;min-width:22px;text-align:center">1</span><button class="qbtn" onclick="changeQty(1)">+</button></div></div>
+        <div class="modal-btns">
+          <button class="btn-primary" onclick="addToCartModal()"><i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ</span></button>
+          <button class="btn-buy-lg" onclick="buyNowModal()"><i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CART OVERLAY ── -->
+<div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()" style="justify-content:flex-end;align-items:stretch">
+  <div class="cart-panel">
+    <div class="cart-hd"><h3 class="bn"><i class="fa-solid fa-cart-shopping" style="color:var(--blue);margin-right:7px"></i>আমার কার্ট</h3><button class="close-btn" onclick="closeCart()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-foot">
+      <div class="promo-row"><input class="promo-inp bn" type="text" placeholder="কুপন কোড..." id="couponInput"><button class="promo-btn bn" onclick="applyCoupon()">প্রয়োগ</button></div>
+      <div class="cod-note bn"><i class="fa-solid fa-truck-fast" style="color:var(--blue)"></i>ক্যাশ অন ডেলিভারি · ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি</div>
+      <div class="cart-total-row"><span class="lbl bn">মোট মূল্য</span><span class="amt bn" id="cartTotal">৳ ০</span></div>
+      <button class="checkout-btn bn" onclick="openCheckout()"><i class="fa-solid fa-bolt"></i>এক্সপ্রেস চেকআউট</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHECKOUT MODAL ── -->
+<div class="overlay" id="checkoutModal" onclick="if(event.target===this)closeModal('checkoutModal')">
+  <div class="modal-box" style="width:90vw;max-width:500px;max-height:92vh;overflow-y:auto">
+    <div class="modal-hd"><h3 class="bn"><i class="fa-solid fa-bolt" style="color:var(--orange);margin-right:7px"></i>চেকআউট</h3><button class="close-btn" onclick="closeModal('checkoutModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div style="padding:20px">
+      <div class="form-group"><label class="bn">আপনার নাম *</label><input class="form-inp bn" type="text" id="cName" placeholder="সম্পূর্ণ নাম"></div>
+      <div class="form-group"><label class="bn">মোবাইল নম্বর *</label><input class="form-inp" type="tel" id="cPhone" placeholder="01XXXXXXXXX"></div>
+      <div class="form-group"><label class="bn">ইমেইল</label><input class="form-inp" type="email" id="cEmail" placeholder="email@example.com"></div>
+      <div class="form-group">
+        <label class="bn">জেলা *</label>
+        <select class="form-sel bn" id="cDistrict">
+          <option value="">জেলা বেছে নিন</option>
+          <option>ঢাকা</option><option>চট্টগ্রাম</option><option>রাজশাহী</option><option>সিলেট</option><option>খুলনা</option><option>বরিশাল</option><option>ময়মনসিংহ</option><option>রংপুর</option><option>নরসিংদী</option><option>গাজীপুর</option><option>নারায়ণগঞ্জ</option>
         </select>
       </div>
-    </div>
-
-    <div class="pgrid" id="productGrid"></div>
-    <div class="pagination" id="pagination"></div>
-  </div>
-</div>
-
-<!-- PRODUCT MODAL -->
-<div class="modal-overlay" id="productModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3 class="bn" id="modalTitle">পণ্যের বিবরণ</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-img" id="modalImg">
-        <div class="big-icon" id="modalIcon"></div>
-      </div>
-      <div class="modal-info">
-        <div class="modal-cat bn" id="modalCat"></div>
-        <div class="modal-name" id="modalName"></div>
-        <div class="modal-brand" id="modalBrand"></div>
-        <div class="modal-rating">
-          <span class="modal-stars" id="modalStars"></span>
-          <span id="modalRatingText"></span>
-        </div>
-        <div class="modal-price">
-          <div class="old" id="modalOld"></div>
-          <div><span class="new" id="modalNew"></span><span class="disc" id="modalDisc"></span></div>
-        </div>
-        <div class="modal-stock bn"><i class="fa-solid fa-circle-check"></i> স্টকে আছে</div>
-        <div class="modal-desc bn" id="modalDesc"></div>
-        <div class="qty-row">
-          <span class="qty-label bn">পরিমাণ:</span>
-          <div class="qty-ctrl">
-            <button class="qbtn" onclick="changeQty(-1)">−</button>
-            <span class="qval" id="modalQty">1</span>
-            <button class="qbtn" onclick="changeQty(1)">+</button>
-          </div>
-        </div>
-        <div class="modal-btns">
-          <button class="btn-primary" onclick="addToCartModal()"><i class="fa-solid fa-cart-plus"></i> <span class="bn">কার্টে যোগ করুন</span></button>
-          <button class="btn-buy-lg" onclick="buyNowModal()"><i class="fa-solid fa-bolt"></i> <span class="bn">এখনই কিনুন</span></button>
+      <div class="form-group"><label class="bn">পূর্ণ ঠিকানা *</label><textarea class="form-inp bn" id="cAddress" rows="3" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা..." style="resize:vertical;min-height:70px"></textarea></div>
+      <div style="background:var(--blue-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px">
+        <div class="bn" style="font-size:.72rem;font-weight:700;color:var(--text-mid);margin-bottom:6px">অর্ডার সারসংক্ষেপ</div>
+        <div id="checkoutSummary"></div>
+        <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center">
+          <span class="bn" style="font-size:.8rem;font-weight:700">মোট</span>
+          <span class="bn" style="font-size:1rem;font-weight:700;color:var(--blue)" id="checkoutTotal"></span>
         </div>
       </div>
+      <div class="cod-note bn"><i class="fa-solid fa-money-bill-wave" style="color:var(--green)"></i>পেমেন্ট: ক্যাশ অন ডেলিভারি (COD)</div>
+      <button class="btn-primary bn" style="width:100%;justify-content:center;margin-top:12px;padding:13px" onclick="placeOrder()" id="placeOrderBtn"><i class="fa-solid fa-check"></i>অর্ডার নিশ্চিত করুন</button>
     </div>
   </div>
 </div>
 
-<!-- CART PANEL -->
-<div class="cart-overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()">
-  <div class="cart-panel">
-    <div class="cart-head">
-      <h3 class="bn"><i class="fa-solid fa-cart-shopping" style="color:var(--blue);margin-right:8px"></i> আমার কার্ট</h3>
-      <button class="modal-close" onclick="closeCart()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="cart-items-list" id="cartItemsList"></div>
-    <div class="cart-foot">
-      <div class="cart-promo">
-        <input class="promo-inp bn" type="text" placeholder="কুপন কোড লিখুন...">
-        <button class="promo-btn bn">প্রয়োগ করুন</button>
-      </div>
-      <div class="cart-cod bn"><i class="fa-solid fa-truck-fast" style="color:var(--blue)"></i> ক্যাশ অন ডেলিভারি · ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি</div>
-      <div class="cart-total-row">
-        <span class="lbl bn">মোট মূল্য</span>
-        <span class="amt" id="cartTotal">৳ ০</span>
-      </div>
-      <button class="checkout-btn bn"><i class="fa-solid fa-bolt"></i> এক্সপ্রেস চেকআউট</button>
-    </div>
-  </div>
-</div>
-
-<!-- TRACK MODAL -->
-<div class="track-modal" id="trackModal" onclick="if(event.target===this)closeTrack()">
-  <div class="track-box">
-    <div class="track-hd">
-      <div>
-        <h3 class="bn"><i class="fa-solid fa-location-dot" style="margin-right:7px"></i>অর্ডার ট্র্যাক করুন</h3>
-        <p class="bn">রিয়েল-টাইম ডেলিভারি আপডেট</p>
-      </div>
-      <button class="modal-close" style="border-color:rgba(255,255,255,0.3);color:white" onclick="closeTrack()"><i class="fa-solid fa-xmark"></i></button>
+<!-- ── TRACK MODAL ── -->
+<div class="overlay" id="trackModal" onclick="if(event.target===this)closeModal('trackModal')">
+  <div class="modal-box" style="width:90vw;max-width:500px">
+    <div class="track-hd-bar">
+      <div><h3><i class="fa-solid fa-location-dot" style="margin-right:7px"></i>অর্ডার ট্র্যাক</h3><p class="bn">রিয়েল-টাইম ডেলিভারি আপডেট</p></div>
+      <button class="close-btn" style="border-color:rgba(255,255,255,.3);color:white" onclick="closeModal('trackModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="track-body">
       <div class="track-inp-row">
-        <input class="track-inp bn" type="text" placeholder="অর্ডার আইডি লিখুন (যেমন: GM-2026-04812)" value="GM-2026-04812">
-        <button class="track-go bn">ট্র্যাক করুন</button>
+        <input class="track-inp bn" type="text" id="trackInput" placeholder="অর্ডার নম্বর লিখুন (যেমন: GM-2026-04812)">
+        <button class="track-go bn" onclick="trackOrder()">ট্র্যাক</button>
       </div>
-      <div class="order-info">
-        <div class="oid">অর্ডার #GM-2026-04812</div>
-        <div class="oname bn">Atomic Habits + আরও ২টি পণ্য</div>
-        <div class="oeta bn">আনুমানিক ডেলিভারি: <strong>আজ, সন্ধ্যা ৫–৭টা</strong></div>
-      </div>
-      <div class="timeline">
-        <div class="titem done">
-          <div class="tdot"></div>
-          <div class="ttitle bn">অর্ডার নিশ্চিত হয়েছে</div>
-          <div class="tdesc bn">আপনার অর্ডার সফলভাবে গ্রহণ করা হয়েছে</div>
-          <div class="ttime">৭ মে, ২০২৬ · সকাল ১০:২৪</div>
-        </div>
-        <div class="titem done">
-          <div class="tdot"></div>
-          <div class="ttitle bn">প্রসেসিং</div>
-          <div class="tdesc bn">পণ্য প্যাক করে ডেলিভারির জন্য প্রস্তুত</div>
-          <div class="ttime">৭ মে, ২০২৬ · সকাল ১১:১৫</div>
-        </div>
-        <div class="titem active">
-          <div class="tdot"></div>
-          <div class="ttitle bn">ডেলিভারিতে আছে <i class="fa-solid fa-motorcycle" style="font-size:0.7rem"></i></div>
-          <div class="tdesc bn">আমাদের রাইডার আপনার দিকে আসছেন</div>
-          <div class="ttime">৭ মে, ২০২৬ · দুপুর ২:৪৮ — চলমান</div>
-        </div>
-        <div class="titem">
-          <div class="tdot"></div>
-          <div class="ttitle bn">ডেলিভারি সম্পন্ন</div>
-          <div class="tdesc bn">পণ্য আপনার দরজায় পৌঁছে দেওয়া হবে</div>
-          <div class="ttime bn">আনুমানিক: আজ সন্ধ্যা ৫–৭টা</div>
-        </div>
-      </div>
+      <div id="trackResult"></div>
     </div>
   </div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
-<div class="admin-overlay" id="adminOverlay" onclick="if(event.target===this)closeAdmin()">
+<!-- ── AUTH MODAL ── -->
+<div class="overlay" id="authModal" onclick="if(event.target===this)closeModal('authModal')">
+  <div class="modal-box" style="width:90vw;max-width:400px">
+    <div class="modal-hd"><h3 class="bn">অ্যাকাউন্টে প্রবেশ করুন</h3><button class="close-btn" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="auth-body">
+      <p class="bn" style="font-size:.82rem;color:var(--text-mid);margin-bottom:18px;line-height:1.6">লগইন করলে আপনার অর্ডার ট্র্যাক করা সহজ হবে এবং অর্ডার হিস্টোরি সংরক্ষিত থাকবে।</p>
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+        <span class="bn">Google দিয়ে লগইন করুন</span>
+      </button>
+      <div class="auth-divider"><span>অথবা</span></div>
+      <div class="form-group"><label class="bn">ইমেইল দিয়ে লগইন</label><input class="form-inp" type="email" id="emailInput" placeholder="your@email.com"></div>
+      <div class="form-group"><label class="bn">পাসওয়ার্ড</label><input class="form-inp" type="password" id="passwordInput" placeholder="••••••••"></div>
+      <button class="btn-primary bn" style="width:100%;justify-content:center;margin-bottom:8px" onclick="signInWithEmail()"><i class="fa-solid fa-envelope"></i>ইমেইল দিয়ে লগইন</button>
+      <button class="btn-outline bn" style="width:100%;justify-content:center" onclick="signUpWithEmail()"><i class="fa-solid fa-user-plus"></i>নতুন অ্যাকাউন্ট তৈরি</button>
+      <p class="auth-note bn">লগইন করে আপনি আমাদের <a href="#" style="color:var(--blue)">শর্তাবলী</a> মেনে নিচ্ছেন।</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL ── -->
+<div class="overlay" id="adminOverlay" onclick="if(event.target===this)closeAdmin()">
   <div class="admin-panel">
     <div class="admin-sidebar">
-      <div class="admin-logo"><i class="fa-solid fa-store"></i> <span class="bn">অ্যাডমিন</span></div>
-      <button class="amenu-item active bn" onclick="showSection('dashboard',this)"><i class="fa-solid fa-chart-pie"></i> ড্যাশবোর্ড</button>
-      <button class="amenu-item bn" onclick="showSection('products',this)"><i class="fa-solid fa-box"></i> পণ্য ব্যবস্থাপনা</button>
-      <button class="amenu-item bn" onclick="showSection('orders',this)"><i class="fa-solid fa-clipboard-list"></i> অর্ডার</button>
-      <button class="amenu-item bn" onclick="showSection('customers',this)"><i class="fa-solid fa-users"></i> কাস্টমার</button>
-      <button class="amenu-item bn" onclick="showSection('inventory',this)"><i class="fa-solid fa-warehouse"></i> ইনভেন্টরি</button>
-      <button class="amenu-item bn" onclick="showSection('discounts',this)"><i class="fa-solid fa-tag"></i> ডিসকাউন্ট</button>
+      <div class="admin-logo"><i class="fa-solid fa-store"></i><span class="bn">অ্যাডমিন</span></div>
+      <button class="amenu active bn" onclick="showSec('dashboard',this)"><i class="fa-solid fa-chart-pie"></i>ড্যাশবোর্ড</button>
+      <button class="amenu bn" onclick="showSec('products',this)"><i class="fa-solid fa-box"></i>পণ্য</button>
+      <button class="amenu bn" onclick="showSec('orders',this)"><i class="fa-solid fa-clipboard-list"></i>অর্ডার</button>
+      <button class="amenu bn" onclick="showSec('customers',this)"><i class="fa-solid fa-users"></i>কাস্টমার</button>
+      <button class="amenu bn" onclick="showSec('inventory',this)"><i class="fa-solid fa-warehouse"></i>ইনভেন্টরি</button>
+      <button class="amenu bn" onclick="showSec('discounts',this)"><i class="fa-solid fa-tag"></i>ডিসকাউন্ট</button>
     </div>
     <div class="admin-content">
-      <div class="admin-topbar">
-        <h2 class="bn" id="adminTitle">ড্যাশবোর্ড ওভারভিউ</h2>
-        <button class="admin-close" onclick="closeAdmin()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
+      <div class="admin-topbar"><h2 class="bn" id="adminTitle">ড্যাশবোর্ড</h2><button class="close-btn" onclick="closeAdmin()"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="admin-main">
 
         <!-- DASHBOARD -->
-        <div class="admin-section visible" id="sec-dashboard">
-          <div class="kpi-row">
-            <div class="kpi"><div class="kpi-lbl bn">মোট আয়</div><div class="kpi-val">৳৮.৪ লাখ</div><div class="kpi-ch up"><i class="fa-solid fa-arrow-up"></i> ২৩.৫% এই মাসে</div></div>
-            <div class="kpi"><div class="kpi-lbl bn">আজকের অর্ডার</div><div class="kpi-val">১৪২</div><div class="kpi-ch up"><i class="fa-solid fa-arrow-up"></i> গতকালের চেয়ে ১৮ বেশি</div></div>
-            <div class="kpi"><div class="kpi-lbl bn">মোট পণ্য</div><div class="kpi-val">৫০০+</div><div class="kpi-ch dn"><i class="fa-solid fa-arrow-down"></i> ৬০টি লো স্টক</div></div>
-            <div class="kpi"><div class="kpi-lbl bn">সক্রিয় কাস্টমার</div><div class="kpi-val">২০হা+</div><div class="kpi-ch up"><i class="fa-solid fa-arrow-up"></i> ৮.২% এই সপ্তাহে</div></div>
+        <div class="asec visible" id="sec-dashboard">
+          <div class="kpi-row" id="kpiRow">
+            <div class="kpi"><div class="kpi-lbl bn">মোট আয়</div><div class="kpi-val" id="kpi-revenue">লোড...</div><div class="kpi-ch up bn" id="kpi-revenue-sub"></div></div>
+            <div class="kpi"><div class="kpi-lbl bn">মোট অর্ডার</div><div class="kpi-val" id="kpi-orders">লোড...</div><div class="kpi-ch bn" id="kpi-orders-sub"></div></div>
+            <div class="kpi"><div class="kpi-lbl bn">মোট পণ্য</div><div class="kpi-val" id="kpi-products">লোড...</div><div class="kpi-ch dn bn" id="kpi-products-sub"></div></div>
+            <div class="kpi"><div class="kpi-lbl bn">কাস্টমার</div><div class="kpi-val" id="kpi-customers">লোড...</div><div class="kpi-ch up bn" id="kpi-customers-sub"></div></div>
           </div>
-          <div class="chart-area">
-            <div class="chart-title"><span class="bn">সাপ্তাহিক বিক্রয় (৳ হাজারে)</span><span style="font-size:0.72rem;color:var(--blue);cursor:pointer" class="bn">বিস্তারিত →</span></div>
+          <div class="chart-card">
+            <div class="chart-title bn"><span>সাপ্তাহিক বিক্রয়</span></div>
             <div class="chart-bars">
               <div class="cbar-wrap"><div class="cbar" style="height:55%"></div><div class="cbar-lbl bn">সোম</div></div>
               <div class="cbar-wrap"><div class="cbar" style="height:72%"></div><div class="cbar-lbl bn">মঙ্গল</div></div>
@@ -771,111 +696,55 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:32px 24px}
               <div class="cbar-wrap"><div class="cbar" style="height:78%"></div><div class="cbar-lbl bn">রবি</div></div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div class="chart-area" style="margin-bottom:0">
-              <div class="chart-title bn">সেরা বিক্রিত পণ্য</div>
-              <div style="display:flex;flex-direction:column;gap:10px">
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:var(--blue);display:inline-block"></span><span class="bn" style="flex:1;font-size:0.78rem">Atomic Habits</span><div style="flex:2;height:6px;background:var(--blue-mid);border-radius:3px;overflow:hidden"><div style="height:100%;width:82%;background:var(--blue)"></div></div><span style="font-size:0.72rem;color:var(--blue);font-weight:700;min-width:30px;text-align:right">৮২%</span></div>
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:var(--green);display:inline-block"></span><span class="bn" style="flex:1;font-size:0.78rem">Samsung A55</span><div style="flex:2;height:6px;background:#D1FAE5;border-radius:3px;overflow:hidden"><div style="height:100%;width:74%;background:var(--green)"></div></div><span style="font-size:0.72rem;color:var(--green);font-weight:700;min-width:30px;text-align:right">৭৪%</span></div>
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:var(--orange);display:inline-block"></span><span class="bn" style="flex:1;font-size:0.78rem">পাঞ্জাবি (ঈদ সেট)</span><div style="flex:2;height:6px;background:#FFEDD5;border-radius:3px;overflow:hidden"><div style="height:100%;width:68%;background:var(--orange)"></div></div><span style="font-size:0.72rem;color:var(--orange);font-weight:700;min-width:30px;text-align:right">৬৮%</span></div>
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:#8B5CF6;display:inline-block"></span><span class="bn" style="flex:1;font-size:0.78rem">নন-স্টিক কুকওয়্যার</span><div style="flex:2;height:6px;background:#EDE9FE;border-radius:3px;overflow:hidden"><div style="height:100%;width:55%;background:#8B5CF6"></div></div><span style="font-size:0.72rem;color:#8B5CF6;font-weight:700;min-width:30px;text-align:right">৫৫%</span></div>
-              </div>
-            </div>
-            <div class="chart-area" style="margin-bottom:0">
-              <div class="chart-title bn">ডেলিভারি জোন</div>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--blue-light);border-radius:var(--radius-sm)"><span class="bn" style="font-size:0.78rem;font-weight:600"><i class="fa-solid fa-city" style="color:var(--blue);margin-right:6px;font-size:0.7rem"></i>ঢাকা সিটি</span><span style="font-size:0.72rem;color:var(--blue);font-weight:700" class="bn">একই দিনে</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#D1FAE5;border-radius:var(--radius-sm)"><span class="bn" style="font-size:0.78rem;font-weight:600"><i class="fa-solid fa-map-location-dot" style="color:var(--green);margin-right:6px;font-size:0.7rem"></i>নরসিংদী</span><span style="font-size:0.72rem;color:var(--green);font-weight:700" class="bn">১–২ দিন</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#FFEDD5;border-radius:var(--radius-sm)"><span class="bn" style="font-size:0.78rem;font-weight:600"><i class="fa-solid fa-anchor" style="color:var(--orange);margin-right:6px;font-size:0.7rem"></i>চট্টগ্রাম</span><span style="font-size:0.72rem;color:var(--orange);font-weight:700" class="bn">২–৩ দিন</span></div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--blue-light);border-radius:var(--radius-sm)"><span class="bn" style="font-size:0.78rem;font-weight:600"><i class="fa-solid fa-globe" style="color:var(--text-light);margin-right:6px;font-size:0.7rem"></i>সারা বাংলাদেশ</span><span style="font-size:0.72rem;color:var(--text-light);font-weight:700" class="bn">৩–৫ দিন</span></div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- PRODUCTS MANAGEMENT -->
-        <div class="admin-section" id="sec-products">
+        <!-- PRODUCTS -->
+        <div class="asec" id="sec-products">
           <div class="asec-head">
             <h3 class="bn">পণ্য তালিকা</h3>
-            <button class="abtn primary bn" onclick="toggleAddForm()"><i class="fa-solid fa-plus"></i> নতুন পণ্য যোগ করুন</button>
+            <button class="abtn primary bn" onclick="toggleAddForm()"><i class="fa-solid fa-plus"></i>নতুন পণ্য যোগ</button>
           </div>
-          <div class="add-form" id="addProductForm" style="display:none;margin-bottom:16px">
-            <h4 class="bn" style="margin-bottom:14px;font-size:0.85rem">নতুন পণ্য যোগ করুন</h4>
-            <div class="form-grid">
-              <div class="form-group"><label class="bn">পণ্যের নাম *</label><input class="form-inp bn" type="text" placeholder="পণ্যের নাম লিখুন" id="fpName"></div>
+          <div class="add-form" id="addForm" style="display:none">
+            <h4 class="bn" style="margin-bottom:13px;font-size:.82rem">নতুন পণ্য যোগ করুন</h4>
+            <div class="fgrid">
+              <div class="form-group"><label class="bn">পণ্যের নাম *</label><input class="form-inp bn" id="fpName" type="text" placeholder="পণ্যের নাম"></div>
               <div class="form-group"><label class="bn">ক্যাটাগরি *</label><select class="form-sel bn" id="fpCat"><option>বই</option><option>ইলেকট্রনিক্স</option><option>ফ্যাশন</option><option>হোম</option><option>বিউটি</option><option>স্টেশনারি</option><option>শিশু</option><option>স্পোর্টস</option></select></div>
-              <div class="form-group"><label class="bn">বিক্রয় মূল্য (৳) *</label><input class="form-inp" type="number" placeholder="৳ ০" id="fpPrice"></div>
-              <div class="form-group"><label class="bn">আসল মূল্য (৳)</label><input class="form-inp" type="number" placeholder="৳ ০" id="fpOld"></div>
-              <div class="form-group"><label class="bn">ব্র্যান্ড / লেখক</label><input class="form-inp bn" type="text" placeholder="ব্র্যান্ড বা লেখকের নাম" id="fpBrand"></div>
-              <div class="form-group"><label class="bn">স্টক পরিমাণ</label><input class="form-inp" type="number" placeholder="০" id="fpStock"></div>
+              <div class="form-group"><label class="bn">বিক্রয় মূল্য ৳ *</label><input class="form-inp" id="fpPrice" type="number" placeholder="০"></div>
+              <div class="form-group"><label class="bn">আসল মূল্য ৳</label><input class="form-inp" id="fpOld" type="number" placeholder="০"></div>
+              <div class="form-group"><label class="bn">ব্র্যান্ড / লেখক</label><input class="form-inp bn" id="fpBrand" type="text" placeholder="ব্র্যান্ড নাম"></div>
+              <div class="form-group"><label class="bn">স্টক পরিমাণ</label><input class="form-inp" id="fpStock" type="number" placeholder="০"></div>
             </div>
-            <div class="form-group" style="margin-bottom:14px"><label class="bn">পণ্যের বিবরণ</label><textarea class="form-textarea bn" placeholder="পণ্যের বিস্তারিত বিবরণ লিখুন..." id="fpDesc"></textarea></div>
-            <div style="display:flex;gap:10px">
-              <button class="abtn primary bn" onclick="addProduct()"><i class="fa-solid fa-check"></i> পণ্য যোগ করুন</button>
-              <button class="abtn outline bn" onclick="toggleAddForm()">বাতিল করুন</button>
+            <div class="form-group" style="margin-bottom:13px"><label class="bn">পণ্যের বিবরণ</label><textarea class="form-inp bn" id="fpDesc" rows="3" style="resize:vertical"></textarea></div>
+            <div style="display:flex;gap:8px">
+              <button class="abtn primary bn" onclick="addProduct()"><i class="fa-solid fa-check"></i>পণ্য যোগ করুন</button>
+              <button class="abtn outline bn" onclick="toggleAddForm()">বাতিল</button>
             </div>
           </div>
-          <div style="overflow-x:auto">
-            <table class="atable" id="adminProductTable">
-              <thead><tr><th class="bn">পণ্য</th><th class="bn">ক্যাটাগরি</th><th class="bn">মূল্য</th><th class="bn">স্টক</th><th class="bn">স্ট্যাটাস</th><th class="bn">অ্যাকশন</th></tr></thead>
-              <tbody id="adminProductBody"></tbody>
-            </table>
-          </div>
+          <div style="overflow-x:auto"><table class="atable"><thead><tr><th class="bn">পণ্য</th><th class="bn">ক্যাটাগরি</th><th class="bn">মূল্য</th><th class="bn">স্টক</th><th class="bn">স্ট্যাটাস</th><th class="bn">অ্যাকশন</th></tr></thead><tbody id="adminProductBody"></tbody></table></div>
         </div>
 
         <!-- ORDERS -->
-        <div class="admin-section" id="sec-orders">
-          <div class="asec-head">
-            <h3 class="bn">সাম্প্রতিক অর্ডারসমূহ</h3>
-            <button class="abtn outline bn"><i class="fa-solid fa-download"></i> এক্সপোর্ট</button>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="atable">
-              <thead><tr><th class="bn">অর্ডার আইডি</th><th class="bn">কাস্টমার</th><th class="bn">পণ্য</th><th class="bn">মোট</th><th class="bn">স্ট্যাটাস</th><th class="bn">তারিখ</th><th class="bn">অ্যাকশন</th></tr></thead>
-              <tbody>
-                <tr><td style="font-weight:700;color:var(--blue)">#GM-04821</td><td class="bn">রাহিম আহমেদ</td><td class="bn">Atomic Habits</td><td style="font-weight:700">৳৩৯০</td><td><span class="status-pill sp-delivered">ডেলিভারি হয়েছে</span></td><td class="bn">৭ মে</td><td><button class="aicon-btn"><i class="fa-solid fa-eye"></i></button><button class="aicon-btn"><i class="fa-solid fa-pen"></i></button></td></tr>
-                <tr><td style="font-weight:700;color:var(--blue)">#GM-04820</td><td class="bn">নাদিয়া ইসলাম</td><td class="bn">Samsung A55</td><td style="font-weight:700">৳৩৪,৯৯৯</td><td><span class="status-pill sp-processing">প্রসেসিং</span></td><td class="bn">৭ মে</td><td><button class="aicon-btn"><i class="fa-solid fa-eye"></i></button><button class="aicon-btn"><i class="fa-solid fa-pen"></i></button></td></tr>
-                <tr><td style="font-weight:700;color:var(--blue)">#GM-04819</td><td class="bn">সাকিব হাসান</td><td class="bn">পাঞ্জাবি সেট</td><td style="font-weight:700">৳১,২০০</td><td><span class="status-pill sp-pending">অপেক্ষায় আছে</span></td><td class="bn">৬ মে</td><td><button class="aicon-btn"><i class="fa-solid fa-eye"></i></button><button class="aicon-btn"><i class="fa-solid fa-pen"></i></button></td></tr>
-                <tr><td style="font-weight:700;color:var(--blue)">#GM-04818</td><td class="bn">ফাতেমা বেগম</td><td class="bn">নন-স্টিক কুকওয়্যার</td><td style="font-weight:700">৳২,৪৯৯</td><td><span class="status-pill sp-delivered">ডেলিভারি হয়েছে</span></td><td class="bn">৬ মে</td><td><button class="aicon-btn"><i class="fa-solid fa-eye"></i></button><button class="aicon-btn"><i class="fa-solid fa-pen"></i></button></td></tr>
-                <tr><td style="font-weight:700;color:var(--blue)">#GM-04817</td><td class="bn">করিম মিয়া</td><td class="bn">ক্রিকেট ব্যাট</td><td style="font-weight:700">৳৩,৮০০</td><td><span class="status-pill sp-cancelled">বাতিল</span></td><td class="bn">৫ মে</td><td><button class="aicon-btn"><i class="fa-solid fa-eye"></i></button><button class="aicon-btn"><i class="fa-solid fa-pen"></i></button></td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="asec" id="sec-orders">
+          <div class="asec-head"><h3 class="bn">অর্ডার তালিকা</h3><button class="abtn outline bn" onclick="loadAdminOrders()"><i class="fa-solid fa-rotate"></i>রিফ্রেশ</button></div>
+          <div style="overflow-x:auto"><table class="atable"><thead><tr><th class="bn">অর্ডার ID</th><th class="bn">কাস্টমার</th><th class="bn">ফোন</th><th class="bn">মোট</th><th class="bn">স্ট্যাটাস</th><th class="bn">তারিখ</th><th class="bn">অ্যাকশন</th></tr></thead><tbody id="adminOrderBody"></tbody></table></div>
         </div>
 
         <!-- CUSTOMERS -->
-        <div class="admin-section" id="sec-customers">
-          <div class="asec-head"><h3 class="bn">কাস্টমার তালিকা</h3><button class="abtn outline bn"><i class="fa-solid fa-download"></i> এক্সপোর্ট</button></div>
-          <table class="atable">
-            <thead><tr><th class="bn">নাম</th><th class="bn">ফোন</th><th class="bn">জেলা</th><th class="bn">মোট অর্ডার</th><th class="bn">মোট খরচ</th><th class="bn">শেষ অর্ডার</th></tr></thead>
-            <tbody>
-              <tr><td class="bn" style="font-weight:600">রাহিম আহমেদ</td><td>01711-XXXXXX</td><td class="bn">ঢাকা</td><td style="text-align:center;font-weight:700">১২</td><td style="font-weight:700;color:var(--blue)">৳৮,৪৫০</td><td class="bn">৭ মে ২০২৬</td></tr>
-              <tr><td class="bn" style="font-weight:600">নাদিয়া ইসলাম</td><td>01812-XXXXXX</td><td class="bn">চট্টগ্রাম</td><td style="text-align:center;font-weight:700">৭</td><td style="font-weight:700;color:var(--blue)">৳৪৯,২০০</td><td class="bn">৭ মে ২০২৬</td></tr>
-              <tr><td class="bn" style="font-weight:600">সাকিব হাসান</td><td>01912-XXXXXX</td><td class="bn">নরসিংদী</td><td style="text-align:center;font-weight:700">৫</td><td style="font-weight:700;color:var(--blue)">৳৩,৬০০</td><td class="bn">৬ মে ২০২৬</td></tr>
-              <tr><td class="bn" style="font-weight:600">ফাতেমা বেগম</td><td>01611-XXXXXX</td><td class="bn">রাজশাহী</td><td style="text-align:center;font-weight:700">৯</td><td style="font-weight:700;color:var(--blue)">৳১২,৮৯০</td><td class="bn">৬ মে ২০২৬</td></tr>
-              <tr><td class="bn" style="font-weight:600">করিম মিয়া</td><td>01711-XXXXXX</td><td class="bn">সিলেট</td><td style="text-align:center;font-weight:700">৩</td><td style="font-weight:700;color:var(--blue)">৳৭,৮০০</td><td class="bn">৫ মে ২০২৬</td></tr>
-            </tbody>
-          </table>
+        <div class="asec" id="sec-customers">
+          <div class="asec-head"><h3 class="bn">কাস্টমার তালিকা</h3></div>
+          <div style="overflow-x:auto"><table class="atable"><thead><tr><th class="bn">ইমেইল</th><th class="bn">নাম</th><th class="bn">যোগদান</th></tr></thead><tbody id="adminCustomerBody"></tbody></table></div>
         </div>
 
         <!-- INVENTORY -->
-        <div class="admin-section" id="sec-inventory">
-          <div class="asec-head"><h3 class="bn">ইনভেন্টরি ম্যানেজমেন্ট</h3><button class="abtn primary bn"><i class="fa-solid fa-plus"></i> স্টক আপডেট</button></div>
-          <table class="atable" id="inventoryTable">
-            <thead><tr><th class="bn">পণ্য</th><th class="bn">ক্যাটাগরি</th><th class="bn">স্টক</th><th class="bn">স্ট্যাটাস</th><th class="bn">অ্যাকশন</th></tr></thead>
-            <tbody id="inventoryBody"></tbody>
-          </table>
+        <div class="asec" id="sec-inventory">
+          <div class="asec-head"><h3 class="bn">ইনভেন্টরি</h3></div>
+          <div style="overflow-x:auto"><table class="atable"><thead><tr><th class="bn">পণ্য</th><th class="bn">ক্যাটাগরি</th><th class="bn">স্টক</th><th class="bn">স্ট্যাটাস</th><th class="bn">অ্যাকশন</th></tr></thead><tbody id="adminInventoryBody"></tbody></table></div>
         </div>
 
         <!-- DISCOUNTS -->
-        <div class="admin-section" id="sec-discounts">
-          <div class="asec-head"><h3 class="bn">ডিসকাউন্ট & কুপন ম্যানেজমেন্ট</h3><button class="abtn primary bn"><i class="fa-solid fa-plus"></i> নতুন কুপন</button></div>
-          <div class="disc-list">
-            <div class="disc-item active-disc"><span class="disc-code">EID30</span><div class="disc-info bn"><div>ঈদ স্পেশাল অফার · সব ক্যাটাগরিতে প্রযোজ্য</div><div style="margin-top:2px;font-size:0.68rem;color:var(--text-light)">মেয়াদ: ৩১ মে ২০২৬</div></div><span class="disc-pct">৩০% ছাড়</span><span class="status-pill sp-delivered">সক্রিয়</span></div>
-            <div class="disc-item"><span class="disc-code">BOOK20</span><div class="disc-info bn"><div>বই ক্যাটাগরিতে বিশেষ ছাড়</div><div style="margin-top:2px;font-size:0.68rem;color:var(--text-light)">মেয়াদ: ১৫ মে ২০২৬</div></div><span class="disc-pct">২০% ছাড়</span><span class="status-pill sp-delivered">সক্রিয়</span></div>
-            <div class="disc-item"><span class="disc-code">FIRST50</span><div class="disc-info bn"><div>প্রথম অর্ডারে বিশেষ ছাড় · নতুন কাস্টমার</div><div style="margin-top:2px;font-size:0.68rem;color:var(--text-light)">মেয়াদ: চলমান</div></div><span class="disc-pct">৳৫০ ছাড়</span><span class="status-pill sp-delivered">সক্রিয়</span></div>
-            <div class="disc-item"><span class="disc-code">SUMMER15</span><div class="disc-info bn"><div>গ্রীষ্মকালীন সেল অফার</div><div style="margin-top:2px;font-size:0.68rem;color:var(--text-light)">মেয়াদ: শেষ হয়েছে</div></div><span class="disc-pct">১৫% ছাড়</span><span class="status-pill sp-cancelled">মেয়াদ শেষ</span></div>
-          </div>
+        <div class="asec" id="sec-discounts">
+          <div class="asec-head"><h3 class="bn">ডিসকাউন্ট & কুপন</h3><button class="abtn primary bn" onclick="addCouponPrompt()"><i class="fa-solid fa-plus"></i>নতুন কুপন</button></div>
+          <div id="couponList"></div>
         </div>
 
       </div>
@@ -888,337 +757,600 @@ footer{background:var(--text);color:rgba(255,255,255,0.7);padding:32px 24px}
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-top">
-    <div class="footer-brand">
-      <div class="logo"><div class="logo-icon"><i class="fa-solid fa-store"></i></div><span style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700">গ্যালাক্সি মার্ট BD</span></div>
-      <p>বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
-      <div class="footer-social">
-        <a href="#" class="fsocial"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="#" class="fsocial"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#" class="fsocial"><i class="fa-brands fa-tiktok"></i></a>
-        <a href="#" class="fsocial"><i class="fa-brands fa-youtube"></i></a>
-        <a href="#" class="fsocial"><i class="fa-brands fa-whatsapp"></i></a>
+  <div class="foot-top">
+    <div class="foot-brand">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:.9rem"><i class="fa-solid fa-store"></i></div><span style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:white">গ্যালাক্সি মার্ট BD</span></div>
+      <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
+      <div class="fsocials">
+        <a href="https://facebook.com/bookgalaxybd" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="https://instagram.com/bookgalaxybd" class="fs"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://tiktok.com/@bookgalaxybd" class="fs"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="#" class="fs"><i class="fa-brands fa-youtube"></i></a>
+        <a href="#" class="fs"><i class="fa-brands fa-whatsapp"></i></a>
       </div>
     </div>
-    <div class="footer-col">
-      <h4 class="bn">শপিং</h4>
-      <a href="#" class="bn">সব পণ্য</a>
-      <a href="#" class="bn">নতুন পণ্য</a>
-      <a href="#" class="bn">অফার</a>
-      <a href="#" class="bn">বেস্টসেলার</a>
-    </div>
-    <div class="footer-col">
-      <h4 class="bn">সহায়তা</h4>
-      <a href="#" class="bn">অর্ডার ট্র্যাক করুন</a>
-      <a href="#" class="bn">রিটার্ন পলিসি</a>
-      <a href="#" class="bn">যোগাযোগ করুন</a>
-      <a href="#" class="bn">FAQ</a>
-    </div>
-    <div class="footer-col">
-      <h4 class="bn">আমাদের সম্পর্কে</h4>
-      <a href="#" class="bn">আমাদের গল্প</a>
-      <a href="#" class="bn">গোপনীয়তা নীতি</a>
-      <a href="#" class="bn">শর্তাবলী</a>
-    </div>
+    <div class="foot-col"><h4 class="bn">শপিং</h4><a href="#" class="bn">সব পণ্য</a><a href="#" class="bn">নতুন পণ্য</a><a href="#" class="bn">অফার</a><a href="#" class="bn">বেস্টসেলার</a></div>
+    <div class="foot-col"><h4 class="bn">সহায়তা</h4><a href="#" class="bn" onclick="openTrack()">অর্ডার ট্র্যাক</a><a href="#" class="bn">রিটার্ন পলিসি</a><a href="#" class="bn">যোগাযোগ</a><a href="#" class="bn">FAQ</a></div>
+    <div class="foot-col"><h4 class="bn">আমাদের সম্পর্কে</h4><a href="#" class="bn">আমাদের গল্প</a><a href="#" class="bn">গোপনীয়তা নীতি</a><a href="#" class="bn">শর্তাবলী</a></div>
   </div>
-  <div class="footer-bottom">
+  <div class="foot-bottom">
     <p class="bn">© ২০২৬ গ্যালাক্সি মার্ট BD · সর্বস্বত্ব সংরক্ষিত</p>
-    <div class="pay-methods">
-      <span class="pay-icon">COD</span>
-      <span class="pay-icon">bKash</span>
-      <span class="pay-icon">Nagad</span>
-      <span class="pay-icon">Rocket</span>
-    </div>
+    <div class="pay-methods"><span class="pm">COD</span><span class="pm">bKash</span><span class="pm">Nagad</span><span class="pm">Rocket</span></div>
   </div>
 </footer>
 
 <script>
-// ── PRODUCTS DATA ──
-const PRODUCTS = [
-  {id:1,name:"Atomic Habits",brand:"James Clear",cat:"বই",price:390,old:520,rating:4.9,reviews:2840,badge:"hot",stock:45,color:"#007AFF",desc:"আপনার ছোট ছোট অভ্যাস কীভাবে আপনার জীবন বদলে দিতে পারে তার বিজ্ঞানভিত্তিক গাইড।",icon:"fa-book"},
-  {id:2,name:"Samsung Galaxy A55",brand:"Samsung",cat:"ইলেকট্রনিক্স",price:34999,old:39999,rating:4.7,reviews:1820,badge:"sale",stock:12,color:"#F97316",desc:"৬.৬ ইঞ্চি AMOLED ডিসপ্লে, ৫০MP ক্যামেরা, ৫০০০mAh ব্যাটারি।",icon:"fa-mobile-screen"},
-  {id:3,name:"পাঞ্জাবি ঈদ কালেকশন",brand:"অরণ্য",cat:"ফ্যাশন",price:1200,old:1800,rating:4.6,reviews:980,badge:"sale",stock:85,color:"#EC4899",desc:"উচ্চমানের কটন ফেব্রিক্সে তৈরি ঐতিহ্যবাহী ডিজাইনের পাঞ্জাবি।",icon:"fa-shirt"},
-  {id:4,name:"নন-স্টিক কুকওয়্যার সেট",brand:"Nonsticky BD",cat:"হোম",price:2499,old:3200,rating:4.5,reviews:720,badge:null,stock:30,color:"#10B981",desc:"৫ পিস প্রিমিয়াম নন-স্টিক কুকওয়্যার সেট। স্বাস্থ্যকর রান্নার জন্য আদর্শ।",icon:"fa-kitchen-set"},
-  {id:5,name:"হাজার বছর ধরে",brand:"জহির রায়হান",cat:"বই",price:280,old:null,rating:4.9,reviews:3600,badge:"new",stock:100,color:"#8B5CF6",desc:"বাংলাদেশের অন্যতম সেরা ঔপন্যাসিক জহির রায়হানের কালজয়ী উপন্যাস।",icon:"fa-book-open"},
-  {id:6,name:"L'Oreal Face Wash",brand:"L'Oreal Paris",cat:"বিউটি",price:450,old:580,rating:4.4,reviews:560,badge:"sale",stock:55,color:"#F59E0B",desc:"ত্বক পরিষ্কার ও উজ্জ্বল করার জন্য বিশ্বমানের ফেস ওয়াশ।",icon:"fa-pump-soap"},
-  {id:7,name:"A4 নোটবুক সেট (১০টি)",brand:"Navana",cat:"স্টেশনারি",price:320,old:400,rating:4.3,reviews:440,badge:null,stock:200,color:"#06B6D4",desc:"উচ্চমানের কাগজে তৈরি A4 সাইজের নোটবুক — স্কুল ও অফিসের জন্য আদর্শ।",icon:"fa-book-bookmark"},
-  {id:8,name:"লেগো ক্রিয়েটর সেট",brand:"LEGO",cat:"শিশু",price:3500,old:4200,rating:4.8,reviews:890,badge:"hot",stock:18,color:"#EF4444",desc:"শিশুদের সৃজনশীলতা বিকাশের জন্য LEGO Creator সেট। বয়স ৬+।",icon:"fa-puzzle-piece"},
-  {id:9,name:"ক্রিকেট ব্যাট (প্রো)",brand:"SS Cricket",cat:"স্পোর্টস",price:3800,old:5000,rating:4.6,reviews:320,badge:"sale",stock:8,color:"#84CC16",desc:"প্রফেশনাল গ্রেডের উইলো কাঠের ক্রিকেট ব্যাট। সব বয়সের জন্য উপযুক্ত।",icon:"fa-baseball-bat-ball"},
-  {id:10,name:"The Psychology of Money",brand:"Morgan Housel",cat:"বই",price:420,old:560,rating:4.8,reviews:2100,badge:"hot",stock:60,color:"#F59E0B",desc:"অর্থ, লোভ ও সুখ নিয়ে কালজয়ী ১৯টি গল্পের সংকলন।",icon:"fa-coins"},
-  {id:11,name:"Xiaomi Buds 5",brand:"Xiaomi",cat:"ইলেকট্রনিক্স",price:4999,old:6500,rating:4.5,reviews:760,badge:"sale",stock:22,color:"#6366F1",desc:"ANC সহ হাই-ফাই সাউন্ড কোয়ালিটি, ৩০ঘন্টা ব্যাটারি লাইফ।",icon:"fa-headphones"},
-  {id:12,name:"শাড়ি - জামদানি কালেকশন",brand:"ঢাকাই জামদানি",cat:"ফ্যাশন",price:4500,old:6000,rating:4.9,reviews:1240,badge:"new",stock:15,color:"#D946EF",desc:"ঐতিহ্যবাহী ঢাকাই জামদানি শাড়ি। সম্পূর্ণ হাতে বোনা, খাঁটি সুতার কাজ।",icon:"fa-vest"},
-];
+// ══════════════════════════════════════════════════
+// SUPABASE CONFIG — নতুন Keys এখানে বসাও
+// ══════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://srasvcuycvfspbwhnbpl.supabase.co';
+const SUPABASE_ANON = 'YOUR_NEW_ANON_KEY_HERE'; // Supabase Dashboard থেকে নতুন anon key নাও
 
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── STATE ──
+let products = [];
 let cart = [];
 let currentProduct = null;
 let modalQty = 1;
-let activeFilter = {cat:'সব', minPrice:0, maxPrice:99999, rating:0, search:''};
-let adminProducts = [...PRODUCTS];
+let currentUser = null;
+let isAdmin = false;
+let activeFilter = {cat:'সব', minPrice:0, maxPrice:999999, rating:0, search:''};
+let discount = 0;
 
-// ── RENDER PRODUCTS ──
-function renderProducts(list) {
-  const grid = document.getElementById('productGrid');
-  const count = document.getElementById('productCount');
-  count.textContent = `(${list.length} টি পণ্য)`;
-  if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-light)" class="bn"><i class="fa-solid fa-box-open" style="font-size:2rem;margin-bottom:12px;display:block"></i>কোনো পণ্য পাওয়া যায়নি</div>';return}
-  grid.innerHTML = list.map(p=>{
-    const disc = p.old ? Math.round((1-p.price/p.old)*100) : 0;
-    const stars = '★'.repeat(Math.floor(p.rating)) + (p.rating%1>=0.5?'½':'') ;
-    return `<div class="pcard" onclick="openProduct(${p.id})">
-      <div class="pcard-img">
-        <div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color})"><i class="fa-solid ${p.icon}" style="color:white;font-size:2rem"></i></div>
-        ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'?`<div class="disc-badge">-${disc}%</div>`:''}
-        <button class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('active');this.innerHTML=this.classList.contains('active')?'<i class=\'fa-solid fa-heart\'></i>':'<i class=\'fa-regular fa-heart\'></i>'"><i class="fa-regular fa-heart"></i></button>
-      </div>
-      <div class="pcard-body">
-        <div class="pcard-cat bn">${p.cat}</div>
-        <div class="pcard-name bn">${p.name}</div>
-        <div class="pcard-brand">${p.brand}</div>
-        <div class="pcard-rating">
-          <span class="pcard-stars" style="color:var(--gold)">${'★'.repeat(Math.floor(p.rating))}${'☆'.repeat(5-Math.floor(p.rating))}</span>
-          <span>${p.rating} (${(p.reviews/1000).toFixed(1)}k)</span>
-        </div>
-        <div class="pcard-footer">
-          <div class="price-block">
-            ${p.old?`<div class="old">৳${p.old.toLocaleString()}</div>`:''}
-            <div><span class="new bn">৳${p.price.toLocaleString()}</span>${disc?`<span class="disc-pct">${disc}% ছাড়</span>`:''}</div>
-          </div>
-          <div class="card-btns">
-            <button class="btn-cart bn" onclick="event.stopPropagation();addToCart(${p.id})"><i class="fa-solid fa-cart-plus"></i> কার্টে যোগ</button>
-            <button class="btn-buy bn" onclick="event.stopPropagation();showToast('অর্ডার নিশ্চিত হচ্ছে...','${p.name.slice(0,20)}...' কিনতে চেকআউটে যান','w')"><i class="fa-solid fa-bolt"></i> এখনই কিনুন</button>
-          </div>
-        </div>
-      </div>
-    </div>`}).join('');
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+async function init() {
+  // Auth state
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) await handleUser(session.user);
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session) await handleUser(session.user);
+    else { currentUser = null; isAdmin = false; updateAuthUI(); }
+  });
+
+  await loadProducts();
+  hiddenLoader();
 }
 
-function getFiltered(){
-  return PRODUCTS.filter(p=>{
-    const catOk = activeFilter.cat==='সব' || p.cat===activeFilter.cat;
-    const priceOk = p.price>=activeFilter.minPrice && p.price<=activeFilter.maxPrice;
-    const ratingOk = p.rating>=activeFilter.rating;
-    const searchOk = !activeFilter.search || p.name.toLowerCase().includes(activeFilter.search.toLowerCase()) || p.brand.toLowerCase().includes(activeFilter.search.toLowerCase()) || p.cat.includes(activeFilter.search);
-    return catOk&&priceOk&&ratingOk&&searchOk;
+async function handleUser(user) {
+  currentUser = user;
+  // Check admin
+  const { data } = await sb.from('admin_users').select('id').eq('id', user.id).single();
+  isAdmin = !!data;
+  updateAuthUI();
+}
+
+function updateAuthUI() {
+  const btn = document.getElementById('authBtn');
+  const adminBtn = document.getElementById('adminBtn');
+  if (currentUser) {
+    const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+    btn.innerHTML = `<img src="${currentUser.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=007AFF&color=fff&size=32'}" alt="avatar" style="width:22px;height:22px;border-radius:50%;object-fit:cover"><span class="bn">${name.split(' ')[0]}</span><span class="bn" style="font-size:.62rem;color:var(--red);cursor:pointer" onclick="event.stopPropagation();signOut()">লগআউট</span>`;
+    btn.onclick = null;
+    if (isAdmin) adminBtn.style.display = 'flex';
+    else adminBtn.style.display = 'none';
+  } else {
+    btn.innerHTML = `<i class="fa-brands fa-google" style="color:#EA4335"></i><span class="bn">লগইন</span>`;
+    btn.onclick = openAuth;
+    adminBtn.style.display = 'none';
+  }
+}
+
+function hiddenLoader() {
+  setTimeout(() => document.getElementById('loadingScreen').classList.add('hide'), 1800);
+}
+
+// ══════════════════════════════════════════════════
+// PRODUCTS — Supabase থেকে লোড
+// ══════════════════════════════════════════════════
+async function loadProducts() {
+  const { data, error } = await sb.from('products').select('*').eq('is_active', true).order('created_at', {ascending:false});
+  if (error) { toast('ত্রুটি!', 'পণ্য লোড করা যায়নি', 'e'); return; }
+  products = data || [];
+  updateCounts();
+  renderProducts(getFiltered());
+}
+
+function updateCounts() {
+  document.getElementById('cnt-all').textContent = products.length;
+  const cats = {'বই':'cnt-book','ইলেকট্রনিক্স':'cnt-elec','ফ্যাশন':'cnt-fashion','হোম':'cnt-home','বিউটি':'cnt-beauty','স্টেশনারি':'cnt-stat','শিশু':'cnt-kids','স্পোর্টস':'cnt-sports'};
+  Object.entries(cats).forEach(([cat,id]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = products.filter(p=>p.category===cat).length;
   });
 }
 
-function filterProducts(){
-  const min = parseInt(document.getElementById('priceMin').value)||0;
-  const max = parseInt(document.getElementById('priceMax').value)||99999;
-  const search = document.getElementById('searchInput').value;
-  activeFilter.minPrice = min; activeFilter.maxPrice = max; activeFilter.search = search;
-  renderProducts(getFiltered());
+function renderProducts(list) {
+  const grid = document.getElementById('productGrid');
+  document.getElementById('productCount').textContent = `(${list.length} টি পণ্য)`;
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i><p class="bn">কোনো পণ্য পাওয়া যায়নি</p></div>';
+    return;
+  }
+  grid.innerHTML = list.map(p => {
+    const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
+    return `<div class="pcard" onclick="openProduct('${p.id}')">
+      <div class="pcard-img">
+        <div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>
+        ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'&&disc?`<div class="disc-badge">-${disc}% ছাড়</div>`:''}
+        <button class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'<i class=\'fa-solid fa-heart\'></i>':'<i class=\'fa-regular fa-heart\'></i>'"><i class="fa-regular fa-heart"></i></button>
+      </div>
+      <div class="pcard-body">
+        <div class="pcat bn">${p.category}</div>
+        <div class="pname bn">${p.name}</div>
+        <div class="pbrand">${p.brand||''}</div>
+        <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
+        <div class="pfooter">
+          <div class="price-block">
+            ${p.old_price?`<div class="old bn">৳${Number(p.old_price).toLocaleString()}</div>`:''}
+            <div><span class="new bn">৳${Number(p.price).toLocaleString()}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
+          </div>
+          <div class="card-btns">
+            <button class="btn-cart bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে</button>
+            <button class="btn-buy bn" onclick="event.stopPropagation();openProductAndBuy('${p.id}')"><i class="fa-solid fa-bolt"></i>কিনুন</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function filterCat(cat, el){
-  activeFilter.cat=cat;
-  document.querySelectorAll('.ncat').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
+function getFiltered() {
+  return products.filter(p => {
+    const catOk = activeFilter.cat === 'সব' || p.category === activeFilter.cat;
+    const priceOk = p.price >= activeFilter.minPrice && p.price <= activeFilter.maxPrice;
+    const ratingOk = (p.rating||4) >= activeFilter.rating;
+    const srch = activeFilter.search.toLowerCase();
+    const searchOk = !srch || p.name.toLowerCase().includes(srch) || (p.brand||'').toLowerCase().includes(srch) || p.category.includes(srch);
+    return catOk && priceOk && ratingOk && searchOk;
+  });
+}
+
+function filterCat(cat, el) {
+  activeFilter.cat = cat;
+  document.querySelectorAll('.ncat').forEach(e=>e.classList.remove('active')); el.classList.add('active');
   document.querySelectorAll('.fchip').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.fchip').forEach(e=>{if(e.textContent.includes(cat)||cat==='সব'&&e.textContent.includes('সব'))e.classList.add('active')});
+  document.querySelectorAll('.fchip').forEach(e => { if(e.textContent.includes(cat)||(cat==='সব'&&e.querySelector('span.bn')?.textContent.includes('সব'))) e.classList.add('active'); });
   renderProducts(getFiltered());
 }
-
-function filterCatSide(cat, el){
-  activeFilter.cat=cat;
-  document.querySelectorAll('.fchip').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
-  document.querySelectorAll('.ncat').forEach(e=>{if(e.textContent.includes(cat)||(cat==='সব'&&e.textContent.includes('সব')))e.classList.add('active')});
+function filterCatSide(cat, el) {
+  activeFilter.cat = cat;
+  document.querySelectorAll('.fchip').forEach(e=>e.classList.remove('active')); el.classList.add('active');
+  document.querySelectorAll('.ncat').forEach(e => { if(e.textContent.trim().includes(cat)||(cat==='সব'&&e.textContent.includes('সব'))) e.classList.add('active'); });
   renderProducts(getFiltered());
 }
-
-function filterRating(r, el){
-  activeFilter.rating=r;
-  document.querySelectorAll('.star-filter').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
+function filterRating(r, el) {
+  activeFilter.rating = r;
+  document.querySelectorAll('.star-row').forEach(e=>e.classList.remove('active')); el.classList.add('active');
   renderProducts(getFiltered());
 }
-
-function sortProducts(v){
+function filterProducts() {
+  activeFilter.minPrice = parseInt(document.getElementById('priceMin').value)||0;
+  activeFilter.maxPrice = parseInt(document.getElementById('priceMax').value)||999999;
+  activeFilter.search = document.getElementById('searchInput').value;
+  renderProducts(getFiltered());
+}
+function sortProducts(v) {
   let list = getFiltered();
   if(v==='low') list.sort((a,b)=>a.price-b.price);
   else if(v==='high') list.sort((a,b)=>b.price-a.price);
-  else if(v==='rating') list.sort((a,b)=>b.rating-a.rating);
-  else if(v==='discount') list.sort((a,b)=>(b.old?(1-b.price/b.old):0)-(a.old?(1-a.price/a.old):0));
+  else if(v==='rating') list.sort((a,b)=>(b.rating||4)-(a.rating||4));
+  else if(v==='discount') list.sort((a,b)=>(b.old_price?(1-b.price/b.old_price):0)-(a.old_price?(1-a.price/a.old_price):0));
   renderProducts(list);
 }
-
-function updateSlider(v){
-  document.getElementById('priceMax').value=v;
-  document.getElementById('sliderLabel').textContent=`সর্বোচ্চ ৳${parseInt(v).toLocaleString()}`;
+function updateSlider(v) {
+  document.getElementById('priceMax').value = v;
+  document.getElementById('sliderLbl').textContent = `সর্বোচ্চ ৳${Number(v).toLocaleString()}`;
   filterProducts();
 }
-
-function clearFilters(){
-  activeFilter={cat:'সব',minPrice:0,maxPrice:99999,rating:0,search:''};
-  document.getElementById('priceMin').value='';document.getElementById('priceMax').value='';
-  document.getElementById('searchInput').value='';
+function clearFilters() {
+  activeFilter = {cat:'সব',minPrice:0,maxPrice:999999,rating:0,search:''};
+  document.getElementById('priceMin').value=''; document.getElementById('priceMax').value=''; document.getElementById('searchInput').value='';
   document.querySelectorAll('.fchip').forEach((e,i)=>e.classList.toggle('active',i===0));
   document.querySelectorAll('.ncat').forEach((e,i)=>e.classList.toggle('active',i===0));
-  document.querySelectorAll('.star-filter').forEach(e=>e.classList.remove('active'));
-  renderProducts(PRODUCTS);
+  document.querySelectorAll('.star-row').forEach(e=>e.classList.remove('active'));
+  renderProducts(products);
 }
 
-// ── PRODUCT MODAL ──
-function openProduct(id){
-  const p = PRODUCTS.find(x=>x.id===id);
-  if(!p) return;
-  currentProduct=p; modalQty=1;
-  const disc = p.old?Math.round((1-p.price/p.old)*100):0;
-  document.getElementById('modalTitle').textContent='পণ্যের বিবরণ';
-  document.getElementById('modalCat').textContent=p.cat;
-  document.getElementById('modalName').textContent=p.name;
-  document.getElementById('modalBrand').textContent=p.brand;
-  document.getElementById('modalIcon').style.cssText=`background:linear-gradient(135deg,${p.color}CC,${p.color});width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.12)`;
-  document.getElementById('modalIcon').innerHTML=`<i class="fa-solid ${p.icon}" style="color:white"></i>`;
-  document.getElementById('modalImg').style.background=p.color+'22';
-  document.getElementById('modalStars').textContent='★'.repeat(Math.floor(p.rating))+'☆'.repeat(5-Math.floor(p.rating));
-  document.getElementById('modalRatingText').textContent=`${p.rating} রেটিং · ${(p.reviews/1000).toFixed(1)}k রিভিউ`;
-  document.getElementById('modalOld').textContent=p.old?`৳${p.old.toLocaleString()} (আসল দাম)`:'';
-  document.getElementById('modalNew').textContent=`৳${p.price.toLocaleString()}`;
-  document.getElementById('modalDisc').textContent=disc?`${disc}% ছাড়`:'';
-  document.getElementById('modalDesc').textContent=p.desc;
-  document.getElementById('modalQty').textContent=1;
-  document.getElementById('productModal').classList.add('open');
+// ══════════════════════════════════════════════════
+// PRODUCT MODAL
+// ══════════════════════════════════════════════════
+function openProduct(id) {
+  const p = products.find(x=>x.id===id); if(!p) return;
+  currentProduct = p; modalQty = 1;
+  const disc = p.old_price ? Math.round((1-p.price/p.old_price)*100) : 0;
+  document.getElementById('modalTitle').textContent = 'পণ্যের বিবরণ';
+  document.getElementById('modalCat').textContent = p.category;
+  document.getElementById('modalName').textContent = p.name;
+  document.getElementById('modalBrand').textContent = p.brand||'';
+  document.getElementById('modalIcon').style.cssText = `width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;box-shadow:0 8px 32px rgba(0,0,0,.12);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
+  document.getElementById('modalIcon').innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
+  document.getElementById('modalImgArea').style.background = p.color+'22';
+  document.getElementById('modalStars').textContent = '★'.repeat(Math.floor(p.rating||4))+'☆'.repeat(5-Math.floor(p.rating||4));
+  document.getElementById('modalRatingTxt').textContent = `${(p.rating||4).toFixed(1)} রেটিং`;
+  document.getElementById('modalOld').textContent = p.old_price ? `৳${Number(p.old_price).toLocaleString()} (আসল দাম)` : '';
+  document.getElementById('modalNew').textContent = `৳${Number(p.price).toLocaleString()}`;
+  document.getElementById('modalDisc').textContent = disc ? `${disc}% ছাড়` : '';
+  document.getElementById('stockTxt').textContent = p.stock > 0 ? `স্টকে আছে (${p.stock} টি)` : 'স্টক নেই';
+  document.getElementById('modalDesc').textContent = p.description||'';
+  document.getElementById('modalQty').textContent = 1;
+  openModal('productModal');
 }
-function closeModal(){document.getElementById('productModal').classList.remove('open')}
-function changeQty(d){modalQty=Math.max(1,modalQty+d);document.getElementById('modalQty').textContent=modalQty}
-function addToCartModal(){if(currentProduct){addToCart(currentProduct.id,modalQty);closeModal()}}
-function buyNowModal(){if(currentProduct){showToast('অর্ডার নিশ্চিত হচ্ছে...','চেকআউটে যাচ্ছেন...','w');closeModal()}}
+function openProductAndBuy(id) { openProduct(id); }
+function changeQty(d) { modalQty = Math.max(1, modalQty+d); document.getElementById('modalQty').textContent = modalQty; }
+function addToCartModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closeModal('productModal'); } }
+function buyNowModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closeModal('productModal'); openCheckout(); } }
+function quickAddToCart(id) { const p = products.find(x=>x.id===id); if(p) addToCart(p,1); }
 
-// ── CART ──
-function addToCart(id, qty=1){
-  const p = PRODUCTS.find(x=>x.id===id);
-  if(!p) return;
-  const existing = cart.find(x=>x.id===id);
-  if(existing) existing.qty+=qty;
-  else cart.push({...p,qty});
-  updateCartBadge();
-  renderCartItems();
-  showToast('কার্টে যোগ হয়েছে!',`"${p.name.slice(0,22)}..." কার্টে যোগ করা হয়েছে`,'s');
+// ══════════════════════════════════════════════════
+// CART
+// ══════════════════════════════════════════════════
+function addToCart(p, qty=1) {
+  const ex = cart.find(x=>x.id===p.id);
+  if(ex) ex.qty += qty; else cart.push({...p, qty});
+  updateCartBadge(); renderCartItems();
+  toast('কার্টে যোগ হয়েছে!', `"${p.name.slice(0,22)}..." কার্টে যোগ করা হয়েছে`, 's');
 }
-function updateCartBadge(){
-  const total = cart.reduce((s,x)=>s+x.qty,0);
-  document.getElementById('cartBadge').textContent=total;
-}
-function renderCartItems(){
-  const el = document.getElementById('cartItemsList');
-  if(!cart.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light)" class="bn"><i class="fa-solid fa-cart-shopping" style="font-size:2rem;display:block;margin-bottom:12px"></i>কার্ট খালি আছে</div>';document.getElementById('cartTotal').textContent='৳ ০';return}
-  el.innerHTML=cart.map(item=>`<div class="ci">
-    <div class="ci-icon" style="background:linear-gradient(135deg,${item.color}44,${item.color}22)"><i class="fa-solid ${item.icon}" style="color:${item.color}"></i></div>
+function updateCartBadge() { document.getElementById('cartBadge').textContent = cart.reduce((s,x)=>s+x.qty,0); }
+function renderCartItems() {
+  const el = document.getElementById('cartItems');
+  if(!cart.length){ el.innerHTML='<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p class="bn">কার্ট খালি আছে</p></div>'; document.getElementById('cartTotal').textContent='৳ ০'; return; }
+  el.innerHTML = cart.map(item=>`<div class="ci">
+    <div class="ci-icon" style="background:${item.color}22"><i class="fa-solid ${item.icon||'fa-box'}" style="color:${item.color};font-size:1.3rem"></i></div>
     <div class="ci-info">
       <div class="ci-name bn">${item.name}</div>
-      <div class="ci-brand">${item.brand}</div>
+      <div class="ci-brand">${item.brand||''}</div>
       <div class="ci-qty">
-        <button class="ci-qbtn" onclick="changeCartQty(${item.id},-1)">−</button>
-        <span style="font-weight:700;font-size:0.82rem;min-width:20px;text-align:center">${item.qty}</span>
-        <button class="ci-qbtn" onclick="changeCartQty(${item.id},1)">+</button>
-        <button class="ci-del" onclick="removeFromCart(${item.id})"><i class="fa-solid fa-trash"></i></button>
+        <button class="ciqbtn" onclick="changeCartQty('${item.id}',-1)">−</button>
+        <span style="font-weight:700;font-size:.8rem;min-width:18px;text-align:center">${item.qty}</span>
+        <button class="ciqbtn" onclick="changeCartQty('${item.id}',1)">+</button>
+        <button class="ci-del" onclick="removeCart('${item.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
     <div class="ci-price bn">৳${(item.price*item.qty).toLocaleString()}</div>
   </div>`).join('');
-  const total = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  document.getElementById('cartTotal').textContent=`৳ ${total.toLocaleString()}`;
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const delivery = sub >= 500 ? 0 : 60;
+  const total = sub + delivery - discount;
+  document.getElementById('cartTotal').textContent = `৳ ${total.toLocaleString()}`;
 }
-function changeCartQty(id,d){
-  const item=cart.find(x=>x.id===id);
-  if(!item) return;
-  item.qty=Math.max(1,item.qty+d);
-  updateCartBadge();renderCartItems();
-}
-function removeFromCart(id){
-  cart=cart.filter(x=>x.id!==id);
-  updateCartBadge();renderCartItems();
-}
-function openCart(){document.getElementById('cartOverlay').classList.add('open');renderCartItems()}
-function closeCart(){document.getElementById('cartOverlay').classList.remove('open')}
+function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); updateCartBadge();renderCartItems(); }
+function removeCart(id){ cart=cart.filter(x=>x.id!==id); updateCartBadge();renderCartItems(); }
 
-// ── TRACK ──
-function openTrack(){document.getElementById('trackModal').classList.add('open')}
-function closeTrack(){document.getElementById('trackModal').classList.remove('open')}
-
-// ── ADMIN ──
-function openAdmin(){document.getElementById('adminOverlay').classList.add('open');renderAdminProducts();renderInventory()}
-function closeAdmin(){document.getElementById('adminOverlay').classList.remove('open')}
-function showSection(name,el){
-  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('visible'));
-  document.getElementById('sec-'+name).classList.add('visible');
-  document.querySelectorAll('.amenu-item').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
-  const titles={dashboard:'ড্যাশবোর্ড ওভারভিউ',products:'পণ্য ব্যবস্থাপনা',orders:'অর্ডার ম্যানেজমেন্ট',customers:'কাস্টমার তালিকা',inventory:'ইনভেন্টরি',discounts:'ডিসকাউন্ট & কুপন'};
-  document.getElementById('adminTitle').textContent=titles[name]||name;
+async function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  if(!code){ toast('ত্রুটি','কুপন কোড লিখুন','w'); return; }
+  const { data, error } = await sb.from('coupons').select('*').eq('code',code).eq('is_active',true).single();
+  if(error||!data){ toast('অবৈধ কুপন','এই কুপন কোড পাওয়া যায়নি','e'); return; }
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  if(sub < data.min_order){ toast('প্রযোজ্য নয়',`ন্যূনতম ৳${data.min_order} অর্ডার করুন`,'w'); return; }
+  discount = data.discount_type==='percent' ? sub*(data.discount_value/100) : data.discount_value;
+  renderCartItems();
+  toast('কুপন প্রয়োগ হয়েছে!',`${data.discount_value}${data.discount_type==='percent'?'%':'৳'} ছাড় পেয়েছেন`,'s');
 }
-function toggleAddForm(){const f=document.getElementById('addProductForm');f.style.display=f.style.display==='none'?'block':'none'}
-function addProduct(){
-  const name=document.getElementById('fpName').value;
+
+// ══════════════════════════════════════════════════
+// CHECKOUT & ORDER — Supabase এ সেভ
+// ══════════════════════════════════════════════════
+function openCheckout() {
+  if(!cart.length){ toast('কার্ট খালি','কার্টে পণ্য যোগ করুন','w'); return; }
+  if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
+  const summary = cart.map(i=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="bn" style="font-size:.75rem">${i.name} ×${i.qty}</span><span style="font-size:.75rem;font-weight:700">৳${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
+  document.getElementById('checkoutSummary').innerHTML = summary;
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const delivery = sub >= 500 ? 0 : 60;
+  document.getElementById('checkoutTotal').textContent = `৳${(sub+delivery-discount).toLocaleString()}`;
+  closeCart(); openModal('checkoutModal');
+}
+
+async function placeOrder() {
+  const name = document.getElementById('cName').value.trim();
+  const phone = document.getElementById('cPhone').value.trim();
+  const address = document.getElementById('cAddress').value.trim();
+  const district = document.getElementById('cDistrict').value;
+  const email = document.getElementById('cEmail').value.trim();
+  if(!name||!phone||!address||!district){ toast('অসম্পূর্ণ তথ্য','সব তথ্য পূরণ করুন','w'); return; }
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> প্রসেস হচ্ছে...';
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const delivery = sub >= 500 ? 0 : 60;
+  const total = sub + delivery - discount;
+  const orderNum = 'GM-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*99999)).padStart(5,'0');
+  const items = cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty}));
+  const { data, error } = await sb.from('orders').insert({
+    order_number: orderNum,
+    user_id: currentUser?.id || null,
+    customer_name: name, customer_phone: phone,
+    customer_address: address, customer_district: district, customer_email: email,
+    items, subtotal: sub, delivery_fee: delivery, discount, total, status: 'pending'
+  }).select().single();
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
+  if(error){ toast('ত্রুটি!','অর্ডার দেওয়া যায়নি, আবার চেষ্টা করুন','e'); return; }
+  // Insert initial status history
+  await sb.from('order_status_history').insert({order_id:data.id, status:'pending', note:'অর্ডার নিশ্চিত হয়েছে'});
+  cart = []; discount = 0; updateCartBadge(); renderCartItems();
+  closeModal('checkoutModal');
+  toast('অর্ডার সফল!', `অর্ডার নম্বর: ${orderNum}`, 's');
+  setTimeout(()=>{
+    document.getElementById('trackInput').value = orderNum;
+    openTrack(); trackOrder();
+  }, 1500);
+}
+
+// ══════════════════════════════════════════════════
+// ORDER TRACKING — Supabase থেকে
+// ══════════════════════════════════════════════════
+async function trackOrder() {
+  const num = document.getElementById('trackInput').value.trim();
+  if(!num){ toast('ত্রুটি','অর্ডার নম্বর লিখুন','w'); return; }
+  const res = document.getElementById('trackResult');
+  res.innerHTML = '<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>খোঁজা হচ্ছে...</div>';
+  const { data, error } = await sb.from('orders').select('*').eq('order_number',num).single();
+  if(error||!data){ res.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="margin-right:7px"></i>এই অর্ডার নম্বরটি পাওয়া যায়নি</div>'; return; }
+  const statusMap = {
+    pending:   {label:'অপেক্ষায় আছে',   done:true,  active:false},
+    confirmed: {label:'নিশ্চিত হয়েছে',   done:true,  active:false},
+    processing:{label:'প্যাক হচ্ছে',      done:false, active:true},
+    shipped:   {label:'ডেলিভারিতে আছে',   done:false, active:true},
+    delivered: {label:'ডেলিভারি সম্পন্ন', done:true,  active:false},
+    cancelled: {label:'বাতিল',            done:false, active:false},
+  };
+  const steps = ['pending','confirmed','processing','shipped','delivered'];
+  const curIdx = steps.indexOf(data.status);
+  const items = (data.items||[]).map(i=>i.name).join(', ');
+  res.innerHTML = `
+    <div class="order-info-card">
+      <div class="oid-lbl">${data.order_number}</div>
+      <div class="oname bn">${items.slice(0,50)}${items.length>50?'...':''}</div>
+      <div class="oeta bn">জেলা: <strong>${data.customer_district||'—'}</strong> · মোট: <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString()}</strong></div>
+    </div>
+    <div class="timeline">
+      ${steps.map((s,i)=>`
+        <div class="titem ${i<curIdx?'done':i===curIdx?'active':''}">
+          <div class="tdot"></div>
+          <div class="ttitle bn">${statusMap[s]?.label||s}</div>
+          <div class="tdesc bn">${i===0?'অর্ডার গ্রহণ করা হয়েছে':i===1?'অর্ডার নিশ্চিত':i===2?'প্যাক করা হচ্ছে':i===3?'রাইডার ডেলিভারিতে আছেন':'পণ্য পৌঁছে দেওয়া হয়েছে'}</div>
+          ${i<=curIdx?`<div class="ttime">${new Date(data.updated_at).toLocaleDateString('bn-BD')}</div>`:''}
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════
+// AUTH — Google & Email
+// ══════════════════════════════════════════════════
+async function signInWithGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if(error) toast('ত্রুটি!', error.message, 'e');
+}
+async function signInWithEmail() {
+  const email = document.getElementById('emailInput').value;
+  const pass = document.getElementById('passwordInput').value;
+  if(!email||!pass){ toast('ত্রুটি','ইমেইল ও পাসওয়ার্ড দিন','w'); return; }
+  const { error } = await sb.auth.signInWithPassword({email,password:pass});
+  if(error) toast('লগইন ব্যর্থ',error.message,'e');
+  else { closeModal('authModal'); toast('সফল!','লগইন হয়েছে','s'); }
+}
+async function signUpWithEmail() {
+  const email = document.getElementById('emailInput').value;
+  const pass = document.getElementById('passwordInput').value;
+  if(!email||!pass){ toast('ত্রুটি','ইমেইল ও পাসওয়ার্ড দিন','w'); return; }
+  const { error } = await sb.auth.signUp({email,password:pass});
+  if(error) toast('ত্রুটি',error.message,'e');
+  else toast('সফল!','ইমেইল ভেরিফাই করুন','i');
+}
+async function signOut() {
+  await sb.auth.signOut();
+  toast('লগআউট','আপনি লগআউট হয়ে গেছেন','i');
+}
+
+// ══════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════
+function openAdmin() {
+  if(!isAdmin){ toast('অ্যাক্সেস নেই','আপনি অ্যাডমিন নন','e'); return; }
+  openModal('adminOverlay');
+  loadAdminProducts(); loadDashboardKPIs();
+}
+function closeAdmin() { closeModal('adminOverlay'); }
+
+async function loadDashboardKPIs() {
+  const { data: orders } = await sb.from('orders').select('total,status,created_at');
+  const { data: prods } = await sb.from('products').select('id,stock');
+  const revenue = (orders||[]).filter(o=>o.status!=='cancelled').reduce((s,o)=>s+Number(o.total),0);
+  const lowStock = (prods||[]).filter(p=>p.stock<=10).length;
+  document.getElementById('kpi-revenue').textContent = `৳${revenue.toLocaleString()}`;
+  document.getElementById('kpi-revenue-sub').textContent = `মোট ডেলিভারড অর্ডার থেকে`;
+  document.getElementById('kpi-orders').textContent = (orders||[]).length;
+  document.getElementById('kpi-orders-sub').innerHTML = `<i class="fa-solid fa-arrow-up"></i> আজকের অর্ডার দেখুন`;
+  document.getElementById('kpi-products').textContent = (prods||[]).length;
+  document.getElementById('kpi-products-sub').textContent = `${lowStock} টি লো স্টক`;
+  document.getElementById('kpi-customers').textContent = '—';
+  document.getElementById('kpi-customers-sub').textContent = 'auth.users থেকে';
+}
+
+async function loadAdminProducts() {
+  const { data } = await sb.from('products').select('*').order('created_at',{ascending:false});
+  const tbody = document.getElementById('adminProductBody');
+  if(!data||!data.length){ tbody.innerHTML='<tr><td colspan="6" class="bn" style="text-align:center;padding:20px;color:var(--text-light)">কোনো পণ্য নেই</td></tr>'; return; }
+  tbody.innerHTML = data.map(p=>{
+    const disc = p.old_price ? Math.round((1-p.price/p.old_price)*100) : 0;
+    const s = p.stock>10?'s-ok':p.stock>0?'s-warn':'s-err';
+    const sl = p.stock>10?'স্টক আছে':p.stock>0?`লো (${p.stock})`:'নেই';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:7px"><div style="width:28px;height:28px;border-radius:6px;background:${p.color}22;display:flex;align-items:center;justify-content:center;color:${p.color};font-size:.8rem"><i class="fa-solid ${p.icon||'fa-box'}"></i></div><span class="bn" style="font-size:.78rem;font-weight:600">${p.name}</span></div></td>
+      <td class="bn">${p.category}</td>
+      <td class="bn" style="font-weight:700">৳${Number(p.price).toLocaleString()}${disc?` <span style="color:var(--red);font-size:.62rem">-${disc}%</span>`:''}</td>
+      <td>${p.stock}</td>
+      <td><span class="spill ${s} bn">${sl}</span></td>
+      <td>
+        <button class="aibtn" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="aibtn del" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+  // Also fill inventory
+  document.getElementById('adminInventoryBody').innerHTML = data.map(p=>{
+    const s=p.stock>10?'s-ok':p.stock>0?'s-warn':'s-err';
+    const sl=p.stock>10?'স্টক আছে':p.stock>0?`লো স্টক (${p.stock})`:'স্টক নেই';
+    return `<tr><td class="bn" style="font-weight:600">${p.name}</td><td class="bn">${p.category}</td><td style="font-weight:700">${p.stock}</td><td><span class="spill ${s} bn">${sl}</span></td><td><button class="aibtn" onclick="updateStockPrompt('${p.id}','${p.name}',${p.stock})"><i class="fa-solid fa-plus"></i></button></td></tr>`;
+  }).join('');
+}
+
+async function loadAdminOrders() {
+  const { data } = await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(50);
+  const tbody = document.getElementById('adminOrderBody');
+  if(!data||!data.length){ tbody.innerHTML='<tr><td colspan="7" class="bn" style="text-align:center;padding:20px">কোনো অর্ডার নেই</td></tr>'; return; }
+  const statusCls = {pending:'s-warn',confirmed:'s-info',processing:'s-info',shipped:'s-info',delivered:'s-ok',cancelled:'s-err'};
+  const statusLbl = {pending:'অপেক্ষায়',confirmed:'নিশ্চিত',processing:'প্রসেসিং',shipped:'ডেলিভারিতে',delivered:'ডেলিভারড',cancelled:'বাতিল'};
+  tbody.innerHTML = data.map(o=>`<tr>
+    <td style="font-weight:700;color:var(--blue);font-size:.75rem">${o.order_number}</td>
+    <td class="bn">${o.customer_name}</td>
+    <td>${o.customer_phone}</td>
+    <td class="bn" style="font-weight:700">৳${Number(o.total).toLocaleString()}</td>
+    <td><span class="spill ${statusCls[o.status]||'s-info'} bn">${statusLbl[o.status]||o.status}</span></td>
+    <td class="bn">${new Date(o.created_at).toLocaleDateString('bn-BD')}</td>
+    <td><select onchange="updateOrderStatus('${o.id}',this.value)" style="font-size:.68rem;padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-family:'Hind Siliguri',sans-serif">
+      ${['pending','confirmed','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${statusLbl[s]}</option>`).join('')}
+    </select></td>
+  </tr>`).join('');
+}
+
+async function updateOrderStatus(id, status) {
+  const { error } = await sb.from('orders').update({status, updated_at:new Date()}).eq('id',id);
+  if(error) toast('ত্রুটি',error.message,'e');
+  else { toast('আপডেট হয়েছে','অর্ডার স্ট্যাটাস পরিবর্তন হয়েছে','s'); await sb.from('order_status_history').insert({order_id:id,status,note:`স্ট্যাটাস পরিবর্তন: ${status}`}); }
+}
+
+function toggleAddForm() { const f=document.getElementById('addForm'); f.style.display=f.style.display==='none'?'block':'none'; }
+
+async function addProduct() {
+  const name=document.getElementById('fpName').value.trim();
   const cat=document.getElementById('fpCat').value;
-  const price=parseInt(document.getElementById('fpPrice').value);
-  const old=parseInt(document.getElementById('fpOld').value)||null;
-  const brand=document.getElementById('fpBrand').value||'—';
+  const price=parseFloat(document.getElementById('fpPrice').value);
+  const old=parseFloat(document.getElementById('fpOld').value)||null;
+  const brand=document.getElementById('fpBrand').value.trim()||null;
   const stock=parseInt(document.getElementById('fpStock').value)||0;
-  const desc=document.getElementById('fpDesc').value||'';
-  if(!name||!price){showToast('ত্রুটি!','পণ্যের নাম ও মূল্য দিন','w');return}
+  const desc=document.getElementById('fpDesc').value.trim()||null;
+  if(!name||!price){ toast('ত্রুটি','নাম ও মূল্য দিন','w'); return; }
   const icons={বই:'fa-book',ইলেকট্রনিক্স:'fa-mobile-screen',ফ্যাশন:'fa-shirt',হোম:'fa-house',বিউটি:'fa-spa',স্টেশনারি:'fa-pen',শিশু:'fa-child',স্পোর্টস:'fa-dumbbell'};
   const colors={বই:'#007AFF',ইলেকট্রনিক্স:'#F97316',ফ্যাশন:'#EC4899',হোম:'#10B981',বিউটি:'#F59E0B',স্টেশনারি:'#06B6D4',শিশু:'#EF4444',স্পোর্টস:'#84CC16'};
-  const newP={id:Date.now(),name,brand,cat,price,old,rating:0,reviews:0,badge:null,stock,color:colors[cat]||'#007AFF',desc,icon:icons[cat]||'fa-box'};
-  adminProducts.push(newP);
-  PRODUCTS.push(newP);
-  renderAdminProducts();renderInventory();
-  showToast('পণ্য যোগ হয়েছে!',`"${name}" সফলভাবে যোগ করা হয়েছে`,'s');
+  const badge = old && old>price ? 'sale' : null;
+  const { error } = await sb.from('products').insert({name,category:cat,price,old_price:old,brand,stock,description:desc,badge,icon:icons[cat]||'fa-box',color:colors[cat]||'#007AFF'});
+  if(error){ toast('ত্রুটি',error.message,'e'); return; }
+  toast('পণ্য যোগ হয়েছে!',`"${name}" ডেটাবেসে যোগ হয়েছে`,'s');
   toggleAddForm();
   ['fpName','fpBrand','fpPrice','fpOld','fpStock','fpDesc'].forEach(id=>document.getElementById(id).value='');
-  renderProducts(getFiltered());
+  await loadProducts(); await loadAdminProducts(); await loadDashboardKPIs();
 }
-function deleteProduct(id){
-  const idx=adminProducts.findIndex(p=>p.id===id);
-  if(idx>-1){const name=adminProducts[idx].name;adminProducts.splice(idx,1);renderAdminProducts();renderInventory();showToast('পণ্য মুছে ফেলা হয়েছে',name+' মুছে ফেলা হয়েছে','w')}
+
+async function deleteProduct(id) {
+  if(!confirm('এই পণ্যটি মুছে ফেলতে চান?')) return;
+  const { error } = await sb.from('products').update({is_active:false}).eq('id',id);
+  if(error){ toast('ত্রুটি',error.message,'e'); return; }
+  toast('মুছে ফেলা হয়েছে','পণ্য নিষ্ক্রিয় করা হয়েছে','w');
+  await loadProducts(); await loadAdminProducts();
 }
-function renderAdminProducts(){
-  const tbody=document.getElementById('adminProductBody');
-  tbody.innerHTML=adminProducts.map(p=>{
-    const disc=p.old?Math.round((1-p.price/p.old)*100):0;
-    const stockStatus=p.stock>20?'sp-instock':p.stock>0?'sp-low':'sp-out';
-    const stockLbl=p.stock>20?'স্টকে আছে':p.stock>0?`লো স্টক (${p.stock})`:'স্টক নেই';
-    return `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:32px;height:32px;border-radius:7px;background:${p.color}22;display:flex;align-items:center;justify-content:center;color:${p.color};font-size:0.9rem"><i class="fa-solid ${p.icon}"></i></div><div class="bn" style="font-size:0.8rem;font-weight:600">${p.name}</div></div></td>
-      <td><span class="bn" style="font-size:0.78rem">${p.cat}</span></td>
-      <td class="bn" style="font-weight:700">৳${p.price.toLocaleString()}${disc?` <span style="color:var(--red);font-size:0.65rem">-${disc}%</span>`:''}</td>
-      <td class="bn">${p.stock}</td>
-      <td><span class="status-pill ${stockStatus} bn">${stockLbl}</span></td>
-      <td><button class="aicon-btn" onclick="openProduct(${p.id})"><i class="fa-solid fa-eye"></i></button><button class="aicon-btn del" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button></td>
-    </tr>`}).join('');
+
+async function editProduct(id) {
+  const p = await sb.from('products').select('*').eq('id',id).single();
+  if(p.error) return;
+  const newPrice = prompt('নতুন মূল্য (৳):', p.data.price);
+  if(!newPrice) return;
+  const newStock = prompt('নতুন স্টক পরিমাণ:', p.data.stock);
+  if(newStock===null) return;
+  await sb.from('products').update({price:parseFloat(newPrice),stock:parseInt(newStock)}).eq('id',id);
+  toast('আপডেট হয়েছে','পণ্য আপডেট করা হয়েছে','s');
+  await loadProducts(); await loadAdminProducts();
 }
-function renderInventory(){
-  const tbody=document.getElementById('inventoryBody');
-  tbody.innerHTML=adminProducts.map(p=>{
-    const s=p.stock>20?'sp-instock':p.stock>0?'sp-low':'sp-out';
-    const sl=p.stock>20?'স্টকে আছে':p.stock>0?'লো স্টক':'স্টক নেই';
-    return `<tr>
-      <td><div class="bn" style="font-size:0.8rem;font-weight:600">${p.name}</div></td>
-      <td class="bn">${p.cat}</td>
-      <td style="font-weight:700">${p.stock}</td>
-      <td><span class="status-pill ${s} bn">${sl}</span></td>
-      <td><button class="aicon-btn"><i class="fa-solid fa-plus"></i></button><button class="aicon-btn"><i class="fa-solid fa-pen"></i></button></td>
-    </tr>`}).join('');
+
+async function updateStockPrompt(id, name, currentStock) {
+  const newStock = prompt(`"${name}" এর স্টক আপডেট করুন:`, currentStock);
+  if(newStock===null) return;
+  await sb.from('products').update({stock:parseInt(newStock)}).eq('id',id);
+  toast('স্টক আপডেট হয়েছে','','s');
+  await loadAdminProducts();
 }
+
+async function loadCoupons() {
+  const { data } = await sb.from('coupons').select('*').order('created_at',{ascending:false});
+  const el = document.getElementById('couponList');
+  if(!data||!data.length){ el.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)">কোনো কুপন নেই</div>'; return; }
+  el.innerHTML = data.map(c=>`<div style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--blue-light);border-radius:var(--radius-sm);margin-bottom:9px;border:1.5px solid ${c.is_active?'rgba(0,122,255,.2)':'var(--border)'}">
+    <span style="font-size:.9rem;font-weight:700;color:var(--blue);letter-spacing:.05em;flex:1">${c.code}</span>
+    <span class="bn" style="flex:2;font-size:.74rem;color:var(--text-mid)">${c.discount_type==='percent'?c.discount_value+'% ছাড়':'৳'+c.discount_value+' ছাড়'} · ন্যূনতম ৳${c.min_order}</span>
+    <span class="spill ${c.is_active?'s-ok':'s-err'} bn">${c.is_active?'সক্রিয়':'বন্ধ'}</span>
+    <button class="aibtn del" onclick="toggleCoupon('${c.id}',${c.is_active})"><i class="fa-solid fa-${c.is_active?'ban':'check'}"></i></button>
+  </div>`).join('');
+}
+
+async function addCouponPrompt() {
+  const code = prompt('কুপন কোড:');
+  if(!code) return;
+  const type = confirm('Percent ছাড়? (Cancel = Fixed amount)') ? 'percent' : 'fixed';
+  const val = parseFloat(prompt(type==='percent'?'কত % ছাড়?':'কত ৳ ছাড়?'));
+  const min = parseFloat(prompt('ন্যূনতম অর্ডার মূল্য ৳:','0'));
+  if(!val) return;
+  await sb.from('coupons').insert({code:code.toUpperCase(),discount_type:type,discount_value:val,min_order:min||0});
+  toast('কুপন যোগ হয়েছে!',code.toUpperCase(),'s');
+  loadCoupons();
+}
+
+async function toggleCoupon(id, current) {
+  await sb.from('coupons').update({is_active:!current}).eq('id',id);
+  toast('আপডেট হয়েছে','কুপন স্ট্যাটাস পরিবর্তন হয়েছে','i');
+  loadCoupons();
+}
+
+async function loadAdminCustomers() {
+  // Note: Direct auth.users access requires service_role — use a secure API route
+  document.getElementById('adminCustomerBody').innerHTML = `<tr><td colspan="3" class="bn" style="text-align:center;padding:16px;color:var(--text-light)">
+    <i class="fa-solid fa-shield-halved" style="margin-right:6px;color:var(--orange)"></i>
+    কাস্টমার লিস্ট দেখতে Supabase Dashboard → Authentication ব্যবহার করুন
+  </td></tr>`;
+}
+
+function showSec(name, el) {
+  document.querySelectorAll('.asec').forEach(s=>s.classList.remove('visible'));
+  document.getElementById('sec-'+name).classList.add('visible');
+  document.querySelectorAll('.amenu').forEach(e=>e.classList.remove('active')); el.classList.add('active');
+  const titles={dashboard:'ড্যাশবোর্ড',products:'পণ্য ব্যবস্থাপনা',orders:'অর্ডার ম্যানেজমেন্ট',customers:'কাস্টমার তালিকা',inventory:'ইনভেন্টরি',discounts:'ডিসকাউন্ট & কুপন'};
+  document.getElementById('adminTitle').textContent = titles[name]||name;
+  if(name==='orders') loadAdminOrders();
+  else if(name==='customers') loadAdminCustomers();
+  else if(name==='discounts') loadCoupons();
+  else if(name==='inventory'||name==='products') loadAdminProducts();
+}
+
+// ── MODAL HELPERS ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openCart() { openModal('cartOverlay'); renderCartItems(); }
+function closeCart() { closeModal('cartOverlay'); }
+function openTrack() { openModal('trackModal'); }
+function openAuth() { openModal('authModal'); }
 
 // ── TOAST ──
-function showToast(title,sub,type='s'){
-  const el=document.createElement('div');
-  el.className='toast';
-  const icons={s:'fa-circle-check',i:'fa-circle-info',w:'fa-triangle-exclamation'};
-  el.innerHTML=`<div class="toast-ic ${type}"><i class="fa-solid ${icons[type]||'fa-circle-check'}"></i></div><div><div class="toast-t bn">${title}</div><div class="toast-s bn">${sub}</div></div>`;
+function toast(title, sub, type='s') {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  const icons={s:'fa-circle-check',i:'fa-circle-info',w:'fa-triangle-exclamation',e:'fa-circle-xmark'};
+  el.innerHTML = `<div class="tic ${type}"><i class="fa-solid ${icons[type]||'fa-circle-check'}"></i></div><div><div class="tt">${title}</div><div class="ts">${sub}</div></div>`;
   document.getElementById('toastWrap').appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity 0.3s';setTimeout(()=>el.remove(),300)},3500);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},3500);
 }
 
-// ── SCROLL HEADER ──
+// ── SCROLL ──
 window.addEventListener('scroll',()=>document.getElementById('mainHeader').classList.toggle('scrolled',scrollY>10));
 
-// ── INIT ──
-renderProducts(PRODUCTS);
-setTimeout(()=>showToast('গ্যালাক্সি মার্ট BD-তে স্বাগতম!','সেরা পণ্য, সেরা দামে — উপভোগ করুন','i'),1000);
+// ── START ──
+init();
 </script>
 </body>
 </html>
