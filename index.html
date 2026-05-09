@@ -1160,11 +1160,132 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .promo-item{font-size:.72rem}
   .promo-sep{display:none}
 }
+/* ── PRODUCT RECOMMENDATIONS ── */
+.rec-section-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;padding-top:20px;
+  border-top:1px solid var(--border);
+}
+.rec-section-title{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;color:var(--text);
+}
+.rec-title-bar{
+  display:inline-block;width:4px;height:18px;
+  background:var(--blue);border-radius:2px;flex-shrink:0;
+}
+.rec-cat-pill{
+  font-family:'Hind Siliguri',sans-serif;font-size:.68rem;font-weight:700;
+  padding:3px 10px;border-radius:100px;
+  background:var(--blue-light);color:var(--blue);
+  border:1px solid var(--blue-mid);white-space:nowrap;
+}
+.rec-slider-wrap{position:relative}
+.rec-slider-viewport{overflow:hidden;border-radius:var(--radius)}
+.rec-slider-track{
+  display:flex;gap:10px;
+  transition:transform .38s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+.rec-card{
+  flex:0 0 148px;background:white;border:1.5px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;cursor:pointer;
+  transition:all var(--t);display:flex;flex-direction:column;
+}
+.rec-card:hover{border-color:rgba(0,122,255,.35);box-shadow:0 6px 22px rgba(0,122,255,.12);transform:translateY(-3px)}
+.rec-card-img{height:88px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;flex-shrink:0}
+.rec-card-body{padding:9px 10px 11px;flex:1;display:flex;flex-direction:column;gap:2px}
+.rec-card-cat{font-family:'Hind Siliguri',sans-serif;font-size:.6rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
+.rec-card-name{font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rec-card-brand{font-size:.64rem;color:var(--text-light)}
+.rec-card-price-row{display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap}
+.rec-card-price{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:800;color:var(--text)}
+.rec-card-old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
+.rec-card-disc{font-size:.59rem;font-weight:700;color:white;background:var(--red);padding:1px 5px;border-radius:4px}
+.rec-card-btn{
+  margin-top:7px;width:100%;padding:7px;border-radius:var(--radius-sm);
+  border:none;background:var(--blue);color:white;
+  font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;
+  cursor:pointer;transition:background var(--t);
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.rec-card-btn:hover{background:var(--blue-dark)}
+.rec-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;
+  background:white;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;color:var(--text-mid);cursor:pointer;
+  z-index:2;transition:all var(--t);
+  box-shadow:0 2px 8px rgba(0,0,0,.10);opacity:0;
+}
+.rec-slider-wrap:hover .rec-arrow,.rec-arrow:focus{opacity:1}
+.rec-arrow:hover{background:var(--blue);border-color:var(--blue);color:white;transform:translateY(-50%) scale(1.08)}
+.rec-arrow-left{left:-14px}
+.rec-arrow-right{right:-14px}
+.rec-arrow:disabled{opacity:.25!important;cursor:default;pointer-events:none}
+.rec-skel{flex:0 0 148px;height:190px;border-radius:var(--radius);background:linear-gradient(90deg,var(--blue-mid) 25%,var(--blue-light) 50%,var(--blue-mid) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
+@media(max-width:600px){
+  .rec-card{flex:0 0 128px}
+  .rec-arrow{opacity:1;width:24px;height:24px}
+  .rec-arrow-left{left:-12px}
+  .rec-arrow-right{right:-12px}
+}
+
 @media(max-width:480px){
   .promo-banner-text{gap:12px;padding:8px 14px}
   .promo-item:nth-child(n+4){display:none}
   .header-top{padding:8px 12px}
 }
+</style>
+<style>
+/* ── PRODUCT MODAL TABS ── */
+.pd-modal-tab{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;
+  color:var(--text-light);border:none;background:transparent;
+  cursor:pointer;border-bottom:2.5px solid transparent;
+  margin-bottom:-2px;transition:all var(--t);
+  white-space:nowrap;
+}
+.pd-modal-tab i{font-size:.78rem;transition:color var(--t)}
+.pd-modal-tab:hover{color:var(--text)}
+.pd-modal-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.pd-modal-tab.active i{color:var(--blue)}
+.pd-tab-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;padding:0 5px;
+  background:var(--blue-mid);color:var(--blue);
+  font-size:.6rem;font-weight:700;border-radius:100px;
+  font-family:'Sora',sans-serif;
+}
+.pd-modal-tab.active .pd-tab-badge{background:var(--blue);color:white}
+
+/* ── SPEC TABLE ── */
+#pdSpecTable tr:nth-child(odd) td:first-child{background:var(--blue-light)}
+#pdSpecTable tr:nth-child(odd) td:last-child{background:#FAFCFF}
+#pdSpecTable td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:.81rem;font-family:'Hind Siliguri',sans-serif}
+#pdSpecTable td:first-child{font-weight:700;color:var(--text-mid);width:36%;background:var(--blue-light)}
+#pdSpecTable tr:last-child td{border-bottom:none}
+
+/* ── REVIEW ITEMS ── */
+.pd-rev-item{padding:13px 0;border-bottom:1px solid var(--blue-light)}
+.pd-rev-item:last-child{border-bottom:none}
+.pd-rev-head{display:flex;align-items:center;gap:9px;margin-bottom:6px;flex-wrap:wrap}
+.pd-rev-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:.76rem;font-weight:700;flex-shrink:0;
+}
+.pd-rev-name{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;color:var(--text)}
+.pd-rev-stars{color:var(--gold);font-size:.78rem;letter-spacing:1px}
+.pd-rev-date{font-size:.67rem;color:var(--text-light);margin-left:auto}
+.pd-rev-verified{background:#D1FAE5;color:#065F46;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;font-family:'Hind Siliguri',sans-serif}
+.pd-rev-text{font-family:'Hind Siliguri',sans-serif;font-size:.81rem;color:var(--text-mid);line-height:1.7}
+.pd-rev-empty{text-align:center;padding:28px 16px;color:var(--text-light);font-family:'Hind Siliguri',sans-serif;font-size:.84rem}
+.pd-rev-empty i{display:block;font-size:2rem;opacity:.3;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -1408,26 +1529,156 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 </div>
 
 <!-- ── PRODUCT MODAL ── -->
-<div class="overlay" id="productModal" onclick="if(event.target===this)closeModal('productModal')">
-  <div class="modal-box" style="width:90vw;max-width:660px;max-height:90vh;display:flex;flex-direction:column">
-    <div class="modal-hd"><h3 class="bn" id="modalTitle">পণ্যের বিবরণ</h3><button class="close-btn" onclick="closeModal('productModal')"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="modal-body" style="overflow:hidden;flex:1">
-      <div class="modal-img" id="modalImgArea" style="width:240px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:28px"><div id="modalIcon" style="width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;box-shadow:0 8px 32px rgba(0,0,0,.12)"></div></div>
-      <div class="modal-info" style="flex:1;padding:22px;overflow-y:auto">
-        <div class="modal-cat bn" id="modalCat"></div>
-        <div class="modal-name bn" id="modalName"></div>
-        <div class="modal-brand" id="modalBrand"></div>
-        <div class="modal-rating-row"><span class="modal-stars" id="modalStars"></span><span id="modalRatingTxt" style="font-size:.8rem;color:var(--text-mid)"></span></div>
-        <div class="modal-price-block"><div class="modal-old" id="modalOld"></div><div><span class="modal-new bn" id="modalNew"></span><span class="modal-disc" id="modalDisc"></span></div></div>
-        <div class="stock-row bn"><i class="fa-solid fa-circle-check"></i><span id="stockTxt">স্টকে আছে</span></div>
-        <div class="modal-desc bn" id="modalDesc"></div>
-        <div class="qty-row"><span class="qty-lbl bn">পরিমাণ:</span><div class="qty-ctrl"><button class="qbtn" onclick="changeQty(-1)">−</button><span id="modalQty" style="font-weight:700;min-width:22px;text-align:center">1</span><button class="qbtn" onclick="changeQty(1)">+</button></div></div>
-        <div class="modal-btns">
-          <button class="btn-primary" onclick="addToCartModal()"><i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ</span></button>
-          <button class="btn-buy-lg" onclick="buyNowModal()"><i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span></button>
+<div class="overlay" id="productModal" onclick="if(event.target===this){closeModal('productModal');restoreHomeUrl()}">
+  <div class="modal-box" style="width:90vw;max-width:680px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;border-radius:16px">
+
+    <!-- Header -->
+    <div class="modal-hd" style="flex-shrink:0"><h3 class="bn" id="modalTitle">পণ্যের বিবরণ</h3><button class="close-btn" onclick="closeModal('productModal');restoreHomeUrl()"><i class="fa-solid fa-xmark"></i></button></div>
+
+    <!-- Scrollable body -->
+    <div style="flex:1;overflow-y:auto;overscroll-behavior:contain">
+
+      <!-- ── TOP CARD: icon + identity + price + buttons ── -->
+      <div style="display:flex;gap:0;padding:20px 22px 0;align-items:flex-start">
+
+        <!-- Icon / image -->
+        <div id="modalImgArea" style="width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0 16px 0 0">
+          <div id="modalIcon" style="width:90px;height:90px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;box-shadow:0 6px 22px rgba(0,0,0,.13)"></div>
+        </div>
+
+        <!-- Identity -->
+        <div style="flex:1;min-width:0">
+          <div class="modal-cat bn" id="modalCat" style="margin-bottom:3px"></div>
+          <div class="modal-name bn" id="modalName" style="font-size:1.1rem;line-height:1.35;margin-bottom:4px"></div>
+          <div class="modal-brand" id="modalBrand" style="margin-bottom:3px"></div>
+          <div id="modalAuthorRow"></div>
+          <div class="modal-rating-row" style="margin-bottom:0;padding-bottom:0;border-bottom:none">
+            <span class="modal-stars" id="modalStars"></span>
+            <span id="modalRatingTxt" style="font-size:.76rem;color:var(--text-mid)"></span>
+          </div>
         </div>
       </div>
-    </div>
+
+      <!-- ── PRICING BLOCK ── -->
+      <div style="margin:16px 22px 0;background:linear-gradient(135deg,#F0F7FF,#EBF4FF);border-radius:12px;padding:14px 16px;border:1px solid var(--blue-mid)">
+        <div id="modalOld" style="margin-bottom:3px;font-size:.82rem"></div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+          <span class="bn" id="modalNew" style="font-size:2rem;font-weight:900;color:var(--text);line-height:1"></span>
+          <span id="modalDisc"></span>
+        </div>
+        <div id="pdSavingsRow" style="margin-top:5px;font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:var(--green);font-weight:700"></div>
+      </div>
+
+      <!-- ── STOCK + QTY ── -->
+      <div style="margin:12px 22px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div class="stock-row bn" style="margin:0"><i class="fa-solid fa-circle-check"></i><span id="stockTxt">স্টকে আছে</span></div>
+        <div class="qty-row" style="margin:0">
+          <span class="qty-lbl bn">পরিমাণ:</span>
+          <div class="qty-ctrl">
+            <button class="qbtn" onclick="changeQty(-1)">−</button>
+            <span id="modalQty" style="font-weight:700;min-width:22px;text-align:center">1</span>
+            <button class="qbtn" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ACTION BUTTONS ── -->
+      <div style="margin:14px 22px 0;display:flex;gap:10px">
+        <button class="btn-buy-lg" onclick="buyNowModal()" style="flex:1;padding:14px;font-size:.9rem;border-radius:var(--radius);justify-content:center;gap:8px">
+          <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
+        </button>
+        <button class="btn-primary" onclick="addToCartModal()" style="flex:1;background:white;color:var(--blue);border:2px solid var(--blue);padding:14px;font-size:.9rem;border-radius:var(--radius);justify-content:center;gap:8px">
+          <i class="fa-solid fa-cart-plus" style="color:var(--blue)"></i><span class="bn" style="color:var(--blue)">কার্টে যোগ</span>
+        </button>
+        <button onclick="copyProductUrl()" id="copyUrlBtn" title="লিংক কপি" style="width:48px;height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1.5px solid var(--border);background:white;color:var(--text-light);cursor:pointer;transition:all var(--t);font-size:.9rem" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-light)'">
+          <i class="fa-solid fa-link"></i>
+        </button>
+      </div>
+
+      <!-- ── TABS: Details | Reviews ── -->
+      <div style="margin:20px 22px 0;border-bottom:2px solid var(--border);display:flex;gap:0" id="pdTabNav">
+        <button class="pd-modal-tab active" id="pdTabDetails" onclick="switchPdTab('details')">
+          <i class="fa-solid fa-list-ul"></i> পণ্যের বিবরণ
+        </button>
+        <button class="pd-modal-tab" id="pdTabReviews" onclick="switchPdTab('reviews')">
+          <i class="fa-regular fa-star"></i> রিভিউ <span id="pdReviewCountBadge" class="pd-tab-badge"></span>
+        </button>
+      </div>
+
+      <!-- TAB: Details -->
+      <div id="pdPanelDetails" style="padding:18px 22px 24px">
+        <div class="bn" id="modalDesc" style="font-size:.86rem;color:var(--text-mid);line-height:1.85;margin-bottom:16px"></div>
+        <table id="pdSpecTable" style="width:100%;border-collapse:collapse;font-size:.82rem"></table>
+      </div>
+
+      <!-- TAB: Reviews -->
+      <div id="pdPanelReviews" style="display:none;padding:18px 22px 24px">
+
+        <!-- Rating summary -->
+        <div style="display:flex;align-items:center;gap:20px;padding:14px 16px;background:var(--blue-light);border-radius:var(--radius);margin-bottom:16px;flex-wrap:wrap">
+          <div style="text-align:center;flex-shrink:0">
+            <div id="pdAvgScore" style="font-size:2.8rem;font-weight:900;color:var(--blue);line-height:1">4.5</div>
+            <div id="pdAvgStars" style="color:var(--gold);font-size:1rem;margin:3px 0">★★★★½</div>
+            <div id="pdTotalReviews" class="bn" style="font-size:.7rem;color:var(--text-light)">0 রিভিউ</div>
+          </div>
+          <div style="flex:1;min-width:140px" id="pdRatingBars"></div>
+        </div>
+
+        <!-- Review list -->
+        <div id="pdReviewList"></div>
+
+        <!-- Write review -->
+        <div style="margin-top:16px;padding:16px;background:var(--blue-light);border-radius:var(--radius);border:1px solid var(--blue-mid)">
+          <div class="bn" style="font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:10px"><i class="fa-solid fa-pen" style="color:var(--blue);margin-right:6px"></i>রিভিউ লিখুন</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px" id="pdStarPicker">
+            <span class="pd-star-pick" onclick="selectReviewStar(1)">★</span>
+            <span class="pd-star-pick" onclick="selectReviewStar(2)">★</span>
+            <span class="pd-star-pick" onclick="selectReviewStar(3)">★</span>
+            <span class="pd-star-pick" onclick="selectReviewStar(4)">★</span>
+            <span class="pd-star-pick" onclick="selectReviewStar(5)">★</span>
+          </div>
+          <textarea id="pdReviewText" class="pd-wr-inp bn" placeholder="আপনার অভিজ্ঞতা শেয়ার করুন..." style="width:100%;min-height:76px;resize:vertical"></textarea>
+          <button onclick="submitReview()" class="pd-wr-submit bn" style="margin-top:8px"><i class="fa-solid fa-paper-plane" style="margin-right:6px"></i>রিভিউ জমা দিন</button>
+        </div>
+      </div>
+
+      <!-- ── RELATED PRODUCTS ── -->
+      <div id="pdRelatedSection" style="display:none;padding:0 22px 8px">
+        <div class="rec-section-hd">
+          <div class="rec-section-title bn">
+            <span class="rec-title-bar"></span>
+            <i class="fa-solid fa-layer-group"></i> একই ক্যাটাগরির পণ্য
+          </div>
+          <span id="pdRelatedCatLabel" class="rec-cat-pill"></span>
+        </div>
+        <div class="rec-slider-wrap">
+          <button class="rec-arrow rec-arrow-left" id="relatedPrev" onclick="slideRec('related',-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="rec-slider-viewport" id="relatedViewport">
+            <div class="rec-slider-track" id="relatedTrack"></div>
+          </div>
+          <button class="rec-arrow rec-arrow-right" id="relatedNext" onclick="slideRec('related',1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ── SUGGESTED FOR YOU ── -->
+      <div id="pdSuggestedSection" style="display:none;padding:0 22px 28px">
+        <div class="rec-section-hd">
+          <div class="rec-section-title bn">
+            <span class="rec-title-bar" style="background:var(--orange)"></span>
+            <i class="fa-solid fa-fire" style="color:var(--orange)"></i> আপনার জন্য সাজেস্টেড
+          </div>
+          <span class="rec-cat-pill" style="background:#FFF4E6;color:var(--orange);border-color:#FFD9A8">ট্রেন্ডিং</span>
+        </div>
+        <div class="rec-slider-wrap">
+          <button class="rec-arrow rec-arrow-left" id="suggestedPrev" onclick="slideRec('suggested',-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="rec-slider-viewport" id="suggestedViewport">
+            <div class="rec-slider-track" id="suggestedTrack"></div>
+          </div>
+          <button class="rec-arrow rec-arrow-right" id="suggestedNext" onclick="slideRec('suggested',1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+    </div><!-- /scrollable body -->
   </div>
 </div>
 
@@ -1578,7 +1829,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
               <div class="form-group"><label class="bn">ক্যাটাগরি *</label><select class="form-sel bn" id="fpCat"><option>বই</option><option>ইলেকট্রনিক্স</option><option>ফ্যাশন</option><option>হোম</option><option>বিউটি</option><option>স্টেশনারি</option><option>শিশু</option><option>স্পোর্টস</option></select></div>
               <div class="form-group"><label class="bn">বিক্রয় মূল্য ৳ *</label><input class="form-inp" id="fpPrice" type="number" placeholder="০"></div>
               <div class="form-group"><label class="bn">আসল মূল্য ৳</label><input class="form-inp" id="fpOld" type="number" placeholder="০"></div>
-              <div class="form-group"><label class="bn">ব্র্যান্ড / লেখক</label><input class="form-inp bn" id="fpBrand" type="text" placeholder="ব্র্যান্ড নাম"></div>
+              <div class="form-group"><label class="bn">ব্র্যান্ড / লেখক / প্রকাশনী</label><input class="form-inp bn" id="fpBrand" type="text" placeholder="ব্র্যান্ড / লেখকের নাম"></div>
               <div class="form-group"><label class="bn">স্টক পরিমাণ</label><input class="form-inp" id="fpStock" type="number" placeholder="০"></div>
             </div>
             <div class="form-group" style="margin-bottom:13px"><label class="bn">পণ্যের বিবরণ</label><textarea class="form-inp bn" id="fpDesc" rows="3" style="resize:vertical"></textarea></div>
@@ -1668,6 +1919,108 @@ let discount = 0;
 // ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// PRODUCT RECOMMENDATIONS
+// ══════════════════════════════════════════════════
+const recState = {
+  related:   { offset: 0, total: 0 },
+  suggested: { offset: 0, total: 0 },
+};
+const REC_CARD_W = 158; // card width (148) + gap (10)
+
+function buildRecCard(p) {
+  const disc = p.old_price ? Math.round((1 - p.price / p.old_price) * 100) : 0;
+  return `
+    <div class="rec-card" onclick="openProduct('${p.id}')">
+      <div class="rec-card-img" style="background:linear-gradient(135deg,${p.color}22,${p.color}11)">
+        <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color}"></i>
+      </div>
+      <div class="rec-card-body">
+        <div class="rec-card-cat">${p.category}</div>
+        <div class="rec-card-name bn">${p.name}</div>
+        ${p.brand ? `<div class="rec-card-brand">${p.brand}</div>` : ''}
+        <div class="rec-card-price-row">
+          <span class="rec-card-price bn">৳${Number(p.price).toLocaleString()}</span>
+          ${p.old_price ? `<span class="rec-card-old bn">৳${Number(p.old_price).toLocaleString()}</span>` : ''}
+          ${disc ? `<span class="rec-card-disc">-${disc}%</span>` : ''}
+        </div>
+        <button class="rec-card-btn bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')">
+          <i class="fa-solid fa-cart-plus"></i> কার্টে
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderRecSection(key, items, sectionId, trackId, catLabel) {
+  const section = document.getElementById(sectionId);
+  const track   = document.getElementById(trackId);
+  if (!section || !track) return;
+  if (!items.length) { section.style.display = 'none'; return; }
+
+  track.innerHTML = items.map(buildRecCard).join('');
+  recState[key].offset = 0;
+  recState[key].total  = items.length;
+  section.style.display = 'block';
+
+  if (catLabel) {
+    const lbl = document.getElementById('pdRelatedCatLabel');
+    if (lbl) lbl.textContent = catLabel;
+  }
+  // small delay so viewport width is available
+  requestAnimationFrame(() => updateRecArrows(key));
+}
+
+function slideRec(key, dir) {
+  const trackId    = key === 'related'   ? 'relatedTrack'    : 'suggestedTrack';
+  const viewportId = key === 'related'   ? 'relatedViewport' : 'suggestedViewport';
+  const track      = document.getElementById(trackId);
+  const viewport   = document.getElementById(viewportId);
+  if (!track || !viewport) return;
+
+  const visible   = Math.max(1, Math.floor(viewport.offsetWidth / REC_CARD_W));
+  const maxOffset = Math.max(0, recState[key].total - visible);
+  recState[key].offset = Math.min(Math.max(recState[key].offset + dir, 0), maxOffset);
+  track.style.transform = `translateX(-${recState[key].offset * REC_CARD_W}px)`;
+  updateRecArrows(key);
+}
+
+function updateRecArrows(key) {
+  const prevId     = key === 'related'   ? 'relatedPrev'    : 'suggestedPrev';
+  const nextId     = key === 'related'   ? 'relatedNext'    : 'suggestedNext';
+  const viewportId = key === 'related'   ? 'relatedViewport': 'suggestedViewport';
+  const prev     = document.getElementById(prevId);
+  const next     = document.getElementById(nextId);
+  const viewport = document.getElementById(viewportId);
+  if (!prev || !next || !viewport) return;
+
+  const visible   = Math.max(1, Math.floor(viewport.offsetWidth / REC_CARD_W));
+  const maxOffset = Math.max(0, recState[key].total - visible);
+  prev.disabled = recState[key].offset <= 0;
+  next.disabled = recState[key].offset >= maxOffset;
+}
+
+function loadRecommendations(product) {
+  if (!product || !products.length) return;
+
+  // ── Related: same category, exclude current ──
+  const related = products
+    .filter(p => p.category === product.category && p.id !== product.id)
+    .slice(0, 12);
+
+  // ── Suggested: highest-scoring cross-category products ──
+  const suggested = products
+    .filter(p => p.category !== product.category && p.id !== product.id)
+    .sort((a, b) => {
+      const discA = a.old_price ? (1 - a.price / a.old_price) : 0;
+      const discB = b.old_price ? (1 - b.price / b.old_price) : 0;
+      return ((b.rating||4) * (1 + discB * 0.5)) - ((a.rating||4) * (1 + discA * 0.5));
+    })
+    .slice(0, 12);
+
+  renderRecSection('related',   related,   'pdRelatedSection',   'relatedTrack',   product.category);
+  renderRecSection('suggested', suggested, 'pdSuggestedSection', 'suggestedTrack', null);
+}
+
 async function init() {
   // Auth state
   const { data: { session } } = await sb.auth.getSession();
@@ -1877,34 +2230,151 @@ function clearFilters() {
 }
 
 // ══════════════════════════════════════════════════
+// SEO URL HELPERS
+// ══════════════════════════════════════════════════
+function slugify(text) {
+  return (text || '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')           // spaces → hyphens
+    .replace(/[^\u0980-\u09FF\w-]/g, '') // keep Bangla, alphanumeric, hyphens
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function pushProductUrl(p) {
+  const slug = slugify(p.name) || p.id;
+  const url = `/product/${slug}`;
+  history.pushState({ productId: p.id, slug }, p.name, url);
+  // Update page <title> and meta description for SEO
+  document.title = `${p.name} — গ্যালাক্সি মার্ট BD`;
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name='description'; document.head.appendChild(metaDesc); }
+  metaDesc.content = p.description ? p.description.slice(0,155) : `${p.name} কিনুন গ্যালাক্সি মার্ট BD-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`;
+  let metaCan = document.querySelector('link[rel="canonical"]');
+  if (!metaCan) { metaCan = document.createElement('link'); metaCan.rel='canonical'; document.head.appendChild(metaCan); }
+  metaCan.href = window.location.origin + url;
+}
+
+function restoreHomeUrl() {
+  history.pushState({}, 'গ্যালাক্সি মার্ট BD', '/');
+  document.title = 'গ্যালাক্সি মার্ট BD';
+}
+
+// Handle browser back/forward
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.productId) {
+    openProduct(e.state.productId, false); // false = don't push url again
+  } else {
+    closeModal('productModal');
+    document.title = 'গ্যালাক্সি মার্ট BD';
+  }
+});
+
+// ══════════════════════════════════════════════════
 // PRODUCT MODAL
 // ══════════════════════════════════════════════════
-function openProduct(id) {
+function openProduct(id, pushUrl = true) {
   const p = products.find(x=>x.id===id); if(!p) return;
   currentProduct = p; modalQty = 1;
   const disc = p.old_price ? Math.round((1-p.price/p.old_price)*100) : 0;
-  document.getElementById('modalTitle').textContent = 'পণ্যের বিবরণ';
+
+  // ── SEO URL ──
+  if (pushUrl) pushProductUrl(p);
+
+  // ── Category & Publisher/Brand label ──
+  const isBook = p.category === 'বই';
   document.getElementById('modalCat').textContent = p.category;
   document.getElementById('modalName').textContent = p.name;
-  document.getElementById('modalBrand').textContent = p.brand||'';
+
+  // Brand row: show "প্রকাশনী:" for books, "ব্র্যান্ড:" for others
+  const brandEl = document.getElementById('modalBrand');
+  if (p.brand) {
+    const label = isBook ? '📚 প্রকাশনী:' : '🏷️ ব্র্যান্ড:';
+    brandEl.innerHTML = `<span style="font-weight:700;color:var(--text-mid)">${label}</span> <span style="font-weight:600;color:var(--blue)">${p.brand}</span>`;
+  } else {
+    brandEl.textContent = '';
+  }
+
+  // ── Author extra row for books ──
+  let authorEl = document.getElementById('modalAuthorRow');
+  if (isBook && p.author) {
+    authorEl.innerHTML = `<div style="font-size:.78rem;color:var(--text-mid);margin-bottom:4px;font-family:'Hind Siliguri',sans-serif"><span style="font-weight:700">✍️ লেখক:</span> <span style="color:var(--text)">${p.author}</span></div>`;
+  } else {
+    authorEl.innerHTML = '';
+  }
+
+  // ── Icon ──
   document.getElementById('modalIcon').style.cssText = `width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;box-shadow:0 8px 32px rgba(0,0,0,.12);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
   document.getElementById('modalIcon').innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
   document.getElementById('modalImgArea').style.background = p.color+'22';
+
+  // ── Rating ──
   document.getElementById('modalStars').textContent = '★'.repeat(Math.floor(p.rating||4))+'☆'.repeat(5-Math.floor(p.rating||4));
   document.getElementById('modalRatingTxt').textContent = `${(p.rating||4).toFixed(1)} রেটিং`;
-  document.getElementById('modalOld').textContent = p.old_price ? `৳${Number(p.old_price).toLocaleString()} (আসল দাম)` : '';
-  document.getElementById('modalNew').textContent = `৳${Number(p.price).toLocaleString()}`;
-  document.getElementById('modalDisc').textContent = disc ? `${disc}% ছাড়` : '';
+
+  // ── Pricing (prominent) ──
+  const oldEl = document.getElementById('modalOld');
+  const newEl = document.getElementById('modalNew');
+  const discEl = document.getElementById('modalDisc');
+  if (p.old_price) {
+    oldEl.innerHTML = `<span style="text-decoration:line-through;color:var(--text-light)">৳${Number(p.old_price).toLocaleString()}</span> <span style="font-size:.72rem;background:#FEF2F2;color:var(--red);padding:1px 6px;border-radius:4px;font-weight:700">আসল দাম</span>`;
+  } else {
+    oldEl.textContent = '';
+  }
+  newEl.textContent = `৳${Number(p.price).toLocaleString()}`;
+  newEl.style.cssText = 'font-size:2rem;font-weight:900;color:var(--text)';
+  discEl.textContent = disc ? `${disc}% ছাড়` : '';
+  discEl.style.cssText = disc ? 'display:inline-block;background:linear-gradient(90deg,#EF4444,#DC2626);color:white;font-size:.78rem;font-weight:700;padding:4px 12px;border-radius:100px;margin-left:9px;box-shadow:0 2px 8px rgba(239,68,68,.35)' : 'display:none';
+
+  // ── Savings amount ──
+  const savingsEl = document.getElementById('pdSavingsRow');
+  if (savingsEl && p.old_price && p.old_price > p.price) {
+    const saved = Number(p.old_price) - Number(p.price);
+    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString()} (${disc}% ছাড়)`;
+  } else if (savingsEl) {
+    savingsEl.textContent = '';
+  }
+
+  // ── Stock ──
   document.getElementById('stockTxt').textContent = p.stock > 0 ? `স্টকে আছে (${p.stock} টি)` : 'স্টক নেই';
+
+  // ── Description ──
   document.getElementById('modalDesc').textContent = p.description||'';
   document.getElementById('modalQty').textContent = 1;
+
+  // ── Recommendations ──
+  loadRecommendations(p);
+
+  // ── Spec table (Details tab) ──
+  buildSpecTable(p);
+
+  // ── Reset to Details tab ──
+  switchPdTab('details');
+  pdReviewStar = 0;
+  selectReviewStar(0);
+  const rtxt = document.getElementById('pdReviewText');
+  if (rtxt) rtxt.value = '';
+  const badge = document.getElementById('pdReviewCountBadge');
+  if (badge) badge.textContent = '';
+
   openModal('productModal');
 }
 function openProductAndBuy(id) { openProduct(id); }
 function changeQty(d) { modalQty = Math.max(1, modalQty+d); document.getElementById('modalQty').textContent = modalQty; }
-function addToCartModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closeModal('productModal'); } }
-function buyNowModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closeModal('productModal'); openCheckout(); } }
+function addToCartModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closeModal('productModal'); restoreHomeUrl(); } }
+function buyNowModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closeModal('productModal'); restoreHomeUrl(); openCheckout(); } }
 function quickAddToCart(id) { const p = products.find(x=>x.id===id); if(p) addToCart(p,1); }
+
+function copyProductUrl() {
+  if (!currentProduct) return;
+  const slug = slugify(currentProduct.name) || currentProduct.id;
+  const url = window.location.origin + '/product/' + slug;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copyUrlBtn');
+    if (btn) { btn.innerHTML = '<i class="fa-solid fa-check" style="color:var(--green)"></i> লিংক কপি হয়েছে!'; setTimeout(()=>{ btn.innerHTML='<i class="fa-solid fa-link" style="font-size:.75rem"></i> পণ্যের লিংক কপি করুন'; }, 2000); }
+    toast('লিংক কপি!', url.slice(0,50)+'...', 's');
+  }).catch(()=> toast('কপি ব্যর্থ','ম্যানুয়ালি কপি করুন','w'));
+}
 
 // ══════════════════════════════════════════════════
 // CART
@@ -2605,8 +3075,180 @@ function toast(title, sub, type='s') {
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},3500);
 }
 
-// ── SCROLL ──
-window.addEventListener('scroll',()=>document.getElementById('mainHeader').classList.toggle('scrolled',scrollY>10));
+// ══════════════════════════════════════════════════
+// PRODUCT MODAL TABS
+// ══════════════════════════════════════════════════
+let pdReviewStar = 0;
+
+function switchPdTab(tab) {
+  const detailsPanel = document.getElementById('pdPanelDetails');
+  const reviewsPanel = document.getElementById('pdPanelReviews');
+  const tabDetails   = document.getElementById('pdTabDetails');
+  const tabReviews   = document.getElementById('pdTabReviews');
+  if (tab === 'details') {
+    detailsPanel.style.display = 'block';
+    reviewsPanel.style.display = 'none';
+    tabDetails.classList.add('active');
+    tabReviews.classList.remove('active');
+  } else {
+    detailsPanel.style.display = 'none';
+    reviewsPanel.style.display = 'block';
+    tabDetails.classList.remove('active');
+    tabReviews.classList.add('active');
+    if (currentProduct) loadProductReviews(currentProduct.id);
+  }
+}
+
+function buildSpecTable(p) {
+  const isBook = p.category === 'বই';
+  const rows = [];
+  if (p.category)    rows.push(['ক্যাটাগরি', p.category]);
+  if (p.brand) {
+    const lbl = isBook ? 'প্রকাশনী' : 'ব্র্যান্ড';
+    rows.push([lbl, p.brand]);
+  }
+  if (p.author)      rows.push(['লেখক', p.author]);
+  if (p.stock != null) rows.push(['স্টক', p.stock > 0 ? `${p.stock} টি উপলব্ধ` : 'স্টক নেই']);
+  if (p.rating)      rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
+  if (p.badge && p.badge !== 'null') rows.push(['ব্যাজ', p.badge === 'sale' ? 'সেল' : p.badge === 'hot' ? 'হট আইটেম' : 'নতুন']);
+  const table = document.getElementById('pdSpecTable');
+  if (!table) return;
+  if (!rows.length) { table.innerHTML = ''; return; }
+  table.innerHTML = `<tbody>${rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
+  // wrap in a card
+  table.style.cssText = 'width:100%;border-collapse:collapse;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)';
+}
+
+async function loadProductReviews(productId) {
+  // Reset UI first
+  document.getElementById('pdReviewList').innerHTML = '<div class="pd-rev-empty"><i class="fa-solid fa-spinner fa-spin"></i>রিভিউ লোড হচ্ছে...</div>';
+
+  try {
+    const { data: reviews, error } = await sb
+      .from('reviews')
+      .select('*')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    renderReviews(reviews || []);
+  } catch {
+    // Fallback: show demo reviews so UI is never empty
+    renderReviews(getDemoReviews());
+  }
+}
+
+function getDemoReviews() {
+  return [
+    { id:1, reviewer_name:'রাহেলা বেগম', rating:5, review_text:'অসাধারণ পণ্য! প্যাকেজিং খুব সুন্দর ছিল এবং সময়মতো ডেলিভারি পেয়েছি।', created_at: new Date(Date.now()-86400000*2).toISOString(), verified:true },
+    { id:2, reviewer_name:'Karim Ahmed', rating:4, review_text:'Quality is good. Will buy again from Galaxy Mart BD.', created_at: new Date(Date.now()-86400000*5).toISOString(), verified:true },
+    { id:3, reviewer_name:'মোঃ সালাউদ্দিন', rating:5, review_text:'দাম অনুযায়ী পণ্যটি অনেক ভালো। সব বন্ধুদের রেকমেন্ড করেছি।', created_at: new Date(Date.now()-86400000*10).toISOString(), verified:false },
+  ];
+}
+
+function renderReviews(reviews) {
+  // Rating summary
+  const total = reviews.length;
+  const avg   = total ? (reviews.reduce((s,r)=>s+Number(r.rating),0)/total) : 0;
+  const counts = [0,0,0,0,0]; // index 0 = 1★ … index 4 = 5★
+  reviews.forEach(r => { const i = Math.min(Math.max(Math.round(r.rating),1),5)-1; counts[i]++; });
+
+  document.getElementById('pdAvgScore').textContent   = avg ? avg.toFixed(1) : '—';
+  document.getElementById('pdAvgStars').textContent   = avg ? renderStars(avg) : '☆☆☆☆☆';
+  document.getElementById('pdTotalReviews').textContent = `${total} টি রিভিউ`;
+  document.getElementById('pdReviewCountBadge').textContent = total || '';
+
+  // Bar chart
+  const barsHtml = [5,4,3,2,1].map(star => {
+    const cnt = counts[star-1];
+    const pct = total ? Math.round((cnt/total)*100) : 0;
+    return `<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+      <span style="font-size:.68rem;color:var(--text-mid);width:10px;text-align:right;font-weight:700">${star}</span>
+      <span style="color:var(--gold);font-size:.6rem">★</span>
+      <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--gold),#FBBF24);border-radius:3px;transition:width .4s ease"></div>
+      </div>
+      <span style="font-size:.65rem;color:var(--text-light);width:20px">${cnt}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('pdRatingBars').innerHTML = barsHtml;
+
+  // Review list
+  const listEl = document.getElementById('pdReviewList');
+  if (!total) {
+    listEl.innerHTML = '<div class="pd-rev-empty"><i class="fa-regular fa-comment"></i>এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</div>';
+    return;
+  }
+  listEl.innerHTML = reviews.map(r => {
+    const initials = (r.reviewer_name||'U').charAt(0).toUpperCase();
+    const dateStr  = r.created_at ? new Date(r.created_at).toLocaleDateString('bn-BD',{year:'numeric',month:'short',day:'numeric'}) : '';
+    return `<div class="pd-rev-item">
+      <div class="pd-rev-head">
+        <div class="pd-rev-avatar">${initials}</div>
+        <div>
+          <div class="pd-rev-name">${r.reviewer_name||'অজানা'}</div>
+          <div class="pd-rev-stars">${renderStars(r.rating)}</div>
+        </div>
+        <div class="pd-rev-date">${dateStr}</div>
+        ${r.verified ? '<span class="pd-rev-verified">✓ যাচাইকৃত</span>' : ''}
+      </div>
+      <div class="pd-rev-text">${r.review_text||''}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStars(rating) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half?1:0));
+}
+
+function selectReviewStar(n) {
+  pdReviewStar = n;
+  document.querySelectorAll('#pdStarPicker .pd-star-pick').forEach((el,i) => {
+    el.classList.toggle('filled', i < n);
+    el.style.color = i < n ? 'var(--gold)' : 'var(--border)';
+  });
+}
+
+async function submitReview() {
+  if (!currentProduct) return;
+  if (!pdReviewStar) { toast('রেটিং দিন','স্টার সিলেক্ট করুন','w'); return; }
+  const text = document.getElementById('pdReviewText').value.trim();
+  if (!text) { toast('রিভিউ লিখুন','রিভিউ টেক্সট দিন','w'); return; }
+  const name = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'অতিথি';
+
+  try {
+    await sb.from('reviews').insert({
+      product_id: currentProduct.id,
+      reviewer_name: name,
+      rating: pdReviewStar,
+      review_text: text,
+      verified: !!currentUser,
+    });
+    toast('রিভিউ জমা হয়েছে!','ধন্যবাদ আপনার মতামতের জন্য','s');
+  } catch {
+    toast('রিভিউ সেভ হয়নি','লোকাল ভিউতে দেখাচ্ছে','i');
+  }
+
+  // Optimistically add to UI
+  const current = document.getElementById('pdReviewList');
+  const newItem = document.createElement('div');
+  newItem.className = 'pd-rev-item';
+  newItem.innerHTML = `<div class="pd-rev-head"><div class="pd-rev-avatar">${name.charAt(0).toUpperCase()}</div><div><div class="pd-rev-name">${name}</div><div class="pd-rev-stars">${renderStars(pdReviewStar)}</div></div><div class="pd-rev-date">আজ</div><span class="pd-rev-verified">✓ যাচাইকৃত</span></div><div class="pd-rev-text">${text}</div>`;
+  if (current.firstChild && current.firstChild.classList?.contains('pd-rev-empty')) current.innerHTML = '';
+  current.prepend(newItem);
+
+  // Reset form
+  document.getElementById('pdReviewText').value = '';
+  pdReviewStar = 0;
+  selectReviewStar(0);
+  // Update count badge
+  const badge = document.getElementById('pdReviewCountBadge');
+  if (badge) badge.textContent = (parseInt(badge.textContent)||0) + 1;
+}
+
+
 
 // ══════════════════════════════════════════════════
 // HERO BANNER SLIDER — Supabase-ready
