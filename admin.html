@@ -359,6 +359,8 @@ body {
   transition: all var(--t); box-shadow: var(--shadow);
 }
 .kpi-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md), var(--glow); transform: translateY(-2px); }
+.kpi-card[onclick] { cursor: pointer; }
+.kpi-card[onclick]:hover { border-color: var(--amber); box-shadow: var(--shadow-md), 0 0 0 3px rgba(255,159,10,0.15); }
 .kpi-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   border-radius: var(--r) var(--r) 0 0;
@@ -844,17 +846,16 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
       </div>
 
       <div class="sb-section">System</div>
+      <div class="nav-item" data-sec="admins">
+        <i class="fa-solid fa-users-gear"></i> Manage Admins
+      </div>
       <div class="nav-item" data-sec="banners">
         <i class="fa-solid fa-images"></i> Banners
       </div>
       <div class="nav-item" data-sec="promos">
         <i class="fa-solid fa-ticket"></i> Promo Codes
       </div>
-      <div class="nav-item super-only" data-sec="admins">
-        <i class="fa-solid fa-users-gear"></i> Manage Admins
-        <span class="nav-badge" id="nb-admins" style="background:var(--purple)">—</span>
-      </div>
-      <div class="nav-item super-only" data-sec="settings">
+      <div class="nav-item" data-sec="settings">
         <i class="fa-solid fa-gear"></i> Settings
       </div>
     </nav>
@@ -864,7 +865,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
         <div class="sb-avatar" id="sbAvatar">A</div>
         <div style="min-width:0">
           <div class="sb-user-name" id="sbName">Admin</div>
-          <div class="sb-user-role" id="sbRoleBadge"><i class="fa-solid fa-circle" style="font-size:0.5rem"></i> <span id="sbRoleLabel">Loading...</span></div>
+          <div class="sb-user-role"><i class="fa-solid fa-circle" style="font-size:0.5rem"></i> Super Admin</div>
         </div>
       </div>
       <button class="sb-logout" onclick="doLogout()">
@@ -881,6 +882,9 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
       <div class="tb-title" id="topbarTitle">Dashboard</div>
       <div class="tb-right">
         <div class="live-badge"><div class="live-dot"></div>Live</div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('quickActionsModal')" style="gap:6px;padding:7px 13px;font-size:0.76rem" title="দ্রুত কাজ করুন">
+          <i class="fa-solid fa-bolt"></i> <span style="font-family:var(--font-bn)">Quick Actions</span>
+        </button>
         <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode" id="themeBtn">
           <i class="fa-solid fa-moon" id="themeIcon"></i>
         </button>
@@ -919,13 +923,13 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
             <div class="kpi-val" id="kpi-products">—</div>
             <div class="kpi-label">পণ্য সংখ্যা</div>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card" onclick="navToOrders('pending')" style="cursor:pointer" title="পেন্ডিং অর্ডার দেখুন">
             <div class="kpi-top">
               <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-clock"></i></div>
               <span class="kpi-badge dn" id="kpi-pending-badge">—</span>
             </div>
             <div class="kpi-val" id="kpi-pending">—</div>
-            <div class="kpi-label">পেন্ডিং অর্ডার</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">পেন্ডিং অর্ডার <i class="fa-solid fa-arrow-right" style="font-size:0.55rem;opacity:0.5;margin-left:3px"></i></div>
           </div>
         </div>
 
@@ -965,6 +969,20 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
           </div>
         </div>
 
+        <!-- Low Stock Alert -->
+        <div id="lowStockAlert" style="display:none;margin-bottom:18px">
+          <div class="panel" style="border-color:rgba(255,159,10,0.35);background:rgba(255,159,10,0.04)">
+            <div class="panel-header" style="border-bottom-color:rgba(255,159,10,0.2)">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(255,159,10,0.15);color:var(--amber)"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <span style="font-family:var(--font-bn);color:var(--amber)">লো স্টক সতর্কতা</span>
+              </div>
+              <span style="font-size:0.68rem;font-family:var(--mono);color:var(--amber);background:rgba(255,159,10,0.12);padding:3px 10px;border-radius:100px" id="lowStockCount">0 পণ্য</span>
+            </div>
+            <div style="padding:12px 20px 14px;display:flex;flex-wrap:wrap;gap:8px" id="lowStockItems"></div>
+          </div>
+        </div>
+
         <!-- Dynamic Revenue Area Chart + Status Breakdown -->
         <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-bottom:18px" id="dashRow">
           <div class="panel">
@@ -975,6 +993,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
               </div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div id="chartSummaryBadge" style="font-size:0.68rem;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(0,122,255,0.1);color:var(--blue)">—</div>
+                <div id="revenueCompareIndicator" style="display:none;font-size:0.7rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;display:flex;align-items:center;gap:4px"></div>
                 <div class="tf-dropdown-wrap" style="position:relative">
                   <button class="tf-btn" id="tfBtn" onclick="toggleTfDropdown()" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-size:0.74rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all var(--t);font-family:var(--font)">
                     <span id="tfLabel">আজ</span>
@@ -1161,144 +1180,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
         </div>
       </div>
 
-      <!-- ══ MANAGE ADMINS ══ -->
-      <div class="section" id="sec-admins">
-
-        <!-- Header summary cards -->
-        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-user-shield"></i></div>
-              <span class="kpi-badge na">Team</span>
-            </div>
-            <div class="kpi-val" id="adminCount">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">মোট অ্যাডমিন</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-crown"></i></div>
-              <span class="kpi-badge up">Full</span>
-            </div>
-            <div class="kpi-val" id="superCount">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">সুপার অ্যাডমিন</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-user-tie"></i></div>
-              <span class="kpi-badge na">Limited</span>
-            </div>
-            <div class="kpi-val" id="managerCount">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">ম্যানেজার</div>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
-
-          <!-- Admin list table -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-users-gear"></i></div>
-                <span style="font-family:var(--font-bn)">অ্যাডমিন টিম</span>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="loadAdmins()">
-                <i class="fa-solid fa-rotate-right"></i> Refresh
-              </button>
-            </div>
-            <div class="table-wrap">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th style="font-family:var(--font-bn)">অ্যাডমিন</th>
-                    <th style="font-family:var(--font-bn)">ভূমিকা</th>
-                    <th style="font-family:var(--font-bn)">যোগ করেছেন</th>
-                    <th style="font-family:var(--font-bn)">তারিখ</th>
-                    <th style="font-family:var(--font-bn)">অ্যাকশন</th>
-                  </tr>
-                </thead>
-                <tbody id="adminTableBody">
-                  <tr><td colspan="5" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Add admin form + role guide -->
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <!-- Add admin card -->
-            <div class="panel" id="addAdminCard">
-              <div class="panel-header" style="padding-bottom:14px">
-                <div class="panel-title">
-                  <div class="panel-title-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-user-plus"></i></div>
-                  <span style="font-family:var(--font-bn)">নতুন অ্যাডমিন যোগ করুন</span>
-                </div>
-              </div>
-              <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:13px">
-                <div class="form-group">
-                  <label class="form-label" style="font-family:var(--font-bn)">ইমেইল ঠিকানা <span class="required">*</span></label>
-                  <input class="form-inp" type="email" id="newAdminEmail" placeholder="admin@example.com">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" style="font-family:var(--font-bn)">ভূমিকা নির্ধারণ করুন <span class="required">*</span></label>
-                  <select class="form-inp" id="newAdminRole" onchange="updateRolePreview()">
-                    <option value="">— বেছে নিন —</option>
-                    <option value="super_admin">👑 Super Admin</option>
-                    <option value="manager">👤 Manager</option>
-                  </select>
-                </div>
-                <!-- Role preview card -->
-                <div id="rolePreviewCard" style="display:none;border-radius:10px;padding:12px 14px;font-size:0.76rem;line-height:1.7;font-family:var(--font-bn)"></div>
-                <div class="form-group">
-                  <label class="form-label" style="font-family:var(--font-bn)">নোট (ঐচ্ছিক)</label>
-                  <input class="form-inp" type="text" id="newAdminNote" placeholder="যেমন: প্রোডাক্ট টিম, অর্ডার টিম...">
-                </div>
-                <button class="btn btn-primary" onclick="addAdmin()" id="addAdminBtn">
-                  <i class="fa-solid fa-user-plus"></i> অ্যাডমিন যোগ করুন
-                </button>
-              </div>
-            </div>
-
-            <!-- Role permissions guide -->
-            <div class="panel">
-              <div class="panel-header" style="padding-bottom:12px">
-                <div class="panel-title">
-                  <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-shield-halved"></i></div>
-                  <span style="font-family:var(--font-bn)">পার্মিশন গাইড</span>
-                </div>
-              </div>
-              <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:9px">
-                <!-- Super Admin row -->
-                <div class="role-perm-card" style="background:linear-gradient(135deg,rgba(0,122,255,0.07),rgba(175,82,222,0.07));border:1px solid rgba(0,122,255,0.18);border-radius:10px;padding:12px 14px">
-                  <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-                    <span style="font-size:0.88rem">👑</span>
-                    <span style="font-size:0.8rem;font-weight:700;color:var(--blue);font-family:var(--font-bn)">সুপার অ্যাডমিন</span>
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> সবকিছুতে পূর্ণ অ্যাক্সেস</div>
-                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> অ্যাডমিন যোগ/বাতিল করা</div>
-                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> Settings & Analytics</div>
-                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> Delete করার ক্ষমতা</div>
-                  </div>
-                </div>
-                <!-- Manager row -->
-                <div class="role-perm-card" style="background:rgba(52,199,89,0.05);border:1px solid rgba(52,199,89,0.18);border-radius:10px;padding:12px 14px">
-                  <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-                    <span style="font-size:0.88rem">👤</span>
-                    <span style="font-size:0.8rem;font-weight:700;color:var(--green);font-family:var(--font-bn)">ম্যানেজার</span>
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> অর্ডার ম্যানেজ করা</div>
-                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> পণ্য যোগ/আপডেট করা</div>
-                    <div class="perm-row perm-no"><i class="fa-solid fa-xmark"></i> Delete করার ক্ষমতা নেই</div>
-                    <div class="perm-row perm-no"><i class="fa-solid fa-xmark"></i> Settings/Analytics নেই</div>
-                    <div class="perm-row perm-no"><i class="fa-solid fa-xmark"></i> অ্যাডমিন ম্যানেজ নেই</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- ══ SETTINGS ══ -->
       <div class="section" id="sec-settings">
         <div class="panel" style="max-width:560px">
           <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:var(--bg3);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>Supabase Configuration</div></div>
@@ -1361,6 +1243,63 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
                 </td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MANAGE ADMINS ══ -->
+      <div class="section" id="sec-admins">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+          <!-- Admin List Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-users-gear"></i></div>
+                <span style="font-family:var(--font-bn)">অ্যাডমিন তালিকা</span>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openModal('addAdminModal')">
+                <i class="fa-solid fa-user-plus"></i> <span style="font-family:var(--font-bn)">যোগ করুন</span>
+              </button>
+            </div>
+            <div style="padding:16px 20px" id="adminListPanel">
+              <div id="adminList"><!-- populated by JS --></div>
+            </div>
+          </div>
+
+          <!-- Admin Role Info -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-shield-halved"></i></div>
+                <span style="font-family:var(--font-bn)">ভূমিকা ও অনুমতি</span>
+              </div>
+            </div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+              <!-- Super Admin Role -->
+              <div style="background:rgba(0,122,255,0.05);border:1px solid rgba(0,122,255,0.2);border-radius:12px;padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+                  <div style="width:30px;height:30px;border-radius:8px;background:rgba(0,122,255,0.12);display:flex;align-items:center;justify-content:center;color:var(--blue)"><i class="fa-solid fa-crown"></i></div>
+                  <div style="font-weight:700;font-size:0.85rem;color:var(--blue)">Super Admin</div>
+                </div>
+                <div style="font-size:0.76rem;color:var(--text2);line-height:1.6;font-family:var(--font-bn)">সমস্ত অ্যাক্সেস: পণ্য, অর্ডার, অ্যাডমিন পরিচালনা, সেটিংস।</div>
+              </div>
+              <!-- Manager Role -->
+              <div style="background:rgba(175,82,222,0.05);border:1px solid rgba(175,82,222,0.2);border-radius:12px;padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+                  <div style="width:30px;height:30px;border-radius:8px;background:rgba(175,82,222,0.12);display:flex;align-items:center;justify-content:center;color:var(--purple)"><i class="fa-solid fa-user-tie"></i></div>
+                  <div style="font-weight:700;font-size:0.85rem;color:var(--purple)">Manager</div>
+                </div>
+                <div style="font-size:0.76rem;color:var(--text2);line-height:1.6;font-family:var(--font-bn)">পণ্য ও অর্ডার পরিচালনা করতে পারবেন। সেটিংস অ্যাক্সেস নেই।</div>
+              </div>
+              <!-- Viewer Role -->
+              <div style="background:rgba(52,199,89,0.05);border:1px solid rgba(52,199,89,0.2);border-radius:12px;padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+                  <div style="width:30px;height:30px;border-radius:8px;background:rgba(52,199,89,0.12);display:flex;align-items:center;justify-content:center;color:var(--green)"><i class="fa-solid fa-eye"></i></div>
+                  <div style="font-weight:700;font-size:0.85rem;color:var(--green)">Viewer</div>
+                </div>
+                <div style="font-size:0.76rem;color:var(--text2);line-height:1.6;font-family:var(--font-bn)">শুধুমাত্র ড্যাশবোর্ড ও অ্যানালিটিক্স দেখতে পারবেন।</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1770,6 +1709,82 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
             <i class="fa-solid fa-floppy-disk"></i> কোড সেভ করুন
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ADD ADMIN MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="addAdminModal" onclick="if(event.target===this)closeModal('addAdminModal')">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex;align-items:center;gap:9px">
+        <i class="fa-solid fa-user-plus" style="color:var(--blue)"></i>
+        <span style="font-family:var(--font-bn)">নতুন অ্যাডমিন যোগ করুন</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('addAdminModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;gap:13px">
+        <div class="form-group">
+          <label class="form-label">Full Name <span class="required">*</span></label>
+          <input class="form-inp" type="text" id="newAdminName" placeholder="e.g. Karim Ahmed">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address <span class="required">*</span></label>
+          <input class="form-inp" type="email" id="newAdminEmail" placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role <span class="required">*</span></label>
+          <select class="form-inp" id="newAdminRole">
+            <option value="super_admin">Super Admin</option>
+            <option value="manager" selected>Manager</option>
+            <option value="viewer">Viewer</option>
+          </select>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
+          <button class="btn btn-ghost" onclick="closeModal('addAdminModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="addAdmin()">
+            <i class="fa-solid fa-user-check"></i> <span style="font-family:var(--font-bn)">অ্যাডমিন যোগ করুন</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     QUICK ACTIONS MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="quickActionsModal" onclick="if(event.target===this)closeModal('quickActionsModal')">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex;align-items:center;gap:9px">
+        <i class="fa-solid fa-bolt" style="color:var(--amber)"></i>
+        <span style="font-family:var(--font-bn)">দ্রুত কাজ করুন</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('quickActionsModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;gap:10px">
+        <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px;border-radius:12px;width:100%;font-size:0.85rem" onclick="closeModal('quickActionsModal');openProductModal()">
+          <div style="width:34px;height:34px;border-radius:9px;background:rgba(175,82,222,0.12);display:flex;align-items:center;justify-content:center;color:var(--purple);flex-shrink:0"><i class="fa-solid fa-plus"></i></div>
+          <div style="text-align:left"><div style="font-weight:700;font-family:var(--font-bn)">নতুন পণ্য যোগ করুন</div><div style="font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">Products পেজে না গিয়ে সরাসরি পণ্য যোগ করুন</div></div>
+        </button>
+        <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px;border-radius:12px;width:100%;font-size:0.85rem" onclick="closeModal('quickActionsModal');openModal('promoModal')">
+          <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,159,10,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber);flex-shrink:0"><i class="fa-solid fa-ticket"></i></div>
+          <div style="text-align:left"><div style="font-weight:700;font-family:var(--font-bn)">প্রমো কোড তৈরি করুন</div><div style="font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">নতুন ডিসকাউন্ট কোড তৈরি করুন</div></div>
+        </button>
+        <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px;border-radius:12px;width:100%;font-size:0.85rem" onclick="closeModal('quickActionsModal');navToOrders('pending')">
+          <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,59,48,0.1);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0"><i class="fa-solid fa-clock"></i></div>
+          <div style="text-align:left"><div style="font-weight:700;font-family:var(--font-bn)">পেন্ডিং অর্ডার দেখুন</div><div style="font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">অপেক্ষমাণ অর্ডারগুলো দেখুন</div></div>
+        </button>
+        <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px;border-radius:12px;width:100%;font-size:0.85rem" onclick="closeModal('quickActionsModal');navTo('banners');openModal('bannerModal')">
+          <div style="width:34px;height:34px;border-radius:9px;background:rgba(50,173,230,0.1);display:flex;align-items:center;justify-content:center;color:var(--cyan);flex-shrink:0"><i class="fa-solid fa-images"></i></div>
+          <div style="text-align:left"><div style="font-weight:700;font-family:var(--font-bn)">নতুন ব্যানার যোগ করুন</div><div style="font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">হোমপেজে নতুন ব্যানার আপলোড করুন</div></div>
+        </button>
       </div>
     </div>
   </div>
@@ -2309,6 +2324,147 @@ function renderDashboard() {
   renderVisitorStats();
 
   renderAnalytics();
+
+  // ── NEW: Low stock alert
+  renderLowStockAlert();
+  // ── NEW: Revenue comparison (today vs yesterday)
+  renderRevenueComparison();
+}
+
+/* ══════════════════════════════════════
+   LOW STOCK ALERT
+══════════════════════════════════════ */
+function renderLowStockAlert() {
+  const LOW_STOCK_THRESHOLD = 5;
+  const lowStockProducts = allProducts.filter(p => p.is_active !== false && (p.stock || 0) < LOW_STOCK_THRESHOLD && (p.stock || 0) >= 0);
+  const alertEl = document.getElementById('lowStockAlert');
+  const itemsEl = document.getElementById('lowStockItems');
+  const countEl = document.getElementById('lowStockCount');
+  if (!alertEl || !itemsEl) return;
+
+  if (!lowStockProducts.length) {
+    alertEl.style.display = 'none';
+    return;
+  }
+  alertEl.style.display = 'block';
+  countEl.textContent = lowStockProducts.length + ' পণ্য';
+  itemsEl.innerHTML = lowStockProducts.map(p => `
+    <div onclick="navTo('products')" title="Products পেজে যান" style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid rgba(255,159,10,0.3);border-radius:10px;padding:8px 12px;cursor:pointer;transition:all var(--t)" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='rgba(255,159,10,0.3)'">
+      <div style="width:28px;height:28px;border-radius:7px;background:${p.color || '#007AFF'}18;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:${p.color || '#007AFF'};flex-shrink:0"><i class="fa-solid fa-box"></i></div>
+      <div>
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">${p.name || '—'}</div>
+        <div style="font-size:0.65rem;font-family:var(--mono);color:${p.stock === 0 ? 'var(--red)' : 'var(--amber)' };font-weight:700">${p.stock === 0 ? '⚠ Out of Stock' : p.stock + ' বাকি'}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════
+   REVENUE COMPARISON (Today vs Yesterday)
+══════════════════════════════════════ */
+function renderRevenueComparison() {
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+  const yestStr = yest.toDateString();
+
+  const todayRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr && o.status !== 'cancelled')
+    .reduce((s, o) => s + Number(o.total || 0), 0);
+  const yestRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === yestStr && o.status !== 'cancelled')
+    .reduce((s, o) => s + Number(o.total || 0), 0);
+
+  const el = document.getElementById('revenueCompareIndicator');
+  if (!el) return;
+  if (yestRev === 0 && todayRev === 0) { el.style.display = 'none'; return; }
+
+  el.style.display = 'flex';
+  if (todayRev > yestRev) {
+    const pct = yestRev > 0 ? Math.round(((todayRev - yestRev) / yestRev) * 100) : 100;
+    el.style.background = 'rgba(52,199,89,0.12)';
+    el.style.color = 'var(--green)';
+    el.innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> +${pct}% গতকালের চেয়ে বেশি`;
+  } else if (todayRev < yestRev) {
+    const pct = Math.round(((yestRev - todayRev) / yestRev) * 100);
+    el.style.background = 'rgba(255,59,48,0.1)';
+    el.style.color = 'var(--red)';
+    el.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> -${pct}% গতকালের চেয়ে কম`;
+  } else {
+    el.style.background = 'rgba(0,122,255,0.1)';
+    el.style.color = 'var(--blue)';
+    el.innerHTML = `<i class="fa-solid fa-equals"></i> গতকালের সমান`;
+  }
+}
+
+/* ══════════════════════════════════════
+   MANAGE ADMINS
+══════════════════════════════════════ */
+let allAdmins = JSON.parse(localStorage.getItem('gm_admins') || '[]');
+// Bootstrap with current user if list empty
+function bootstrapAdmins() {
+  if (!allAdmins.length && currentUser) {
+    allAdmins = [{
+      id: 1,
+      name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
+      email: currentUser.email,
+      role: 'super_admin',
+      addedAt: new Date().toISOString(),
+      avatar: currentUser.user_metadata?.avatar_url || null
+    }];
+    localStorage.setItem('gm_admins', JSON.stringify(allAdmins));
+  }
+}
+
+function renderAdminList() {
+  bootstrapAdmins();
+  const el = document.getElementById('adminList');
+  if (!el) return;
+  const roleLabels = { super_admin: 'Super Admin', manager: 'Manager', viewer: 'Viewer' };
+  const roleColors = { super_admin: 'var(--blue)', manager: 'var(--purple)', viewer: 'var(--green)' };
+  const roleIcons  = { super_admin: 'fa-crown', manager: 'fa-user-tie', viewer: 'fa-eye' };
+
+  if (!allAdmins.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-users-gear"></i></div><div class="empty-title">কোনো অ্যাডমিন নেই</div></div>`;
+    return;
+  }
+  el.innerHTML = allAdmins.map(a => `
+    <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border)">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;color:white;flex-shrink:0;overflow:hidden">
+        ${a.avatar ? `<img src="${a.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : a.name.charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.84rem;font-weight:600;color:var(--text)">${a.name}</div>
+        <div style="font-size:0.68rem;color:var(--text3);font-family:var(--mono)">${a.email}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        <span style="font-size:0.65rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;background:${roleColors[a.role]}18;color:${roleColors[a.role]};display:flex;align-items:center;gap:4px">
+          <i class="fa-solid ${roleIcons[a.role]}" style="font-size:0.55rem"></i>${roleLabels[a.role] || a.role}
+        </span>
+        ${allAdmins.length > 1 ? `<button class="btn btn-danger btn-xs" onclick="removeAdmin(${a.id})" title="Remove"><i class="fa-solid fa-trash"></i></button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function addAdmin() {
+  const name  = document.getElementById('newAdminName').value.trim();
+  const email = document.getElementById('newAdminEmail').value.trim().toLowerCase();
+  const role  = document.getElementById('newAdminRole').value;
+  if (!name || !email) { toast('Validation', 'নাম ও ইমেইল দিন', 'error'); return; }
+  if (allAdmins.find(a => a.email === email)) { toast('Duplicate', 'এই ইমেইল ইতিমধ্যে আছে', 'error'); return; }
+  allAdmins.push({ id: Date.now(), name, email, role, addedAt: new Date().toISOString(), avatar: null });
+  localStorage.setItem('gm_admins', JSON.stringify(allAdmins));
+  toast('Added!', `${name} অ্যাডমিন হিসেবে যোগ হয়েছে`, 'success');
+  closeModal('addAdminModal');
+  document.getElementById('newAdminName').value = '';
+  document.getElementById('newAdminEmail').value = '';
+  renderAdminList();
+}
+
+function removeAdmin(id) {
+  const a = allAdmins.find(x => x.id == id);
+  if (!confirm(`"${a?.name}" কে অ্যাডমিন তালিকা থেকে সরাবেন?`)) return;
+  allAdmins = allAdmins.filter(x => x.id != id);
+  localStorage.setItem('gm_admins', JSON.stringify(allAdmins));
+  toast('Removed', `${a?.name} সরিয়ে দেওয়া হয়েছে`, 'info');
+  renderAdminList();
 }
 
 function renderAnalytics() {
@@ -2864,11 +3020,21 @@ function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders') loadOrders();
   if (sec === 'banners') renderBanners();
   if (sec === 'promos') renderPromos();
+  if (sec === 'admins') renderAdminList();
+}
+
+function navToOrders(statusFilter) {
+  navTo('orders');
+  setTimeout(() => {
+    const sf = document.getElementById('orderStatusFilter');
+    if (sf && statusFilter) { sf.value = statusFilter; renderOrders(); }
+  }, 80);
+  if (window.innerWidth < 900) toggleSidebar();
 }
 
 function toggleSidebar() {
