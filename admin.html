@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Galaxy Mart BD — Admin Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
@@ -666,8 +667,82 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .promo-code-chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-ll); }
 
 /* ═══════════════════════════════════════
-   RESPONSIVE (continued)
+   TIMEFRAME DROPDOWN
 ═══════════════════════════════════════ */
+.tf-option {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 15px;
+  font-size: 0.8rem; font-weight: 500; color: var(--text2);
+  cursor: pointer; transition: all var(--t);
+  font-family: var(--font-bn);
+}
+.tf-option:hover { background: var(--hover); color: var(--text); }
+.tf-option.active { background: var(--blue-ll); color: var(--blue); font-weight: 700; }
+[data-theme="dark"] .tf-option.active { background: rgba(0,122,255,0.15); }
+.tf-option i { width: 14px; text-align: center; font-size: 0.75rem; }
+
+/* Top Products List */
+.top-prod-row {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+}
+.top-prod-row:last-child { border-bottom: none; }
+.top-prod-rank {
+  width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 800; font-family: var(--mono);
+}
+.top-prod-rank.r1 { background: linear-gradient(135deg,#FFD700,#FF8C00); color: white; }
+.top-prod-rank.r2 { background: linear-gradient(135deg,#C0C0C0,#888); color: white; }
+.top-prod-rank.r3 { background: linear-gradient(135deg,#CD7F32,#A0522D); color: white; }
+.top-prod-rank.rn { background: var(--bg3); color: var(--text3); }
+.top-prod-info { flex: 1; min-width: 0; }
+.top-prod-name { font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-prod-cat { font-size: 0.65rem; color: var(--text3); font-family: var(--mono); }
+.top-prod-stats { text-align: right; flex-shrink: 0; }
+.top-prod-count { font-size: 0.82rem; font-weight: 800; color: var(--text); }
+.top-prod-revenue { font-size: 0.65rem; color: var(--green); font-family: var(--mono); }
+
+/* Visitor stats */
+.visitor-stat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.visitor-stat-row:last-child { border-bottom: none; }
+.visitor-bar-wrap { flex: 1; margin: 0 12px; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.visitor-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+/* ═══════════════════════════════════════
+   TIMEFRAME DROPDOWN (continued)
+═══════════════════════════════════════ */
+.order-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 9px 9px 0 0;
+  border: 1px solid transparent; border-bottom: none;
+  background: transparent; color: var(--text3);
+  font-family: var(--font); font-size: 0.76rem; font-weight: 600;
+  cursor: pointer; transition: all var(--t);
+  position: relative; bottom: -1px;
+}
+.order-tab:hover { color: var(--text2); background: var(--hover); }
+.order-tab.active {
+  background: var(--surface); color: var(--blue);
+  border-color: var(--border); border-bottom-color: var(--surface);
+}
+.order-tab-panel { display: none; }
+.order-tab-panel.active { display: block; animation: secIn 0.2s ease both; }
+
+.oe-item-row {
+  display: grid; grid-template-columns: 1fr 80px 90px;
+  gap: 8px; align-items: center;
+  padding: 9px 12px; border-radius: 9px;
+  background: var(--bg3); border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.oe-item-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oe-item-sub { font-size: 0.68rem; color: var(--text3); }
+
+
 @media (max-width: 900px) {
   :root { --sidebar-w: 0px; }
   #sidebar { transform: translateX(-260px); width: 260px; }
@@ -850,49 +925,116 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
           </div>
         </div>
 
-        <!-- Charts row -->
+        <!-- Visitor + Conversion KPIs -->
+        <div class="kpi-grid" id="visitorKPIs" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(50,173,230,0.1);color:var(--cyan)"><i class="fa-solid fa-eye"></i></div>
+              <span class="kpi-badge na" id="kpi-visitor-badge">আজ</span>
+            </div>
+            <div class="kpi-val" id="kpi-daily-visitors">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের ভিজিটর</div>
+          </div>
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-users"></i></div>
+              <span class="kpi-badge up" id="kpi-weekly-visitor-badge">৭ দিন</span>
+            </div>
+            <div class="kpi-val" id="kpi-weekly-visitors">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">সাপ্তাহিক ভিজিটর</div>
+          </div>
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-chart-line"></i></div>
+              <span class="kpi-badge up" id="kpi-conv-badge">—</span>
+            </div>
+            <div class="kpi-val" id="kpi-conv-rate">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">Conversion Rate</div>
+          </div>
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-fire-flame-curved"></i></div>
+              <span class="kpi-badge na">Live</span>
+            </div>
+            <div class="kpi-val" id="kpi-today-revenue">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের আয়</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Revenue Area Chart + Status Breakdown -->
         <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-bottom:18px" id="dashRow">
           <div class="panel">
             <div class="panel-header">
               <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-chart-column"></i></div>
-                Revenue — Last 7 Days
+                <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-chart-area"></i></div>
+                <span id="revenueChartTitle" style="font-family:var(--font-bn)">আজকের রেভিনিউ</span>
               </div>
-              <span style="font-size:0.7rem;font-family:var(--mono);background:var(--blue-ll);color:var(--blue);padding:3px 10px;border-radius:100px;font-weight:700">Weekly</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="chartSummaryBadge" style="font-size:0.68rem;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(0,122,255,0.1);color:var(--blue)">—</div>
+                <div class="tf-dropdown-wrap" style="position:relative">
+                  <button class="tf-btn" id="tfBtn" onclick="toggleTfDropdown()" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-size:0.74rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all var(--t);font-family:var(--font)">
+                    <span id="tfLabel">আজ</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;transition:transform 0.2s" id="tfChevron"></i>
+                  </button>
+                  <div id="tfDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:200;min-width:140px;overflow:hidden">
+                    <div class="tf-option active" data-tf="today" onclick="selectTimeframe(this)"><i class="fa-regular fa-clock"></i> আজ</div>
+                    <div class="tf-option" data-tf="7days" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-week"></i> শেষ ৭ দিন</div>
+                    <div class="tf-option" data-tf="30days" onclick="selectTimeframe(this)"><i class="fa-regular fa-calendar"></i> শেষ ৩০ দিন</div>
+                    <div class="tf-option" data-tf="year" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-days"></i> এই বছর</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="chart-container">
-              <div class="chart-bars" id="revenueChart"></div>
+            <div style="padding:4px 16px 16px;position:relative;min-height:200px">
+              <canvas id="revenueChartCanvas" style="max-height:210px"></canvas>
             </div>
           </div>
           <div class="panel">
             <div class="panel-header">
               <div class="panel-title">
                 <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-circle-half-stroke"></i></div>
-                Order Status
+                <span style="font-family:var(--font-bn)">অর্ডার স্ট্যাটাস</span>
               </div>
             </div>
             <div style="padding:16px 20px" id="statusBreakdown"></div>
           </div>
         </div>
 
-        <!-- Recent orders -->
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">
-              <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-bolt"></i></div>
-              Recent Orders
+        <!-- Top Products + Recent Orders row -->
+        <div style="display:grid;grid-template-columns:1fr 1.8fr;gap:16px;margin-bottom:18px">
+          <!-- Top 5 Selling Products -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(255,159,10,0.12);color:var(--amber)"><i class="fa-solid fa-trophy"></i></div>
+                <span style="font-family:var(--font-bn)">টপ ৫ পণ্য</span>
+              </div>
+              <span style="font-size:0.65rem;font-family:var(--mono);color:var(--text3)" id="topProdPeriod">সব সময়</span>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="navTo('orders')">সব দেখুন <i class="fa-solid fa-arrow-right"></i></button>
+            <div style="padding:10px 16px 16px" id="topProductsList">
+              <div style="text-align:center;padding:24px"><div class="spinner" style="margin:auto"></div></div>
+            </div>
           </div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead><tr>
-                <th>Order #</th><th>Customer</th><th>District</th><th>Total</th><th>Status</th><th>Date</th>
-              </tr></thead>
-              <tbody id="recentOrdersBody">
-                <tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
-              </tbody>
-            </table>
+
+          <!-- Recent orders -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-bolt"></i></div>
+                <span style="font-family:var(--font-bn)">সাম্প্রতিক অর্ডার</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="navTo('orders')" style="font-family:var(--font-bn)">সব দেখুন <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr>
+                  <th>Order #</th><th>Customer</th><th>District</th><th>Total</th><th>Status</th><th>Date</th>
+                </tr></thead>
+                <tbody id="recentOrdersBody">
+                  <tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -972,14 +1114,44 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 
       <!-- ══ ANALYTICS ══ -->
       <div class="section" id="sec-analytics">
+        <!-- KPI Row -->
         <div class="kpi-grid" id="analyticsKPIs" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px"></div>
+
+        <!-- Visitor Stats Row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(50,173,230,0.1);color:var(--cyan)"><i class="fa-solid fa-eye"></i></div>
+                <span style="font-family:var(--font-bn)">ভিজিটর ট্র্যাকিং</span>
+              </div>
+              <span style="font-size:0.65rem;font-family:var(--mono);color:var(--green);background:rgba(52,199,89,0.1);padding:3px 8px;border-radius:100px"><i class="fa-solid fa-circle" style="font-size:0.45rem"></i> Live</span>
+            </div>
+            <div style="padding:16px 20px" id="visitorStatsPanel">
+              <div style="text-align:center;padding:20px"><div class="spinner" style="margin:auto"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(255,159,10,0.12);color:var(--amber)"><i class="fa-solid fa-trophy"></i></div>
+                <span style="font-family:var(--font-bn)">সেরা ৫ পণ্য</span>
+              </div>
+            </div>
+            <div style="padding:10px 16px 16px" id="analyticsTopProducts">
+              <div style="text-align:center;padding:20px"><div class="spinner" style="margin:auto"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category + District -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="panel">
-            <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-layer-group"></i></div>Category Breakdown</div></div>
+            <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-layer-group"></i></div><span style="font-family:var(--font-bn)">ক্যাটাগরি বিশ্লেষণ</span></div></div>
             <div style="padding:18px 20px" id="categoryBreakdown"></div>
           </div>
           <div class="panel">
-            <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-map-location-dot"></i></div>Top Districts</div></div>
+            <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-map-location-dot"></i></div><span style="font-family:var(--font-bn)">শীর্ষ জেলা</span></div></div>
             <div style="padding:18px 20px" id="districtBreakdown"></div>
           </div>
         </div>
@@ -1170,15 +1342,185 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 </div>
 
 <!-- ══════════════════════════════════════
-     ORDER DETAIL MODAL
+     ORDER DETAIL MODAL (Advanced)
 ══════════════════════════════════════ -->
 <div class="modal-overlay" id="orderModal" onclick="if(event.target===this)closeModal('orderModal')">
-  <div class="modal-box" style="max-width:520px">
+  <div class="modal-box" style="max-width:680px">
     <div class="modal-header">
-      <div class="modal-title">Order Details</div>
-      <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="modal-title" id="orderModalTitle">Order Details</div>
+        <span id="orderModalBadge" class="pill" style="font-size:0.62rem"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="orderEditToggle" onclick="toggleOrderEdit()">
+          <i class="fa-solid fa-pen"></i> Edit
+        </button>
+        <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
     </div>
-    <div class="modal-body" id="orderModalContent"></div>
+    <div class="modal-body" id="orderModalContent">
+      <!-- Tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
+        <button class="order-tab active" data-tab="overview" onclick="switchOrderTab('overview')">
+          <i class="fa-solid fa-circle-info"></i> Overview
+        </button>
+        <button class="order-tab" data-tab="edit" onclick="switchOrderTab('edit')">
+          <i class="fa-solid fa-pen-to-square"></i> Edit Info
+        </button>
+        <button class="order-tab" data-tab="actions" onclick="switchOrderTab('actions')">
+          <i class="fa-solid fa-sliders"></i> Actions
+        </button>
+        <button class="order-tab" data-tab="courier" onclick="switchOrderTab('courier')">
+          <i class="fa-solid fa-truck-fast"></i> Courier
+        </button>
+      </div>
+
+      <!-- TAB: OVERVIEW -->
+      <div class="order-tab-panel active" id="otab-overview">
+        <div id="overview-customer-block"></div>
+        <div id="overview-items-block" style="margin-top:13px"></div>
+        <div id="overview-price-block" style="margin-top:13px"></div>
+        <div id="overview-note-block" style="margin-top:13px"></div>
+        <div id="overview-courier-block" style="margin-top:13px"></div>
+        <!-- Status buttons -->
+        <div style="margin-top:14px">
+          <div style="font-size:0.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:9px">Update Status</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px" id="statusBtnRow"></div>
+        </div>
+      </div>
+
+      <!-- TAB: EDIT INFO -->
+      <div class="order-tab-panel" id="otab-edit">
+        <div style="display:grid;gap:13px">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Customer Name</label>
+              <input class="form-inp" type="text" id="oe-name" placeholder="Customer Name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-inp" type="text" id="oe-phone" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-inp" type="email" id="oe-email" placeholder="customer@email.com">
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">District</label>
+              <input class="form-inp" type="text" id="oe-district" placeholder="e.g. Dhaka">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Delivery Fee (৳)</label>
+              <input class="form-inp" type="number" id="oe-delivery-fee" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address</label>
+            <textarea class="form-inp" id="oe-address" rows="2" placeholder="Full delivery address..."></textarea>
+          </div>
+          <div style="margin-top:4px">
+            <div style="font-size:0.68rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">
+              <i class="fa-solid fa-boxes-stacked" style="margin-right:5px"></i>Items — Quantity & Price
+            </div>
+            <div id="oe-items-list" style="display:grid;gap:7px"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;border-top:1px solid var(--border)">
+            <button class="btn btn-ghost" onclick="switchOrderTab('overview')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveOrderEdits()">
+              <i class="fa-solid fa-floppy-disk"></i> Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ACTIONS (Discount & Notes) -->
+      <div class="order-tab-panel" id="otab-actions">
+        <div style="display:grid;gap:14px">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
+            <div style="font-size:0.7rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
+              <i class="fa-solid fa-tag" style="color:var(--red)"></i> Manual Discount
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Discount Type</label>
+                <select class="form-inp" id="oa-discount-type" onchange="updateDiscountPreview()">
+                  <option value="flat">Flat Amount (৳)</option>
+                  <option value="percent">Percentage (%)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Discount Value</label>
+                <input class="form-inp" type="number" id="oa-discount-val" placeholder="0" min="0" oninput="updateDiscountPreview()">
+              </div>
+            </div>
+            <div id="oa-discount-preview" style="font-size:0.78rem;color:var(--text2);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 13px;display:none;margin-top:4px"></div>
+            <button class="btn btn-primary btn-sm" onclick="applyDiscount()" style="margin-top:10px">
+              <i class="fa-solid fa-check"></i> Apply Discount
+            </button>
+          </div>
+
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
+            <div style="font-size:0.7rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
+              <i class="fa-solid fa-message" style="color:var(--blue)"></i> Customer Note
+            </div>
+            <div class="form-group">
+              <label class="form-label">Note / Message to Customer</label>
+              <textarea class="form-inp" id="oa-note" rows="3" placeholder="এই note টি customer তার My Account পেজে দেখতে পাবে..."></textarea>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="saveOrderNote()" style="margin-top:6px">
+              <i class="fa-solid fa-paper-plane"></i> Save Note
+            </button>
+          </div>
+
+          <!-- Price summary -->
+          <div style="background:linear-gradient(135deg,var(--blue-ll),var(--bg3));border:1px solid rgba(0,122,255,0.2);border-radius:10px;padding:14px" id="oa-price-summary"></div>
+        </div>
+      </div>
+
+      <!-- TAB: COURIER -->
+      <div class="order-tab-panel" id="otab-courier">
+        <div style="display:grid;gap:14px">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px">
+            <div style="font-size:0.7rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">
+              <i class="fa-solid fa-truck-fast" style="color:var(--cyan)"></i> Courier Tracking
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Courier Service</label>
+              <select class="form-inp" id="oc-service">
+                <option value="">— Select Courier —</option>
+                <option value="Pathao Courier">Pathao Courier</option>
+                <option value="Steadfast">Steadfast</option>
+                <option value="RedX">RedX</option>
+                <option value="Sundarban Courier">Sundarban Courier</option>
+                <option value="SA Paribahan">SA Paribahan</option>
+                <option value="Paperfly">Paperfly</option>
+                <option value="eCourier">eCourier</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Tracking ID / Waybill</label>
+              <input class="form-inp" type="text" id="oc-tracking-id" placeholder="Tracking number...">
+            </div>
+            <div class="form-group" style="margin-bottom:14px">
+              <label class="form-label">Tracking Link <span style="color:var(--text3)">(Customer will see this)</span></label>
+              <input class="form-inp" type="url" id="oc-tracking-link" placeholder="https://tracking.example.com/...">
+            </div>
+            <div id="oc-current" style="margin-bottom:12px"></div>
+            <button class="btn btn-primary" onclick="saveCourierInfo()">
+              <i class="fa-solid fa-floppy-disk"></i> Save Courier Info
+            </button>
+          </div>
+          <div style="background:rgba(50,173,230,0.06);border:1px solid rgba(50,173,230,0.2);border-radius:10px;padding:13px;font-size:0.78rem;color:var(--text2);line-height:1.65;font-family:var(--font-bn)">
+            <i class="fa-solid fa-circle-info" style="color:var(--cyan);margin-right:6px"></i>
+            Courier info সেভ করলে customer তার "My Orders" পেজ থেকে tracking link দেখতে পাবে এবং directly courier site-এ যেতে পারবে।
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -1366,6 +1708,10 @@ function setTheme(theme) {
   const icon = document.getElementById('themeIcon');
   if (icon) icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
   localStorage.setItem('gm_theme', theme);
+  // Re-render chart with new theme colors
+  if (revenueChartInstance && allOrders.length >= 0) {
+    setTimeout(() => renderRevenueChart(currentTimeframe), 50);
+  }
 }
 
 function toggleTheme() {
@@ -1440,8 +1786,9 @@ async function doLogout() {
    DATA LOADING
 ══════════════════════════════════════ */
 async function refreshAll() {
-  await Promise.all([loadProducts(), loadOrders()]);
+  await Promise.all([loadProducts(), loadOrders(), loadVisitorStats()]);
   renderDashboard();
+  setupRealtimeSubscription();
 }
 
 async function loadProducts() {
@@ -1460,6 +1807,314 @@ async function loadOrders() {
   allOrders = data || [];
   document.getElementById('nb-orders').textContent = allOrders.length;
   renderOrders();
+}
+
+/* ══════════════════════════════════════
+   CHART.JS REVENUE CHART — DYNAMIC
+══════════════════════════════════════ */
+let revenueChartInstance = null;
+let currentTimeframe = 'today';
+let allVisitors = [];
+let realtimeChannel = null;
+
+function getTimeframeBuckets(tf) {
+  const now = new Date();
+  if (tf === 'today') {
+    // Hours 0-23
+    return Array.from({ length: 24 }, (_, h) => ({
+      label: h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h-12) + 'p',
+      total: 0, orders: 0,
+      match: (d) => {
+        const od = new Date(d);
+        return od.toDateString() === now.toDateString() && od.getHours() === h;
+      }
+    }));
+  }
+  if (tf === '7days') {
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now); d.setDate(d.getDate() - 6 + i);
+      return { label: days[d.getDay()], total: 0, orders: 0, dateStr: d.toDateString(),
+        match: (od) => new Date(od).toDateString() === d.toDateString() };
+    });
+  }
+  if (tf === '30days') {
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(now); d.setDate(d.getDate() - 29 + i);
+      return { label: i % 5 === 0 ? (d.getDate() + '/' + (d.getMonth()+1)) : '', total: 0, orders: 0, dateStr: d.toDateString(),
+        match: (od) => new Date(od).toDateString() === d.toDateString() };
+    });
+  }
+  if (tf === 'year') {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return Array.from({ length: 12 }, (_, m) => ({
+      label: months[m], total: 0, orders: 0,
+      match: (od) => { const d = new Date(od); return d.getFullYear() === now.getFullYear() && d.getMonth() === m; }
+    }));
+  }
+  return [];
+}
+
+function buildChartData(tf) {
+  const buckets = getTimeframeBuckets(tf);
+  allOrders.forEach(o => {
+    if (!o.created_at || o.status === 'cancelled') return;
+    const b = buckets.find(bk => bk.match(o.created_at));
+    if (b) { b.total += Number(o.total || 0); b.orders += 1; }
+  });
+  return buckets;
+}
+
+function renderRevenueChart(tf) {
+  const buckets = buildChartData(tf);
+  const labels = buckets.map(b => b.label);
+  const data = buckets.map(b => b.total);
+  const totalRev = data.reduce((s, v) => s + v, 0);
+  const totalOrd = buckets.reduce((s, b) => s + b.orders, 0);
+
+  // Update badge
+  const tfNames = { today:'আজ', '7days':'৭ দিন', '30days':'৩০ দিন', year:'এই বছর' };
+  const tfTitles = { today:'আজকের রেভিনিউ', '7days':'শেষ ৭ দিনের রেভিনিউ', '30days':'শেষ ৩০ দিনের রেভিনিউ', year:'বার্ষিক রেভিনিউ' };
+  document.getElementById('revenueChartTitle').textContent = tfTitles[tf] || 'রেভিনিউ';
+  document.getElementById('chartSummaryBadge').textContent = `৳${totalRev.toLocaleString()} · ${totalOrd} orders`;
+  document.getElementById('tfLabel').textContent = tfNames[tf] || 'আজ';
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+  const textColor = isDark ? '#94A3B8' : '#94A3B8';
+
+  const ctx = document.getElementById('revenueChartCanvas').getContext('2d');
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, 210);
+  grad.addColorStop(0, 'rgba(0,122,255,0.28)');
+  grad.addColorStop(1, 'rgba(0,122,255,0.01)');
+
+  if (revenueChartInstance) revenueChartInstance.destroy();
+
+  revenueChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Revenue (৳)',
+        data,
+        fill: true,
+        backgroundColor: grad,
+        borderColor: '#007AFF',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#007AFF',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: data.some(v => v > 0) ? (tf === '30days' ? 2 : 4) : 0,
+        pointHoverRadius: 6,
+        tension: 0.45,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: isDark ? '#1A2236' : '#fff',
+          borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0',
+          borderWidth: 1,
+          titleColor: isDark ? '#F1F5F9' : '#0F172A',
+          bodyColor: '#94A3B8',
+          padding: 10,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (item) => ` ৳${Number(item.raw).toLocaleString()}`,
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor, drawBorder: false },
+          ticks: { color: textColor, font: { size: 10, family: "'JetBrains Mono'" }, maxRotation: 0 }
+        },
+        y: {
+          grid: { color: gridColor, drawBorder: false },
+          ticks: {
+            color: textColor,
+            font: { size: 10, family: "'JetBrains Mono'" },
+            callback: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+function toggleTfDropdown() {
+  const dd = document.getElementById('tfDropdown');
+  const ch = document.getElementById('tfChevron');
+  const open = dd.style.display !== 'none';
+  dd.style.display = open ? 'none' : 'block';
+  ch.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function selectTimeframe(el) {
+  document.querySelectorAll('.tf-option').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+  currentTimeframe = el.dataset.tf;
+  document.getElementById('tfDropdown').style.display = 'none';
+  document.getElementById('tfChevron').style.transform = '';
+  renderRevenueChart(currentTimeframe);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tf-dropdown-wrap')) {
+    const dd = document.getElementById('tfDropdown');
+    if (dd) { dd.style.display = 'none'; document.getElementById('tfChevron').style.transform = ''; }
+  }
+});
+
+/* ══════════════════════════════════════
+   VISITOR TRACKING (Supabase)
+══════════════════════════════════════ */
+async function loadVisitorStats() {
+  if (!sb) return;
+  // Try visitor_logs table; gracefully handle if missing
+  try {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const weekStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).toISOString();
+
+    const { data: todayData } = await sb.from('visitor_logs').select('id', { count: 'exact' })
+      .gte('created_at', todayStart);
+    const { count: todayCount } = await sb.from('visitor_logs').select('*', { count: 'exact', head: true })
+      .gte('created_at', todayStart);
+    const { count: weekCount } = await sb.from('visitor_logs').select('*', { count: 'exact', head: true })
+      .gte('created_at', weekStart);
+
+    allVisitors = { today: todayCount || 0, week: weekCount || 0 };
+  } catch {
+    allVisitors = { today: 0, week: 0 };
+  }
+  renderVisitorStats();
+}
+
+function renderVisitorStats() {
+  const v = allVisitors;
+  const todayV = v.today || 0;
+  const weekV  = v.week  || 0;
+  // Conversion = orders today / visitors today
+  const now = new Date();
+  const todayOrders = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === now.toDateString()).length;
+  const convRate = todayV > 0 ? ((todayOrders / todayV) * 100).toFixed(1) : '—';
+  const todayRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === now.toDateString() && o.status !== 'cancelled')
+    .reduce((s,o) => s+Number(o.total||0), 0);
+
+  // Dashboard visitor KPIs
+  const dvEl = document.getElementById('kpi-daily-visitors');
+  const wvEl = document.getElementById('kpi-weekly-visitors');
+  const crEl = document.getElementById('kpi-conv-rate');
+  const trEl = document.getElementById('kpi-today-revenue');
+  if (dvEl) dvEl.textContent = todayV.toLocaleString();
+  if (wvEl) wvEl.textContent = weekV.toLocaleString();
+  if (crEl) { crEl.textContent = convRate !== '—' ? convRate + '%' : '—'; document.getElementById('kpi-conv-badge').textContent = convRate !== '—' ? convRate+'%' : 'N/A'; }
+  if (trEl) trEl.textContent = '৳' + todayRev.toLocaleString();
+
+  // Analytics panel
+  const vp = document.getElementById('visitorStatsPanel');
+  if (!vp) return;
+  const maxV = Math.max(todayV, weekV, 1);
+  vp.innerHTML = `
+    <div class="visitor-stat-row">
+      <div style="font-size:0.78rem;font-weight:600;min-width:90px;font-family:var(--font-bn)">আজকের ভিজিটর</div>
+      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${Math.round(todayV/maxV*100)}%;background:linear-gradient(90deg,var(--cyan),var(--blue))"></div></div>
+      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--cyan)">${todayV.toLocaleString()}</div>
+    </div>
+    <div class="visitor-stat-row">
+      <div style="font-size:0.78rem;font-weight:600;min-width:90px;font-family:var(--font-bn)">সাপ্তাহিক ভিজিটর</div>
+      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${Math.round(weekV/maxV*100)}%;background:linear-gradient(90deg,var(--purple),var(--blue))"></div></div>
+      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--purple)">${weekV.toLocaleString()}</div>
+    </div>
+    <div class="visitor-stat-row">
+      <div style="font-size:0.78rem;font-weight:600;min-width:90px;font-family:var(--font-bn)">আজকের অর্ডার</div>
+      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${Math.round(todayOrders/Math.max(todayOrders,1)*100)}%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div></div>
+      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--green)">${todayOrders.toLocaleString()}</div>
+    </div>
+    <div class="visitor-stat-row">
+      <div style="font-size:0.78rem;font-weight:600;min-width:90px">Conversion</div>
+      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${convRate !== '—' ? Math.min(parseFloat(convRate)*10,100) : 0}%;background:linear-gradient(90deg,var(--amber),var(--red))"></div></div>
+      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--amber)">${convRate !== '—' ? convRate+'%' : '—'}</div>
+    </div>
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">
+      <i class="fa-solid fa-circle-info" style="margin-right:4px"></i>
+      visitor_logs টেবিল থেকে data আসছে। টেবিল না থাকলে 0 দেখাবে।
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   TOP 5 SELLING PRODUCTS
+══════════════════════════════════════ */
+function computeTopProducts() {
+  const productSales = {};
+  allOrders.forEach(o => {
+    if (o.status === 'cancelled') return;
+    const items = Array.isArray(o.items) ? o.items : [];
+    items.forEach(i => {
+      const key = i.product_id || i.name || 'Unknown';
+      if (!productSales[key]) productSales[key] = { name: i.name || 'Unknown', qty: 0, revenue: 0, id: i.product_id };
+      productSales[key].qty += Number(i.qty || 1);
+      productSales[key].revenue += Number(i.price || 0) * Number(i.qty || 1);
+    });
+  });
+  return Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, 5);
+}
+
+function renderTopProducts(containerId) {
+  const top = computeTopProducts();
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!top.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:0.8rem;font-family:var(--font-bn)">কোনো sales data নেই</div>`;
+    return;
+  }
+  const rankClass = ['r1','r2','r3','rn','rn'];
+  el.innerHTML = top.map((p, i) => `
+    <div class="top-prod-row">
+      <div class="top-prod-rank ${rankClass[i]}">${i+1}</div>
+      <div class="top-prod-info">
+        <div class="top-prod-name">${p.name}</div>
+        <div class="top-prod-cat">${p.qty} units sold</div>
+      </div>
+      <div class="top-prod-stats">
+        <div class="top-prod-count">${p.qty} <span style="font-size:0.6rem;color:var(--text3);font-weight:400">units</span></div>
+        <div class="top-prod-revenue">৳${p.revenue.toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════
+   REALTIME SUBSCRIPTION
+══════════════════════════════════════ */
+function setupRealtimeSubscription() {
+  if (!sb || realtimeChannel) return;
+  realtimeChannel = sb.channel('dashboard-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async (payload) => {
+      // Update local state without full reload
+      if (payload.eventType === 'INSERT') {
+        allOrders.unshift(payload.new);
+      } else if (payload.eventType === 'UPDATE') {
+        const idx = allOrders.findIndex(o => o.id === payload.new.id);
+        if (idx !== -1) allOrders[idx] = payload.new; else allOrders.unshift(payload.new);
+      } else if (payload.eventType === 'DELETE') {
+        allOrders = allOrders.filter(o => o.id !== payload.old.id);
+      }
+      document.getElementById('nb-orders').textContent = allOrders.length;
+      renderDashboard();
+      renderOrders();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visitor_logs' }, async () => {
+      await loadVisitorStats();
+    })
+    .subscribe();
 }
 
 /* ══════════════════════════════════════
@@ -1491,25 +2146,8 @@ function renderDashboard() {
       </tr>`).join('')
     : '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div><div class="empty-title">No orders yet</div></div></td></tr>';
 
-  // Revenue chart
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const now = new Date();
-  const buckets = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(now); d.setDate(d.getDate() - 6 + i);
-    return { label: days[d.getDay()], total: 0, dateStr: d.toDateString() };
-  });
-  allOrders.forEach(o => {
-    if (!o.created_at) return;
-    const ds = new Date(o.created_at).toDateString();
-    const b = buckets.find(b => b.dateStr === ds);
-    if (b) b.total += Number(o.total || 0);
-  });
-  const maxRev = Math.max(...buckets.map(b => b.total), 1);
-  document.getElementById('revenueChart').innerHTML = buckets.map(b => `
-    <div class="chart-col">
-      <div class="chart-bar" style="height:${Math.max((b.total / maxRev) * 100, 4)}%" title="৳${b.total.toLocaleString()}"></div>
-      <div class="chart-label">${b.label}</div>
-    </div>`).join('');
+  // Dynamic area chart
+  renderRevenueChart(currentTimeframe);
 
   // Status breakdown
   const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -1519,10 +2157,15 @@ function renderDashboard() {
     const cnt = allOrders.filter(o => o.status === s).length;
     const pct = Math.round(cnt / total * 100);
     return `<div class="breakdown-row">
-      <div class="breakdown-top"><span class="breakdown-name">${cap(s)}</span><span class="breakdown-val">${cnt}</span></div>
+      <div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${cap(s)}</span><span class="breakdown-val">${cnt}</span></div>
       <div class="breakdown-bar"><div class="breakdown-fill" style="width:${pct}%;background:${statusColors[s]}"></div></div>
     </div>`;
   }).join('');
+
+  // Top products on dashboard
+  renderTopProducts('topProductsList');
+  // Visitor KPI cards update
+  renderVisitorStats();
 
   renderAnalytics();
 }
@@ -1534,23 +2177,28 @@ function renderAnalytics() {
   const crRate = allOrders.length ? Math.round(allOrders.filter(o => o.status === 'cancelled').length / allOrders.length * 100) : 0;
 
   document.getElementById('analyticsKPIs').innerHTML = `
-    <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-receipt"></i></div><span class="kpi-badge na">Avg</span></div><div class="kpi-val">৳${avg.toLocaleString()}</div><div class="kpi-label">গড় অর্ডার মূল্য</div></div>
-    <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-truck-fast"></i></div><span class="kpi-badge up">${drRate}%</span></div><div class="kpi-val">${drRate}%</div><div class="kpi-label">Delivery Rate</div></div>
-    <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-ban"></i></div><span class="kpi-badge dn">${crRate}%</span></div><div class="kpi-val">${crRate}%</div><div class="kpi-label">Cancellation Rate</div></div>`;
+    <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-receipt"></i></div><span class="kpi-badge na">Avg</span></div><div class="kpi-val">৳${avg.toLocaleString()}</div><div class="kpi-label" style="font-family:var(--font-bn)">গড় অর্ডার মূল্য</div></div>
+    <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-truck-fast"></i></div><span class="kpi-badge up">${drRate}%</span></div><div class="kpi-val">${drRate}%</div><div class="kpi-label" style="font-family:var(--font-bn)">ডেলিভারি রেট</div></div>
+    <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-ban"></i></div><span class="kpi-badge dn">${crRate}%</span></div><div class="kpi-val">${crRate}%</div><div class="kpi-label" style="font-family:var(--font-bn)">ক্যান্সেলেশন রেট</div></div>`;
+
+  // Top products in analytics
+  renderTopProducts('analyticsTopProducts');
+  // Visitor stats in analytics
+  renderVisitorStats();
 
   const cats = {};
   allProducts.forEach(p => { if (p.category) cats[p.category] = (cats[p.category] || 0) + 1; });
   const maxC = Math.max(...Object.values(cats), 1);
   document.getElementById('categoryBreakdown').innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([c, n]) =>
-    `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name">${c}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxC*100)}%;background:linear-gradient(90deg,var(--blue),var(--cyan))"></div></div></div>`
-  ).join('') || '<p style="color:var(--text3);text-align:center;padding:16px;font-size:0.8rem">No data</p>';
+    `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${c}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxC*100)}%;background:linear-gradient(90deg,var(--blue),var(--cyan))"></div></div></div>`
+  ).join('') || '<p style="color:var(--text3);text-align:center;padding:16px;font-size:0.8rem;font-family:var(--font-bn)">কোনো data নেই</p>';
 
   const dists = {};
   allOrders.forEach(o => { if (o.customer_district) dists[o.customer_district] = (dists[o.customer_district] || 0) + 1; });
   const maxD = Math.max(...Object.values(dists), 1);
   document.getElementById('districtBreakdown').innerHTML = Object.entries(dists).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([d, n]) =>
     `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name">${d}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxD*100)}%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div></div></div>`
-  ).join('') || '<p style="color:var(--text3);text-align:center;padding:16px;font-size:0.8rem">No data</p>';
+  ).join('') || '<p style="color:var(--text3);text-align:center;padding:16px;font-size:0.8rem;font-family:var(--font-bn)">কোনো data নেই</p>';
 }
 
 /* ══════════════════════════════════════
@@ -1626,6 +2274,11 @@ function renderOrders() {
   }).join('');
 }
 
+/* ══════════════════════════════════════
+   ADVANCED ORDER MANAGEMENT
+══════════════════════════════════════ */
+let currentOrderId = null;
+
 async function updateOrderStatus(id, status) {
   if (!sb) return;
   const { error } = await sb.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
@@ -1634,50 +2287,245 @@ async function updateOrderStatus(id, status) {
   if (o) o.status = status;
   renderOrders(); renderDashboard();
   toast('Status Updated', `Order → ${cap(status)}`, 'success');
-  await sb.from('order_status_history').insert({ order_id: id, status, note: 'Updated by admin' }).catch(() => {});
+  // Also update status buttons inside the modal if it's open for this order
+  if (currentOrderId === id) refreshOrderModal(id);
+  await sb.from('order_status_history').insert({ order_id: id, status, note: 'Updated by admin', changed_at: new Date().toISOString() }).catch(() => {});
+}
+
+function switchOrderTab(tab) {
+  document.querySelectorAll('.order-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.order-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'otab-' + tab));
+}
+
+function toggleOrderEdit() {
+  switchOrderTab('edit');
 }
 
 function viewOrder(id) {
   const o = allOrders.find(x => x.id === id); if (!o) return;
+  currentOrderId = id;
+  document.getElementById('orderModalTitle').textContent = `Order #${o.order_number || id.slice(0,8)}`;
+  const badge = document.getElementById('orderModalBadge');
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  badge.className = 'pill ' + (pmap[o.status] || 'pill-pending');
+  badge.textContent = cap(o.status || 'pending');
+  switchOrderTab('overview');
+  refreshOrderModal(id);
+  // Pre-fill edit tab
+  fillOrderEditForm(o);
+  // Pre-fill actions tab
+  fillOrderActionsForm(o);
+  // Pre-fill courier tab
+  fillOrderCourierForm(o);
+  openModal('orderModal');
+}
+
+function refreshOrderModal(id) {
+  const o = allOrders.find(x => x.id === id); if (!o) return;
   const items = Array.isArray(o.items) ? o.items : [];
   const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-  document.getElementById('orderModalContent').innerHTML = `
-    <div style="display:grid;gap:13px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
-          <div style="font-size:0.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:7px">Customer</div>
-          <div style="font-weight:700;margin-bottom:3px">${o.customer_name || '—'}</div>
-          <div style="font-size:0.76rem;color:var(--text2)">${o.customer_phone || ''}</div>
-          <div style="font-size:0.76rem;color:var(--text2)">${o.customer_email || ''}</div>
-        </div>
-        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
-          <div style="font-size:0.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:7px">Delivery</div>
-          <div style="font-weight:600;margin-bottom:3px">${o.customer_district || '—'}</div>
-          <div style="font-size:0.76rem;color:var(--text2)">${o.customer_address || '—'}</div>
-        </div>
+  // Update badge
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  const badge = document.getElementById('orderModalBadge');
+  if (badge) { badge.className = 'pill ' + (pmap[o.status] || 'pill-pending'); badge.textContent = cap(o.status || 'pending'); }
+
+  // Customer block
+  document.getElementById('overview-customer-block').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px">
+        <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:7px">Customer</div>
+        <div style="font-weight:700;margin-bottom:3px">${o.customer_name || '—'}</div>
+        <div style="font-size:0.76rem;color:var(--text2)">${o.customer_phone ? `<i class="fa-solid fa-phone" style="font-size:0.65rem;color:var(--green)"></i> ${o.customer_phone}` : ''}</div>
+        <div style="font-size:0.76rem;color:var(--text2)">${o.customer_email ? `<i class="fa-solid fa-envelope" style="font-size:0.65rem;color:var(--blue)"></i> ${o.customer_email}` : ''}</div>
       </div>
-      <div>
-        <div style="font-size:0.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:8px">Items</div>
-        ${items.map(i => `<div style="display:flex;justify-content:space-between;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;margin-bottom:5px;font-size:0.82rem">
-          <span>${i.name || 'Item'} <span style="color:var(--text3)">×${i.qty || 1}</span></span>
-          <span style="font-weight:700">৳${(Number(i.price || 0) * Number(i.qty || 1)).toLocaleString()}</span>
-        </div>`).join('') || '<div style="color:var(--text3);font-size:0.78rem">No items data</div>'}
-      </div>
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
-        ${o.subtotal ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text2);margin-bottom:5px"><span>Subtotal</span><span>৳${Number(o.subtotal).toLocaleString()}</span></div>` : ''}
-        ${o.delivery_fee ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text2);margin-bottom:5px"><span>Delivery</span><span>৳${Number(o.delivery_fee).toLocaleString()}</span></div>` : ''}
-        ${o.discount ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--red);margin-bottom:5px"><span>Discount</span><span>-৳${Number(o.discount).toLocaleString()}</span></div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total || 0).toLocaleString()}</span></div>
-      </div>
-      <div>
-        <div style="font-size:0.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:9px">Update Status</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${statusOptions.map(s => `<button class="btn btn-sm ${s === o.status ? 'btn-primary' : 'btn-ghost'}" onclick="updateOrderStatus('${o.id}','${s}');closeModal('orderModal')" style="flex:1;min-width:80px;justify-content:center;font-size:0.7rem">${cap(s)}</button>`).join('')}
-        </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px">
+        <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:7px">Delivery</div>
+        <div style="font-weight:600;margin-bottom:3px">${o.customer_district || '—'}</div>
+        <div style="font-size:0.76rem;color:var(--text2);line-height:1.5">${o.customer_address || '—'}</div>
+        ${o.delivery_fee ? `<div style="margin-top:5px;font-size:0.7rem;color:var(--text3)">Delivery Fee: <strong>৳${Number(o.delivery_fee).toLocaleString()}</strong></div>` : ''}
       </div>
     </div>`;
-  openModal('orderModal');
+
+  // Items block
+  document.getElementById('overview-items-block').innerHTML = `
+    <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:8px">Items (${items.length})</div>
+    ${items.map(i => `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;margin-bottom:5px;font-size:0.82rem">
+      <div><div style="font-weight:600">${i.name || 'Item'}</div><div style="font-size:0.68rem;color:var(--text3)">৳${Number(i.price||0).toLocaleString()} × ${i.qty||1}</div></div>
+      <span style="font-weight:700;color:var(--text)">৳${(Number(i.price||0)*Number(i.qty||1)).toLocaleString()}</span>
+    </div>`).join('') || '<div style="color:var(--text3);font-size:0.78rem;padding:10px">No items data</div>'}`;
+
+  // Price block
+  const subtotal = items.reduce((s,i) => s + Number(i.price||0)*Number(i.qty||1), 0);
+  document.getElementById('overview-price-block').innerHTML = `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text2);margin-bottom:5px"><span>Subtotal</span><span>৳${subtotal.toLocaleString()}</span></div>
+      ${o.delivery_fee ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text2);margin-bottom:5px"><span>Delivery</span><span>৳${Number(o.delivery_fee).toLocaleString()}</span></div>` : ''}
+      ${o.discount ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--red);margin-bottom:5px"><span><i class="fa-solid fa-tag"></i> Discount</span><span>-৳${Number(o.discount).toLocaleString()}</span></div>` : ''}
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>
+    </div>`;
+
+  // Note block
+  document.getElementById('overview-note-block').innerHTML = o.admin_note
+    ? `<div style="background:rgba(0,122,255,0.06);border:1px solid rgba(0,122,255,0.2);border-radius:10px;padding:12px 14px;font-size:0.8rem;color:var(--text2)">
+        <div style="font-size:0.6rem;font-weight:700;font-family:var(--mono);color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px"><i class="fa-solid fa-message"></i> Note to Customer</div>
+        <div style="line-height:1.65;font-family:var(--font-bn)">${o.admin_note}</div>
+       </div>` : '';
+
+  // Courier block
+  document.getElementById('overview-courier-block').innerHTML = o.tracking_link
+    ? `<div style="background:rgba(50,173,230,0.07);border:1px solid rgba(50,173,230,0.25);border-radius:10px;padding:12px 14px">
+        <div style="font-size:0.6rem;font-weight:700;font-family:var(--mono);color:var(--cyan);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px"><i class="fa-solid fa-truck-fast"></i> Courier Tracking</div>
+        <div style="font-size:0.82rem;font-weight:600;margin-bottom:4px">${o.courier_service || 'Courier'} ${o.tracking_id ? `· <span style="font-family:var(--mono)">${o.tracking_id}</span>` : ''}</div>
+        <a href="${o.tracking_link}" target="_blank" style="font-size:0.76rem;color:var(--blue);word-break:break-all">${o.tracking_link}</a>
+       </div>` : '';
+
+  // Status buttons
+  document.getElementById('statusBtnRow').innerHTML = statusOptions.map(s =>
+    `<button class="btn btn-sm ${s === o.status ? 'btn-primary' : 'btn-ghost'}" onclick="updateOrderStatus('${o.id}','${s}')" style="flex:1;min-width:80px;justify-content:center;font-size:0.7rem">${cap(s)}</button>`
+  ).join('');
+}
+
+function fillOrderEditForm(o) {
+  document.getElementById('oe-name').value = o.customer_name || '';
+  document.getElementById('oe-phone').value = o.customer_phone || '';
+  document.getElementById('oe-email').value = o.customer_email || '';
+  document.getElementById('oe-district').value = o.customer_district || '';
+  document.getElementById('oe-address').value = o.customer_address || '';
+  document.getElementById('oe-delivery-fee').value = o.delivery_fee || '';
+  const items = Array.isArray(o.items) ? o.items : [];
+  document.getElementById('oe-items-list').innerHTML = items.map((item, idx) => `
+    <div class="oe-item-row">
+      <div><div class="oe-item-name">${item.name || 'Item'}</div><div class="oe-item-sub">Unit Price</div></div>
+      <input class="form-inp" type="number" value="${item.qty||1}" min="1" style="font-size:0.78rem;padding:6px 9px;text-align:center" id="oe-qty-${idx}" placeholder="Qty">
+      <input class="form-inp" type="number" value="${item.price||0}" min="0" style="font-size:0.78rem;padding:6px 9px" id="oe-price-${idx}" placeholder="Price">
+    </div>`).join('') || '<div style="color:var(--text3);font-size:0.78rem;padding:8px">No items</div>';
+}
+
+function fillOrderActionsForm(o) {
+  document.getElementById('oa-discount-type').value = o.discount_type || 'flat';
+  document.getElementById('oa-discount-val').value = '';
+  document.getElementById('oa-note').value = o.admin_note || '';
+  updateDiscountPreview();
+  // Price summary
+  const subtotal = (Array.isArray(o.items) ? o.items : []).reduce((s,i) => s + Number(i.price||0)*Number(i.qty||1), 0);
+  document.getElementById('oa-price-summary').innerHTML = `
+    <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Price Breakdown</div>
+    <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:5px"><span style="color:var(--text2)">Subtotal</span><span>৳${subtotal.toLocaleString()}</span></div>
+    ${o.delivery_fee ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:5px"><span style="color:var(--text2)">Delivery</span><span>৳${Number(o.delivery_fee).toLocaleString()}</span></div>` : ''}
+    ${o.discount ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:5px"><span style="color:var(--red)">Discount</span><span style="color:var(--red)">-৳${Number(o.discount).toLocaleString()}</span></div>` : ''}
+    <div style="display:flex;justify-content:space-between;font-weight:800;font-size:0.95rem;padding-top:9px;border-top:1px solid rgba(0,122,255,0.2)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>`;
+}
+
+function fillOrderCourierForm(o) {
+  document.getElementById('oc-service').value = o.courier_service || '';
+  document.getElementById('oc-tracking-id').value = o.tracking_id || '';
+  document.getElementById('oc-tracking-link').value = o.tracking_link || '';
+  document.getElementById('oc-current').innerHTML = o.tracking_link
+    ? `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:0.78rem">
+        <div style="color:var(--text3);font-size:0.65rem;font-family:var(--mono);margin-bottom:4px">CURRENT TRACKING</div>
+        <div style="font-weight:600">${o.courier_service || ''} ${o.tracking_id || ''}</div>
+        <a href="${o.tracking_link}" target="_blank" style="color:var(--blue);font-size:0.72rem;word-break:break-all">${o.tracking_link}</a>
+       </div>` : '';
+}
+
+function updateDiscountPreview() {
+  const type = document.getElementById('oa-discount-type').value;
+  const val = parseFloat(document.getElementById('oa-discount-val').value) || 0;
+  const prev = document.getElementById('oa-discount-preview');
+  if (!val) { prev.style.display = 'none'; return; }
+  const o = allOrders.find(x => x.id === currentOrderId);
+  if (!o) return;
+  const currentTotal = Number(o.total || 0);
+  const discAmt = type === 'percent' ? Math.round(currentTotal * val / 100) : val;
+  const newTotal = Math.max(0, currentTotal - discAmt);
+  prev.style.display = 'block';
+  prev.innerHTML = `Discount: <strong style="color:var(--red)">-৳${discAmt.toLocaleString()}</strong> &nbsp;→&nbsp; New Total: <strong style="color:var(--blue)">৳${newTotal.toLocaleString()}</strong>`;
+}
+
+async function applyDiscount() {
+  if (!sb || !currentOrderId) return;
+  const type = document.getElementById('oa-discount-type').value;
+  const val = parseFloat(document.getElementById('oa-discount-val').value);
+  if (!val || val <= 0) { toast('Error', 'ডিসকাউন্ট মান দিন', 'error'); return; }
+  const o = allOrders.find(x => x.id === currentOrderId); if (!o) return;
+  const currentTotal = Number(o.total || 0);
+  const discAmt = type === 'percent' ? Math.round(currentTotal * val / 100) : val;
+  const newTotal = Math.max(0, currentTotal - discAmt);
+  const { error } = await sb.from('orders').update({
+    discount: discAmt, discount_type: type, total: newTotal, updated_at: new Date().toISOString()
+  }).eq('id', currentOrderId);
+  if (error) { toast('Failed', error.message, 'error'); return; }
+  o.discount = discAmt; o.discount_type = type; o.total = newTotal;
+  renderOrders(); renderDashboard();
+  refreshOrderModal(currentOrderId);
+  fillOrderActionsForm(o);
+  toast('Discount Applied', `-৳${discAmt.toLocaleString()} → New total ৳${newTotal.toLocaleString()}`, 'success');
+}
+
+async function saveOrderNote() {
+  if (!sb || !currentOrderId) return;
+  const note = document.getElementById('oa-note').value.trim();
+  const { error } = await sb.from('orders').update({ admin_note: note, updated_at: new Date().toISOString() }).eq('id', currentOrderId);
+  if (error) { toast('Failed', error.message, 'error'); return; }
+  const o = allOrders.find(x => x.id === currentOrderId);
+  if (o) o.admin_note = note;
+  refreshOrderModal(currentOrderId);
+  toast('Note Saved', 'Customer note আপডেট হয়েছে', 'success');
+}
+
+async function saveCourierInfo() {
+  if (!sb || !currentOrderId) return;
+  const service = document.getElementById('oc-service').value;
+  const trackingId = document.getElementById('oc-tracking-id').value.trim();
+  const trackingLink = document.getElementById('oc-tracking-link').value.trim();
+  if (!trackingLink) { toast('Error', 'Tracking link দিন', 'error'); return; }
+  const updates = { courier_service: service, tracking_id: trackingId, tracking_link: trackingLink, updated_at: new Date().toISOString() };
+  // Auto-set status to shipped if still pending/confirmed
+  const o = allOrders.find(x => x.id === currentOrderId);
+  if (o && ['pending','confirmed','processing'].includes(o.status)) updates.status = 'shipped';
+  const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
+  if (error) { toast('Failed', error.message, 'error'); return; }
+  if (o) { Object.assign(o, updates); }
+  renderOrders(); renderDashboard();
+  refreshOrderModal(currentOrderId);
+  fillOrderCourierForm(o);
+  toast('Courier Saved!', `${service || 'Courier'} info সেভ হয়েছে। Status → Shipped`, 'success');
+}
+
+async function saveOrderEdits() {
+  if (!sb || !currentOrderId) return;
+  const o = allOrders.find(x => x.id === currentOrderId); if (!o) return;
+  const items = Array.isArray(o.items) ? o.items : [];
+  // Collect updated items
+  const updatedItems = items.map((item, idx) => ({
+    ...item,
+    qty: parseInt(document.getElementById(`oe-qty-${idx}`)?.value) || item.qty || 1,
+    price: parseFloat(document.getElementById(`oe-price-${idx}`)?.value) || item.price || 0,
+  }));
+  const subtotal = updatedItems.reduce((s,i) => s + Number(i.price)*Number(i.qty), 0);
+  const delivery = parseFloat(document.getElementById('oe-delivery-fee').value) || Number(o.delivery_fee || 0);
+  const discount = Number(o.discount || 0);
+  const newTotal = Math.max(0, subtotal + delivery - discount);
+  const updates = {
+    customer_name: document.getElementById('oe-name').value.trim(),
+    customer_phone: document.getElementById('oe-phone').value.trim(),
+    customer_email: document.getElementById('oe-email').value.trim(),
+    customer_district: document.getElementById('oe-district').value.trim(),
+    customer_address: document.getElementById('oe-address').value.trim(),
+    delivery_fee: delivery,
+    items: updatedItems,
+    subtotal: subtotal,
+    total: newTotal,
+    updated_at: new Date().toISOString()
+  };
+  const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
+  if (error) { toast('Save Failed', error.message, 'error'); return; }
+  Object.assign(o, updates);
+  renderOrders(); renderDashboard();
+  refreshOrderModal(currentOrderId);
+  switchOrderTab('overview');
+  toast('Order Updated!', 'Customer info & items সেভ হয়েছে', 'success');
 }
 
 /* ══════════════════════════════════════
