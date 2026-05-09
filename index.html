@@ -222,7 +222,6 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   margin-bottom:8px;letter-spacing:.03em;
   border:1px solid rgba(255,255,255,.28);
   color:#FFFFFF;width:fit-content;
-  filter:drop-shadow(0 1px 4px rgba(0,0,0,.2));
 }
 .hslide-tag i{font-size:.62rem;color:#FFFFFF}
 .hslide-title{
@@ -234,32 +233,49 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   letter-spacing:-.01em;
   color:#FFFFFF;
   text-align:left;
-  filter:drop-shadow(0 2px 10px rgba(0,0,0,.4)) drop-shadow(0 1px 3px rgba(0,0,0,.3));
+  text-shadow:0 1px 3px rgba(0,0,0,.18);
 }
 .hslide-sub{
   font-family:'Hind Siliguri',sans-serif;
   font-size:.8rem;
-  font-weight:600;
-  color:#FFFFFF;
+  font-weight:500;
+  color:rgba(255,255,255,.92);
   opacity:1;
   margin-bottom:13px;
   line-height:1.6;
   max-width:440px;
   text-align:left;
-  filter:drop-shadow(0 1px 5px rgba(0,0,0,.3));
 }
 .hslide-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-start;margin-bottom:0}
 .hslide-btn{
-  display:inline-flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;gap:7px;
   background:white;
-  padding:8px 16px;border-radius:var(--radius-sm);
-  font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;
+  padding:9px 20px;border-radius:var(--radius-sm);
+  font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;
   border:none;cursor:pointer;
-  transition:all var(--t);
-  box-shadow:0 3px 14px rgba(0,0,0,.15);
+  transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s cubic-bezier(.4,0,.2,1), background .15s;
+  box-shadow:0 2px 10px rgba(0,0,0,.14);
   letter-spacing:.01em;
+  position:relative;
+  overflow:hidden;
 }
-.hslide-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(0,0,0,.2)}
+.hslide-btn::after{
+  content:'';
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0);
+  transition:background .15s;
+}
+.hslide-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.hslide-btn:hover::after{
+  background:rgba(0,0,0,.04);
+}
+.hslide-btn:active{
+  transform:translateY(0);
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
 .hslide-btn-outline{
   display:inline-flex;align-items:center;gap:6px;
   background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
@@ -291,12 +307,10 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   font-size:1.05rem;font-weight:900;line-height:1;
   letter-spacing:-.01em;
   color:#FFFFFF;
-  filter:drop-shadow(0 1px 5px rgba(0,0,0,.28));
 }
 .hslide-stat .slbl{
   font-family:'Hind Siliguri',sans-serif;
-  font-size:.6rem;color:#FFFFFF;opacity:.92;margin-top:2px;font-weight:600;
-  filter:drop-shadow(0 1px 3px rgba(0,0,0,.2));
+  font-size:.6rem;color:rgba(255,255,255,.85);opacity:1;margin-top:2px;font-weight:600;
 }
 
 /* Right icons column — tighter */
@@ -929,6 +943,71 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .osb-delivered{background:#D1FAE5;color:#065F46}
 .osb-cancelled{background:#FEE2E2;color:#991B1B}
 
+/* ── ORDER LIST CARD (My Orders tab) ── */
+.olist-card{
+  background:white;border:1.5px solid var(--border);border-radius:var(--radius);
+  margin-bottom:12px;overflow:hidden;transition:border-color var(--t),box-shadow var(--t);
+}
+.olist-card:hover{border-color:rgba(0,122,255,.3);box-shadow:0 4px 18px rgba(0,122,255,.08)}
+.olist-card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px 8px;gap:10px;flex-wrap:wrap;
+}
+.olist-card-meta{flex:1;min-width:0}
+.olist-order-num{
+  font-size:.82rem;font-weight:800;color:var(--blue);
+  font-family:'Sora',sans-serif;letter-spacing:.01em;margin-bottom:2px;
+}
+.olist-order-date{font-family:'Hind Siliguri',sans-serif;font-size:.66rem;color:var(--text-light)}
+.olist-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.olist-total{
+  font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:800;color:var(--text);
+}
+/* Thumbnails strip */
+.olist-thumbs{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px 10px;
+}
+.olist-thumb{
+  width:42px;height:42px;border-radius:8px;
+  border:1.5px solid var(--border);
+  background:var(--blue-light);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;
+  font-size:1.1rem;transition:transform var(--t);
+}
+.olist-thumb:hover{transform:scale(1.08)}
+.olist-thumb img{width:100%;height:100%;object-fit:cover}
+.olist-thumb-more{
+  width:42px;height:42px;border-radius:8px;
+  background:var(--blue-mid);border:1.5px solid rgba(0,122,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Hind Siliguri',sans-serif;font-size:.68rem;font-weight:700;
+  color:var(--blue);flex-shrink:0;
+}
+.olist-item-names{
+  flex:1;min-width:0;
+  font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-mid);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+/* Track button */
+.olist-track-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--radius-sm);
+  background:var(--blue);color:white;border:none;
+  font-family:'Hind Siliguri',sans-serif;font-size:.74rem;font-weight:700;
+  cursor:pointer;transition:all var(--t);white-space:nowrap;
+}
+.olist-track-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,122,255,.3)}
+/* Detail expand panel */
+.olist-detail{
+  display:none;border-top:1px solid var(--border);
+  padding:14px 16px;background:var(--blue-light);
+  animation:slideDown .22s ease;
+}
+.olist-detail.open{display:block}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
 /* ── AUTH MODAL ── */
 #authModal .modal-box{width:90vw;max-width:400px}
 .auth-body{padding:24px}
@@ -1133,10 +1212,10 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
     <!-- Action Buttons -->
     <div class="hactions">
 
-      <!-- Track -->
-      <button class="hbtn" onclick="openTrack()">
+      <!-- Track Order -->
+      <button class="hbtn" onclick="openTrack()" style="padding:7px 11px">
         <i class="fa-solid fa-location-dot"></i>
-        <span>ট্র্যাক</span>
+        <span style="font-size:.58rem;white-space:nowrap">Track Order</span>
       </button>
 
       <!-- Admin (hidden unless admin) -->
@@ -1398,24 +1477,30 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
 <!-- ── TRACK MODAL ── -->
 <div class="overlay" id="trackModal" onclick="if(event.target===this)closeModal('trackModal')">
-  <div class="modal-box" style="width:90vw;max-width:520px;max-height:90vh;display:flex;flex-direction:column">
+  <div class="modal-box" style="width:92vw;max-width:600px;max-height:90vh;display:flex;flex-direction:column">
     <div class="track-hd-bar">
-      <div><h3><i class="fa-solid fa-location-dot" style="margin-right:7px"></i>অর্ডার ট্র্যাক</h3><p class="bn">রিয়েল-টাইম ডেলিভারি আপডেট</p></div>
+      <div>
+        <h3 style="display:flex;align-items:center;gap:8px">
+          <i class="fa-solid fa-route"></i>
+          <span class="bn">Track Order</span>
+        </h3>
+        <p class="bn">রিয়েল-টাইম ডেলিভারি আপডেট</p>
+      </div>
       <button class="close-btn" style="border-color:rgba(255,255,255,.3);color:white" onclick="closeModal('trackModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="track-body" style="overflow-y:auto;flex:1">
       <div class="track-tabs" id="trackTabs" style="display:none">
-        <button class="track-tab active bn" onclick="switchTrackTab('search',this)"><i class="fa-solid fa-magnifying-glass" style="margin-right:5px"></i>অর্ডার নম্বর</button>
-        <button class="track-tab bn" onclick="switchTrackTab('myorders',this)"><i class="fa-solid fa-box" style="margin-right:5px"></i>আমার অর্ডার</button>
+        <button class="track-tab bn" id="tab-btn-search" onclick="switchTrackTab('search',this)"><i class="fa-solid fa-magnifying-glass" style="margin-right:5px"></i>অর্ডার নম্বর</button>
+        <button class="track-tab active bn" id="tab-btn-myorders" onclick="switchTrackTab('myorders',this)"><i class="fa-solid fa-box" style="margin-right:5px"></i>আমার অর্ডার</button>
       </div>
-      <div class="track-tab-content active" id="tab-search">
+      <div class="track-tab-content" id="tab-search">
         <div class="track-inp-row">
           <input class="track-inp bn" type="text" id="trackInput" placeholder="অর্ডার নম্বর লিখুন (যেমন: GM-2026-04812)">
           <button class="track-go bn" onclick="trackOrder()">ট্র্যাক</button>
         </div>
         <div id="trackResult"></div>
       </div>
-      <div class="track-tab-content" id="tab-myorders">
+      <div class="track-tab-content active" id="tab-myorders">
         <div id="myOrdersList"></div>
       </div>
     </div>
@@ -2171,9 +2256,13 @@ function openCart() { openModal('cartOverlay'); renderCartItems(); }
 function closeCart() { closeModal('cartOverlay'); }
 function openTrack() {
   openModal('trackModal');
-  // Show tabs if logged in
   const tabs = document.getElementById('trackTabs');
   if(tabs) tabs.style.display = currentUser ? 'flex' : 'none';
+  // Auto-switch to My Orders tab if user is logged in
+  if(currentUser) {
+    const myOrdersTab = document.querySelector('[onclick*="myorders"]');
+    if(myOrdersTab) switchTrackTab('myorders', myOrdersTab);
+  }
 }
 
 // ── TRACK TABS ──
@@ -2295,31 +2384,214 @@ async function trackOrder() {
   res.innerHTML = buildOrderCard(data, history||[]);
 }
 
-// ── My Orders (logged-in) ──
+// ── My Orders (logged-in) — Enhanced Card View ──
 async function loadMyOrders() {
-  if(!currentUser){ document.getElementById('myOrdersList').innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)">লগইন করুন</div>'; return; }
+  if(!currentUser){
+    document.getElementById('myOrdersList').innerHTML=`
+      <div style="text-align:center;padding:28px">
+        <i class="fa-solid fa-lock" style="font-size:2rem;color:var(--text-light);display:block;margin-bottom:10px;opacity:.4"></i>
+        <div class="bn" style="font-size:.84rem;color:var(--text-light);margin-bottom:14px">অর্ডার দেখতে লগইন করুন</div>
+        <button class="olist-track-btn" onclick="closeModal('trackModal');openAuth()">
+          <i class="fa-solid fa-right-to-bracket"></i> লগইন করুন
+        </button>
+      </div>`;
+    return;
+  }
   const el = document.getElementById('myOrdersList');
-  el.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>লোড হচ্ছে...</div>';
+  el.innerHTML='<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>আপনার অর্ডার লোড হচ্ছে...</div>';
 
   const { data: orders, error } = await sb.from('orders').select('*')
-    .eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(10);
+    .eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(20);
 
   if(error||!orders||!orders.length){
-    el.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-box-open" style="display:block;font-size:2rem;margin-bottom:8px;opacity:.4"></i>কোনো অর্ডার পাওয়া যায়নি</div>';
+    el.innerHTML=`
+      <div style="text-align:center;padding:36px 20px">
+        <i class="fa-solid fa-box-open" style="font-size:2.4rem;color:var(--text-light);opacity:.35;display:block;margin-bottom:12px"></i>
+        <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--text-mid);margin-bottom:4px">কোনো অর্ডার নেই</div>
+        <div class="bn" style="font-size:.76rem;color:var(--text-light)">এখনো কোনো অর্ডার করা হয়নি</div>
+      </div>`;
     return;
   }
 
-  // Fetch all histories for these orders at once
+  // Fetch all histories at once
   const orderIds = orders.map(o=>o.id);
   const { data: allHistory } = await sb.from('order_status_history')
-    .select('*').in('order_id', orderIds).order('created_at', {ascending:false});
+    .select('*').in('order_id', orderIds).order('created_at',{ascending:false});
 
-  el.innerHTML = orders.map(o=>{
+  el.innerHTML = orders.map((o, oIdx) => {
+    const items = Array.isArray(o.items) ? o.items : [];
     const hist = (allHistory||[]).filter(h=>h.order_id===o.id);
-    return `<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
-      ${buildOrderCard(o, hist)}
+
+    // Build thumbnail strip — up to 4 thumbs
+    const thumbsToShow = items.slice(0,4);
+    const extraCount = items.length - thumbsToShow.length;
+    const thumbsHtml = thumbsToShow.map(item => {
+      if(item.image_url) {
+        return `<div class="olist-thumb" title="${item.name||''}"><img src="${item.image_url}" alt="${item.name||'পণ্য'}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-box\\' style=\\'color:var(--blue);font-size:.9rem\\'></i>'"></div>`;
+      }
+      // Use product icon/color from local products array if available
+      const prod = products.find(p => p.id === item.product_id || p.name === item.name);
+      const bg   = prod?.color ? prod.color+'22' : 'var(--blue-light)';
+      const clr  = prod?.color || 'var(--blue)';
+      const icon = prod?.icon  || 'fa-box';
+      return `<div class="olist-thumb" style="background:${bg}" title="${item.name||''}"><i class="fa-solid ${icon}" style="color:${clr};font-size:.9rem"></i></div>`;
+    }).join('');
+    const moreHtml = extraCount > 0 ? `<div class="olist-thumb-more">+${extraCount}</div>` : '';
+
+    // Item names summary
+    const namesSummary = items.map(i=>i.name||'পণ্য').join(' · ');
+
+    const badgeCls = STATUS_BADGE_CLS[o.status] || 'osb-pending';
+    const statusLabel = STATUS_LABEL[o.status] || o.status;
+    const statusIcon  = STATUS_ICON[o.status]   || 'fa-clock';
+
+    const detailId = `odetail-${oIdx}`;
+    const detailContent = buildOrderDetailPanel(o, hist);
+
+    return `
+    <div class="olist-card">
+      <!-- Header row: order# + status + total -->
+      <div class="olist-card-head">
+        <div class="olist-card-meta">
+          <div class="olist-order-num">${o.order_number || '—'}</div>
+          <div class="olist-order-date">
+            <i class="fa-regular fa-calendar" style="margin-right:3px"></i>${fmtDateTime(o.created_at)}
+            &nbsp;·&nbsp;${items.length} পণ্য
+          </div>
+        </div>
+        <div class="olist-right">
+          <span class="order-status-badge ${badgeCls}" style="margin-bottom:0">
+            <i class="fa-solid ${statusIcon}"></i>${statusLabel}
+          </span>
+          <div class="olist-total">৳${Number(o.total||0).toLocaleString()}</div>
+        </div>
+      </div>
+      <!-- Thumbnails + item names + track button -->
+      <div class="olist-thumbs">
+        ${thumbsHtml}${moreHtml}
+        <div class="olist-item-names" title="${namesSummary}">${namesSummary || 'পণ্য তথ্য নেই'}</div>
+        <button class="olist-track-btn" onclick="toggleOrderDetail('${detailId}', this)">
+          <i class="fa-solid fa-route"></i> Track Order
+        </button>
+      </div>
+      <!-- Expandable detail panel -->
+      <div class="olist-detail" id="${detailId}">
+        ${detailContent}
+      </div>
     </div>`;
   }).join('');
+}
+
+function toggleOrderDetail(id, btn) {
+  const panel = document.getElementById(id);
+  if(!panel) return;
+  const isOpen = panel.classList.contains('open');
+  // Close all other details first
+  document.querySelectorAll('.olist-detail.open').forEach(p => {
+    p.classList.remove('open');
+  });
+  document.querySelectorAll('.olist-track-btn').forEach(b => {
+    b.innerHTML = '<i class="fa-solid fa-route"></i> Track Order';
+    b.style.background = '';
+  });
+  if(!isOpen) {
+    panel.classList.add('open');
+    btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> বন্ধ করুন';
+    btn.style.background = 'var(--blue-dark)';
+  }
+}
+
+function buildOrderDetailPanel(data, history) {
+  const steps = ['pending','confirmed','processing','shipped','delivered'];
+  const curIdx = data.status==='cancelled' ? -1 : steps.indexOf(data.status);
+  const items  = Array.isArray(data.items) ? data.items : [];
+
+  // Progress steps
+  const stepsHtml = data.status==='cancelled'
+    ? `<div style="background:#FEE2E2;border-radius:var(--radius-sm);padding:10px 13px;display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <i class="fa-solid fa-ban" style="color:var(--red)"></i>
+        <span class="bn" style="font-size:.8rem;font-weight:700;color:#991B1B">এই অর্ডারটি বাতিল করা হয়েছে</span>
+       </div>`
+    : `<div style="display:flex;gap:0;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">
+        ${steps.map((s,i) => {
+          const done   = i < curIdx;
+          const active = i === curIdx;
+          const color  = done||active ? 'var(--blue)' : 'var(--border)';
+          const txtClr = done||active ? 'var(--blue)' : 'var(--text-light)';
+          return `
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px">
+            <div style="width:28px;height:28px;border-radius:50%;border:2.5px solid ${color};background:${done||active?'var(--blue)':'white'};display:flex;align-items:center;justify-content:center;transition:all .3s">
+              <i class="fa-solid ${done?'fa-check':active?STATUS_ICON[s]:'fa-circle'}" style="font-size:.6rem;color:${done||active?'white':'var(--border)'}"></i>
+            </div>
+            <div class="bn" style="font-size:.58rem;font-weight:600;color:${txtClr};text-align:center;line-height:1.2">${STATUS_LABEL[s]}</div>
+          </div>
+          ${i<steps.length-1 ? `<div style="flex:0 0 12px;height:2px;background:${done?'var(--blue)':'var(--border)'};align-self:center;margin-bottom:16px;border-radius:1px"></div>` : ''}`;
+        }).join('')}
+       </div>`;
+
+  // Delivery info
+  const deliveryHtml = `
+    <div style="background:white;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:12px;border:1px solid var(--border)">
+      <div style="font-size:.62rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;font-family:'Hind Siliguri',sans-serif">
+        <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:4px"></i>ডেলিভারি তথ্য
+      </div>
+      <div class="bn" style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:2px">${data.customer_name||'—'}</div>
+      <div class="bn" style="font-size:.74rem;color:var(--text-mid);margin-bottom:1px"><i class="fa-solid fa-phone" style="font-size:.62rem;color:var(--blue);margin-right:4px"></i>${data.customer_phone||'—'}</div>
+      <div class="bn" style="font-size:.74rem;color:var(--text-mid)"><i class="fa-solid fa-map-marker-alt" style="font-size:.62rem;color:var(--blue);margin-right:4px"></i>${data.customer_district||''} · ${data.customer_address||'—'}</div>
+    </div>`;
+
+  // Courier info
+  const courierHtml = data.tracking_link ? `
+    <div style="background:#E0F2FE;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:12px;border:1px solid rgba(0,122,255,.2)">
+      <div class="bn" style="font-size:.72rem;font-weight:700;color:var(--blue);margin-bottom:5px"><i class="fa-solid fa-truck-fast" style="margin-right:4px"></i>কুরিয়ার ট্র্যাকিং</div>
+      <div class="bn" style="font-size:.78rem;font-weight:600;margin-bottom:3px">${data.courier_service||''} ${data.tracking_id?`· ${data.tracking_id}`:''}</div>
+      <a href="${data.tracking_link}" target="_blank" style="font-size:.72rem;color:var(--blue-dark);word-break:break-all">${data.tracking_link}</a>
+    </div>` : '';
+
+  // Items summary
+  const itemsHtml = items.length ? `
+    <div style="background:white;border-radius:var(--radius-sm);padding:10px 13px;border:1px solid var(--border)">
+      <div style="font-size:.62rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-family:'Hind Siliguri',sans-serif">
+        <i class="fa-solid fa-bag-shopping" style="color:var(--blue);margin-right:4px"></i>অর্ডারকৃত পণ্য
+      </div>
+      ${items.map(item => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--blue-light)">
+          <div style="width:32px;height:32px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+            ${item.image_url
+              ? `<img src="${item.image_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-box\\' style=\\'color:var(--blue);font-size:.75rem\\'></i>'">`
+              : '<i class="fa-solid fa-box" style="color:var(--blue);font-size:.75rem"></i>'}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="bn" style="font-size:.76rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name||'পণ্য'}</div>
+            <div class="bn" style="font-size:.66rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString()}</div>
+          </div>
+          <div class="bn" style="font-size:.78rem;font-weight:700;color:var(--blue);flex-shrink:0">৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString()}</div>
+        </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;padding-top:8px">
+        <span class="bn" style="font-size:.8rem;font-weight:700;color:var(--text)">মোট</span>
+        <span class="bn" style="font-size:.88rem;font-weight:800;color:var(--blue)">৳${Number(data.total||0).toLocaleString()}</span>
+      </div>
+    </div>` : '';
+
+  // History
+  let historyHtml = '';
+  if(history && history.length) {
+    historyHtml = `
+      <div class="history-section" style="margin-top:12px">
+        <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেটের ইতিহাস</span></div>
+        <div class="history-timeline">
+          ${history.map(h=>`
+            <div class="hitem">
+              <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
+              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
+              ${h.note?`<div class="hitem-note">${h.note}</div>`:''}
+              <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.changed_at||h.created_at)}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return `${stepsHtml}${deliveryHtml}${courierHtml}${itemsHtml}${historyHtml}`;
 }
 
 function openAuth() { openModal('authModal'); }
