@@ -144,7 +144,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .promo-banner-inner{
   display:flex;align-items:center;
   gap:0;
-  min-height:52px;
+  min-height:44px;
 }
 .promo-banner-img{
   width:100%;height:100%;
@@ -155,27 +155,20 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 /* When using text fallback */
 .promo-banner-text{
   display:flex;align-items:center;justify-content:center;
-  gap:24px;padding:10px 24px;width:100%;
+  gap:0;padding:8px 24px;width:100%;
   flex-wrap:wrap;
 }
 .promo-item{
   display:flex;align-items:center;gap:8px;
   font-family:'Hind Siliguri',sans-serif;
-  font-size:.8rem;font-weight:600;color:#5a3800;
+  font-size:.82rem;font-weight:700;color:#4a3000;
   white-space:nowrap;
+  padding:0 20px;
+  letter-spacing:.01em;
 }
-.promo-item i{color:var(--orange);font-size:.9rem}
-.promo-highlight{
-  background:linear-gradient(135deg,var(--orange),#FF5722);
-  color:white;padding:5px 14px;border-radius:100px;
-  font-size:.78rem;font-weight:700;
-  font-family:'Hind Siliguri',sans-serif;
-  white-space:nowrap;cursor:pointer;
-  transition:all var(--t);
-  box-shadow:0 3px 10px rgba(249,115,22,.3);
-}
-.promo-highlight:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(249,115,22,.4)}
-.promo-sep{color:#d4a017;font-size:.7rem;opacity:.5}
+.promo-item span{font-family:'Hind Siliguri',sans-serif;font-weight:700}
+.promo-item i{color:var(--orange);font-size:.86rem;flex-shrink:0}
+.promo-sep{color:#c8980f;font-size:.75rem;opacity:.6;flex-shrink:0;font-weight:300}
 
 /* Mobile search row (hidden on desktop) */
 .mobile-search-row{
@@ -195,23 +188,159 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .ncat.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
 
 /* ── HERO ── */
-.hero{background:linear-gradient(135deg,#EBF4FF 0%,#F0F7FF 60%,#FAFCFF 100%);padding:36px 22px;display:flex;align-items:center;gap:28px;position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;right:-80px;bottom:-80px;width:360px;height:360px;background:radial-gradient(circle,rgba(0,122,255,.07) 0%,transparent 70%);pointer-events:none}
-.hero-left{flex:1;max-width:500px}
-.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,122,255,.10);color:var(--blue);padding:4px 13px;border-radius:100px;font-size:.73rem;font-weight:600;margin-bottom:14px;font-family:'Hind Siliguri',sans-serif}
-.ldot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.hero h1{font-family:'Hind Siliguri',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;line-height:1.25;color:var(--text);margin-bottom:10px}
-.hero h1 em{color:var(--blue);font-style:normal}
-.hero p{font-family:'Hind Siliguri',sans-serif;font-size:.88rem;color:var(--text-mid);line-height:1.7;margin-bottom:20px}
-.hero-btns{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:24px}
-.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:white;padding:11px 22px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all var(--t);text-decoration:none}
-.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.3)}
-.btn-outline{display:inline-flex;align-items:center;gap:7px;background:white;color:var(--blue);padding:11px 22px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;border:1.5px solid var(--border);cursor:pointer;transition:all var(--t)}
-.btn-outline:hover{border-color:var(--blue);background:var(--blue-light)}
-.hero-stats{display:flex;gap:20px}
-.hstat .num{font-size:1.3rem;font-weight:700;color:var(--blue)}
-.hstat .lbl{font-family:'Hind Siliguri',sans-serif;font-size:.68rem;color:var(--text-light);margin-top:1px}
+.hero{padding:10px 22px 14px;background:#EBF4FF;position:relative}
+
+/* ── HERO BANNER SLIDER — Full Width ── */
+.hero-right{position:relative;z-index:1;overflow:visible}
+.hero-slider{position:relative;border-radius:14px;overflow:hidden;height:auto;min-height:0}
+.hero-slides{display:flex;transition:transform .55s cubic-bezier(.4,0,.2,1);height:100%}
+.hero-slide{
+  min-width:100%;flex-shrink:0;
+  display:flex;align-items:stretch;
+  position:relative;overflow:hidden;
+  border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,.14);
+}
+/* Decorative circles — scaled down */
+.hero-slide::before{content:'';position:absolute;right:-50px;top:-50px;width:220px;height:220px;background:rgba(255,255,255,.07);border-radius:50%;pointer-events:none;z-index:0}
+.hero-slide::after{content:'';position:absolute;right:100px;bottom:-60px;width:160px;height:160px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none;z-index:0}
+
+/* Left text overlay — compact padding */
+.hslide-content{
+  position:relative;z-index:2;
+  color:#FFFFFF;
+  flex:1;
+  padding:22px 36px 22px 36px;
+  max-width:68%;
+  display:flex;flex-direction:column;justify-content:center;gap:0;
+}
+.hslide-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.2);backdrop-filter:blur(8px);
+  padding:3px 11px;border-radius:100px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.68rem;font-weight:700;
+  margin-bottom:8px;letter-spacing:.03em;
+  border:1px solid rgba(255,255,255,.28);
+  color:#FFFFFF;width:fit-content;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.2));
+}
+.hslide-tag i{font-size:.62rem;color:#FFFFFF}
+.hslide-title{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:clamp(1.3rem,2.4vw,1.9rem);
+  font-weight:900;
+  line-height:1.2;
+  margin-bottom:6px;
+  letter-spacing:-.01em;
+  color:#FFFFFF;
+  text-align:left;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.4)) drop-shadow(0 1px 3px rgba(0,0,0,.3));
+}
+.hslide-sub{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:.8rem;
+  font-weight:600;
+  color:#FFFFFF;
+  opacity:1;
+  margin-bottom:13px;
+  line-height:1.6;
+  max-width:440px;
+  text-align:left;
+  filter:drop-shadow(0 1px 5px rgba(0,0,0,.3));
+}
+.hslide-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-start;margin-bottom:0}
+.hslide-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:white;
+  padding:8px 16px;border-radius:var(--radius-sm);
+  font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;
+  border:none;cursor:pointer;
+  transition:all var(--t);
+  box-shadow:0 3px 14px rgba(0,0,0,.15);
+  letter-spacing:.01em;
+}
+.hslide-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(0,0,0,.2)}
+.hslide-btn-outline{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
+  color:#FFFFFF;padding:8px 16px;border-radius:var(--radius-sm);
+  font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;
+  border:1.5px solid rgba(255,255,255,.45);cursor:pointer;
+  transition:all var(--t);
+  letter-spacing:.01em;
+}
+.hslide-btn-outline:hover{background:rgba(255,255,255,.26)}
+
+/* Stats strip — compact */
+.hslide-stats{
+  display:flex;gap:0;
+  margin-top:14px;
+  padding-top:11px;
+  border-top:1px solid rgba(255,255,255,.28);
+}
+.hslide-stat{
+  flex:1;
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:0 12px 0 0;
+  border-right:1px solid rgba(255,255,255,.2);
+}
+.hslide-stat:first-child{padding-left:0}
+.hslide-stat:last-child{border-right:none;padding-right:0}
+.hslide-stat .snum{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:1.05rem;font-weight:900;line-height:1;
+  letter-spacing:-.01em;
+  color:#FFFFFF;
+  filter:drop-shadow(0 1px 5px rgba(0,0,0,.28));
+}
+.hslide-stat .slbl{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:.6rem;color:#FFFFFF;opacity:.92;margin-top:2px;font-weight:600;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.2));
+}
+
+/* Right icons column — tighter */
+.hslide-icons{position:absolute;right:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:2}
+.hslide-icon{width:44px;height:44px;background:rgba(255,255,255,.15);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:white;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.22);transition:transform var(--t)}
+.hero-slide:hover .hslide-icon:nth-child(1){transform:translateY(-4px)}
+.hero-slide:hover .hslide-icon:nth-child(2){transform:translateY(-7px)}
+.hero-slide:hover .hslide-icon:nth-child(3){transform:translateY(-4px)}
+
+/* Slider dots */
+.hslider-dots{display:flex;gap:6px;justify-content:center;margin-top:11px}
+.hslider-dot{width:7px;height:7px;border-radius:4px;background:rgba(0,122,255,.25);cursor:pointer;transition:all .3s}
+.hslider-dot.active{width:22px;background:var(--blue)}
+
+/* Slider arrows */
+.hslider-arrow{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.92);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--blue);box-shadow:0 2px 10px rgba(0,0,0,.14);z-index:3;transition:all var(--t);opacity:0}
+.hero-slider:hover .hslider-arrow{opacity:1}
+.hslider-arrow:hover{background:white;transform:translateY(-50%) scale(1.1);box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.hslider-arrow.prev{left:12px}
+.hslider-arrow.next{right:12px}
+
+/* Loading skeleton */
+.hslide-skeleton{min-width:100%;min-height:260px;background:linear-gradient(90deg,var(--blue-mid) 25%,var(--blue-light) 50%,var(--blue-mid) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:14px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── MOBILE HERO ── */
+@media(max-width:600px){
+  .hero{padding:8px 12px 12px}
+  .hslide-content{padding:18px 20px;max-width:100%}
+  .hslide-title{font-size:clamp(1.1rem,5vw,1.45rem)}
+  .hslide-sub{font-size:.74rem;margin-bottom:10px;max-width:100%}
+  .hslide-tag{font-size:.62rem;padding:3px 9px;margin-bottom:6px}
+  .hslide-btn,.hslide-btn-outline{padding:7px 13px;font-size:.72rem}
+  .hslide-btns{gap:7px}
+  .hslide-icons{display:none}
+  .hslide-stats{margin-top:10px;padding-top:9px;gap:0}
+  .hslide-stat{padding:0 8px 0 0}
+  .hslide-stat .snum{font-size:.88rem}
+  .hslide-stat .slbl{font-size:.56rem}
+}
+
+/* Remove old hero-left styles that are no longer used */
+.hero-left{display:none}
+.hero-badge,.hero-btns,.hero-stats,.ldot{display:none}
 
 /* ── MAIN LAYOUT ── */
 .main{display:flex;min-height:80vh}
@@ -679,10 +808,27 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .qty-ctrl{display:flex;align-items:center;gap:7px}
 .qbtn{width:28px;height:28px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--blue-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.88rem;transition:all var(--t)}
 .qbtn:hover{border-color:var(--blue);background:white;color:var(--blue)}
-.modal-btns{display:flex;gap:9px}
-.modal-btns .btn-primary{flex:1;justify-content:center}
-.btn-buy-lg{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--orange);color:white;padding:11px 22px;border-radius:var(--radius);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all var(--t)}
-.btn-buy-lg:hover{background:#EA6C00;transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,.3)}
+.modal-btns{display:flex;gap:10px}
+.btn-primary{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 22px;border-radius:var(--radius);
+  background:var(--blue);color:#FFFFFF;border:none;
+  font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:all var(--t);letter-spacing:.01em;
+  white-space:nowrap;
+}
+.btn-primary i{color:#FFFFFF;font-size:.88rem}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.35)}
+.modal-btns .btn-primary{flex:1;justify-content:center;padding:13px 22px}
+.btn-buy-lg{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--orange);color:#FFFFFF;
+  padding:13px 22px;border-radius:var(--radius);
+  font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;
+  border:none;cursor:pointer;transition:all var(--t);letter-spacing:.01em;
+  white-space:nowrap;
+}
+.btn-buy-lg:hover{background:#EA6C00;transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,.35)}
 
 /* ── CART OVERLAY ── */
 #cartOverlay{background:rgba(15,23,42,.4);backdrop-filter:blur(4px)}
@@ -752,6 +898,36 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .titem:not(.done):not(.active) .ttitle{color:var(--text-light)}
 .tdesc{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;color:var(--text-light)}
 .ttime{font-size:.63rem;color:var(--blue);font-weight:600;margin-top:2px}
+
+/* ── ORDER HISTORY TIMELINE ── */
+.history-section{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.history-title{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:13px;display:flex;align-items:center;gap:6px}
+.history-title i{color:var(--blue);font-size:.78rem}
+.history-timeline{padding-left:22px;position:relative}
+.history-timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--blue),var(--blue-mid))}
+.hitem{position:relative;margin-bottom:14px;padding-bottom:2px}
+.hitem:last-child{margin-bottom:0}
+.hitem-dot{position:absolute;left:-20px;top:3px;width:13px;height:13px;border-radius:50%;background:white;border:2px solid var(--blue);z-index:1;display:flex;align-items:center;justify-content:center}
+.hitem-dot i{font-size:.35rem;color:var(--blue)}
+.hitem:first-child .hitem-dot{background:var(--blue)}
+.hitem:first-child .hitem-dot i{color:white}
+.hitem-status{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:2px}
+.hitem-note{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;color:var(--text-mid);margin-bottom:2px}
+.hitem-time{font-size:.65rem;color:var(--blue);font-weight:600;display:flex;align-items:center;gap:4px}
+.hitem-time i{font-size:.6rem}
+.track-tabs{display:flex;gap:0;margin-bottom:16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.track-tab{flex:1;padding:8px;border:none;background:transparent;font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all var(--t);border-right:1px solid var(--border)}
+.track-tab:last-child{border-right:none}
+.track-tab.active{background:var(--blue);color:white}
+.track-tab-content{display:none}
+.track-tab-content.active{display:block}
+.order-status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;margin-bottom:12px}
+.osb-pending{background:#FEF3C7;color:#92400E}
+.osb-confirmed{background:#DBEAFE;color:#1E40AF}
+.osb-processing{background:#EDE9FE;color:#5B21B6}
+.osb-shipped{background:#D1FAE5;color:#065F46}
+.osb-delivered{background:#D1FAE5;color:#065F46}
+.osb-cancelled{background:#FEE2E2;color:#991B1B}
 
 /* ── AUTH MODAL ── */
 #authModal .modal-box{width:90vw;max-width:400px}
@@ -884,7 +1060,15 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .modal-img{display:none}
   .fgrid{grid-template-columns:1fr}
   .admin-sidebar{width:150px}
-  .hero{flex-direction:column}
+  .hero{padding:14px}
+  .hero-right{width:100%}
+  .hero-slider{height:220px}
+  .hslide-content{padding:22px 20px;max-width:70%}
+  .hslide-title{font-size:1.3rem}
+  .hslide-sub{font-size:.76rem}
+  .hslide-icons{right:14px}
+  .hslide-icon{width:40px;height:40px;font-size:1rem}
+  .hslide-stats{gap:14px}
 
   /* Mobile header */
   .header-top{grid-template-columns:auto 1fr auto;padding:9px 14px;gap:10px}
@@ -1072,26 +1256,19 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
       <i class="fa-solid fa-rotate-left"></i>
       <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
     </div>
-    <button class="promo-highlight bn" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">
-      এখনই কিনুন →
-    </button>
   </div>
 </div>
 <div class="hero">
-  <div class="hero-left">
-    <div class="hero-badge"><span class="ldot"></span><span class="bn">নতুন পণ্য এসেছে — মে ২০২৬</span></div>
-    <h1>সেরা পণ্য, <em>সেরা দামে</em><br>এখনই কিনুন</h1>
-    <p>বই থেকে ইলেকট্রনিক্স, ফ্যাশন থেকে হোম ডেকোর — সব কিছু এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
-    <div class="hero-btns">
-      <button class="btn-primary bn"><i class="fa-solid fa-bag-shopping"></i> এখনই কিনুন</button>
-      <button class="btn-outline bn" onclick="openTrack()"><i class="fa-solid fa-location-dot"></i> অর্ডার ট্র্যাক</button>
+  <!-- ── FULL-WIDTH HERO BANNER SLIDER ── -->
+  <div class="hero-right">
+    <div class="hero-slider" id="heroSlider">
+      <div class="hero-slides" id="heroSlides">
+        <div class="hslide-skeleton"></div>
+      </div>
+      <button class="hslider-arrow prev" onclick="heroSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+      <button class="hslider-arrow next" onclick="heroSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
-    <div class="hero-stats">
-      <div class="hstat"><div class="num">৫০০+</div><div class="lbl bn">পণ্য</div></div>
-      <div class="hstat"><div class="num">২০হা+</div><div class="lbl bn">কাস্টমার</div></div>
-      <div class="hstat"><div class="num">৪.৯★</div><div class="lbl bn">রেটিং</div></div>
-      <div class="hstat"><div class="num">COD</div><div class="lbl bn">পেমেন্ট</div></div>
-    </div>
+    <div class="hslider-dots" id="heroSliderDots"></div>
   </div>
 </div>
 
@@ -1136,19 +1313,6 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   <!-- PRODUCT AREA -->
   <div class="product-area">
-    <div class="feat">
-      <div style="position:relative;z-index:1">
-        <div class="feat-tag bn">ঈদ স্পেশাল অফার</div>
-        <h3 class="bn">৩০% পর্যন্ত ছাড়!</h3>
-        <p class="bn">সীমিত সময়ের জন্য — সব ক্যাটাগরিতে বিশেষ ছাড়</p>
-        <button class="feat-btn bn"><i class="fa-solid fa-tag"></i> অফার দেখুন</button>
-      </div>
-      <div class="feat-icons">
-        <div class="fibox"><i class="fa-solid fa-book" style="color:white"></i></div>
-        <div class="fibox"><i class="fa-solid fa-mobile-screen" style="color:white"></i></div>
-        <div class="fibox"><i class="fa-solid fa-shirt" style="color:white"></i></div>
-      </div>
-    </div>
     <div class="parea-header">
       <h2 class="bn">পণ্য তালিকা <span id="productCount"></span></h2>
       <select class="sort-sel bn" onchange="sortProducts(this.value)">
@@ -1234,17 +1398,26 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
 <!-- ── TRACK MODAL ── -->
 <div class="overlay" id="trackModal" onclick="if(event.target===this)closeModal('trackModal')">
-  <div class="modal-box" style="width:90vw;max-width:500px">
+  <div class="modal-box" style="width:90vw;max-width:520px;max-height:90vh;display:flex;flex-direction:column">
     <div class="track-hd-bar">
       <div><h3><i class="fa-solid fa-location-dot" style="margin-right:7px"></i>অর্ডার ট্র্যাক</h3><p class="bn">রিয়েল-টাইম ডেলিভারি আপডেট</p></div>
       <button class="close-btn" style="border-color:rgba(255,255,255,.3);color:white" onclick="closeModal('trackModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="track-body">
-      <div class="track-inp-row">
-        <input class="track-inp bn" type="text" id="trackInput" placeholder="অর্ডার নম্বর লিখুন (যেমন: GM-2026-04812)">
-        <button class="track-go bn" onclick="trackOrder()">ট্র্যাক</button>
+    <div class="track-body" style="overflow-y:auto;flex:1">
+      <div class="track-tabs" id="trackTabs" style="display:none">
+        <button class="track-tab active bn" onclick="switchTrackTab('search',this)"><i class="fa-solid fa-magnifying-glass" style="margin-right:5px"></i>অর্ডার নম্বর</button>
+        <button class="track-tab bn" onclick="switchTrackTab('myorders',this)"><i class="fa-solid fa-box" style="margin-right:5px"></i>আমার অর্ডার</button>
       </div>
-      <div id="trackResult"></div>
+      <div class="track-tab-content active" id="tab-search">
+        <div class="track-inp-row">
+          <input class="track-inp bn" type="text" id="trackInput" placeholder="অর্ডার নম্বর লিখুন (যেমন: GM-2026-04812)">
+          <button class="track-go bn" onclick="trackOrder()">ট্র্যাক</button>
+        </div>
+        <div id="trackResult"></div>
+      </div>
+      <div class="track-tab-content" id="tab-myorders">
+        <div id="myOrdersList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1421,6 +1594,7 @@ async function init() {
   });
 
   await loadProducts();
+  await loadHeroBanners();
   hiddenLoader();
 }
 
@@ -1995,10 +2169,161 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function openCart() { openModal('cartOverlay'); renderCartItems(); }
 function closeCart() { closeModal('cartOverlay'); }
-function openTrack() { openModal('trackModal'); }
+function openTrack() {
+  openModal('trackModal');
+  // Show tabs if logged in
+  const tabs = document.getElementById('trackTabs');
+  if(tabs) tabs.style.display = currentUser ? 'flex' : 'none';
+}
+
+// ── TRACK TABS ──
+function switchTrackTab(tab, el) {
+  document.querySelectorAll('.track-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.track-tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='myorders') loadMyOrders();
+}
+
+// ══════════════════════════════════════════════════
+// ORDER TRACKING — Supabase থেকে + History
+// ══════════════════════════════════════════════════
+
+// ── Helpers ──
+const STATUS_LABEL = {
+  pending:   'অপেক্ষায় আছে',
+  confirmed: 'নিশ্চিত হয়েছে',
+  processing:'প্যাক হচ্ছে',
+  shipped:   'ডেলিভারিতে আছে',
+  delivered: 'ডেলিভারি সম্পন্ন',
+  cancelled: 'বাতিল হয়েছে'
+};
+const STATUS_ICON = {
+  pending:'fa-clock',confirmed:'fa-circle-check',processing:'fa-box',
+  shipped:'fa-truck-fast',delivered:'fa-house-circle-check',cancelled:'fa-ban'
+};
+const STATUS_BADGE_CLS = {
+  pending:'osb-pending',confirmed:'osb-confirmed',processing:'osb-processing',
+  shipped:'osb-shipped',delivered:'osb-delivered',cancelled:'osb-cancelled'
+};
+
+function fmtDateTime(iso) {
+  if(!iso) return '';
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('bn-BD', {year:'numeric',month:'long',day:'numeric'});
+  const time = d.toLocaleTimeString('bn-BD', {hour:'2-digit',minute:'2-digit'});
+  return `${date} · ${time}`;
+}
+
+function buildOrderCard(data, history) {
+  const steps = ['pending','confirmed','processing','shipped','delivered'];
+  const curIdx = data.status==='cancelled' ? -1 : steps.indexOf(data.status);
+  const items = (data.items||[]).map(i=>i.name).join(', ');
+
+  // ── Progress Steps ──
+  const stepsHtml = data.status==='cancelled'
+    ? `<div style="background:#FEE2E2;border-radius:var(--radius-sm);padding:11px 13px;display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <i class="fa-solid fa-ban" style="color:var(--red)"></i>
+        <span class="bn" style="font-size:.82rem;font-weight:700;color:#991B1B">এই অর্ডারটি বাতিল করা হয়েছে</span>
+       </div>`
+    : `<div class="timeline">
+        ${steps.map((s,i)=>`
+          <div class="titem ${i<curIdx?'done':i===curIdx?'active':''}">
+            <div class="tdot"></div>
+            <div class="ttitle bn">${STATUS_LABEL[s]}</div>
+            <div class="tdesc bn">${i===0?'অর্ডার গ্রহণ হয়েছে':i===1?'অর্ডার নিশ্চিত করা হয়েছে':i===2?'পণ্য প্যাক করা হচ্ছে':i===3?'রাইডার পৌঁছে দিচ্ছেন':'পণ্য পৌঁছে দেওয়া হয়েছে'}</div>
+          </div>`).join('')}
+       </div>`;
+
+  // ── History ──
+  let historyHtml = '';
+  if(history && history.length) {
+    historyHtml = `
+      <div class="history-section">
+        <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেটের ইতিহাস</span></div>
+        <div class="history-timeline">
+          ${history.map(h=>`
+            <div class="hitem">
+              <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
+              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
+              ${h.note?`<div class="hitem-note">${h.note}</div>`:''}
+              <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="order-info-card">
+      <div class="oid-lbl">অর্ডার নম্বর</div>
+      <div style="font-size:.95rem;font-weight:800;color:var(--blue);margin-bottom:3px;font-family:'Sora',sans-serif">${data.order_number}</div>
+      <div class="oname bn">${items.slice(0,55)}${items.length>55?'...':''}</div>
+      <div class="oeta bn" style="margin-top:4px">
+        <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:3px"></i>${data.customer_district||'—'}
+        &nbsp;·&nbsp;
+        <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString()}</strong>
+        &nbsp;·&nbsp;
+        <span class="order-status-badge ${STATUS_BADGE_CLS[data.status]||'osb-pending'}">
+          <i class="fa-solid ${STATUS_ICON[data.status]||'fa-clock'}"></i>
+          ${STATUS_LABEL[data.status]||data.status}
+        </span>
+      </div>
+      <div style="font-size:.65rem;color:var(--text-light);margin-top:5px;font-family:'Hind Siliguri',sans-serif">
+        <i class="fa-regular fa-calendar" style="margin-right:3px"></i>অর্ডার তারিখ: ${fmtDateTime(data.created_at)}
+      </div>
+    </div>
+    ${stepsHtml}
+    ${historyHtml}`;
+}
+
+async function trackOrder() {
+  const num = document.getElementById('trackInput').value.trim();
+  if(!num){ toast('ত্রুটি','অর্ডার নম্বর লিখুন','w'); return; }
+  const res = document.getElementById('trackResult');
+  res.innerHTML = '<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>খোঁজা হচ্ছে...</div>';
+
+  const { data, error } = await sb.from('orders').select('*').eq('order_number',num).single();
+  if(error||!data){
+    res.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="margin-right:7px"></i>এই অর্ডার নম্বরটি পাওয়া যায়নি</div>';
+    return;
+  }
+
+  // Fetch history
+  const { data: history } = await sb.from('order_status_history')
+    .select('*').eq('order_id', data.id).order('created_at', {ascending:false});
+
+  res.innerHTML = buildOrderCard(data, history||[]);
+}
+
+// ── My Orders (logged-in) ──
+async function loadMyOrders() {
+  if(!currentUser){ document.getElementById('myOrdersList').innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)">লগইন করুন</div>'; return; }
+  const el = document.getElementById('myOrdersList');
+  el.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>লোড হচ্ছে...</div>';
+
+  const { data: orders, error } = await sb.from('orders').select('*')
+    .eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(10);
+
+  if(error||!orders||!orders.length){
+    el.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-box-open" style="display:block;font-size:2rem;margin-bottom:8px;opacity:.4"></i>কোনো অর্ডার পাওয়া যায়নি</div>';
+    return;
+  }
+
+  // Fetch all histories for these orders at once
+  const orderIds = orders.map(o=>o.id);
+  const { data: allHistory } = await sb.from('order_status_history')
+    .select('*').in('order_id', orderIds).order('created_at', {ascending:false});
+
+  el.innerHTML = orders.map(o=>{
+    const hist = (allHistory||[]).filter(h=>h.order_id===o.id);
+    return `<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
+      ${buildOrderCard(o, hist)}
+    </div>`;
+  }).join('');
+}
+
 function openAuth() { openModal('authModal'); }
 
-// ── TOAST ──
 function toast(title, sub, type='s') {
   const el = document.createElement('div');
   el.className = 'toast';
@@ -2010,6 +2335,162 @@ function toast(title, sub, type='s') {
 
 // ── SCROLL ──
 window.addEventListener('scroll',()=>document.getElementById('mainHeader').classList.toggle('scrolled',scrollY>10));
+
+// ══════════════════════════════════════════════════
+// HERO BANNER SLIDER — Supabase-ready
+// ══════════════════════════════════════════════════
+
+// Default/fallback banners (used when Supabase table is empty or not yet created)
+const DEFAULT_BANNERS = [
+  {
+    tag: 'নতুন পণ্য এসেছে — মে ২০২৬',
+    tag_icon: 'fa-star',
+    title: 'সেরা পণ্য, সেরা দামে\nএখনই কিনুন',
+    subtitle: 'বই থেকে ইলেকট্রনিক্স, ফ্যাশন থেকে হোম ডেকোর — সব কিছু এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
+    btn_label: 'শপিং করুন',
+    btn2_label: 'অর্ডার ট্র্যাক',
+    btn2_action: 'openTrack()',
+    icons: ['fa-book','fa-mobile-screen','fa-shirt'],
+    gradient: 'linear-gradient(120deg,#007AFF 0%,#0055CC 100%)',
+    show_stats: true,
+    is_active: true
+  },
+  {
+    tag: 'ঈদ স্পেশাল অফার',
+    tag_icon: 'fa-tag',
+    title: '৩০% পর্যন্ত ছাড়!',
+    subtitle: 'সীমিত সময়ের জন্য — সব ক্যাটাগরিতে বিশেষ ছাড়। এখনই সুযোগ নিন।',
+    btn_label: 'অফার দেখুন',
+    btn2_label: null,
+    icons: ['fa-tag','fa-gift','fa-percent'],
+    gradient: 'linear-gradient(120deg,#007AFF 0%,#3B82F6 60%,#60A5FA 100%)',
+    show_stats: false,
+    is_active: true
+  },
+  {
+    tag: 'ফ্রি ডেলিভারি',
+    tag_icon: 'fa-truck-fast',
+    title: '৳৫০০+ অর্ডারে ফ্রি!',
+    subtitle: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি — দ্রুত পৌঁছানোর গ্যারান্টি। আজই অর্ডার করুন।',
+    btn_label: 'শপিং করুন',
+    btn2_label: null,
+    icons: ['fa-truck-fast','fa-box','fa-shield-halved'],
+    gradient: 'linear-gradient(120deg,#10B981 0%,#059669 100%)',
+    show_stats: false,
+    is_active: true
+  }
+];
+
+let heroBanners = [];
+let heroCurrent = 0;
+let heroAutoTimer = null;
+
+async function loadHeroBanners() {
+  // Try to load from Supabase `hero_banners` table
+  // Schema: id, tag, title, subtitle, btn_label, btn_action, icons (jsonb array), gradient, is_active, sort_order
+  try {
+    const { data, error } = await sb.from('hero_banners')
+      .select('*').eq('is_active', true).order('sort_order', {ascending:true});
+    if (!error && data && data.length) {
+      heroBanners = data;
+    } else {
+      heroBanners = DEFAULT_BANNERS;
+    }
+  } catch(e) {
+    heroBanners = DEFAULT_BANNERS;
+  }
+  renderHeroBanners();
+}
+
+function renderHeroBanners() {
+  const slides = document.getElementById('heroSlides');
+  const dots   = document.getElementById('heroSliderDots');
+  if(!slides || !dots) return;
+
+  slides.innerHTML = heroBanners.map(b => {
+    const iconsHtml = (b.icons||[]).slice(0,3).map(ic =>
+      `<div class="hslide-icon"><i class="fa-solid ${ic}"></i></div>`
+    ).join('');
+
+    // Stats strip (only for slides with show_stats)
+    const statsHtml = b.show_stats ? `
+      <div class="hslide-stats">
+        <div class="hslide-stat"><div class="snum">৫০০+</div><div class="slbl bn">পণ্য</div></div>
+        <div class="hslide-stat"><div class="snum">২০হা+</div><div class="slbl bn">কাস্টমার</div></div>
+        <div class="hslide-stat"><div class="snum">৪.৯★</div><div class="slbl bn">রেটিং</div></div>
+        <div class="hslide-stat"><div class="snum">COD</div><div class="slbl bn">পেমেন্ট</div></div>
+      </div>` : '';
+
+    // Second button
+    const btn2Html = b.btn2_label ? `
+      <button class="hslide-btn-outline bn" onclick="${b.btn2_action||''}">
+        <i class="fa-solid fa-location-dot"></i> ${b.btn2_label}
+      </button>` : '';
+
+    // Multi-line title support (newline → <br>)
+    const titleHtml = (b.title||'').replace(/\n/g, '<br>');
+
+    return `
+      <div class="hero-slide" style="background:${b.gradient||'linear-gradient(120deg,var(--blue),var(--blue-dark))'}">
+        <div class="hslide-content">
+          <div class="hslide-tag bn"><i class="fa-solid ${b.tag_icon||'fa-star'}"></i> ${b.tag||''}</div>
+          <div class="hslide-title bn">${titleHtml}</div>
+          <div class="hslide-sub bn">${b.subtitle||''}</div>
+          <div class="hslide-btns">
+            <button class="hslide-btn bn" style="color:var(--blue)" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">
+              <i class="fa-solid fa-bag-shopping"></i> ${b.btn_label||'দেখুন'}
+            </button>
+            ${btn2Html}
+          </div>
+          ${statsHtml}
+        </div>
+        <div class="hslide-icons">${iconsHtml}</div>
+      </div>`;
+  }).join('');
+
+  dots.innerHTML = heroBanners.map((_,i) =>
+    `<div class="hslider-dot ${i===0?'active':''}" onclick="heroGoTo(${i})"></div>`
+  ).join('');
+
+  heroGoTo(0);
+  startHeroAuto();
+}
+
+function heroGoTo(idx) {
+  heroCurrent = (idx + heroBanners.length) % heroBanners.length;
+  const slides = document.getElementById('heroSlides');
+  if(slides) slides.style.transform = `translateX(-${heroCurrent*100}%)`;
+  document.querySelectorAll('.hslider-dot').forEach((d,i) =>
+    d.classList.toggle('active', i===heroCurrent));
+}
+
+function heroSlide(dir) {
+  heroGoTo(heroCurrent + dir);
+  resetHeroAuto();
+}
+
+function startHeroAuto() {
+  clearInterval(heroAutoTimer);
+  if(heroBanners.length > 1) {
+    heroAutoTimer = setInterval(() => heroGoTo(heroCurrent + 1), 4500);
+  }
+}
+
+function resetHeroAuto() {
+  clearInterval(heroAutoTimer);
+  if(heroBanners.length > 1) {
+    heroAutoTimer = setInterval(() => heroGoTo(heroCurrent + 1), 4500);
+  }
+}
+
+// Pause on hover
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('heroSlider');
+  if(slider) {
+    slider.addEventListener('mouseenter', () => clearInterval(heroAutoTimer));
+    slider.addEventListener('mouseleave', startHeroAuto);
+  }
+});
 
 // ── START ──
 init();
