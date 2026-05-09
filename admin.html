@@ -850,7 +850,11 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
       <div class="nav-item" data-sec="promos">
         <i class="fa-solid fa-ticket"></i> Promo Codes
       </div>
-      <div class="nav-item" data-sec="settings">
+      <div class="nav-item super-only" data-sec="admins">
+        <i class="fa-solid fa-users-gear"></i> Manage Admins
+        <span class="nav-badge" id="nb-admins" style="background:var(--purple)">—</span>
+      </div>
+      <div class="nav-item super-only" data-sec="settings">
         <i class="fa-solid fa-gear"></i> Settings
       </div>
     </nav>
@@ -860,7 +864,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
         <div class="sb-avatar" id="sbAvatar">A</div>
         <div style="min-width:0">
           <div class="sb-user-name" id="sbName">Admin</div>
-          <div class="sb-user-role"><i class="fa-solid fa-circle" style="font-size:0.5rem"></i> Super Admin</div>
+          <div class="sb-user-role" id="sbRoleBadge"><i class="fa-solid fa-circle" style="font-size:0.5rem"></i> <span id="sbRoleLabel">Loading...</span></div>
         </div>
       </div>
       <button class="sb-logout" onclick="doLogout()">
@@ -1157,7 +1161,144 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
         </div>
       </div>
 
-      <!-- ══ SETTINGS ══ -->
+      <!-- ══ MANAGE ADMINS ══ -->
+      <div class="section" id="sec-admins">
+
+        <!-- Header summary cards -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-user-shield"></i></div>
+              <span class="kpi-badge na">Team</span>
+            </div>
+            <div class="kpi-val" id="adminCount">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">মোট অ্যাডমিন</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-crown"></i></div>
+              <span class="kpi-badge up">Full</span>
+            </div>
+            <div class="kpi-val" id="superCount">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">সুপার অ্যাডমিন</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-user-tie"></i></div>
+              <span class="kpi-badge na">Limited</span>
+            </div>
+            <div class="kpi-val" id="managerCount">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">ম্যানেজার</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+
+          <!-- Admin list table -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-users-gear"></i></div>
+                <span style="font-family:var(--font-bn)">অ্যাডমিন টিম</span>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="loadAdmins()">
+                <i class="fa-solid fa-rotate-right"></i> Refresh
+              </button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="font-family:var(--font-bn)">অ্যাডমিন</th>
+                    <th style="font-family:var(--font-bn)">ভূমিকা</th>
+                    <th style="font-family:var(--font-bn)">যোগ করেছেন</th>
+                    <th style="font-family:var(--font-bn)">তারিখ</th>
+                    <th style="font-family:var(--font-bn)">অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                  <tr><td colspan="5" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Add admin form + role guide -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <!-- Add admin card -->
+            <div class="panel" id="addAdminCard">
+              <div class="panel-header" style="padding-bottom:14px">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-user-plus"></i></div>
+                  <span style="font-family:var(--font-bn)">নতুন অ্যাডমিন যোগ করুন</span>
+                </div>
+              </div>
+              <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:13px">
+                <div class="form-group">
+                  <label class="form-label" style="font-family:var(--font-bn)">ইমেইল ঠিকানা <span class="required">*</span></label>
+                  <input class="form-inp" type="email" id="newAdminEmail" placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-family:var(--font-bn)">ভূমিকা নির্ধারণ করুন <span class="required">*</span></label>
+                  <select class="form-inp" id="newAdminRole" onchange="updateRolePreview()">
+                    <option value="">— বেছে নিন —</option>
+                    <option value="super_admin">👑 Super Admin</option>
+                    <option value="manager">👤 Manager</option>
+                  </select>
+                </div>
+                <!-- Role preview card -->
+                <div id="rolePreviewCard" style="display:none;border-radius:10px;padding:12px 14px;font-size:0.76rem;line-height:1.7;font-family:var(--font-bn)"></div>
+                <div class="form-group">
+                  <label class="form-label" style="font-family:var(--font-bn)">নোট (ঐচ্ছিক)</label>
+                  <input class="form-inp" type="text" id="newAdminNote" placeholder="যেমন: প্রোডাক্ট টিম, অর্ডার টিম...">
+                </div>
+                <button class="btn btn-primary" onclick="addAdmin()" id="addAdminBtn">
+                  <i class="fa-solid fa-user-plus"></i> অ্যাডমিন যোগ করুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Role permissions guide -->
+            <div class="panel">
+              <div class="panel-header" style="padding-bottom:12px">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-shield-halved"></i></div>
+                  <span style="font-family:var(--font-bn)">পার্মিশন গাইড</span>
+                </div>
+              </div>
+              <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:9px">
+                <!-- Super Admin row -->
+                <div class="role-perm-card" style="background:linear-gradient(135deg,rgba(0,122,255,0.07),rgba(175,82,222,0.07));border:1px solid rgba(0,122,255,0.18);border-radius:10px;padding:12px 14px">
+                  <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+                    <span style="font-size:0.88rem">👑</span>
+                    <span style="font-size:0.8rem;font-weight:700;color:var(--blue);font-family:var(--font-bn)">সুপার অ্যাডমিন</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> সবকিছুতে পূর্ণ অ্যাক্সেস</div>
+                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> অ্যাডমিন যোগ/বাতিল করা</div>
+                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> Settings & Analytics</div>
+                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> Delete করার ক্ষমতা</div>
+                  </div>
+                </div>
+                <!-- Manager row -->
+                <div class="role-perm-card" style="background:rgba(52,199,89,0.05);border:1px solid rgba(52,199,89,0.18);border-radius:10px;padding:12px 14px">
+                  <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+                    <span style="font-size:0.88rem">👤</span>
+                    <span style="font-size:0.8rem;font-weight:700;color:var(--green);font-family:var(--font-bn)">ম্যানেজার</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> অর্ডার ম্যানেজ করা</div>
+                    <div class="perm-row perm-yes"><i class="fa-solid fa-check"></i> পণ্য যোগ/আপডেট করা</div>
+                    <div class="perm-row perm-no"><i class="fa-solid fa-xmark"></i> Delete করার ক্ষমতা নেই</div>
+                    <div class="perm-row perm-no"><i class="fa-solid fa-xmark"></i> Settings/Analytics নেই</div>
+                    <div class="perm-row perm-no"><i class="fa-solid fa-xmark"></i> অ্যাডমিন ম্যানেজ নেই</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="section" id="sec-settings">
         <div class="panel" style="max-width:560px">
           <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:var(--bg3);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>Supabase Configuration</div></div>
