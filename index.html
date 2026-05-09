@@ -40,31 +40,151 @@ body{font-family:'Sora',sans-serif;background:#F8FAFC;color:var(--text);overflow
 .slink:hover{background:rgba(255,255,255,.3)}
 
 /* ── HEADER ── */
-header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:box-shadow var(--t)}
-header.scrolled{box-shadow:0 2px 20px rgba(0,122,255,.10)}
-.header-top{display:flex;align-items:center;gap:14px;padding:11px 22px}
-.logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:1rem}
-.logo-text{font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--blue);line-height:1.1}
-.logo-text small{display:block;font-size:.58rem;color:var(--text-light);font-weight:500}
-.search-box{flex:1;max-width:480px;display:flex;align-items:center;background:var(--blue-light);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t)}
-.search-box:focus-within{border-color:var(--blue);background:white;box-shadow:var(--glow)}
-.search-box i{padding:0 13px;color:var(--text-light);font-size:.82rem}
-.search-box input{flex:1;border:none;background:transparent;font-family:'Sora',sans-serif;font-size:.85rem;color:var(--text);padding:10px 0;outline:none}
-.search-box input::placeholder{color:var(--text-light)}
-.search-btn{padding:10px 16px;background:var(--blue);color:white;border:none;cursor:pointer;font-size:.78rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;transition:background var(--t)}
-.search-btn:hover{background:var(--blue-dark)}
-.hactions{display:flex;align-items:center;gap:5px;margin-left:auto}
-.hbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 10px;border:none;background:transparent;cursor:pointer;border-radius:var(--radius-sm);color:var(--text-mid);transition:all var(--t);font-family:'Sora',sans-serif;position:relative}
-.hbtn i{font-size:1rem}
-.hbtn span{font-size:.58rem;font-weight:600;font-family:'Hind Siliguri',sans-serif}
-.hbtn:hover{background:var(--blue-light);color:var(--blue)}
-.hbadge{position:absolute;top:3px;right:3px;background:var(--red);color:white;font-size:.5rem;font-weight:700;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white}
+header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:box-shadow var(--t)}
+header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 
-/* ── AUTH BUTTON ── */
-.auth-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:white;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;color:var(--text);transition:all var(--t)}
+/* Header top row: Logo | Search | Actions — perfect 3-column alignment */
+.header-top{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:16px;
+  padding:10px 24px;
+  min-height:60px;
+}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;min-width:0}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.05rem;flex-shrink:0;box-shadow:0 4px 12px rgba(0,122,255,.25)}
+.logo-text{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--blue);line-height:1.15;white-space:nowrap}
+.logo-text small{display:block;font-size:.55rem;color:var(--text-light);font-weight:500;letter-spacing:.02em}
+
+/* Search — fills middle column fully */
+.search-wrap{width:100%;max-width:560px;margin:0 auto}
+.search-box{display:flex;align-items:center;background:var(--blue-light);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);width:100%}
+.search-box:focus-within{border-color:var(--blue);background:white;box-shadow:var(--glow)}
+.search-box i{padding:0 12px;color:var(--text-light);font-size:.82rem;flex-shrink:0}
+.search-box input{flex:1;border:none;background:transparent;font-family:'Sora',sans-serif;font-size:.85rem;color:var(--text);padding:10px 0;outline:none;min-width:0}
+.search-box input::placeholder{color:var(--text-light)}
+.search-btn{padding:10px 18px;background:var(--blue);color:white;border:none;cursor:pointer;font-size:.78rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;transition:background var(--t);flex-shrink:0;white-space:nowrap}
+.search-btn:hover{background:var(--blue-dark)}
+
+/* Actions group */
+.hactions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.hbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 9px;border:none;background:transparent;cursor:pointer;border-radius:var(--radius-sm);color:var(--text-mid);transition:all var(--t);font-family:'Sora',sans-serif;position:relative;white-space:nowrap}
+.hbtn i{font-size:.98rem}
+.hbtn span{font-size:.56rem;font-weight:600;font-family:'Hind Siliguri',sans-serif}
+.hbtn:hover{background:var(--blue-light);color:var(--blue)}
+.hbadge{position:absolute;top:3px;right:3px;background:var(--red);color:white;font-size:.5rem;font-weight:700;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white}
+
+/* ── AUTH / MY ACCOUNT BUTTON ── */
+.auth-btn{display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:white;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:600;color:var(--text);transition:all var(--t);position:relative}
 .auth-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
-.auth-btn img{width:18px;height:18px;border-radius:50%}
+.auth-btn img{width:18px;height:18px;border-radius:50%;object-fit:cover}
+
+/* ── ACCOUNT DROPDOWN ── */
+.account-wrap{position:relative}
+.account-dropdown{
+  display:none;
+  position:absolute;top:calc(100% + 10px);right:0;
+  width:220px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,122,255,.05);
+  z-index:999;
+  overflow:hidden;
+  animation:dropIn .18s cubic-bezier(.4,0,.2,1);
+}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.account-wrap:hover .account-dropdown,
+.account-dropdown:hover{display:block}
+.account-wrap .auth-btn:focus + .account-dropdown,
+.account-wrap .auth-btn:focus-within + .account-dropdown{display:block}
+
+.adrop-header{
+  padding:14px 16px;
+  background:linear-gradient(135deg,var(--blue-light),#E8F3FF);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.adrop-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:.9rem;font-weight:700;flex-shrink:0;
+}
+.adrop-name{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text);line-height:1.2}
+.adrop-email{font-size:.62rem;color:var(--text-light);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px}
+
+.adrop-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:500;
+  color:var(--text-mid);cursor:pointer;
+  border:none;background:transparent;width:100%;text-align:left;
+  transition:all var(--t);text-decoration:none;
+}
+.adrop-item i{width:16px;text-align:center;font-size:.78rem;color:var(--text-light)}
+.adrop-item:hover{background:var(--blue-light);color:var(--blue)}
+.adrop-item:hover i{color:var(--blue)}
+.adrop-divider{height:1px;background:var(--border);margin:4px 0}
+.adrop-item.danger{color:var(--red)}
+.adrop-item.danger i{color:var(--red)}
+.adrop-item.danger:hover{background:#FEF2F2}
+
+/* ── PROMO BANNER (between search and hero) ── */
+.promo-banner{
+  background:linear-gradient(90deg,#fff8e6 0%,#fffdf5 50%,#fff8e6 100%);
+  border-bottom:1px solid #FFE4A0;
+  padding:0;
+  overflow:hidden;
+  position:relative;
+}
+.promo-banner-inner{
+  display:flex;align-items:center;
+  gap:0;
+  min-height:52px;
+}
+.promo-banner-img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  max-height:80px;
+}
+/* When using text fallback */
+.promo-banner-text{
+  display:flex;align-items:center;justify-content:center;
+  gap:24px;padding:10px 24px;width:100%;
+  flex-wrap:wrap;
+}
+.promo-item{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:.8rem;font-weight:600;color:#5a3800;
+  white-space:nowrap;
+}
+.promo-item i{color:var(--orange);font-size:.9rem}
+.promo-highlight{
+  background:linear-gradient(135deg,var(--orange),#FF5722);
+  color:white;padding:5px 14px;border-radius:100px;
+  font-size:.78rem;font-weight:700;
+  font-family:'Hind Siliguri',sans-serif;
+  white-space:nowrap;cursor:pointer;
+  transition:all var(--t);
+  box-shadow:0 3px 10px rgba(249,115,22,.3);
+}
+.promo-highlight:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(249,115,22,.4)}
+.promo-sep{color:#d4a017;font-size:.7rem;opacity:.5}
+
+/* Mobile search row (hidden on desktop) */
+.mobile-search-row{
+  display:none;
+  padding:8px 14px 10px;
+  background:rgba(255,255,255,.97);
+  border-top:1px solid var(--border);
+}
+.mobile-search-row .search-box{width:100%}
 
 /* ── NAV CATS ── */
 .nav-cats{display:flex;padding:0 22px;border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
@@ -190,8 +310,356 @@ header.scrolled{box-shadow:0 2px 20px rgba(0,122,255,.10)}
 .close-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--text-mid);transition:all var(--t)}
 .close-btn:hover{background:var(--blue-light);color:var(--blue)}
 
-/* ── PRODUCT DETAIL MODAL ── */
-#productModal .modal-box{width:90vw;max-width:660px;max-height:90vh;display:flex;flex-direction:column}
+/* ══════════════════════════════════════════════
+   PRODUCT DETAIL PAGE (full-screen overlay)
+══════════════════════════════════════════════ */
+#pdPage{
+  display:none;
+  position:fixed;inset:0;z-index:500;
+  background:#F8FAFC;
+  overflow-y:auto;
+  animation:pdFadeIn .25s ease;
+}
+#pdPage.open{display:block}
+@keyframes pdFadeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* back bar */
+.pd-topbar{
+  position:sticky;top:0;z-index:10;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:12px 24px;
+  display:flex;align-items:center;gap:12px;
+}
+.pd-back{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 16px;border-radius:var(--radius-sm);
+  background:var(--blue-light);color:var(--blue);
+  border:1.5px solid rgba(0,122,255,.2);
+  font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;
+  cursor:pointer;transition:all var(--t);
+}
+.pd-back:hover{background:var(--blue);color:white;border-color:var(--blue)}
+.pd-breadcrumb{
+  font-family:'Hind Siliguri',sans-serif;font-size:.75rem;
+  color:var(--text-light);display:flex;align-items:center;gap:6px;
+}
+.pd-breadcrumb span{color:var(--text-mid)}
+.pd-breadcrumb .cur{color:var(--text);font-weight:600}
+
+/* main detail layout */
+.pd-main{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  max-width:1100px;
+  margin:28px auto;
+  padding:0 24px;
+}
+
+/* image panel */
+.pd-img-panel{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  display:flex;align-items:center;justify-content:center;
+  min-height:340px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color var(--t);
+}
+.pd-img-panel:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow)}
+.pd-img-panel::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 30%,rgba(0,122,255,.04) 0%,transparent 60%);
+  pointer-events:none;
+}
+.pd-big-icon{
+  width:160px;height:160px;border-radius:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:5rem;
+  box-shadow:0 12px 40px rgba(0,0,0,.12);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.pd-img-panel:hover .pd-big-icon{transform:scale(1.06) rotate(-4deg)}
+.pd-img-badge{
+  position:absolute;top:14px;left:14px;
+  padding:5px 12px;border-radius:100px;
+  font-size:.7rem;font-weight:700;color:white;
+}
+
+/* info panel */
+.pd-info-panel{display:flex;flex-direction:column;gap:0}
+
+.pd-cat-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--blue-light);color:var(--blue);
+  padding:3px 11px;border-radius:100px;
+  font-size:.68rem;font-weight:700;
+  font-family:'Hind Siliguri',sans-serif;
+  letter-spacing:.05em;text-transform:uppercase;
+  margin-bottom:10px;width:fit-content;
+}
+.pd-title{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:1.6rem;font-weight:700;line-height:1.3;
+  color:var(--text);margin-bottom:6px;
+}
+.pd-brand{font-size:.84rem;color:var(--text-light);margin-bottom:14px}
+.pd-brand strong{color:var(--text-mid);font-weight:600}
+
+/* rating bar */
+.pd-rating-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  margin-bottom:18px;
+}
+.pd-stars{color:var(--gold);font-size:1rem;letter-spacing:2px}
+.pd-rating-num{font-size:.9rem;font-weight:700;color:var(--text)}
+.pd-reviews-count{font-size:.78rem;color:var(--text-light)}
+.pd-instock{
+  display:flex;align-items:center;gap:5px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:700;
+  color:var(--green);margin-left:auto;
+}
+
+/* price */
+.pd-price-block{margin-bottom:18px}
+.pd-old-price{font-size:.9rem;color:var(--text-light);text-decoration:line-through;margin-bottom:4px}
+.pd-new-price{font-size:2rem;font-weight:800;color:var(--text);line-height:1}
+.pd-disc-badge{
+  display:inline-block;background:#FEF2F2;color:var(--red);
+  font-size:.75rem;font-weight:700;
+  padding:3px 10px;border-radius:6px;margin-left:10px;
+}
+.pd-savings{
+  font-family:'Hind Siliguri',sans-serif;font-size:.78rem;
+  color:var(--green);font-weight:600;margin-top:5px;
+}
+
+/* highlights */
+.pd-highlights{
+  background:var(--blue-light);border:1px solid rgba(0,122,255,.12);
+  border-radius:var(--radius-sm);padding:14px 16px;
+  margin-bottom:18px;
+}
+.pd-hl-title{font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.pd-hl-item{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid);
+  margin-bottom:5px;
+}
+.pd-hl-item:last-child{margin-bottom:0}
+.pd-hl-item i{color:var(--blue);font-size:.75rem;width:14px;text-align:center}
+
+/* qty + buttons */
+.pd-qty-row{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:14px;
+}
+.pd-qty-lbl{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text)}
+.pd-qty-ctrl{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.pd-qbtn{
+  width:36px;height:36px;border:none;background:var(--blue-light);
+  cursor:pointer;font-size:1rem;color:var(--text-mid);
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--t);font-weight:700;
+}
+.pd-qbtn:hover{background:var(--blue);color:white}
+.pd-qval{
+  width:44px;text-align:center;font-size:.92rem;font-weight:700;
+  color:var(--text);border:none;outline:none;background:white;
+}
+
+.pd-action-btns{display:flex;gap:10px;margin-bottom:14px}
+.pd-cart-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px;border-radius:var(--radius);
+  background:var(--blue);color:white;border:none;
+  font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:all var(--t);
+}
+.pd-cart-btn:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.35)}
+.pd-buy-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px;border-radius:var(--radius);
+  background:var(--orange);color:white;border:none;
+  font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:all var(--t);
+}
+.pd-buy-btn:hover{background:#EA6C00;transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,.35)}
+.pd-wish-btn{
+  width:50px;height:50px;border-radius:var(--radius);
+  border:1.5px solid var(--border);background:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;cursor:pointer;color:var(--text-light);
+  transition:all var(--t);flex-shrink:0;
+}
+.pd-wish-btn:hover,.pd-wish-btn.active{border-color:#FCA5A5;background:#FEF2F2;color:var(--red)}
+
+/* delivery info strip */
+.pd-delivery-strip{
+  display:flex;gap:8px;flex-wrap:wrap;
+  padding:12px 14px;background:white;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+}
+.pd-del-item{
+  display:flex;align-items:center;gap:6px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.74rem;
+  color:var(--text-mid);
+}
+.pd-del-item i{color:var(--blue);font-size:.78rem}
+
+/* ── DESCRIPTION TABS ── */
+.pd-tabs-section{
+  max-width:1100px;margin:0 auto 28px;padding:0 24px;
+}
+.pd-tabs-nav{
+  display:flex;gap:0;border-bottom:2px solid var(--border);
+  margin-bottom:20px;
+}
+.pd-tab-btn{
+  padding:11px 20px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:600;
+  color:var(--text-light);border:none;background:transparent;
+  cursor:pointer;border-bottom:2px solid transparent;
+  margin-bottom:-2px;transition:all var(--t);
+}
+.pd-tab-btn:hover{color:var(--text)}
+.pd-tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.pd-tab-content{display:none}
+.pd-tab-content.active{display:block;animation:pdFadeIn .2s ease}
+.pd-desc-text{
+  font-family:'Hind Siliguri',sans-serif;font-size:.88rem;color:var(--text-mid);
+  line-height:1.8;background:white;border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px 22px;
+}
+.pd-spec-table{width:100%;border-collapse:collapse;background:white;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.pd-spec-table tr:nth-child(even) td:first-child{background:var(--blue-light)}
+.pd-spec-table tr:nth-child(even) td:last-child{background:#FAFCFF}
+.pd-spec-table td{padding:10px 16px;font-size:.82rem;border-bottom:1px solid var(--border)}
+.pd-spec-table td:first-child{font-family:'Hind Siliguri',sans-serif;font-weight:700;color:var(--text-mid);width:38%;background:var(--blue-light)}
+.pd-spec-table td:last-child{color:var(--text)}
+.pd-spec-table tr:last-child td{border-bottom:none}
+
+/* ── REVIEWS ── */
+.pd-reviews-wrap{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.pd-review-summary{
+  padding:20px 22px;background:linear-gradient(135deg,var(--blue-light),#EDF4FF);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+}
+.pd-review-big{text-align:center}
+.pd-review-score{font-size:3rem;font-weight:800;color:var(--blue);line-height:1}
+.pd-review-starsrow{color:var(--gold);font-size:1.1rem;margin:4px 0}
+.pd-review-total{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:var(--text-light)}
+.pd-review-bars{flex:1;min-width:200px}
+.pd-rbar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.pd-rbar-lbl{font-size:.72rem;color:var(--text-mid);width:32px;flex-shrink:0;text-align:right}
+.pd-rbar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.pd-rbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),#FBBF24)}
+.pd-rbar-cnt{font-size:.68rem;color:var(--text-light);width:22px;flex-shrink:0}
+
+/* review list */
+.pd-review-list{padding:16px 22px}
+.pd-review-item{padding:14px 0;border-bottom:1px solid var(--blue-light)}
+.pd-review-item:last-child{border-bottom:none}
+.pd-review-head{display:flex;align-items:center;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.pd-reviewer-av{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:.8rem;font-weight:700;flex-shrink:0;
+}
+.pd-reviewer-name{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text)}
+.pd-review-date{font-size:.7rem;color:var(--text-light);margin-left:auto}
+.pd-review-stars{color:var(--gold);font-size:.78rem}
+.pd-verified{
+  background:#D1FAE5;color:#065F46;
+  font-size:.62rem;font-weight:700;
+  padding:2px 8px;border-radius:100px;
+  font-family:'Hind Siliguri',sans-serif;
+}
+.pd-review-text{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);line-height:1.65}
+.pd-review-helpful{
+  margin-top:8px;
+  display:flex;align-items:center;gap:8px;
+  font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-light);
+}
+.pd-helpful-btn{
+  background:none;border:1px solid var(--border);border-radius:6px;
+  padding:2px 9px;cursor:pointer;font-size:.7rem;color:var(--text-light);
+  font-family:'Hind Siliguri',sans-serif;transition:all var(--t);
+}
+.pd-helpful-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+
+/* write review form */
+.pd-write-review{
+  padding:18px 22px;background:var(--blue-light);border-top:1px solid var(--border);
+}
+.pd-wr-title{font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:12px}
+.pd-star-picker{display:flex;gap:4px;margin-bottom:11px}
+.pd-star-pick{font-size:1.4rem;cursor:pointer;color:var(--border);transition:color .15s;line-height:1}
+.pd-star-pick.filled{color:var(--gold)}
+.pd-wr-inp{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);background:white;
+  font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);
+  outline:none;resize:vertical;min-height:80px;transition:border-color var(--t);
+}
+.pd-wr-inp:focus{border-color:var(--blue);box-shadow:var(--glow)}
+.pd-wr-submit{
+  margin-top:10px;
+  padding:9px 22px;border-radius:var(--radius-sm);
+  background:var(--blue);color:white;border:none;
+  font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;
+  cursor:pointer;transition:all var(--t);
+}
+.pd-wr-submit:hover{background:var(--blue-dark);transform:translateY(-1px)}
+
+/* ── RELATED / SUGGESTED ── */
+.pd-related-section{
+  max-width:1100px;margin:0 auto 40px;padding:0 24px;
+}
+.pd-section-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.pd-section-title{
+  font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;
+  color:var(--text);display:flex;align-items:center;gap:8px;
+}
+.pd-section-title::before{
+  content:'';width:4px;height:18px;background:var(--blue);border-radius:2px;
+}
+.pd-see-all{
+  font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;
+  color:var(--blue);background:none;border:none;cursor:pointer;
+  transition:color var(--t);
+}
+.pd-see-all:hover{color:var(--blue-dark)}
+.pd-related-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:12px;
+}
+
+/* mobile responsive for pd page */
+@media(max-width:768px){
+  .pd-main{grid-template-columns:1fr;gap:16px;padding:0 14px;margin:16px auto}
+  .pd-title{font-size:1.25rem}
+  .pd-new-price{font-size:1.5rem}
+  .pd-tabs-section{padding:0 14px}
+  .pd-related-section{padding:0 14px}
+  .pd-action-btns{flex-direction:column}
+  .pd-wish-btn{width:100%;height:44px}
+  .pd-topbar{padding:10px 14px}
+  .pd-review-summary{flex-direction:column;gap:14px}
+  .pd-related-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+}
+
+/* ── keep old modal for quick-view ── */
 .modal-body{display:flex;overflow:hidden;flex:1}
 .modal-img{width:240px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:28px}
 .modal-info{flex:1;padding:22px;overflow-y:auto}
@@ -417,6 +885,22 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .fgrid{grid-template-columns:1fr}
   .admin-sidebar{width:150px}
   .hero{flex-direction:column}
+
+  /* Mobile header */
+  .header-top{grid-template-columns:auto 1fr auto;padding:9px 14px;gap:10px}
+  .search-wrap{display:none}
+  .mobile-search-row{display:block}
+  .hbtn span{display:none}
+  .hbtn{padding:7px 8px}
+  .auth-btn{padding:7px 10px;font-size:.72rem}
+  .account-dropdown{right:auto;left:0}
+  .promo-item{font-size:.72rem}
+  .promo-sep{display:none}
+}
+@media(max-width:480px){
+  .promo-banner-text{gap:12px;padding:8px 14px}
+  .promo-item:nth-child(n+4){display:none}
+  .header-top{padding:8px 12px}
 }
 </style>
 </head>
@@ -444,16 +928,115 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
 <!-- HEADER -->
 <header id="mainHeader">
+  <!-- ── TOP ROW: Logo | Search | Actions ── -->
   <div class="header-top">
-    <a class="logo" href="#"><div class="logo-icon"><i class="fa-solid fa-store"></i></div><div class="logo-text">গ্যালাক্সি মার্ট BD<small>আপনার বিশ্বস্ত অনলাইন শপ</small></div></a>
-    <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchInput" placeholder="পণ্য খুঁজুন..." oninput="filterProducts()"><button class="search-btn bn">খুঁজুন</button></div>
+
+    <!-- Logo -->
+    <a class="logo" href="#">
+      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
+      <div class="logo-text">গ্যালাক্সি মার্ট BD<small>আপনার বিশ্বস্ত অনলাইন শপ</small></div>
+    </a>
+
+    <!-- Search Bar (desktop) -->
+    <div class="search-wrap">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="পণ্য, ব্র্যান্ড বা ক্যাটাগরি খুঁজুন..." oninput="filterProducts()">
+        <button class="search-btn bn">খুঁজুন</button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
     <div class="hactions">
-      <button class="hbtn" onclick="openTrack()"><i class="fa-solid fa-location-dot"></i><span>ট্র্যাক</span></button>
-      <button class="hbtn" id="adminBtn" onclick="openAdmin()" style="display:none"><i class="fa-solid fa-chart-line"></i><span>অ্যাডমিন</span></button>
-      <button class="hbtn" onclick="openCart()"><i class="fa-solid fa-cart-shopping"></i><span>কার্ট</span><span class="hbadge" id="cartBadge">0</span></button>
-      <button class="auth-btn" id="authBtn" onclick="openAuth()"><i class="fa-brands fa-google" style="color:#EA4335"></i><span class="bn" id="authBtnText">লগইন</span></button>
+
+      <!-- Track -->
+      <button class="hbtn" onclick="openTrack()">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>ট্র্যাক</span>
+      </button>
+
+      <!-- Admin (hidden unless admin) -->
+      <button class="hbtn" id="adminBtn" onclick="openAdmin()" style="display:none">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>অ্যাডমিন</span>
+      </button>
+
+      <!-- Cart -->
+      <button class="hbtn" onclick="openCart()">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>কার্ট</span>
+        <span class="hbadge" id="cartBadge">0</span>
+      </button>
+
+      <!-- My Account Dropdown -->
+      <div class="account-wrap" id="accountWrap">
+        <button class="auth-btn" id="authBtn" onclick="handleAuthClick()">
+          <i class="fa-regular fa-user" id="authIcon"></i>
+          <span class="bn" id="authBtnText">আমার অ্যাকাউন্ট</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:.55rem;color:var(--text-light)" id="authChevron"></i>
+        </button>
+
+        <!-- Dropdown menu -->
+        <div class="account-dropdown" id="accountDropdown">
+          <!-- Guest state -->
+          <div id="guestDropContent">
+            <div style="padding:16px;border-bottom:1px solid var(--border)">
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:4px">স্বাগতম!</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.74rem;color:var(--text-light);margin-bottom:12px">লগইন করে সুবিধা উপভোগ করুন</div>
+              <button onclick="openAuth();closeDropdown()" class="btn-primary bn" style="width:100%;justify-content:center;padding:9px;font-size:.78rem">
+                <i class="fa-solid fa-right-to-bracket"></i> লগইন / রেজিস্ট্রেশন
+              </button>
+            </div>
+            <a class="adrop-item" onclick="openTrack();closeDropdown()">
+              <i class="fa-solid fa-location-dot"></i> অর্ডার ট্র্যাক করুন
+            </a>
+            <a class="adrop-item" href="#">
+              <i class="fa-solid fa-headset"></i> কাস্টমার সাপোর্ট
+            </a>
+          </div>
+
+          <!-- Logged-in state (hidden until logged in) -->
+          <div id="userDropContent" style="display:none">
+            <div class="adrop-header">
+              <div class="adrop-avatar" id="dropAvatar">U</div>
+              <div>
+                <div class="adrop-name" id="dropName">User</div>
+                <div class="adrop-email" id="dropEmail">user@email.com</div>
+              </div>
+            </div>
+            <a class="adrop-item" onclick="openTrack();closeDropdown()">
+              <i class="fa-solid fa-box"></i> আমার অর্ডার
+            </a>
+            <a class="adrop-item" href="#">
+              <i class="fa-regular fa-heart"></i> উইশলিস্ট
+            </a>
+            <a class="adrop-item" href="#">
+              <i class="fa-solid fa-ticket"></i> কুপন ও অফার
+            </a>
+            <a class="adrop-item" href="#">
+              <i class="fa-solid fa-map-location-dot"></i> ঠিকানা ব্যবস্থাপনা
+            </a>
+            <div class="adrop-divider"></div>
+            <button class="adrop-item danger" onclick="signOut();closeDropdown()">
+              <i class="fa-solid fa-right-from-bracket"></i> লগআউট
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
+
+  <!-- Mobile Search Row (shown only on mobile) -->
+  <div class="mobile-search-row">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="mobileSearchInput" placeholder="পণ্য খুঁজুন..." oninput="filterProducts()">
+      <button class="search-btn bn">খুঁজুন</button>
+    </div>
+  </div>
+
+  <!-- Category Nav -->
   <div class="nav-cats">
     <button class="ncat active" onclick="filterCat('সব',this)"><i class="fa-solid fa-border-all"></i> সব পণ্য</button>
     <button class="ncat" onclick="filterCat('বই',this)"><i class="fa-solid fa-book"></i> বই</button>
@@ -467,7 +1050,33 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   </div>
 </header>
 
-<!-- HERO -->
+<!-- ── PROMO BANNER (below search, above hero) ── -->
+<div class="promo-banner" id="promoBanner">
+  <div class="promo-banner-text">
+    <div class="promo-item">
+      <i class="fa-solid fa-truck-fast"></i>
+      <span class="bn">৳৫০০+ অর্ডারে <strong>ফ্রি ডেলিভারি</strong></span>
+    </div>
+    <span class="promo-sep">|</span>
+    <div class="promo-item">
+      <i class="fa-solid fa-tag"></i>
+      <span class="bn">ঈদ স্পেশাল — <strong>৩০% পর্যন্ত ছাড়</strong></span>
+    </div>
+    <span class="promo-sep">|</span>
+    <div class="promo-item">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span class="bn">১০০% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
+    </div>
+    <span class="promo-sep">|</span>
+    <div class="promo-item">
+      <i class="fa-solid fa-rotate-left"></i>
+      <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
+    </div>
+    <button class="promo-highlight bn" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">
+      এখনই কিনুন →
+    </button>
+  </div>
+</div>
 <div class="hero">
   <div class="hero-left">
     <div class="hero-badge"><span class="ldot"></span><span class="bn">নতুন পণ্য এসেছে — মে ২০২৬</span></div>
@@ -824,20 +1433,70 @@ async function handleUser(user) {
 }
 
 function updateAuthUI() {
-  const btn = document.getElementById('authBtn');
+  const authTxt  = document.getElementById('authBtnText');
   const adminBtn = document.getElementById('adminBtn');
+  const guestDiv = document.getElementById('guestDropContent');
+  const userDiv  = document.getElementById('userDropContent');
+
   if (currentUser) {
-    const name = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
-    btn.innerHTML = `<img src="${currentUser.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=007AFF&color=fff&size=32'}" alt="avatar" style="width:22px;height:22px;border-radius:50%;object-fit:cover"><span class="bn">${name.split(' ')[0]}</span><span class="bn" style="font-size:.62rem;color:var(--red);cursor:pointer" onclick="event.stopPropagation();signOut()">লগআউট</span>`;
-    btn.onclick = null;
-    if (isAdmin) adminBtn.style.display = 'flex';
-    else adminBtn.style.display = 'none';
+    const name  = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+    const email = currentUser.email || '';
+    const av    = currentUser.user_metadata?.avatar_url;
+    const initl = name.charAt(0).toUpperCase();
+
+    // Update button text
+    if (authTxt) authTxt.textContent = name.split(' ')[0];
+
+    // Update avatar in button
+    const authIcon = document.getElementById('authIcon');
+    if (authIcon) {
+      if (av) {
+        authIcon.outerHTML = `<img id="authIcon" src="${av}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">`;
+      } else {
+        authIcon.className = 'fa-solid fa-user';
+      }
+    }
+
+    // Show user dropdown content
+    if (guestDiv) guestDiv.style.display = 'none';
+    if (userDiv)  userDiv.style.display  = 'block';
+
+    const dropAvatar = document.getElementById('dropAvatar');
+    const dropName   = document.getElementById('dropName');
+    const dropEmail  = document.getElementById('dropEmail');
+    if (dropAvatar) dropAvatar.textContent = initl;
+    if (dropName)   dropName.textContent   = name;
+    if (dropEmail)  dropEmail.textContent  = email;
+
+    adminBtn.style.display = isAdmin ? 'flex' : 'none';
   } else {
-    btn.innerHTML = `<i class="fa-brands fa-google" style="color:#EA4335"></i><span class="bn">লগইন</span>`;
-    btn.onclick = openAuth;
+    if (authTxt) authTxt.textContent = 'আমার অ্যাকাউন্ট';
+    const authIcon = document.getElementById('authIcon');
+    if (authIcon) authIcon.className = 'fa-regular fa-user';
+    if (guestDiv) guestDiv.style.display = 'block';
+    if (userDiv)  userDiv.style.display  = 'none';
     adminBtn.style.display = 'none';
   }
 }
+
+// ── ACCOUNT DROPDOWN ──
+function handleAuthClick() {
+  const dd = document.getElementById('accountDropdown');
+  if (!dd) return;
+  const isOpen = dd.style.display === 'block';
+  dd.style.display = isOpen ? 'none' : 'block';
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('accountDropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+// Close when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('accountWrap');
+  if (wrap && !wrap.contains(e.target)) closeDropdown();
+});
 
 function hiddenLoader() {
   setTimeout(() => document.getElementById('loadingScreen').classList.add('hide'), 1800);
@@ -928,9 +1587,12 @@ function filterRating(r, el) {
   renderProducts(getFiltered());
 }
 function filterProducts() {
-  activeFilter.minPrice = parseInt(document.getElementById('priceMin').value)||0;
-  activeFilter.maxPrice = parseInt(document.getElementById('priceMax').value)||999999;
-  activeFilter.search = document.getElementById('searchInput').value;
+  activeFilter.minPrice = parseInt(document.getElementById('priceMin')?.value)||0;
+  activeFilter.maxPrice = parseInt(document.getElementById('priceMax')?.value)||999999;
+  // Use whichever search input is visible
+  const mobileSearch = document.getElementById('mobileSearchInput');
+  const desktopSearch = document.getElementById('searchInput');
+  activeFilter.search = (mobileSearch?.value || desktopSearch?.value || '').trim();
   renderProducts(getFiltered());
 }
 function sortProducts(v) {
