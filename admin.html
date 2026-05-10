@@ -849,6 +849,9 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
       <div class="nav-item" data-sec="admins">
         <i class="fa-solid fa-users-gear"></i> Manage Admins
       </div>
+      <div class="nav-item" data-sec="categories">
+        <i class="fa-solid fa-layer-group"></i> Categories
+      </div>
       <div class="nav-item" data-sec="banners">
         <i class="fa-solid fa-images"></i> Banners
       </div>
@@ -1073,8 +1076,11 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
             <div class="panel-actions">
               <div class="search-bar" style="min-width:185px">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search products..." id="productSearch" oninput="renderProducts()">
+                <input type="text" placeholder="Search by name, author..." id="productSearch" oninput="renderProducts()">
               </div>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:130px" id="productCatFilter" onchange="renderProducts()">
+                <option value="">All Categories</option>
+              </select>
               <button class="btn btn-primary btn-sm" onclick="openProductModal()">
                 <i class="fa-solid fa-plus"></i> পণ্য যোগ করুন
               </button>
@@ -1193,6 +1199,75 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
             </button>
             <div style="font-size:0.72rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.7">
               ⚠ Settings are saved in localStorage. After rotating Supabase keys, paste the new key here and save.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CATEGORY MANAGEMENT ══ -->
+      <div class="section" id="sec-categories">
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start">
+          <!-- Category List -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-layer-group"></i></div>
+                <span style="font-family:var(--font-bn)">ওয়েবসাইট ক্যাটাগরি</span>
+              </div>
+              <span id="catCountBadge" style="font-size:0.68rem;font-family:var(--mono);color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:100px">— টি ক্যাটাগরি</span>
+            </div>
+            <div style="padding:16px 20px" id="categoryListPanel">
+              <div style="text-align:center;padding:24px"><div class="spinner" style="margin:auto"></div></div>
+            </div>
+          </div>
+
+          <!-- Add / Edit Category -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <!-- Add New Category -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-plus-circle"></i></div>
+                  <span style="font-family:var(--font-bn)">নতুন ক্যাটাগরি</span>
+                </div>
+              </div>
+              <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+                <div class="form-group">
+                  <label class="form-label bn-label">ক্যাটাগরির নাম (বাংলা) <span class="required">*</span></label>
+                  <input class="form-inp" type="text" id="newCatName" placeholder="যেমন: ইলেকট্রনিক্স, ফ্যাশন..." oninput="previewCatSlug()">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">আইকন (FA class)</label>
+                  <input class="form-inp" type="text" id="newCatIcon" placeholder="fa-box" style="font-family:var(--mono);font-size:0.82rem">
+                  <div style="font-size:0.68rem;color:var(--text3);margin-top:4px">যেমন: fa-mobile-screen, fa-shirt, fa-book</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">রঙ</label>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input class="form-inp" type="text" id="newCatColor" placeholder="#007AFF" style="font-family:var(--mono);font-size:0.82rem;flex:1">
+                    <input type="color" id="newCatColorPicker" value="#007AFF" onchange="document.getElementById('newCatColor').value=this.value" style="width:38px;height:38px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:var(--surface)">
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="addCategory()" style="width:100%;justify-content:center">
+                  <i class="fa-solid fa-plus"></i> <span style="font-family:var(--font-bn)">ক্যাটাগরি যোগ করুন</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Book Types Manager -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-book-open"></i></div>
+                  <span style="font-family:var(--font-bn)">বইয়ের ধরণ</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="openAddBookTypeModal()">
+                  <i class="fa-solid fa-plus"></i> নতুন
+                </button>
+              </div>
+              <div style="padding:14px 20px" id="bookTypeListPanel">
+                <div style="text-align:center;padding:16px"><div class="spinner" style="margin:auto"></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1345,9 +1420,15 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
             <label class="form-label">Product Name <span class="required">*</span></label>
             <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits">
           </div>
-          <div class="form-group">
-            <label class="form-label">Brand / Author</label>
-            <input class="form-inp" type="text" id="pBrand" placeholder="e.g. James Clear">
+          <!-- Brand (for non-book products) -->
+          <div class="form-group" id="brandField">
+            <label class="form-label">Brand Name</label>
+            <input class="form-inp" type="text" id="pBrand" placeholder="e.g. Samsung, Nike...">
+          </div>
+          <!-- Author (for books only — shown when category = বই) -->
+          <div class="form-group conditional-field" id="authorField">
+            <label class="form-label bn-label">লেখকের নাম (Author)</label>
+            <input class="form-inp" type="text" id="pAuthor" placeholder="যেমন: হুমায়ূন আহমেদ, James Clear...">
           </div>
         </div>
 
@@ -1385,21 +1466,12 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
               <input class="form-inp" type="text" id="pPublisher" placeholder="যেমন: অন্যপ্রকাশ, প্রথমা...">
             </div>
             <div class="form-group">
-              <label class="form-label bn-label">বইয়ের ধরণ</label>
+              <label class="form-label bn-label" style="display:flex;align-items:center;justify-content:space-between">
+                বইয়ের ধরণ
+                <button type="button" onclick="openAddBookTypeModal()" style="font-size:0.65rem;padding:2px 8px;border-radius:6px;border:1px solid rgba(0,122,255,0.3);background:var(--blue-ll);color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-plus" style="font-size:0.55rem"></i> নতুন ধরণ</button>
+              </label>
               <select class="form-inp" id="pBookType">
                 <option value="">— ধরণ বেছে নিন —</option>
-                <option value="উপন্যাস">উপন্যাস</option>
-                <option value="গল্পগ্রন্থ">গল্পগ্রন্থ</option>
-                <option value="কবিতা">কবিতা</option>
-                <option value="ইসলামি বই">ইসলামি বই</option>
-                <option value="আত্মউন্নয়ন">আত্মউন্নয়ন</option>
-                <option value="শিক্ষামূলক">শিক্ষামূলক</option>
-                <option value="ইতিহাস">ইতিহাস</option>
-                <option value="বিজ্ঞান">বিজ্ঞান</option>
-                <option value="শিশুতোষ">শিশুতোষ</option>
-                <option value="রান্না">রান্না</option>
-                <option value="ভ্রমণ">ভ্রমণ</option>
-                <option value="অন্যান্য">অন্যান্য</option>
               </select>
             </div>
           </div>
@@ -1812,6 +1884,76 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     ADD BOOK TYPE MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="addBookTypeModal" onclick="if(event.target===this)closeModal('addBookTypeModal')">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex;align-items:center;gap:9px">
+        <i class="fa-solid fa-book-open" style="color:var(--purple)"></i>
+        <span style="font-family:var(--font-bn)">নতুন বইয়ের ধরণ যোগ করুন</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('addBookTypeModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;gap:13px">
+        <div class="form-group">
+          <label class="form-label bn-label">ধরণের নাম <span class="required">*</span></label>
+          <input class="form-inp" type="text" id="newBookTypeName" placeholder="যেমন: থ্রিলার, মুক্তিযুদ্ধ..." style="font-family:var(--font-bn)">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
+          <button class="btn btn-ghost" onclick="closeModal('addBookTypeModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="addBookType()">
+            <i class="fa-solid fa-plus"></i> <span style="font-family:var(--font-bn)">যোগ করুন</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     EDIT CATEGORY MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="editCategoryModal" onclick="if(event.target===this)closeModal('editCategoryModal')">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex;align-items:center;gap:9px">
+        <i class="fa-solid fa-pen-to-square" style="color:var(--blue)"></i>
+        <span style="font-family:var(--font-bn)">ক্যাটাগরি সম্পাদনা</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('editCategoryModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editCatOriginalName">
+      <div style="display:grid;gap:13px">
+        <div class="form-group">
+          <label class="form-label bn-label">ক্যাটাগরির নাম <span class="required">*</span></label>
+          <input class="form-inp" type="text" id="editCatName" placeholder="ক্যাটাগরির নাম" style="font-family:var(--font-bn)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">আইকন (FA class)</label>
+          <input class="form-inp" type="text" id="editCatIcon" placeholder="fa-box" style="font-family:var(--mono)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">রঙ</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-inp" type="text" id="editCatColor" placeholder="#007AFF" style="font-family:var(--mono);font-size:0.82rem;flex:1">
+            <input type="color" id="editCatColorPicker" onchange="document.getElementById('editCatColor').value=this.value" style="width:38px;height:38px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:var(--surface)">
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
+          <button class="btn btn-ghost" onclick="closeModal('editCategoryModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="saveCategoryEdit()">
+            <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">সেভ করুন</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1975,6 +2117,7 @@ async function loadProducts() {
   if (error) { toast('Products Error', error.message, 'error'); return; }
   allProducts = data || [];
   document.getElementById('nb-products').textContent = allProducts.length;
+  populateProductCatFilter();
   renderProducts();
 }
 
@@ -2524,9 +2667,11 @@ function renderAnalytics() {
    PRODUCTS TABLE
 ══════════════════════════════════════ */
 function renderProducts() {
-  const q = (document.getElementById('productSearch')?.value || '').toLowerCase();
+  const q  = (document.getElementById('productSearch')?.value || '').toLowerCase();
+  const cf = document.getElementById('productCatFilter')?.value || '';
   const filtered = allProducts.filter(p =>
-    !q || (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q) || (p.category || '').includes(q)
+    (!cf || p.category === cf) &&
+    (!q || (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q) || (p.author || '').toLowerCase().includes(q) || (p.category || '').includes(q))
   );
   document.getElementById('productFooter').textContent = `Showing ${filtered.length} of ${allProducts.length} products`;
   const tbody = document.getElementById('productTableBody');
@@ -2866,6 +3011,9 @@ async function saveOrderEdits() {
    PRODUCT CRUD
 ══════════════════════════════════════ */
 function openProductModal(product = null) {
+  // Refresh dynamic dropdowns first
+  populateCategoryDropdown(product?.category || '');
+  populateBookTypeDropdown(product?.book_type || '');
   document.getElementById('editProductId').value = product?.id || '';
   document.getElementById('productModalTitle').textContent = product ? 'পণ্য আপডেট করুন' : 'পণ্য যোগ করুন';
   document.getElementById('pName').value        = product?.name || '';
@@ -2879,6 +3027,9 @@ function openProductModal(product = null) {
   document.getElementById('pDescription').value = product?.description || '';
   document.getElementById('pPublisher').value   = product?.publisher || '';
   document.getElementById('pBookType') && (document.getElementById('pBookType').value = product?.book_type || '');
+  // Fill author field (books) — fall back to brand for legacy products where author was saved in brand
+  const authorInput = document.getElementById('pAuthor');
+  if (authorInput) authorInput.value = product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
   selectedImageFile = null;
   document.getElementById('imageFile').value = '';
   document.getElementById('uploadFileName').textContent = '';
@@ -2903,11 +3054,17 @@ function editProduct(id) {
 }
 
 function handleCategoryChange(cat) {
-  const field = document.getElementById('publisherField');
+  const publisherField = document.getElementById('publisherField');
+  const authorField    = document.getElementById('authorField');
+  const brandField     = document.getElementById('brandField');
   if (cat === 'বই') {
-    field.classList.add('visible');
+    if (publisherField) publisherField.classList.add('visible');
+    if (authorField)    authorField.classList.add('visible');
+    if (brandField)     brandField.style.display = 'none';
   } else {
-    field.classList.remove('visible');
+    if (publisherField) publisherField.classList.remove('visible');
+    if (authorField)    authorField.classList.remove('visible');
+    if (brandField)     brandField.style.display = 'block';
   }
 }
 
@@ -2984,9 +3141,15 @@ async function saveProduct() {
   const publisher = category === 'বই' ? document.getElementById('pPublisher').value.trim() || null : null;
   const book_type = category === 'বই' ? document.getElementById('pBookType').value || null : null;
 
+  // Author (books only) — saved to author column; brand is NULL for books
+  const authorVal = category === 'বই' ? (document.getElementById('pAuthor')?.value.trim() || null) : null;
+  // Brand (non-books only) — brand field is hidden for books
+  const brandVal  = category !== 'বই' ? (document.getElementById('pBrand').value.trim() || null) : null;
+
   const payload = {
     name, category,
-    brand:       document.getElementById('pBrand').value.trim() || null,
+    brand:       brandVal,
+    author:      authorVal,
     badge:       document.getElementById('pBadge').value || null,
     price,
     old_price:   parseFloat(document.getElementById('pOldPrice').value) || null,
@@ -3020,11 +3183,11 @@ async function saveProduct() {
 
 async function deleteProduct(id) {
   const p = allProducts.find(x => x.id === id);
-  if (!confirm(`"${p?.name}" পণ্যটি নিষ্ক্রিয় করবেন?`)) return;
+  if (!confirm(`"${p?.name}" পণ্যটি স্থায়ীভাবে মুছে ফেলবেন?\n\nএই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।`)) return;
   if (!sb) return;
-  const { error } = await sb.from('products').update({ is_active: false }).eq('id', id);
+  const { error } = await sb.from('products').delete().eq('id', id);
   if (error) { toast('Error', error.message, 'error'); return; }
-  toast('Deactivated', `"${p?.name}" নিষ্ক্রিয় করা হয়েছে`, 'info');
+  toast('Deleted', `"${p?.name}" স্থায়ীভাবে মুছে ফেলা হয়েছে`, 'info');
   await loadProducts();
   renderDashboard();
 }
@@ -3060,12 +3223,13 @@ function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
-  if (sec === 'orders') loadOrders();
-  if (sec === 'banners') loadBannersFromSupabase();
-  if (sec === 'promos') renderPromos();
-  if (sec === 'admins') renderAdminList();
+  if (sec === 'orders')     loadOrders();
+  if (sec === 'banners')    loadBannersFromSupabase();
+  if (sec === 'promos')     renderPromos();
+  if (sec === 'admins')     renderAdminList();
+  if (sec === 'categories') { renderCategoryList(); renderBookTypeList(); }
 }
 
 function navToOrders(statusFilter) {
@@ -3515,6 +3679,232 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 function cap(s = '') { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ══════════════════════════════════════
+   CATEGORY MANAGEMENT
+   Stored in localStorage as JSON array:
+   [{ name, icon, color }, ...]
+══════════════════════════════════════ */
+const CAT_KEY      = 'gm_categories';
+const BOOKTYPE_KEY = 'gm_book_types';
+
+const DEFAULT_CATEGORIES = [
+  { name:'বই',          icon:'fa-book',          color:'#007AFF' },
+  { name:'ইলেকট্রনিক্স', icon:'fa-mobile-screen',  color:'#32ADE6' },
+  { name:'ফ্যাশন',      icon:'fa-shirt',          color:'#AF52DE' },
+  { name:'হোম',         icon:'fa-house',           color:'#34C759' },
+  { name:'বিউটি',       icon:'fa-spa',             color:'#FF375F' },
+  { name:'স্টেশনারি',   icon:'fa-pen-ruler',       color:'#FF9F0A' },
+  { name:'শিশু',        icon:'fa-baby',            color:'#5AC8FA' },
+  { name:'স্পোর্টস',   icon:'fa-dumbbell',        color:'#30D158' },
+];
+
+const DEFAULT_BOOK_TYPES = [
+  'উপন্যাস','গল্পগ্রন্থ','কবিতা','ইসলামি বই',
+  'আত্মউন্নয়ন','শিক্ষামূলক','ইতিহাস','বিজ্ঞান',
+  'শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'
+];
+
+function getCategories() {
+  try { return JSON.parse(localStorage.getItem(CAT_KEY)) || DEFAULT_CATEGORIES; }
+  catch { return DEFAULT_CATEGORIES; }
+}
+function saveCategories(cats) {
+  localStorage.setItem(CAT_KEY, JSON.stringify(cats));
+}
+function getBookTypes() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BOOKTYPE_KEY));
+    return Array.isArray(stored) && stored.length ? stored : [...DEFAULT_BOOK_TYPES];
+  } catch { return [...DEFAULT_BOOK_TYPES]; }
+}
+function saveBookTypes(types) {
+  localStorage.setItem(BOOKTYPE_KEY, JSON.stringify(types));
+}
+
+/* ── Populate pCategory dropdown in product modal ── */
+function populateCategoryDropdown(selectedVal = '') {
+  const cats = getCategories();
+  const sel = document.getElementById('pCategory');
+  if (!sel) return;
+  const currentVal = selectedVal || sel.value;
+  sel.innerHTML = `<option value="">— Select —</option>` +
+    cats.map(c => `<option value="${c.name}" ${c.name === currentVal ? 'selected' : ''}>${c.name}</option>`).join('');
+}
+
+/* ── Populate pBookType dropdown in product modal ── */
+function populateBookTypeDropdown(selectedVal = '') {
+  const types = getBookTypes();
+  const sel = document.getElementById('pBookType');
+  if (!sel) return;
+  const currentVal = selectedVal || sel.value;
+  sel.innerHTML = `<option value="">— ধরণ বেছে নিন —</option>` +
+    types.map(t => `<option value="${t}" ${t === currentVal ? 'selected' : ''}>${t}</option>`).join('');
+}
+
+/* ── Populate product category filter dropdown ── */
+function populateProductCatFilter() {
+  const cats = getCategories();
+  const sel = document.getElementById('productCatFilter');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">All Categories</option>` +
+    cats.map(c => `<option value="${c.name}" ${c.name === cur ? 'selected' : ''}>${c.name}</option>`).join('');
+}
+
+/* ── Category list panel renderer ── */
+function renderCategoryList() {
+  const cats = getCategories();
+  const panel = document.getElementById('categoryListPanel');
+  const badge = document.getElementById('catCountBadge');
+  if (badge) badge.textContent = `${cats.length} টি ক্যাটাগরি`;
+  if (!panel) return;
+  if (!cats.length) {
+    panel.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-bn)">কোনো ক্যাটাগরি নেই</div>`;
+    return;
+  }
+  panel.innerHTML = cats.map((c, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
+      <div style="width:36px;height:36px;border-radius:9px;background:${c.color}18;border:1px solid ${c.color}40;display:flex;align-items:center;justify-content:center;color:${c.color};flex-shrink:0;font-size:0.88rem">
+        <i class="fa-solid ${c.icon || 'fa-box'}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.88rem;font-weight:600;color:var(--text);font-family:var(--font-bn)">${c.name}</div>
+        <div style="font-size:0.65rem;color:var(--text3);font-family:var(--mono)">${c.icon || 'fa-box'} · ${c.color || '#007AFF'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+        <button class="btn btn-secondary btn-xs" onclick="openEditCategory(${i})" title="সম্পাদনা">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button class="btn btn-danger btn-xs" onclick="deleteCategory(${i})" title="মুছুন">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>`).join('');
+  // Also refresh dropdowns everywhere
+  populateCategoryDropdown();
+  populateProductCatFilter();
+}
+
+/* ── Add new category ── */
+function addCategory() {
+  const name  = document.getElementById('newCatName').value.trim();
+  const icon  = document.getElementById('newCatIcon').value.trim() || 'fa-box';
+  const color = document.getElementById('newCatColor').value.trim() || '#007AFF';
+  if (!name) { toast('Validation', 'ক্যাটাগরির নাম দিন', 'error'); return; }
+  const cats = getCategories();
+  if (cats.find(c => c.name === name)) { toast('Duplicate', 'এই নামে ক্যাটাগরি আছে', 'error'); return; }
+  cats.push({ name, icon, color });
+  saveCategories(cats);
+  document.getElementById('newCatName').value  = '';
+  document.getElementById('newCatIcon').value  = '';
+  document.getElementById('newCatColor').value = '#007AFF';
+  document.getElementById('newCatColorPicker').value = '#007AFF';
+  renderCategoryList();
+  toast('Added!', `"${name}" ক্যাটাগরি যোগ হয়েছে`, 'success');
+}
+
+/* ── Open edit category modal ── */
+function openEditCategory(idx) {
+  const cats = getCategories();
+  const c = cats[idx];
+  if (!c) return;
+  document.getElementById('editCatOriginalName').value = c.name;
+  document.getElementById('editCatName').value  = c.name;
+  document.getElementById('editCatIcon').value  = c.icon || '';
+  document.getElementById('editCatColor').value = c.color || '#007AFF';
+  document.getElementById('editCatColorPicker').value = c.color || '#007AFF';
+  openModal('editCategoryModal');
+}
+
+/* ── Save category edit ── */
+function saveCategoryEdit() {
+  const origName = document.getElementById('editCatOriginalName').value;
+  const newName  = document.getElementById('editCatName').value.trim();
+  const newIcon  = document.getElementById('editCatIcon').value.trim() || 'fa-box';
+  const newColor = document.getElementById('editCatColor').value.trim() || '#007AFF';
+  if (!newName) { toast('Validation', 'নাম দিন', 'error'); return; }
+  let cats = getCategories();
+  const idx = cats.findIndex(c => c.name === origName);
+  if (idx === -1) { toast('Error', 'ক্যাটাগরি পাওয়া যায়নি', 'error'); return; }
+  cats[idx] = { name: newName, icon: newIcon, color: newColor };
+  saveCategories(cats);
+  closeModal('editCategoryModal');
+  renderCategoryList();
+  toast('Updated!', `"${newName}" আপডেট হয়েছে`, 'success');
+}
+
+/* ── Delete category ── */
+function deleteCategory(idx) {
+  const cats = getCategories();
+  const c = cats[idx];
+  if (!confirm(`"${c?.name}" ক্যাটাগরি মুছে ফেলবেন?`)) return;
+  cats.splice(idx, 1);
+  saveCategories(cats);
+  renderCategoryList();
+  toast('Removed', `"${c?.name}" মুছে ফেলা হয়েছে`, 'info');
+}
+
+/* ══════════════════════════════════════
+   BOOK TYPE MANAGEMENT
+══════════════════════════════════════ */
+function renderBookTypeList() {
+  const types = getBookTypes();
+  const panel = document.getElementById('bookTypeListPanel');
+  if (!panel) return;
+  if (!types.length) {
+    panel.innerHTML = `<div style="text-align:center;padding:16px;color:var(--text3);font-family:var(--font-bn)">কোনো ধরণ নেই</div>`;
+    return;
+  }
+  panel.innerHTML = `<div style="display:flex;flex-direction:column;gap:2px">` +
+    types.map((t, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--border)">
+      <span style="font-size:0.82rem;font-weight:500;color:var(--text);font-family:var(--font-bn)">${t}</span>
+      <button class="btn btn-danger btn-xs" onclick="deleteBookType(${i})" title="মুছুন" style="padding:3px 8px">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>`).join('') + `</div>`;
+  // Sync dropdown in product modal
+  populateBookTypeDropdown();
+}
+
+function openAddBookTypeModal() {
+  document.getElementById('newBookTypeName').value = '';
+  openModal('addBookTypeModal');
+  setTimeout(() => document.getElementById('newBookTypeName').focus(), 100);
+}
+
+function addBookType() {
+  const name = document.getElementById('newBookTypeName').value.trim();
+  if (!name) { toast('Validation', 'ধরণের নাম দিন', 'error'); return; }
+  const types = getBookTypes();
+  if (types.includes(name)) { toast('Duplicate', 'এই ধরণ আগে থেকেই আছে', 'error'); return; }
+  types.push(name);
+  saveBookTypes(types);
+  closeModal('addBookTypeModal');
+  renderBookTypeList();
+  // Refresh the dropdown in product modal too
+  populateBookTypeDropdown(name);
+  toast('Added!', `"${name}" যোগ হয়েছে`, 'success');
+}
+
+function deleteBookType(idx) {
+  const types = getBookTypes();
+  const name  = types[idx];
+  if (!confirm(`"${name}" ধরণটি মুছে ফেলবেন?`)) return;
+  types.splice(idx, 1);
+  saveBookTypes(types);
+  renderBookTypeList();
+  populateBookTypeDropdown();
+  toast('Removed', `"${name}" মুছে ফেলা হয়েছে`, 'info');
+}
+
+/* ── Boot: populate dropdowns on page load ── */
+document.addEventListener('DOMContentLoaded', () => {
+  populateCategoryDropdown();
+  populateBookTypeDropdown();
+  populateProductCatFilter();
+});
 </script>
 </body>
 </html>
