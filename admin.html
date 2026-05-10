@@ -3038,7 +3038,7 @@ function navTo(sec) {
   const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders') loadOrders();
-  if (sec === 'banners') renderBanners();
+  if (sec === 'banners') loadBannersFromSupabase();
   if (sec === 'promos') renderPromos();
   if (sec === 'admins') renderAdminList();
 }
@@ -3107,8 +3107,39 @@ function toast(title, sub = '', type = 'success') {
 /* ══════════════════════════════════════
    BANNER MANAGEMENT
 ══════════════════════════════════════ */
-let allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
+let allBanners = [];           // populated from Supabase (+ localStorage fallback)
 let selectedBannerFile = null;
+
+// Load banners from Supabase `banners` table; merge with any localStorage-only entries
+async function loadBannersFromSupabase() {
+  if (!sb) {
+    allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
+    renderBanners(); return;
+  }
+  try {
+    const { data, error } = await sb.from('banners')
+      .select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
+    if (!error && data) {
+      // Normalize: Supabase rows use snake_case; legacy localStorage rows use camelCase
+      allBanners = data.map(b => ({
+        id:        b.id,
+        title:     b.title || 'Banner',
+        imageUrl:  b.image_url || b.imageUrl || '',
+        image_url: b.image_url || b.imageUrl || '',
+        link:      b.link || '',
+        order:     b.sort_order || 1,
+        is_active: b.is_active !== false,
+        createdAt: b.created_at || new Date().toISOString(),
+        _fromSupabase: true
+      }));
+    } else {
+      allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
+    }
+  } catch(e) {
+    allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
+  }
+  renderBanners();
+}
 
 function handleBannerImageSelect(input) {
   const file = input.files[0];
@@ -3211,14 +3242,20 @@ async function saveBanner() {
   document.getElementById('bannerPreview').innerHTML = '<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>';
   document.getElementById('bannerTitle').value = '';
   document.getElementById('bannerLink').value = '';
-  renderBanners();
+  // Reload from Supabase so new banner appears in grid with correct data
+  await loadBannersFromSupabase();
 }
 
-function deleteBanner(id) {
+async function deleteBanner(id) {
   const b = allBanners.find(x => x.id === id);
   if (!confirm(`"${b?.title}" ব্যানারটি মুছে ফেলবেন?`)) return;
+  // Delete from Supabase if it came from there
+  if (sb && b?._fromSupabase) {
+    const { error } = await sb.from('banners').delete().eq('id', id);
+    if (error) { toast('Error', 'Supabase থেকে মুছতে সমস্যা: ' + error.message, 'error'); return; }
+  }
   allBanners = allBanners.filter(x => x.id !== id);
-  localStorage.setItem('gm_banners', JSON.stringify(allBanners));
+  localStorage.setItem('gm_banners', JSON.stringify(allBanners.filter(x => !x._fromSupabase)));
   toast('Deleted', 'ব্যানার মুছে ফেলা হয়েছে', 'info');
   renderBanners();
 }
@@ -3230,26 +3267,50 @@ function renderBanners() {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><i class="fa-solid fa-images"></i></div><div class="empty-title">কোনো ব্যানার নেই</div><div class="empty-sub" style="font-family:var(--font-bn)">নতুন ব্যানার যোগ করুন</div></div>`;
     return;
   }
-  grid.innerHTML = allBanners.map(b => `
+  grid.innerHTML = allBanners.map(b => {
+    const imgSrc = b.image_url || b.imageUrl || '';
+    const activeLabel = b.is_active !== false ? 'Active' : 'Inactive';
+    const activeColor = b.is_active !== false ? 'var(--green,#10B981)' : 'var(--text3)';
+    const toggleIcon  = b.is_active !== false ? 'fa-eye-slash' : 'fa-eye';
+    const toggleTitle = b.is_active !== false ? 'Deactivate' : 'Activate';
+    return `
     <div class="banner-card">
       <div class="banner-card-img">
-        <img src="${b.imageUrl}" alt="${b.title}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image-slash\\' style=\\'font-size:2rem;color:var(--text4)\\'></i>'">
+        <img src="${imgSrc}" alt="${b.title}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image-slash\\' style=\\'font-size:2rem;color:var(--text4)\\'></i>'">
       </div>
       <div class="banner-order-badge">#${b.order}</div>
       <div class="banner-card-info">
         <div class="banner-card-title">${b.title}</div>
-        <div class="banner-card-meta">${b.link ? `<a href="${b.link}" target="_blank" style="color:var(--blue);text-decoration:none">${b.link.slice(0,40)}...</a>` : 'No link'} · ${fmtDate(b.createdAt)}</div>
+        <div class="banner-card-meta">
+          ${b.link ? `<a href="${b.link}" target="_blank" style="color:var(--blue);text-decoration:none">${b.link.slice(0,40)}...</a>` : 'No link'}
+          · <span style="color:${activeColor};font-weight:600">${activeLabel}</span>
+          · ${fmtDate(b.createdAt)}
+        </div>
         <div class="banner-card-actions">
-          <button class="btn btn-danger btn-xs" onclick="deleteBanner(${b.id})"><i class="fa-solid fa-trash"></i> Delete</button>
+          <button class="btn btn-xs" style="background:var(--bg3);color:var(--text)" title="${toggleTitle}" onclick="toggleBannerActive('${b.id}',${b.is_active !== false})">
+            <i class="fa-solid ${toggleIcon}"></i>
+          </button>
+          <button class="btn btn-danger btn-xs" onclick="deleteBanner('${b.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-/* ══════════════════════════════════════
-   PROMO CODES
-══════════════════════════════════════ */
+// Toggle is_active for a banner in Supabase
+async function toggleBannerActive(id, currentActive) {
+  const newVal = !currentActive;
+  if (sb) {
+    const { error } = await sb.from('banners').update({ is_active: newVal }).eq('id', id);
+    if (error) { toast('Error', 'আপডেট ব্যর্থ: ' + error.message, 'error'); return; }
+  }
+  const b = allBanners.find(x => String(x.id) === String(id));
+  if (b) b.is_active = newVal;
+  toast(newVal ? 'Activated' : 'Deactivated', `ব্যানার ${newVal ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে`, 'info');
+  renderBanners();
+}
+
+
 let allPromos = JSON.parse(localStorage.getItem('gm_promos') || '[]');
 
 function generatePromoCode() {
