@@ -32,8 +32,8 @@
   font-size: .8rem;
   font-weight: 700;
   line-height: 1;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -41,7 +41,8 @@
   flex-shrink: 0;
   overflow: visible;        /* let glyph breathe outside box model */
   /* Hind Siliguri Bengali numerals sit slightly high — nudge down */
-  padding-top: 3px;
+  padding-top: 4px;
+  letter-spacing: 0;
 }
 
 /* 3. Any inline Bengali-numeral span with border-radius — overflow must be visible */
@@ -643,7 +644,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
   margin-bottom:18px;
 }
-.pd-stars{color:var(--gold);font-size:1.05rem;letter-spacing:2px}
+.pd-stars{color:#F5A623;font-size:1.05rem;letter-spacing:2px;text-shadow:none}
 .pd-rating-num{font-size:.9rem;font-weight:700;color:var(--text)}
 .pd-reviews-count{font-size:.78rem;color:var(--text-light)}
 .pd-instock{
@@ -3642,14 +3643,36 @@ async function init() {
   updateHeaderHeight();
   window.addEventListener('resize', updateHeaderHeight);
 
-  // Handle direct URL access (e.g. someone opens /product/xyz or /track-order)
-  const path = window.location.pathname;
-  if (path.startsWith('/product/')) {
-    const slug = path.replace('/product/', '');
-    const p = products.find(x => slugify(x.name) === slug || x.id === slug);
-    if (p) openProduct(p.id, false);
-  } else if (path === '/track-order') {
-    openTrack(false);
+  // Handle direct URL access or page reload with query params
+  const urlParams = new URLSearchParams(window.location.search);
+  const pageParam = urlParams.get('page');
+  const idParam   = urlParams.get('id');
+
+  if (pageParam === 'order-detail' && idParam) {
+    // Reload scenario: fetch order by order_number or id
+    try {
+      let query = sb.from('orders').select('*');
+      if (idParam.startsWith('GM-')) {
+        query = query.eq('order_number', idParam);
+      } else {
+        query = query.eq('id', idParam);
+      }
+      const { data } = await query.single();
+      if (data) {
+        const { data: hist } = await sb.from('order_status_history')
+          .select('*').eq('order_id', data.id).order('created_at', {ascending:false});
+        openOrderDetailPage(data, hist || []);
+      }
+    } catch(e) { /* ignore */ }
+  } else {
+    const path = window.location.pathname;
+    if (path.startsWith('/product/')) {
+      const slug = path.replace('/product/', '');
+      const p = products.find(x => slugify(x.name) === slug || x.id === slug);
+      if (p) openProduct(p.id, false);
+    } else if (path === '/track-order') {
+      openTrack(false);
+    }
   }
 
   hiddenLoader();
@@ -4954,7 +4977,7 @@ function buildTpOrderDetail(data, history) {
             <div class="hitem">
               <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
               <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status] || 'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status] || h.status}</div>
-              ${h.note ? `<div class="hitem-note">${h.note}</div>` : ''}
+              ${(h.note||h.tracking_note) ? `<div class="hitem-note">${h.note||h.tracking_note}</div>` : ''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
         </div>
@@ -4965,10 +4988,48 @@ function buildTpOrderDetail(data, history) {
 }
 
 // Opens the single order detail full page from the order list
-function tpOpenOrderDetail(orderId) {
-  const entry = window._tpOrderMap?.[orderId];
-  if (!entry) return;
-  openOrderDetailPage(entry.order, entry.hist);
+async function tpOpenOrderDetail(orderId) {
+  // Show a loading spinner immediately
+  document.getElementById('odPageOrderNum').textContent = 'লোড হচ্ছে...';
+  document.getElementById('odPageHero').innerHTML = `
+    <div style="background:linear-gradient(120deg,var(--blue),var(--blue-dark));padding:22px 24px;color:white;display:flex;align-items:center;gap:14px">
+      <div style="width:50px;height:50px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1.4rem">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+      </div>
+      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.88rem;opacity:.9">অর্ডার তথ্য লোড হচ্ছে...</div>
+    </div>`;
+  document.getElementById('odPageBody').innerHTML = '';
+  openPage('order-detail');
+
+  let order = window._tpOrderMap?.[orderId]?.order || null;
+  let hist  = window._tpOrderMap?.[orderId]?.hist  || null;
+
+  // If not in local map, fetch from Supabase
+  if (!order) {
+    try {
+      const { data, error } = await sb.from('orders').select('*').eq('id', orderId).single();
+      if (!error && data) order = data;
+    } catch(e) {}
+  }
+  if (!order) {
+    document.getElementById('odPageHero').innerHTML = `
+      <div style="background:var(--blue-light);padding:20px 24px;color:var(--red);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <span class="bn">অর্ডার তথ্য পাওয়া যায়নি</span>
+      </div>`;
+    return;
+  }
+
+  // Fetch history if not available
+  if (!hist) {
+    try {
+      const { data: hdata } = await sb.from('order_status_history')
+        .select('*').eq('order_id', orderId).order('created_at', {ascending:false});
+      hist = hdata || [];
+    } catch(e) { hist = []; }
+  }
+
+  openOrderDetailPage(order, hist);
 }
 
 // ── My Orders (legacy alias for any remaining calls) ──
@@ -5057,14 +5118,24 @@ function buildOrderDetailPanel(data, history) {
             <div class="hitem">
               <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
               <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
-              ${h.note?`<div class="hitem-note">${h.note}</div>`:''}
+              ${(h.note||h.tracking_note)?`<div class="hitem-note">${h.note||h.tracking_note}</div>`:''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.changed_at||h.created_at)}</div>
             </div>`).join('')}
         </div>
       </div>`;
   }
 
-  return `${stepsHtml}${deliveryHtml}${courierHtml}${itemsHtml}${historyHtml}`;
+  // Admin/Tracking note (uses tracking_note column)
+  const noteVal = data.tracking_note || data.admin_note || '';
+  const noteHtml = noteVal ? `
+    <div style="background:rgba(0,122,255,.05);border:1px solid rgba(0,122,255,.18);border-radius:var(--radius-sm);padding:11px 13px;margin-top:10px">
+      <div style="font-size:.6rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-family:'Hind Siliguri',sans-serif">
+        <i class="fa-solid fa-message" style="margin-right:4px"></i>নোট
+      </div>
+      <div class="bn" style="font-size:.8rem;color:var(--text-mid);line-height:1.65">${noteVal}</div>
+    </div>` : '';
+
+  return `${stepsHtml}${deliveryHtml}${courierHtml}${itemsHtml}${noteHtml}${historyHtml}`;
 }
 
 function openAuth() { openModal('authModal'); }
@@ -5414,8 +5485,25 @@ let heroCurrent = 0;
 let heroAutoTimer = null;
 
 async function loadHeroBanners() {
-  // Try to load from Supabase `hero_banners` table
-  // Schema: id, tag, title, subtitle, btn_label, btn_action, icons (jsonb array), gradient, is_active, sort_order
+  // Try to load photo banners from Supabase `banners` table first (admin uploads)
+  // Falls back to `hero_banners` table, then DEFAULT_BANNERS
+  try {
+    // First try the `banners` table (used by admin banner upload)
+    const { data: photoBanners, error: pbErr } = await sb.from('banners')
+      .select('*').eq('is_active', true).order('sort_order', {ascending:true}).order('created_at', {ascending:false});
+
+    if (!pbErr && photoBanners && photoBanners.length) {
+      // These are photo banners uploaded via admin — render as image slides
+      heroBanners = photoBanners.map(b => ({
+        ...b,
+        _isPhoto: true,
+        image_url: b.image_url || b.imageUrl || b.photo_url || b.url || ''
+      }));
+      renderHeroBanners();
+      return;
+    }
+  } catch(e) { /* ignore, try hero_banners table */ }
+
   try {
     const { data, error } = await sb.from('hero_banners')
       .select('*').eq('is_active', true).order('sort_order', {ascending:true});
@@ -5436,6 +5524,16 @@ function renderHeroBanners() {
   if(!slides || !dots) return;
 
   slides.innerHTML = heroBanners.map(b => {
+    // Photo banner (uploaded via admin) — render as full-width image slide
+    if (b._isPhoto && b.image_url) {
+      return `
+        <div class="hero-slide" style="background:#0a0f1e;cursor:pointer" onclick="${b.link ? `window.open('${b.link}','_self')` : 'void(0)'}">
+          <img src="${b.image_url}" alt="${b.title||'Banner'}"
+            style="width:100%;height:100%;object-fit:cover;display:block;border-radius:14px"
+            onerror="this.style.display='none'">
+        </div>`;
+    }
+
     const iconsHtml = (b.icons||[]).slice(0,3).map(ic =>
       `<div class="hslide-icon"><i class="fa-solid ${ic}"></i></div>`
     ).join('');
@@ -5527,7 +5625,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Dhaka district upazilas (inside Dhaka = base 60 TK)
 const DHAKA_DISTRICT = 'ঢাকা';
 
-// Bangladesh location data: District > Upazila > Thana/Union/Pourosoova
+// Bangladesh ALL 64 Districts location data
 const BD_LOCATIONS = {
   'ঢাকা': {
     'ধানমন্ডি': ['ধানমন্ডি থানা','কলাবাগান','হাজারীবাগ'],
@@ -5557,6 +5655,67 @@ const BD_LOCATIONS = {
     'রূপগঞ্জ': ['রূপগঞ্জ পৌরসভা','ভুলতা','মুরাপাড়া','তারাবো'],
     'সোনারগাঁও': ['সোনারগাঁও পৌরসভা','বৈদ্যেরবাজার','জামপুর','পিরোজপুর'],
   },
+  'মানিকগঞ্জ': {
+    'মানিকগঞ্জ সদর': ['মানিকগঞ্জ পৌরসভা','বেতিলা মিতরা','গড়পাড়া','হরিরামপুর'],
+    'সিঙ্গাইর': ['সিঙ্গাইর পৌরসভা','চারিগ্রাম','জামশা','ধল্লা'],
+    'শিবালয়': ['শিবালয় পৌরসভা','আরুয়া','তেওতা','উলাইল'],
+    'ঘিওর': ['ঘিওর পৌরসভা','বালিয়াখোড়া','নালী','সিংজুরি'],
+  },
+  'মুন্সিগঞ্জ': {
+    'মুন্সিগঞ্জ সদর': ['মুন্সিগঞ্জ পৌরসভা','বজ্রযোগিনী','মহাকালী','পঞ্চসার'],
+    'লৌহজং': ['লৌহজং পৌরসভা','কনকসার','কুমারভোগ','মেদিনীমণ্ডল'],
+    'সিরাজদিখান': ['সিরাজদিখান পৌরসভা','বালুচর','চিত্রকোট','মালখানগর'],
+    'টঙ্গীবাড়ী': ['টঙ্গীবাড়ী পৌরসভা','আব্দুল্লাহপুর','কামারখাড়া','সোনারং'],
+  },
+  'রাজবাড়ী': {
+    'রাজবাড়ী সদর': ['রাজবাড়ী পৌরসভা','বসন্তপুর','খানগঞ্জ','মিজানপুর'],
+    'গোয়ালন্দ': ['গোয়ালন্দ পৌরসভা','দেবগ্রাম','দৌলতদিয়া','ছোটভাকলা'],
+    'পাংশা': ['পাংশা পৌরসভা','বাবুপাড়া','হাবাসপুর','মাছপাড়া'],
+  },
+  'মাদারীপুর': {
+    'মাদারীপুর সদর': ['মাদারীপুর পৌরসভা','কুলপদ্দী','মোস্তফাপুর','পাইকপাড়া'],
+    'কালকিনি': ['কালকিনি পৌরসভা','বাঁশগাড়ী','এনায়েতনগর','লক্ষ্মীপুর'],
+    'শিবচর': ['শিবচর পৌরসভা','বন্দরখোলা','ভান্ডারীকান্দি','দ্বিতীয় খণ্ড'],
+  },
+  'শরীয়তপুর': {
+    'শরীয়তপুর সদর': ['শরীয়তপুর পৌরসভা','আঙ্গারিয়া','বিনোদপুর','চিকন্দি'],
+    'ডামুড্যা': ['ডামুড্যা পৌরসভা','ডামুড্যা','পূর্বাচর','সাতপাড়'],
+    'নড়িয়া': ['নড়িয়া পৌরসভা','ডিঙ্গামানিক','মোক্তারেরচর','ভোজেশ্বর'],
+  },
+  'কিশোরগঞ্জ': {
+    'কিশোরগঞ্জ সদর': ['কিশোরগঞ্জ পৌরসভা','গাছিহাটা','মহিনন্দ','পাকুন্দিয়া'],
+    'ভৈরব': ['ভৈরব পৌরসভা','আজমিরীগঞ্জ','শিমুলকান্দি','সরারচর'],
+    'হোসেনপুর': ['হোসেনপুর পৌরসভা','আড়িয়াল','হোসেনপুর','পূর্বধলা'],
+  },
+  'টাঙ্গাইল': {
+    'টাঙ্গাইল সদর': ['টাঙ্গাইল পৌরসভা','পোড়াবাড়ী','সন্তোষ','ঘারিন্দা'],
+    'মির্জাপুর': ['মির্জাপুর পৌরসভা','ফুলকি','ওয়ার্শি','জামুর্কি'],
+    'সখিপুর': ['সখিপুর পৌরসভা','বহেড়াতৈল','কাকড়াজান','চাপাইর'],
+    'গোপালপুর': ['গোপালপুর পৌরসভা','বল্লা','হেমনগর','মহীশলবাড়ী'],
+  },
+  'ময়মনসিংহ': {
+    'ময়মনসিংহ সদর': ['ময়মনসিংহ সিটি','আকুয়া','বয়ড়া','চর ঈশ্বরদিয়া'],
+    'ভালুকা': ['ভালুকা পৌরসভা','ভালুকা','ধিতপুর','মল্লিকবাড়ী'],
+    'ত্রিশাল': ['ত্রিশাল পৌরসভা','আমিরাবাড়ী','বালিপাড়া','কানিহারী'],
+    'গফরগাঁও': ['গফরগাঁও পৌরসভা','দত্তেরবাজার','মশাখালী','পাইথল'],
+    'নান্দাইল': ['নান্দাইল পৌরসভা','আচিন্তপুর','মুশুল্লী','রাজগাতী'],
+  },
+  'জামালপুর': {
+    'জামালপুর সদর': ['জামালপুর পৌরসভা','ইটাইল','কেন্দুয়া','নান্দিনা'],
+    'সরিষাবাড়ী': ['সরিষাবাড়ী পৌরসভা','আওলাদহোসেন','ডোয়াইল','হাতিভাঙ্গা'],
+    'মেলান্দহ': ['মেলান্দহ পৌরসভা','দুরমুট','ঘোষেরপাড়া','মাহমুদপুর'],
+  },
+  'নেত্রকোনা': {
+    'নেত্রকোনা সদর': ['নেত্রকোনা পৌরসভা','কাইলাটি','মদন','রৌহা'],
+    'কেন্দুয়া': ['কেন্দুয়া পৌরসভা','আশুজিয়া','গাওকান্দিয়া','পলাশগাছা'],
+    'মোহনগঞ্জ': ['মোহনগঞ্জ পৌরসভা','বড়কাশিয়া','গাগলাজুর','মাঘান'],
+  },
+  'নরসিংদী': {
+    'নরসিংদী সদর': ['নরসিংদী পৌরসভা','আমদিয়া','করিমপুর','মহিষাশুরা'],
+    'মনোহরদী': ['মনোহরদী পৌরসভা','চালাকচর','হাতিরদিয়া','লেবুতলা'],
+    'রায়পুরা': ['রায়পুরা পৌরসভা','মরজাল','নিজামপুর','পলাশতলী'],
+    'শিবপুর': ['শিবপুর পৌরসভা','জয়নগর','পুলেরচর','সাইদাবাদ'],
+  },
   'চট্টগ্রাম': {
     'চট্টগ্রাম সদর': ['কোতোয়ালি','পাহাড়তলী','হালিশহর','পাঁচলাইশ','বাকলিয়া','চান্দগাঁও'],
     'হাটহাজারী': ['হাটহাজারী পৌরসভা','বুড়িশ্চর','ছিপাতলী','ফতেয়াবাদ'],
@@ -5565,11 +5724,44 @@ const BD_LOCATIONS = {
     'মিরসরাই': ['মিরসরাই পৌরসভা','ঢালেয়া','খৈয়াছরা','মায়ানী'],
     'বোয়ালখালী': ['বোয়ালখালী পৌরসভা','আমুচিয়া','চরণদ্বীপ','করলডেঙ্গা'],
   },
-  'রাজশাহী': {
-    'রাজশাহী সদর': ['রাজশাহী সিটি','বোয়ালিয়া','মতিহার','শাহমখদুম'],
-    'গোদাগাড়ী': ['গোদাগাড়ী পৌরসভা','চর আষাড়িয়া দক্ষিণ','দেওপাড়া','মাটিকাটা'],
-    'তানোর': ['তানোর পৌরসভা','কামারগাঁও','মুন্ডুমালা','পাঁচন্দর'],
-    'পুঠিয়া': ['পুঠিয়া পৌরসভা','বানেশ্বর','বেলপুকুর','জিউপাড়া'],
+  'কক্সবাজার': {
+    'কক্সবাজার সদর': ['কক্সবাজার পৌরসভা','চৌফলদণ্ডী','ঈদগাঁও','ইসলামাবাদ'],
+    'রামু': ['রামু পৌরসভা','ফতেখাঁরকুল','গর্জনিয়া','কাউয়ারখোপ'],
+    'উখিয়া': ['উখিয়া পৌরসভা','হলদিয়া পালং','জালিয়া পালং','রাজাপালং'],
+    'টেকনাফ': ['টেকনাফ পৌরসভা','বাহারছড়া','হোয়াইক্যং','সাবরাং'],
+  },
+  'ব্রাহ্মণবাড়িয়া': {
+    'ব্রাহ্মণবাড়িয়া সদর': ['ব্রাহ্মণবাড়িয়া পৌরসভা','বুধন্তী','মাছিহাতা','নাটাই উত্তর'],
+    'আশুগঞ্জ': ['আশুগঞ্জ পৌরসভা','আড়াইসিধা','চর চারতলা','তারুয়া'],
+    'নবীনগর': ['নবীনগর পৌরসভা','বিটঘর','কৃষ্ণনগর','শ্যামগ্রাম'],
+  },
+  'কুমিল্লা': {
+    'কুমিল্লা সদর': ['কুমিল্লা সিটি','আদর্শ সদর','সদর দক্ষিণ'],
+    'দাউদকান্দি': ['দাউদকান্দি পৌরসভা','গৌরীপুর','ইলিয়টগঞ্জ','পাচগাছিয়া'],
+    'দেবিদ্বার': ['দেবিদ্বার পৌরসভা','বারপাড়া','ইউসুফপুর','সুবিল'],
+    'চান্দিনা': ['চান্দিনা পৌরসভা','বাতিসা','কাদুটি','মাধাইয়া'],
+    'লাকসাম': ['লাকসাম পৌরসভা','আজগরা','কান্দিরপাড়','মুদাফরগঞ্জ'],
+  },
+  'চাঁদপুর': {
+    'চাঁদপুর সদর': ['চাঁদপুর পৌরসভা','বাগাদী','বিটেশ্বর','চান্দ্রা'],
+    'মতলব উত্তর': ['মতলব পৌরসভা','এখলাসপুর','ফরাজিকান্দি','নায়েরগাঁও'],
+    'হাজিগঞ্জ': ['হাজিগঞ্জ পৌরসভা','বাকিলা','গান্ধর্ব্যপুর','লক্ষ্মীপুর'],
+  },
+  'ফেনী': {
+    'ফেনী সদর': ['ফেনী পৌরসভা','কাজিরবাগ','ফাজিলপুর','শরশদি'],
+    'ছাগলনাইয়া': ['ছাগলনাইয়া পৌরসভা','ঘোপাল','পাঠাননগর','রাধানগর'],
+    'সোনাগাজী': ['সোনাগাজী পৌরসভা','আমজাদহাট','চর চান্দিয়া','মতিগঞ্জ'],
+  },
+  'নোয়াখালী': {
+    'নোয়াখালী সদর': ['মাইজদী পৌরসভা','এওজবালিয়া','চরমটুয়া','নোয়াখালী'],
+    'কোম্পানীগঞ্জ': ['কোম্পানীগঞ্জ পৌরসভা','চরএলাহী','মুছাপুর','রামপুর'],
+    'সেনবাগ': ['সেনবাগ পৌরসভা','কেশারপাড়','মোহাম্মদপুর','ভূয়াপুর'],
+    'বেগমগঞ্জ': ['বেগমগঞ্জ পৌরসভা','আলিপুর','চাষীরহাট','গোপালপুর'],
+  },
+  'লক্ষ্মীপুর': {
+    'লক্ষ্মীপুর সদর': ['লক্ষ্মীপুর পৌরসভা','চর আবাবিল','চর রুহিতা','দালাল বাজার'],
+    'রামগঞ্জ': ['রামগঞ্জ পৌরসভা','ভবানীগঞ্জ','চর পার্বতী','পারেশপুর'],
+    'রায়পুর': ['রায়পুর পৌরসভা','চর আব্দুল্লাহ','হায়দরগঞ্জ','রায়পুর'],
   },
   'সিলেট': {
     'সিলেট সদর': ['সিলেট সিটি','আখালিয়া','কানাইঘাট সদর','টুলটিকর'],
@@ -5577,11 +5769,113 @@ const BD_LOCATIONS = {
     'জৈন্তাপুর': ['জৈন্তাপুর পৌরসভা','চিকনাগুল','দরবস্ত','নিজ পাটলী'],
     'গোলাপগঞ্জ': ['গোলাপগঞ্জ পৌরসভা','বাদেপাশা','ঢাকাদক্ষিণ','লক্ষ্মীপাশা'],
   },
+  'মৌলভীবাজার': {
+    'মৌলভীবাজার সদর': ['মৌলভীবাজার পৌরসভা','একচোখিয়া','কামালপুর','মনুমুখ'],
+    'শ্রীমঙ্গল': ['শ্রীমঙ্গল পৌরসভা','আশিদ্রোন','কালিঘাট','মির্জাপুর'],
+    'কুলাউড়া': ['কুলাউড়া পৌরসভা','ব্রাহ্মণবাজার','হাজীপুর','রাউৎগাঁও'],
+    'বড়লেখা': ['বড়লেখা পৌরসভা','দক্ষিণভাগ উত্তর','সুজানগর','উত্তর শাহবাজপুর'],
+  },
+  'হবিগঞ্জ': {
+    'হবিগঞ্জ সদর': ['হবিগঞ্জ পৌরসভা','গোপায়া','লস্করপুর','নুরপুর'],
+    'বাহুবল': ['বাহুবল পৌরসভা','ভাদেশ্বর','লামাতাসী','পুটিজুরি'],
+    'চুনারুঘাট': ['চুনারুঘাট পৌরসভা','আহমদাবাদ','দেওরগাছ','গাজীপুর'],
+  },
+  'সুনামগঞ্জ': {
+    'সুনামগঞ্জ সদর': ['সুনামগঞ্জ পৌরসভা','গৌরারং','জাহাঙ্গীরনগর','মোহনপুর'],
+    'দিরাই': ['দিরাই পৌরসভা','ভাটিপাড়া','জগদল','রাজানগর'],
+    'ছাতক': ['ছাতক পৌরসভা','ছাতক','গোবিন্দগঞ্জ','জাউয়াবাজার'],
+    'জগন্নাথপুর': ['জগন্নাথপুর পৌরসভা','চিরাং','পাটলী','রানীগঞ্জ'],
+  },
+  'রাজশাহী': {
+    'রাজশাহী সদর': ['রাজশাহী সিটি','বোয়ালিয়া','মতিহার','শাহমখদুম'],
+    'গোদাগাড়ী': ['গোদাগাড়ী পৌরসভা','চর আষাড়িয়া দক্ষিণ','দেওপাড়া','মাটিকাটা'],
+    'তানোর': ['তানোর পৌরসভা','কামারগাঁও','মুন্ডুমালা','পাঁচন্দর'],
+    'পুঠিয়া': ['পুঠিয়া পৌরসভা','বানেশ্বর','বেলপুকুর','জিউপাড়া'],
+  },
+  'চাঁপাইনবাবগঞ্জ': {
+    'চাঁপাইনবাবগঞ্জ সদর': ['চাঁপাইনবাবগঞ্জ পৌরসভা','বলিহার','চকবার','রানীহাটি'],
+    'শিবগঞ্জ': ['শিবগঞ্জ পৌরসভা','চাঁদপুর','দাউদপুর','পাকা'],
+    'গোমস্তাপুর': ['গোমস্তাপুর পৌরসভা','বোয়ালিয়া','রহনপুর','রোহনপুর'],
+  },
+  'নওগাঁ': {
+    'নওগাঁ সদর': ['নওগাঁ পৌরসভা','বোয়ালিয়া','চণ্ডীপুর','কীর্তিপুর'],
+    'বদলগাছী': ['বদলগাছী পৌরসভা','আধাইপুর','বালুভরা','মথুরাপুর'],
+    'পত্নীতলা': ['পত্নীতলা পৌরসভা','দিব্যর','মাতিয়ার','পত্নীতলা'],
+  },
+  'নাটোর': {
+    'নাটোর সদর': ['নাটোর পৌরসভা','দিঘাপতিয়া','কাফুরিয়া','লক্ষ্মীপুর-কালিগঞ্জ'],
+    'বাগাতিপাড়া': ['বাগাতিপাড়া পৌরসভা','দয়ারামপুর','ফাগুয়ারদিয়াড়','পাকা'],
+    'গুরুদাসপুর': ['গুরুদাসপুর পৌরসভা','বিয়াঘাট','চাপিলা','খুবজীপুর'],
+  },
+  'সিরাজগঞ্জ': {
+    'সিরাজগঞ্জ সদর': ['সিরাজগঞ্জ পৌরসভা','বাগবাটি','খোকশাবাড়ী','রতনকান্দি'],
+    'উল্লাপাড়া': ['উল্লাপাড়া পৌরসভা','বড়হর','গোপিনাথপুর','ফুলহার'],
+    'শাহজাদপুর': ['শাহজাদপুর পৌরসভা','কায়েমপুর','পোতাজিয়া','হাবিবুল্লাহ নগর'],
+  },
+  'পাবনা': {
+    'পাবনা সদর': ['পাবনা পৌরসভা','আতাইকুলা','দোগাছি','গোবিন্দা'],
+    'ঈশ্বরদী': ['ঈশ্বরদী পৌরসভা','মুলাডুলি','পাকশী','সাহাপুর'],
+    'চাটমোহর': ['চাটমোহর পৌরসভা','চাটমোহর','ছাইকোলা','হান্ডিয়াল'],
+  },
+  'বগুড়া': {
+    'বগুড়া সদর': ['বগুড়া পৌরসভা','এরুলিয়া','ফুলবাড়ি','শিবগঞ্জ'],
+    'শেরপুর': ['শেরপুর পৌরসভা','খামারকান্দি','শেরপুর','সুঘাট'],
+    'গাবতলী': ['গাবতলী পৌরসভা','বাগবাড়ী','কাগইল','মহিশাবান'],
+    'সারিয়াকান্দি': ['সারিয়াকান্দি পৌরসভা','চালুয়াবাড়ী','কাজলা','হাটশেরপুর'],
+  },
+  'জয়পুরহাট': {
+    'জয়পুরহাট সদর': ['জয়পুরহাট পৌরসভা','ভাদশা','জামালগঞ্জ','পুরানাপৈল'],
+    'পাঁচবিবি': ['পাঁচবিবি পৌরসভা','আয়মারসুল','বাগজানা','কুসুম্বা'],
+    'কালাই': ['কালাই পৌরসভা','আহমাদাবাদ','জিন্দারপুর','মাতাই'],
+  },
   'খুলনা': {
     'খুলনা সদর': ['খুলনা সিটি','দৌলতপুর','খালিশপুর','সোনাডাঙ্গা'],
     'ডুমুরিয়া': ['ডুমুরিয়া পৌরসভা','আটলিয়া','চুকনগর','গুটুদিয়া'],
     'ফুলতলা': ['ফুলতলা পৌরসভা','আটরা গিলাতলা','জামিরা','যোগীপোল'],
     'রূপসা': ['রূপসা পৌরসভা','আইচগাতি','বাগমারা','নৈহাটী'],
+  },
+  'বাগেরহাট': {
+    'বাগেরহাট সদর': ['বাগেরহাট পৌরসভা','বারুইপাড়া','কারামদিয়া','রণবিজয়পুর'],
+    'মোংলা': ['মোংলা পৌরসভা','বুড়িরডাঙ্গা','চাঁদপাই','মিঠেখালী'],
+    'মোরেলগঞ্জ': ['মোরেলগঞ্জ পৌরসভা','বারইখালী','খাউলিয়া','নিশানবাড়িয়া'],
+  },
+  'সাতক্ষীরা': {
+    'সাতক্ষীরা সদর': ['সাতক্ষীরা পৌরসভা','আগরদাঁড়ি','বল্লী','ঘোনা'],
+    'কালিগঞ্জ': ['কালিগঞ্জ পৌরসভা','চম্পাফুল','ভোমরা','তারালী'],
+    'শ্যামনগর': ['শ্যামনগর পৌরসভা','আটুলিয়া','ভুরুলিয়া','কাশিমাড়ি'],
+  },
+  'যশোর': {
+    'যশোর সদর': ['যশোর পৌরসভা','আরবপুর','চাঁচড়া','কাশিমপুর'],
+    'ঝিকরগাছা': ['ঝিকরগাছা পৌরসভা','বাঁকড়া','গদখালী','নাভারণ'],
+    'কেশবপুর': ['কেশবপুর পৌরসভা','গৌরীঘোনা','মজিদপুর','পাঁজিয়া'],
+    'মনিরামপুর': ['মনিরামপুর পৌরসভা','ভোজগাতি','কুলবাড়িয়া','মনোহরপুর'],
+  },
+  'ঝিনাইদহ': {
+    'ঝিনাইদহ সদর': ['ঝিনাইদহ পৌরসভা','বারোবাজার','গান্না','পোড়াহাটি'],
+    'কালীগঞ্জ': ['কালীগঞ্জ পৌরসভা','জামজামি','মালিয়াট','নিয়ামতপুর'],
+    'কোটচাঁদপুর': ['কোটচাঁদপুর পৌরসভা','দোড়া','এলাঙ্গী','সাবেকপুর'],
+  },
+  'নড়াইল': {
+    'নড়াইল সদর': ['নড়াইল পৌরসভা','ভদ্রা','কলোড়া','লোহাগড়া'],
+    'কালিয়া': ['কালিয়া পৌরসভা','বাবরা','ইতনা','পুরুলিয়া'],
+  },
+  'মাগুরা': {
+    'মাগুরা সদর': ['মাগুরা পৌরসভা','আঠারখাদা','হাজরাপুর','মঘী'],
+    'শালিখা': ['শালিখা পৌরসভা','আড়পাড়া','বুনাগাতি','ধনেশ্বরগাতি'],
+  },
+  'কুষ্টিয়া': {
+    'কুষ্টিয়া সদর': ['কুষ্টিয়া পৌরসভা','আইলচারা','আব্দালপুর','জগতি'],
+    'ভেড়ামারা': ['ভেড়ামারা পৌরসভা','বাহিরচর','জুগিয়া','রামকৃষ্ণপুর'],
+    'মিরপুর': ['মিরপুর পৌরসভা','আমলা','চিথলিয়া','ফুলবাড়িয়া'],
+    'খোকসা': ['খোকসা পৌরসভা','আমবাড়িয়া','জানিপুর','শিমুলিয়া'],
+  },
+  'মেহেরপুর': {
+    'মেহেরপুর সদর': ['মেহেরপুর পৌরসভা','আমঝুপি','বুড়িপোতা','পিরোজপুর'],
+    'গাংনী': ['গাংনী পৌরসভা','ভাটপাড়া','সহরাতলা','তেঁতুলবাড়িয়া'],
+  },
+  'চুয়াডাঙ্গা': {
+    'চুয়াডাঙ্গা সদর': ['চুয়াডাঙ্গা পৌরসভা','আলমডাঙ্গা','বেগমপুর','বোয়ালিয়া'],
+    'দামুড়হুদা': ['দামুড়হুদা পৌরসভা','চুয়াডাঙ্গা','দর্শনা','হাউলী'],
   },
   'বরিশাল': {
     'বরিশাল সদর': ['বরিশাল সিটি','চরবাড়িয়া','কড়াপুর','রহমতপুর'],
@@ -5589,11 +5883,29 @@ const BD_LOCATIONS = {
     'বাকেরগঞ্জ': ['বাকেরগঞ্জ পৌরসভা','চরামদ্দি','দাড়িয়াল','ফরিদপুর'],
     'গৌরনদী': ['গৌরনদী পৌরসভা','বার্তা','মাহিলাড়া','নলচিরা'],
   },
-  'ময়মনসিংহ': {
-    'ময়মনসিংহ সদর': ['ময়মনসিংহ সিটি','আকুয়া','বয়ড়া','চর ঈশ্বরদিয়া'],
-    'ভালুকা': ['ভালুকা পৌরসভা','ভালুকা','ধিতপুর','মল্লিকবাড়ী'],
-    'ত্রিশাল': ['ত্রিশাল পৌরসভা','আমিরাবাড়ী','বালিপাড়া','কানিহারী'],
-    'গফরগাঁও': ['গফরগাঁও পৌরসভা','দত্তেরবাজার','মশাখালী','পাইথল'],
+  'পটুয়াখালী': {
+    'পটুয়াখালী সদর': ['পটুয়াখালী পৌরসভা','বদরপুর','লাউকাঠী','মরিচবুনিয়া'],
+    'বাউফল': ['বাউফল পৌরসভা','বড়বাইশদিয়া','কলাকিয়া','নাজিরপুর'],
+    'কলাপাড়া': ['কলাপাড়া পৌরসভা','চাকামইয়া','ধুলাসার','মিঠাগঞ্জ'],
+  },
+  'ভোলা': {
+    'ভোলা সদর': ['ভোলা পৌরসভা','কুতুবা','পশ্চিম ইলিশা','রাজাপুর'],
+    'বোরহানউদ্দিন': ['বোরহানউদ্দিন পৌরসভা','দেউলা','কুতুবপুর','পাক্কা'],
+    'দৌলতখান': ['দৌলতখান পৌরসভা','চরখলিফা','হাজিপুর','মেদুয়া'],
+  },
+  'পিরোজপুর': {
+    'পিরোজপুর সদর': ['পিরোজপুর পৌরসভা','দুমকি','কদমতলা','শিয়ালকাঠী'],
+    'মঠবাড়িয়া': ['মঠবাড়িয়া পৌরসভা','আমড়াগাছিয়া','বেতমোর রাজপাড়া','গুলিসাখালী'],
+    'নাজিরপুর': ['নাজিরপুর পৌরসভা','দেউলবাড়ী','মালিখালী','শেখমাটিয়া'],
+  },
+  'ঝালকাঠি': {
+    'ঝালকাঠি সদর': ['ঝালকাঠি পৌরসভা','গাবখান-ধানসিড়ি','কেঁওড়া','নবগ্রাম'],
+    'কাঁঠালিয়া': ['কাঁঠালিয়া পৌরসভা','অমুয়া','পাটিকালঘাটা','শৌলজালিয়া'],
+  },
+  'বরগুনা': {
+    'বরগুনা সদর': ['বরগুনা পৌরসভা','আয়লাপাতাকাটা','বদরখালী','বুড়িরচর'],
+    'পাথরঘাটা': ['পাথরঘাটা পৌরসভা','কাকচিড়া','চরদুয়ানী','রাখাইনপাড়া'],
+    'আমতলী': ['আমতলী পৌরসভা','চাওড়া','আড়পাঙ্গাশিয়া','গুলিশাখালী'],
   },
   'রংপুর': {
     'রংপুর সদর': ['রংপুর সিটি','কাউনিয়া','পীরগঞ্জ','তারাগঞ্জ'],
@@ -5601,32 +5913,71 @@ const BD_LOCATIONS = {
     'গঙ্গাচড়া': ['গঙ্গাচড়া পৌরসভা','আলমবিদিতর','বারদহ','কোলকন্দ'],
     'মিঠাপুকুর': ['মিঠাপুকুর পৌরসভা','বলদীপুকুর','চেংমারী','লতিবপুর'],
   },
-  'কুমিল্লা': {
-    'কুমিল্লা সদর': ['কুমিল্লা সিটি','আদর্শ সদর','সদর দক্ষিণ'],
-    'দাউদকান্দি': ['দাউদকান্দি পৌরসভা','গৌরীপুর','ইলিয়টগঞ্জ','পাচগাছিয়া'],
-    'দেবিদ্বার': ['দেবিদ্বার পৌরসভা','বারপাড়া','ইউসুফপুর','সুবিল'],
-    'চান্দিনা': ['চান্দিনা পৌরসভা','বাতিসা','কাদুটি','মাধাইয়া'],
+  'গাইবান্ধা': {
+    'গাইবান্ধা সদর': ['গাইবান্ধা পৌরসভা','বালাসি','কামারজানি','লক্ষ্মীপুর'],
+    'সুন্দরগঞ্জ': ['সুন্দরগঞ্জ পৌরসভা','বেলকা','চন্দনপুর','রামজীবন'],
+    'সাঘাটা': ['সাঘাটা পৌরসভা','ভরতখালী','ঘোড়ামারা','হলদিয়া'],
+  },
+  'লালমনিরহাট': {
+    'লালমনিরহাট সদর': ['লালমনিরহাট পৌরসভা','বড়বাড়ী','কুলাঘাট','মোগলহাট'],
+    'পাটগ্রাম': ['পাটগ্রাম পৌরসভা','বাউড়া','দহগ্রাম','জগদল'],
+    'কালীগঞ্জ': ['কালীগঞ্জ পৌরসভা','চলবলা','কাকিনা','তুষভাণ্ডার'],
+  },
+  'কুড়িগ্রাম': {
+    'কুড়িগ্রাম সদর': ['কুড়িগ্রাম পৌরসভা','বেলগাছা','চিলমারী','যাত্রাপুর'],
+    'নাগেশ্বরী': ['নাগেশ্বরী পৌরসভা','বেরুবাড়ী','বামনডাঙ্গা','কচাকাটা'],
+    'ভুরুঙ্গামারী': ['ভুরুঙ্গামারী পৌরসভা','আন্ধারীঝাড়','চর ভুরুঙ্গামারী','পাইকের ছড়া'],
+  },
+  'নীলফামারী': {
+    'নীলফামারী সদর': ['নীলফামারী পৌরসভা','চওড়াইবাড়ী','গোরগ্রাম','পুটিমারী'],
+    'সৈয়দপুর': ['সৈয়দপুর পৌরসভা','বোতলাগাড়ী','কামারপুকুর','শিশুরতৈল'],
+    'ডিমলা': ['ডিমলা পৌরসভা','বালাপাড়া','ঝুনাগাছ চাপানী','টেপাখড়িবাড়ী'],
+  },
+  'দিনাজপুর': {
+    'দিনাজপুর সদর': ['দিনাজপুর পৌরসভা','চেহেলগাজী','মামুদপুর','সুন্দরপুর'],
+    'বীরগঞ্জ': ['বীরগঞ্জ পৌরসভা','ভোগনগর','মোহনপুর','শিবরামপুর'],
+    'পার্বতীপুর': ['পার্বতীপুর পৌরসভা','চন্ডীপুর','হামিদপুর','মোহনপুর'],
+    'বিরামপুর': ['বিরামপুর পৌরসভা','জোতবানী','খানপুর','মুকুন্দপুর'],
+  },
+  'ঠাকুরগাঁও': {
+    'ঠাকুরগাঁও সদর': ['ঠাকুরগাঁও পৌরসভা','বালিয়া','জগন্নাথপুর','নারগুন'],
+    'পীরগঞ্জ': ['পীরগঞ্জ পৌরসভা','ভোমরাদহ','জাবরহাট','কোষাবিনোদ'],
+    'রানীশংকৈল': ['রানীশংকৈল পৌরসভা','হোসেনগাঁও','কাকডিঘি','লেহেম্বা'],
+  },
+  'পঞ্চগড়': {
+    'পঞ্চগড় সদর': ['পঞ্চগড় পৌরসভা','অমরখানা','ধাক্কামারা','মাগুরা'],
+    'তেঁতুলিয়া': ['তেঁতুলিয়া পৌরসভা','বুড়াবুড়ি','শালবাহান','তিরনইহাট'],
+    'আটোয়ারী': ['আটোয়ারী পৌরসভা','বলরামপুর','মির্জাপুর','রাধানগর'],
   },
   'ফরিদপুর': {
     'ফরিদপুর সদর': ['ফরিদপুর পৌরসভা','অলিপুর','গেড়াখালী','কানাইপুর'],
     'ভাঙ্গা': ['ভাঙ্গা পৌরসভা','আজিমনগর','কাউলিবেড়া','তুজারপুর'],
     'বোয়ালমারী': ['বোয়ালমারী পৌরসভা','চতরা','গুনবহা','শেখর'],
   },
-  'যশোর': {
-    'যশোর সদর': ['যশোর পৌরসভা','আরবপুর','চাঁচড়া','কাশিমপুর'],
-    'ঝিকরগাছা': ['ঝিকরগাছা পৌরসভা','বাঁকড়া','গদখালী','নাভারণ'],
-    'কেশবপুর': ['কেশবপুর পৌরসভা','গৌরীঘোনা','মজিদপুর','পাঁজিয়া'],
+  'গোপালগঞ্জ': {
+    'গোপালগঞ্জ সদর': ['গোপালগঞ্জ পৌরসভা','কাশিয়ানী','রঘুনাথপুর','বৌলতলী'],
+    'টুঙ্গিপাড়া': ['টুঙ্গিপাড়া পৌরসভা','গোপালপুর','পাটগাতী'],
+    'কোটালীপাড়া': ['কোটালীপাড়া পৌরসভা','এমাদপুর','কলাবাড়ী','রাধাগঞ্জ'],
   },
-  'নরসিংদী': {
-    'নরসিংদী সদর': ['নরসিংদী পৌরসভা','আমদিয়া','করিমপুর','মহিষাশুরা'],
-    'মনোহরদী': ['মনোহরদী পৌরসভা','চালাকচর','হাতিরদিয়া','লেবুতলা'],
-    'রায়পুরা': ['রায়পুরা পৌরসভা','মরজাল','নিজামপুর','পলাশতলী'],
-    'শিবপুর': ['শিবপুর পৌরসভা','জয়নগর','পুলেরচর','সাইদাবাদ'],
+  'খাগড়াছড়ি': {
+    'খাগড়াছড়ি সদর': ['খাগড়াছড়ি পৌরসভা','ভাইবোনছড়া','কমলছড়ি','পেরাছড়া'],
+    'রাঙামাটি': ['রাঙামাটি পৌরসভা','বন্দুকভাঙ্গা','কাপ্তাই','কাউখালী'],
+    'দীঘিনালা': ['দীঘিনালা পৌরসভা','বোয়ালখালী','কবাখালী','মেরুং'],
+  },
+  'রাঙামাটি': {
+    'রাঙামাটি সদর': ['রাঙামাটি পৌরসভা','বালুখালী','জুরাছড়ি','মগবান'],
+    'কাপ্তাই': ['কাপ্তাই পৌরসভা','চন্দ্রঘোনা','কাপ্তাই','রাইখালী'],
+    'বরকল': ['বরকল পৌরসভা','ভূষণছড়া','সুবলং','হরিণা'],
+  },
+  'বান্দরবান': {
+    'বান্দরবান সদর': ['বান্দরবান পৌরসভা','কুহালং','রাজবিলা','সুয়ালক'],
+    'লামা': ['লামা পৌরসভা','আজিজনগর','ফাঁসিয়াখালী','রুপসীপাড়া'],
+    'রোয়াংছড়ি': ['রোয়াংছড়ি পৌরসভা','নোয়াপতং','রোয়াংছড়ি','তারাছা'],
   },
 };
 
 // Districts that are considered "Dhaka" for delivery pricing
-const DHAKA_DISTRICTS = ['ঢাকা','গাজীপুর','নারায়ণগঞ্জ'];
+const DHAKA_DISTRICTS = ['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'];
 
 function isDhaka(district) {
   return DHAKA_DISTRICTS.includes(district);
@@ -5668,7 +6019,7 @@ function calcDelivery() {
 function populateDistricts() {
   const sel = document.getElementById('cDistrict');
   sel.innerHTML = '<option value="">— জেলা বেছে নিন —</option>';
-  Object.keys(BD_LOCATIONS).sort().forEach(d => {
+  Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'bn')).forEach(d => {
     const opt = document.createElement('option');
     opt.value = d; opt.textContent = d;
     sel.appendChild(opt);
@@ -5677,6 +6028,146 @@ function populateDistricts() {
   document.getElementById('cUpazila').disabled = true;
   document.getElementById('cThana').value = '';
   document.getElementById('cThana').placeholder = 'থানা / ইউনিয়ন / পৌরসভার নাম লিখুন';
+
+  // Build searchable district wrapper if not already built
+  _buildDistrictSearch();
+}
+
+function _buildDistrictSearch() {
+  const sel = document.getElementById('cDistrict');
+  if (!sel) return;
+  // Already wrapped?
+  if (sel.parentElement?.classList.contains('district-search-wrap')) return;
+
+  // Inject CSS for the searchable dropdown
+  if (!document.getElementById('districtSearchStyle')) {
+    const st = document.createElement('style');
+    st.id = 'districtSearchStyle';
+    st.textContent = `
+      .district-search-wrap { position: relative; }
+      .district-search-wrap select { display: none; }
+      .district-fake-input {
+        display: flex; align-items: center; gap: 8px;
+        background: white; border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm); padding: 10px 13px;
+        font-family: 'Hind Siliguri', sans-serif; font-size: .9375rem;
+        cursor: pointer; color: var(--text); transition: border-color var(--t);
+        min-height: 44px;
+      }
+      .district-fake-input:focus-within, .district-fake-input.open {
+        border-color: var(--blue); box-shadow: var(--glow);
+      }
+      .district-fake-input .dfi-val { flex: 1; }
+      .district-fake-input i { color: var(--text-light); font-size: .75rem; transition: transform var(--t); }
+      .district-fake-input.open i { transform: rotate(180deg); }
+      .district-dropdown {
+        display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+        background: white; border: 1.5px solid var(--blue); border-radius: var(--radius);
+        box-shadow: 0 8px 32px rgba(0,122,255,.14); z-index: 999; overflow: hidden;
+        max-height: 260px;
+      }
+      .district-dropdown.open { display: block; }
+      .district-search-box {
+        padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--blue-light);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .district-search-box i { color: var(--text-light); font-size: .78rem; }
+      .district-search-box input {
+        flex: 1; border: none; background: transparent; outline: none;
+        font-family: 'Hind Siliguri', sans-serif; font-size: .88rem; color: var(--text);
+      }
+      .district-list { overflow-y: auto; max-height: 200px; }
+      .district-opt {
+        padding: 9px 14px; font-family: 'Hind Siliguri', sans-serif; font-size: .88rem;
+        cursor: pointer; color: var(--text); transition: background var(--t);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .district-opt:hover { background: var(--blue-light); color: var(--blue); }
+      .district-opt.selected { background: var(--blue); color: white; }
+      .district-opt i { font-size: .72rem; opacity: .6; }
+      .district-no-result { padding: 14px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .82rem; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // Wrap the select
+  const wrapper = document.createElement('div');
+  wrapper.className = 'district-search-wrap';
+  sel.parentNode.insertBefore(wrapper, sel);
+  wrapper.appendChild(sel);
+
+  // Fake input display
+  const fakeInput = document.createElement('div');
+  fakeInput.className = 'district-fake-input';
+  fakeInput.innerHTML = '<span class="dfi-val bn" style="color:var(--text-light)">— জেলা বেছে নিন —</span><i class="fa-solid fa-chevron-down"></i>';
+  wrapper.appendChild(fakeInput);
+
+  // Dropdown
+  const dropdown = document.createElement('div');
+  dropdown.className = 'district-dropdown';
+  dropdown.innerHTML = `
+    <div class="district-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="district-search-input" placeholder="জেলা খুঁজুন..." autocomplete="off">
+    </div>
+    <div class="district-list"></div>`;
+  wrapper.appendChild(dropdown);
+
+  const searchInput = dropdown.querySelector('.district-search-input');
+  const list = dropdown.querySelector('.district-list');
+
+  function buildList(filter = '') {
+    const districts = Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'bn'));
+    const filtered = filter
+      ? districts.filter(d => d.toLowerCase().includes(filter.toLowerCase()) || d.includes(filter))
+      : districts;
+    if (!filtered.length) {
+      list.innerHTML = '<div class="district-no-result">কোনো জেলা পাওয়া যায়নি</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(d => `
+      <div class="district-opt ${sel.value === d ? 'selected' : ''}" data-val="${d}">
+        <i class="fa-solid fa-location-dot"></i>
+        <span class="bn">${d}</span>
+      </div>`).join('');
+    list.querySelectorAll('.district-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        sel.value = opt.dataset.val;
+        fakeInput.querySelector('.dfi-val').textContent = opt.dataset.val;
+        fakeInput.querySelector('.dfi-val').style.color = '';
+        closeDropdown();
+        // Trigger change
+        sel.dispatchEvent(new Event('change'));
+        onDistrictChange();
+      });
+    });
+  }
+
+  function openDropdown() {
+    dropdown.classList.add('open');
+    fakeInput.classList.add('open');
+    buildList();
+    setTimeout(() => searchInput.focus(), 50);
+    document.addEventListener('mousedown', outsideClick);
+  }
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    fakeInput.classList.remove('open');
+    searchInput.value = '';
+    document.removeEventListener('mousedown', outsideClick);
+  }
+  function outsideClick(e) {
+    if (!wrapper.contains(e.target)) closeDropdown();
+  }
+
+  fakeInput.addEventListener('click', () => {
+    if (dropdown.classList.contains('open')) closeDropdown();
+    else openDropdown();
+  });
+
+  searchInput.addEventListener('input', () => buildList(searchInput.value));
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') closeDropdown(); });
 }
 
 function onDistrictChange() {
@@ -5784,7 +6275,7 @@ function renderCatPageProducts() {
 // ══════════════════════════════════════════════════
 // SINGLE ORDER DETAIL FULL PAGE
 // ══════════════════════════════════════════════════
-function openOrderDetailPage(orderData, historyData) {
+async function openOrderDetailPage(orderData, historyData) {
   const o    = orderData;
   const hist = historyData || [];
 
@@ -5795,7 +6286,13 @@ function openOrderDetailPage(orderData, historyData) {
   // Breadcrumb order number
   document.getElementById('odPageOrderNum').textContent = o.order_number || 'বিস্তারিত';
 
-  // Hero strip with status
+  // Push URL so reload works
+  const url = new URL(window.location.href);
+  url.searchParams.set('page', 'order-detail');
+  url.searchParams.set('id', o.order_number || o.id);
+  history.replaceState({page:'order-detail', id: o.order_number||o.id}, '', url.toString());
+
+  // Hero strip with status + Copy ID button
   document.getElementById('odPageHero').innerHTML = `
     <div style="background:linear-gradient(120deg,var(--blue),var(--blue-dark));padding:22px 24px;color:white;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <div style="width:50px;height:50px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.4rem">
@@ -5803,7 +6300,14 @@ function openOrderDetailPage(orderData, historyData) {
       </div>
       <div style="flex:1;min-width:0">
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;opacity:.8;margin-bottom:3px">অর্ডার নম্বর</div>
-        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.02em">${o.order_number || '—'}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.02em">${o.order_number || '—'}</div>
+          <button onclick="copyOrderId('${o.order_number||''}')"
+            id="copyOrderIdBtn"
+            style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:white;font-size:.68rem;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;transition:all .2s">
+            <i class="fa-regular fa-copy"></i> <span id="copyOrderIdTxt">Copy</span>
+          </button>
+        </div>
       </div>
       <span class="order-status-badge ${badgeCls}" style="font-size:.8rem;padding:6px 14px">
         <i class="fa-solid ${statusIcon}"></i>${statusLabel}
@@ -5814,6 +6318,20 @@ function openOrderDetailPage(orderData, historyData) {
   document.getElementById('odPageBody').innerHTML = buildOrderDetailPanel(o, hist);
 
   openPage('order-detail');
+}
+
+function copyOrderId(id) {
+  if (!id) return;
+  navigator.clipboard.writeText(id).then(() => {
+    const txt = document.getElementById('copyOrderIdTxt');
+    const btn = document.getElementById('copyOrderIdBtn');
+    if (txt) txt.textContent = 'Copied!';
+    if (btn) { btn.style.background = 'rgba(16,185,129,.4)'; btn.style.borderColor = 'rgba(16,185,129,.7)'; }
+    setTimeout(() => {
+      if (txt) txt.textContent = 'Copy';
+      if (btn) { btn.style.background = 'rgba(255,255,255,.18)'; btn.style.borderColor = 'rgba(255,255,255,.35)'; }
+    }, 2000);
+  }).catch(() => toast('Copy ব্যর্থ','ম্যানুয়ালি কপি করুন','w'));
 }
 
 // ══════════════════════════════════════════════════
