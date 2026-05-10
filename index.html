@@ -32,16 +32,16 @@
   font-size: .8rem;
   font-weight: 700;
   line-height: 1;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: visible;        /* let glyph breathe outside box model */
-  /* vertical centering tweak for Hind Siliguri ascenders */
-  padding-top: 2px;
+  /* Hind Siliguri Bengali numerals sit slightly high — nudge down */
+  padding-top: 3px;
 }
 
 /* 3. Any inline Bengali-numeral span with border-radius — overflow must be visible */
@@ -69,8 +69,8 @@ span[style*="border-radius: 50%"] {
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'Sora',sans-serif;font-size:1rem;line-height:1.6;background:#F8FAFC;color:var(--text);overflow-x:hidden}
-.bn{font-family:'Hind Siliguri',sans-serif;font-size:1rem;line-height:1.65}
+body{font-family:'Sora',sans-serif;font-size:1rem;line-height:1.65;background:#F8FAFC;color:var(--text);overflow-x:hidden}
+.bn{font-family:'Hind Siliguri',sans-serif;font-size:1rem;line-height:1.8}
 
 /* ── GLOBAL TYPOGRAPHY SCALE ── */
 h1,h2,h3{line-height:1.3}
@@ -92,14 +92,31 @@ label,.form-group label{font-size:.875rem!important;font-weight:700}
 @keyframes load{to{width:100%}}
 
 /* ── SOCIAL BAR ── */
-.social-bar{background:var(--blue);padding:7px 24px;display:flex;align-items:center;justify-content:space-between}
+.social-bar{
+  background:var(--blue);
+  padding:6px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  /* no border-radius — flush with header edges */
+}
 .social-bar span{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:rgba(255,255,255,.9)}
-.social-links{display:flex;gap:4px}
+.social-links{display:flex;gap:4px;align-items:center}
 .slink{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;transition:background var(--t)}
 .slink:hover{background:rgba(255,255,255,.3)}
 
 /* ── HEADER ── */
-header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:box-shadow var(--t)}
+header{
+  position:sticky;
+  top:0;
+  z-index:200;
+  /* solid white — social bar inside provides its own blue bg */
+  background:#FFFFFF;
+  border-bottom:1px solid var(--border);
+  transition:box-shadow var(--t);
+  /* Prevent any backdrop-filter from conflicting with z-index stacking */
+  isolation: isolate;
+}
 header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 
 /* Header top row: Logo | Search | Actions — perfect 3-column alignment */
@@ -489,7 +506,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pname{font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pbrand{font-size:.7rem;color:var(--text-light);margin-bottom:7px}
 .prating{display:flex;align-items:center;gap:4px;margin-bottom:9px}
-.pstars{color:#F59E0B;font-size:.88rem;letter-spacing:2px;line-height:1}
+.pstars{color:#F5A623;font-size:.88rem;letter-spacing:2px;line-height:1}
 .prating span{font-size:.65rem;color:var(--text-light)}
 .pfooter{display:flex;align-items:flex-end;justify-content:space-between;gap:5px}
 .price-block .old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
@@ -626,7 +643,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
   margin-bottom:18px;
 }
-.pd-stars{color:var(--gold);font-size:1.05rem;letter-spacing:2px;text-shadow:0 0 10px rgba(245,158,11,.55)}
+.pd-stars{color:var(--gold);font-size:1.05rem;letter-spacing:2px}
 .pd-rating-num{font-size:.9rem;font-weight:700;color:var(--text)}
 .pd-reviews-count{font-size:.78rem;color:var(--text-light)}
 .pd-instock{
@@ -878,7 +895,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .modal-name{font-family:'Hind Siliguri',sans-serif;font-size:1.1rem;font-weight:700;line-height:1.3;margin-bottom:3px}
 .modal-brand{font-size:.78rem;color:var(--text-light);margin-bottom:10px}
 .modal-rating-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.modal-stars{color:var(--gold);font-size:.92rem;text-shadow:0 0 8px rgba(245,158,11,.55);letter-spacing:1px}
+.modal-stars{color:var(--gold);font-size:.92rem;letter-spacing:1px}
 .modal-price-block{margin-bottom:14px}
 .modal-old{font-size:.82rem;color:var(--text-light);text-decoration:line-through;margin-bottom:3px}
 .modal-new{font-size:1.7rem;font-weight:700;color:var(--text)}
@@ -1324,38 +1341,67 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .foot-bottom{flex-direction:column;text-align:center;gap:10px}
 }
 /* ══════════════════════════════════════════════════
+   Z-INDEX MASTER SCALE
+   9999 — loading screen
+    500 — mobile drawer sidebar
+    400 — cart overlay, auth modal, admin panel
+    300 — overlays (backdrop)
+    200 — sticky header (always on top of pages)
+    150 — full-page slides
+     20 — fp-topbar (within full-page stacking context)
+     10 — dropdowns, notif panel (within header stacking context)
+══════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════
    FULL-PAGE SYSTEM
 ══════════════════════════════════════════════════ */
 .full-page {
   position: fixed;
   inset: 0;
-  top: 0; /* covers from very top, behind header */
   background: #F8FAFC;
-  z-index: 150; /* below header (200) but above everything else */
+  /* Slides in from BELOW the sticky header */
+  z-index: 150;
   transform: translateY(100%);
   transition: transform .38s cubic-bezier(.4,0,.2,1);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-top: 0;
-  /* Add top padding equal to header height so content isn't under header */
-  padding-top: var(--header-h, 108px);
+  /* Padding pushes content below the sticky header.
+     JS sets --header-h via updateHeaderHeight() on load + resize.
+     CSS fallbacks cover the first paint before JS fires. */
+  padding-top: var(--header-h, 115px);
+  /* Establish stacking context so fp-topbar z-index is scoped */
+  isolation: isolate;
+}
+@media(max-width:880px){
+  .full-page { padding-top: var(--header-h, 100px); }
+}
+@media(max-width:480px){
+  .full-page { padding-top: var(--header-h, 92px); }
 }
 .full-page.open {
   transform: translateY(0);
 }
 
 /* ── Full-page top bar (back btn + breadcrumb) ── */
+/* NOTE: .full-page is position:fixed + overflow-y:auto.
+   Inside that scroll container, position:sticky + top:0
+   correctly pins this bar to the TOP of the visible viewport area
+   as the user scrolls inside the full-page. z-index is relative
+   to the full-page stacking context (z-index:150). */
 .fp-topbar {
   position: sticky;
   top: 0;
-  z-index: 10;
-  background: white;
+  z-index: 20;          /* above full-page content, below nothing (it's in its own stacking context) */
+  background: #FFFFFF;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 11px 22px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  padding: 10px 22px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  min-height: 50px;
+  /* ensure it never scrolls behind the main sticky header */
+  isolation: isolate;
 }
 .fp-back-btn {
   display: flex;
@@ -1366,11 +1412,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   border: 1.5px solid var(--border);
   background: white;
   color: var(--text);
+  font-family: 'Hind Siliguri', sans-serif;
   font-size: .82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--t);
   flex-shrink: 0;
+  line-height: 1;
+  white-space: nowrap;
 }
 .fp-back-btn:hover {
   border-color: var(--blue);
@@ -1381,8 +1430,37 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   flex: 1;
   display: flex;
   align-items: center;
+  gap: 5px;
+  font-family: 'Hind Siliguri', sans-serif;
   font-size: .78rem;
   overflow: hidden;
+  min-width: 0;
+  line-height: 1.4;
+}
+.fp-breadcrumb span {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.fp-breadcrumb .bc-sep {
+  font-size: .52rem;
+  color: var(--text-light);
+  flex-shrink: 0;
+  opacity: .7;
+}
+.fp-breadcrumb .bc-link {
+  color: var(--blue);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--t);
+}
+.fp-breadcrumb .bc-link:hover { opacity: .75; }
+.fp-breadcrumb .bc-current {
+  color: var(--text);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .fp-share-btn {
   width: 34px; height: 34px;
@@ -1459,7 +1537,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   display: flex; align-items: center; gap: 8px;
   margin: 12px 0 16px; flex-wrap: wrap;
 }
-.fp-stars { color: var(--gold); font-size: 1.1rem; letter-spacing: 2px; text-shadow: 0 0 12px rgba(245,158,11,.6), 0 0 4px rgba(245,158,11,.4); }
+.fp-stars { color: var(--gold); font-size: 1.1rem; letter-spacing: 2px; }
 .fp-rating-num { font-size: .82rem; font-weight: 700; color: var(--text-mid); }
 .fp-review-cnt {
   font-size: .76rem; color: var(--blue); text-decoration: underline;
@@ -1549,7 +1627,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 .fp-avg-block { text-align: center; flex-shrink: 0; }
 .fp-avg-score { font-size: 3.2rem; font-weight: 900; color: var(--blue); line-height: 1; }
-.fp-avg-stars { color: var(--gold); font-size: 1.15rem; margin: 4px 0; text-shadow: 0 0 8px rgba(245,158,11,.5); }
+.fp-avg-stars { color: var(--gold); font-size: 1.15rem; margin: 4px 0; }
 .fp-total-rev { font-size: .72rem; color: var(--text-light); }
 .fp-rating-bars { flex: 1; min-width: 160px; }
 .fp-review-list {}
@@ -1566,18 +1644,50 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 
 /* ══════════════════════════════════════════════════
-   FONT CONSISTENCY — Hind Siliguri on all bn elements
-   and full-page views
+   FONT CONSISTENCY — Hind Siliguri everywhere
 ══════════════════════════════════════════════════ */
+
+/* All full-page views use Hind Siliguri by default */
 .full-page,
-.full-page *:not(i):not(.fa-solid):not([class*="fa-"]),
-.fp-track-body,
-.fp-track-body *:not(i) {
-  font-family:'Hind Siliguri','Sora',sans-serif;
+.full-page *:not(i):not([class*="fa-"]):not([class*="fa "]) {
+  font-family: 'Hind Siliguri', 'Sora', sans-serif;
 }
-/* Keep Sora for prices/numbers */
-.fp-new-price,.fp-old-price,.new,.ci-price,.olist-total,.olist-order-num {
-  font-family:'Sora',sans-serif;
+
+/* Overlay panels (cart, admin, auth) */
+.cart-panel, .cart-panel *:not(i):not([class*="fa-"]),
+.auth-body, .auth-body *:not(i):not([class*="fa-"]),
+.admin-panel, .admin-panel *:not(i):not([class*="fa-"]),
+.notif-panel, .notif-panel *:not(i):not([class*="fa-"]),
+.account-dropdown, .account-dropdown *:not(i):not([class*="fa-"]) {
+  font-family: 'Hind Siliguri', 'Sora', sans-serif;
+}
+
+/* Toast notifications */
+.toast, .toast *:not(i):not([class*="fa-"]) {
+  font-family: 'Hind Siliguri', 'Sora', sans-serif;
+}
+
+/* Footer */
+footer, footer *:not(i):not([class*="fa-"]) {
+  font-family: 'Hind Siliguri', 'Sora', sans-serif;
+}
+
+/* fp-topbar breadcrumb and back buttons always Hind Siliguri */
+.fp-topbar, .fp-topbar * {
+  font-family: 'Hind Siliguri', 'Sora', sans-serif;
+}
+
+/* Keep Sora for pure numeric/price display fields */
+.fp-new-price, .fp-old-price, .new, .ci-price,
+.olist-total, .olist-order-num,
+.tp-oc-id, .tp-oc-total,
+.tp-detail-meta-val, .pd-new-price {
+  font-family: 'Sora', sans-serif;
+}
+
+/* Search input stays Sora (Latin placeholder) */
+.search-box input, #searchInput {
+  font-family: 'Sora', sans-serif;
 }
 
 /* ══════════════════════════════════════════════════
@@ -1807,6 +1917,37 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .fp-tabs-wrap { padding: 0 14px 40px; }
   .fp-rec-wrap { padding: 0 14px; }
   .fp-topbar { padding: 8px 14px; }
+}
+
+/* ══════════════════════════════════════════════════
+   FP-TOPBAR — Mobile responsive
+══════════════════════════════════════════════════ */
+@media(max-width:600px){
+  .fp-topbar { padding: 8px 14px; gap: 8px; min-height: 46px; }
+  .fp-back-btn { padding: 6px 10px; font-size: .76rem; }
+  .fp-breadcrumb { font-size: .72rem; }
+}
+
+/* ══════════════════════════════════════════════════
+   CATEGORY FILTER PAGE — Mobile
+══════════════════════════════════════════════════ */
+#page-category .fp-topbar { flex-wrap: wrap; }
+#page-category .sort-sel { max-width: 160px; font-size: .72rem !important; padding: 6px 8px !important; }
+@media(max-width:420px){
+  #page-category .fp-topbar > div[style*="margin-left:auto"] { margin-left: 0 !important; width: 100%; }
+  #page-category .sort-sel { width: 100%; max-width: 100%; }
+  #catPageHero { padding: 16px 16px 14px !important; }
+  #catPageTitle { font-size: 1.1rem !important; }
+  #catPageSubtitle { font-size: .74rem !important; }
+  #page-category > div[style*="max-width:1100px"] { padding: 0 12px 32px !important; margin-top: 16px !important; }
+}
+
+/* ══════════════════════════════════════════════════
+   ORDER DETAIL PAGE — Mobile
+══════════════════════════════════════════════════ */
+@media(max-width:600px){
+  #page-order-detail > div[style*="max-width:720px"] { margin-top: 16px !important; padding: 0 12px 40px !important; }
+  #odPageHero > div { padding: 18px 16px !important; border-radius: var(--radius) !important; }
 }
 
 
@@ -2134,6 +2275,9 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   <div class="loader-bar"><div class="loader-bar-inner"></div></div>
 </div>
 
+<!-- HEADER (includes social bar so everything scrolls together as one sticky unit) -->
+<header id="mainHeader">
+
 <!-- SOCIAL BAR -->
 <div class="social-bar">
   <span class="bn"><i class="fa-solid fa-truck-fast" style="margin-right:6px"></i>সারা বাংলাদেশে ডেলিভারি · ক্যাশ অন ডেলিভারি · বিশ্বস্ত অনলাইন শপ</span>
@@ -2146,9 +2290,6 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
     <a href="#" class="slink"><i class="fa-brands fa-whatsapp"></i></a>
   </div>
 </div>
-
-<!-- HEADER -->
-<header id="mainHeader">
   <!-- ── TOP ROW: Logo | Search | Actions ── -->
   <div class="header-top">
 
@@ -2395,16 +2536,16 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 ══════════════════════════════════════════════════ -->
 <div id="page-category" class="full-page" aria-hidden="true">
   <div class="fp-topbar">
-    <button class="fp-back-btn bn" onclick="closeCatPage()">
+    <button class="fp-back-btn" onclick="closeCatPage()">
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
-    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
-      <span onclick="closeCatPage()" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
-      <span id="catPageBreadcrumb" style="color:var(--text);font-weight:700">ক্যাটাগরি</span>
-    </div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <select class="sort-sel bn" id="catPageSort" onchange="renderCatPageProducts()" style="font-size:.72rem;padding:6px 10px">
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closeCatPage()">হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current" id="catPageBreadcrumb">ক্যাটাগরি</span>
+    </nav>
+    <div style="margin-left:auto;display:flex;align-items:center;flex-shrink:0">
+      <select class="sort-sel bn" id="catPageSort" onchange="renderCatPageProducts()" style="font-size:.72rem;padding:6px 10px;max-width:160px">
         <option value="popular">জনপ্রিয়</option>
         <option value="low">দাম: কম → বেশি</option>
         <option value="high">দাম: বেশি → কম</option>
@@ -2439,14 +2580,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 ══════════════════════════════════════════════════ -->
 <div id="page-order-detail" class="full-page" aria-hidden="true">
   <div class="fp-topbar">
-    <button class="fp-back-btn bn" onclick="closePage('order-detail')">
+    <button class="fp-back-btn" onclick="closePage('order-detail')">
       <i class="fa-solid fa-arrow-left"></i> অর্ডার তালিকা
     </button>
-    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
-      <span onclick="closePage('order-detail')" style="cursor:pointer;color:var(--blue);font-weight:600">অর্ডার ট্র্যাক</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
-      <span id="odPageOrderNum" style="color:var(--text);font-weight:700">বিস্তারিত</span>
-    </div>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('order-detail')">অর্ডার ট্র্যাক</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current" id="odPageOrderNum">বিস্তারিত</span>
+    </nav>
   </div>
   <div style="max-width:720px;margin:28px auto;padding:0 22px 48px">
     <!-- Status hero strip -->
@@ -2464,16 +2605,15 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   <!-- Sticky sub-header with back + breadcrumb -->
   <div class="fp-topbar">
     <button class="fp-back-btn" onclick="closePage('product')">
-      <i class="fa-solid fa-arrow-left"></i>
-      <span class="bn">হোম</span>
+      <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
-    <div class="fp-breadcrumb bn">
-      <span onclick="closePage('product')" style="cursor:pointer;color:var(--blue)">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.55rem;color:var(--text-light);margin:0 5px"></i>
-      <span id="fpBreadCat" style="color:var(--text-mid)"></span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.55rem;color:var(--text-light);margin:0 5px"></i>
-      <span id="fpBreadName" style="color:var(--text);font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-    </div>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('product')">হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-link" id="fpBreadCat" onclick="closePage('product')"></span>
+      <i class="fa-solid fa-chevron-right bc-sep" id="fpBreadSep2"></i>
+      <span class="bc-current" id="fpBreadName"></span>
+    </nav>
     <button onclick="copyProductUrl()" id="fpShareBtn" class="fp-share-btn" title="শেয়ার করুন">
       <i class="fa-solid fa-share-nodes"></i>
     </button>
@@ -2710,14 +2850,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 ══════════════════════════════════════════════════ -->
 <div id="page-profile" class="full-page" aria-hidden="true">
   <div class="fp-topbar">
-    <button class="fp-back-btn bn" onclick="closePage('profile')">
+    <button class="fp-back-btn" onclick="closePage('profile')">
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
-    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
-      <span onclick="closePage('profile')" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
-      <span style="color:var(--text);font-weight:700">আমার প্রোফাইল</span>
-    </div>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('profile')">হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current">আমার প্রোফাইল</span>
+    </nav>
   </div>
   <div class="profile-wrap">
 
@@ -2802,14 +2942,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 ══════════════════════════════════════════════════ -->
 <div id="page-wishlist" class="full-page" aria-hidden="true">
   <div class="fp-topbar">
-    <button class="fp-back-btn bn" onclick="closePage('wishlist')">
+    <button class="fp-back-btn" onclick="closePage('wishlist')">
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
-    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
-      <span onclick="closePage('wishlist')" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
-      <span style="color:var(--text);font-weight:700">আমার উইশলিস্ট</span>
-    </div>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('wishlist')">হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current">আমার উইশলিস্ট</span>
+    </nav>
     <div style="margin-left:auto">
       <button onclick="clearWishlist()" style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--red);background:none;border:none;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='none'">
         <i class="fa-solid fa-trash-can" style="margin-right:4px"></i>সব মুছুন
@@ -2860,18 +3000,18 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   <!-- Sticky topbar -->
   <div class="fp-topbar">
-    <button class="fp-back-btn bn" onclick="closeCheckoutPage()">
+    <button class="fp-back-btn" onclick="closeCheckoutPage()">
       <i class="fa-solid fa-arrow-left"></i> কার্টে ফিরুন
     </button>
-    <div class="fp-breadcrumb bn">
-      <span onclick="closeCheckoutPage()" style="cursor:pointer;color:var(--blue)">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light);margin:0 5px"></i>
-      <span onclick="closeCheckoutPage()" style="cursor:pointer;color:var(--blue)">কার্ট</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light);margin:0 5px"></i>
-      <span style="color:var(--text);font-weight:700">চেকআউট</span>
-    </div>
-    <div style="margin-left:auto">
-      <span style="font-family:'Hind Siliguri',sans-serif;font-size:.75rem;background:var(--green);color:white;padding:4px 12px;border-radius:100px;font-weight:700"><i class="fa-solid fa-lock" style="margin-right:4px"></i>নিরাপদ চেকআউট</span>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closeCheckoutPage()">হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-link" onclick="closeCheckoutPage()">কার্ট</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current">চেকআউট</span>
+    </nav>
+    <div style="margin-left:auto;flex-shrink:0">
+      <span style="font-family:'Hind Siliguri',sans-serif;font-size:.75rem;background:var(--green);color:white;padding:4px 12px;border-radius:100px;font-weight:700;white-space:nowrap"><i class="fa-solid fa-lock" style="margin-right:4px"></i>নিরাপদ চেকআউট</span>
     </div>
   </div>
 
@@ -3004,7 +3144,27 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
           <!-- Item list -->
           <div id="checkoutSummary" style="margin-bottom:12px"></div>
 
-          <!-- Price breakdown -->
+          <!-- ── কুপন / প্রমো কোড ── -->
+          <div id="checkoutPromoWrap" style="margin-bottom:14px">
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:700;color:var(--text-mid);margin-bottom:7px;display:flex;align-items:center;gap:5px">
+              <i class="fa-solid fa-ticket" style="color:var(--blue);font-size:.75rem"></i>
+              প্রমো কোড / ডিসকাউন্ট কুপন
+            </div>
+            <div style="display:flex;gap:7px">
+              <input type="text" id="checkoutCouponInput"
+                class="form-inp"
+                placeholder="কুপন কোড লিখুন..."
+                style="flex:1;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em"
+                oninput="this.value=this.value.toUpperCase()"
+                onkeydown="if(event.key==='Enter')applyCheckoutCoupon()">
+              <button onclick="applyCheckoutCoupon()"
+                style="padding:8px 14px;border-radius:var(--radius-sm);background:var(--blue);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:all var(--t);flex-shrink:0;white-space:nowrap"
+                id="checkoutCouponBtn">
+                <i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন
+              </button>
+            </div>
+            <div id="checkoutPromoMsg" style="margin-top:6px;font-family:'Hind Siliguri',sans-serif;font-size:.74rem;display:none"></div>
+          </div>
           <div style="border-top:1px solid var(--border);padding-top:12px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:var(--text-mid)">বই মোট</span>
@@ -3055,12 +3215,19 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   <!-- Mobile responsive style override -->
   <style>
     @media(max-width:720px){
-      #checkoutPageBody{grid-template-columns:1fr!important;gap:16px!important}
+      #checkoutPageBody{grid-template-columns:1fr!important;gap:16px!important;padding:16px 14px 60px!important}
       #checkoutPageBody > div:last-child{position:static!important}
     }
     @media(max-width:600px){
       #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
       #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important}
+      /* Checkout section headings */
+      #page-checkout .step-circle{flex-shrink:0}
+      /* Trust badges at bottom */
+      #page-checkout > div[style*="grid-template-columns:1fr 1fr"] {grid-template-columns:1fr 1fr!important}
+    }
+    @media(max-width:420px){
+      #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
     }
   </style>
 
@@ -3073,15 +3240,15 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   <!-- Sticky breadcrumb topbar -->
   <div class="fp-topbar">
-    <button class="fp-back-btn bn" onclick="closePage('track')">
+    <button class="fp-back-btn" onclick="closePage('track')">
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
-    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
-      <span onclick="closePage('track')" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
-      <span style="color:var(--text);font-weight:700">অর্ডার ট্র্যাক</span>
-    </div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('track')">হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current">অর্ডার ট্র্যাক</span>
+    </nav>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0">
       <span id="tpUserChip" style="display:none;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid);padding:4px 11px;border-radius:100px;font-weight:600"></span>
     </div>
   </div>
@@ -3940,6 +4107,111 @@ async function applyCoupon() {
   toast('কুপন প্রয়োগ হয়েছে!',`${data.discount_value}${data.discount_type==='percent'?'%':'৳'} ছাড় পেয়েছেন`,'s');
 }
 
+// ── Checkout page coupon apply (separate from cart coupon) ──
+async function applyCheckoutCoupon() {
+  const input = document.getElementById('checkoutCouponInput');
+  const msgEl = document.getElementById('checkoutPromoMsg');
+  const btn   = document.getElementById('checkoutCouponBtn');
+  const code  = (input?.value || '').trim().toUpperCase();
+
+  if (!code) {
+    showCheckoutPromoMsg('কুপন কোড লিখুন', 'w');
+    return;
+  }
+
+  // If already applied, allow clearing
+  if (input.dataset.applied === 'true') {
+    discount = 0;
+    input.value = '';
+    input.dataset.applied = '';
+    input.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+    btn.style.background = 'var(--blue)';
+    msgEl.style.display = 'none';
+    refreshCheckoutTotals();
+    toast('কুপন বাতিল','ডিসকাউন্ট সরানো হয়েছে','i');
+    return;
+  }
+
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await sb.from('coupons')
+      .select('*').eq('code', code).eq('is_active', true).single();
+
+    if (error || !data) {
+      showCheckoutPromoMsg('❌ এই কুপন কোড পাওয়া যায়নি বা মেয়াদ শেষ হয়েছে', 'e');
+      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+      btn.disabled = false;
+      return;
+    }
+
+    const sub = cart.reduce((s,x) => s + x.price * x.qty, 0);
+
+    if (sub < data.min_order) {
+      showCheckoutPromoMsg(`⚠️ ন্যূনতম ৳${data.min_order.toLocaleString()} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, 'w');
+      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+      btn.disabled = false;
+      return;
+    }
+
+    // Apply discount
+    discount = data.discount_type === 'percent'
+      ? Math.round(sub * (data.discount_value / 100))
+      : data.discount_value;
+
+    // Mark as applied
+    input.dataset.applied = 'true';
+    input.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-xmark" style="margin-right:4px"></i>বাতিল করুন';
+    btn.style.background = 'var(--red)';
+    btn.disabled = false;
+
+    const discLabel = data.discount_type === 'percent'
+      ? `${data.discount_value}% (৳${discount.toLocaleString()})`
+      : `৳${discount.toLocaleString()}`;
+
+    showCheckoutPromoMsg(`✅ "${data.code}" কুপন প্রয়োগ হয়েছে! ${discLabel} ছাড় পেয়েছেন।`, 's');
+    refreshCheckoutTotals();
+    toast('কুপন প্রয়োগ সফল!', `${discLabel} ছাড় পেলেন`, 's');
+
+  } catch (err) {
+    showCheckoutPromoMsg('❌ কুপন যাচাই করা যায়নি, আবার চেষ্টা করুন', 'e');
+    btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+    btn.disabled = false;
+  }
+}
+
+function showCheckoutPromoMsg(text, type) {
+  const el = document.getElementById('checkoutPromoMsg');
+  if (!el) return;
+  const colors = { s:'var(--green)', e:'var(--red)', w:'var(--orange)', i:'var(--blue)' };
+  el.style.display  = 'block';
+  el.style.color    = colors[type] || 'var(--text-mid)';
+  el.textContent    = text;
+}
+
+function refreshCheckoutTotals() {
+  const sub      = cart.reduce((s,x) => s + x.price * x.qty, 0);
+  const delivery = calcDeliveryCharge();
+  const total    = Math.max(0, sub + delivery - discount);
+
+  const subEl  = document.getElementById('checkoutSubtotal');
+  const totEl  = document.getElementById('checkoutTotal');
+  const discEl = document.getElementById('checkoutDiscountAmt');
+  const discRow= document.getElementById('discountRow');
+
+  if (subEl) subEl.textContent = `৳${sub.toLocaleString()}`;
+  if (totEl) totEl.textContent = `৳${total.toLocaleString()}`;
+  if (discount > 0 && discRow && discEl) {
+    discRow.style.display = 'flex';
+    discEl.textContent    = `-৳${discount.toLocaleString()}`;
+  } else if (discRow) {
+    discRow.style.display = 'none';
+  }
+}
+
 // ══════════════════════════════════════════════════
 // CHECKOUT & ORDER — Supabase এ সেভ
 // ══════════════════════════════════════════════════
@@ -3967,6 +4239,13 @@ function openCheckout() {
     document.getElementById('discountRow').style.display = 'none';
   }
   populateDistricts();
+  // Reset promo/coupon input state on fresh checkout open
+  const ccInput = document.getElementById('checkoutCouponInput');
+  const ccBtn   = document.getElementById('checkoutCouponBtn');
+  const ccMsg   = document.getElementById('checkoutPromoMsg');
+  if (ccInput) { ccInput.value = ''; ccInput.disabled = false; ccInput.dataset.applied = ''; }
+  if (ccBtn)   { ccBtn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন'; ccBtn.style.background = 'var(--blue)'; ccBtn.disabled = false; }
+  if (ccMsg)   { ccMsg.style.display = 'none'; }
   updateHeaderHeight();
   closeCart();
   openPage('checkout');
@@ -4080,8 +4359,45 @@ async function signUpWithEmail() {
   else toast('সফল!','ইমেইল ভেরিফাই করুন','i');
 }
 async function signOut() {
-  await sb.auth.signOut();
-  toast('লগআউট','আপনি লগআউট হয়ে গেছেন','i');
+  try {
+    // 1. Supabase session clear
+    await sb.auth.signOut();
+    // 2. Clear all local/session storage keys related to Supabase auth
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth')) {
+        localStorage.removeItem(k);
+      }
+    });
+    Object.keys(sessionStorage).forEach(k => {
+      if (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth')) {
+        sessionStorage.removeItem(k);
+      }
+    });
+    // 3. Reset UI state immediately
+    currentUser = null;
+    isAdmin = false;
+    // 4. Reset account button to guest state
+    const authBtn = document.getElementById('authBtn');
+    if (authBtn) {
+      authBtn.innerHTML = `<i class="fa-regular fa-circle-user" style="font-size:.88rem"></i> লগইন`;
+    }
+    // 5. Hide admin button if visible
+    const adminBtnWrap = document.getElementById('adminBtnWrap');
+    if (adminBtnWrap) adminBtnWrap.style.display = 'none';
+    // 6. Close any open pages/dropdowns
+    closeDropdown();
+    // Close full-page panels if open
+    ['checkout','profile','track','product','category','wishlist'].forEach(p => {
+      const el = document.getElementById('page-' + p);
+      if (el && el.classList.contains('open')) closePage(p);
+    });
+    toast('লগআউট সফল','আপনি সফলভাবে লগআউট হয়েছেন','i');
+    // 7. Reload to fully reset app state after toast
+    setTimeout(() => window.location.reload(), 1200);
+  } catch (err) {
+    console.error('Logout error:', err);
+    toast('লগআউট ত্রুটি', err.message || 'আবার চেষ্টা করুন', 'e');
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -5768,21 +6084,33 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
 // ── Dynamic header height for sticky positioning ──
 function updateHeaderHeight() {
   const h = document.getElementById('mainHeader');
-  if (h) {
-    const height = h.getBoundingClientRect().height;
-    document.documentElement.style.setProperty('--header-h', height + 'px');
-    // Update sidebar sticky top on desktop
-    if (window.innerWidth > 880) {
-      const sidebar = document.getElementById('filterSidebar');
-      if (sidebar) {
-        sidebar.style.top = height + 'px';
-        sidebar.style.height = `calc(100vh - ${height}px)`;
-      }
+  if (!h) return;
+  const height = h.getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--header-h', height + 'px');
+  // Update sidebar sticky top on desktop
+  if (window.innerWidth > 880) {
+    const sidebar = document.getElementById('filterSidebar');
+    if (sidebar) {
+      sidebar.style.top = height + 'px';
+      sidebar.style.height = `calc(100vh - ${height}px)`;
     }
   }
 }
-document.addEventListener('DOMContentLoaded', updateHeaderHeight);
+
+// ── Scroll shadow on header ──
+function handleHeaderScroll() {
+  const h = document.getElementById('mainHeader');
+  if (h) {
+    h.classList.toggle('scrolled', window.scrollY > 4);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateHeaderHeight();
+  handleHeaderScroll();
+});
 window.addEventListener('resize', updateHeaderHeight);
+window.addEventListener('scroll', handleHeaderScroll, { passive: true });
 </script>
 </body>
 </html>
