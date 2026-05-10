@@ -2599,9 +2599,20 @@ function toggleOrderEdit() {
 }
 
 async function viewOrder(id) {
-  // FIX: If orders haven't loaded yet, fetch them first so the modal isn't blank
+  // FIX: If orders haven't loaded or this order is missing, fetch directly from Supabase
   if (!allOrders.length) await loadOrders();
-  const o = allOrders.find(x => x.id === id); if (!o) { toast('Not Found', 'Order data not loaded yet, please refresh', 'error'); return; }
+  let o = allOrders.find(x => x.id === id);
+  if (!o) {
+    // Fetch directly from Supabase
+    try {
+      const { data, error } = await sb.from('orders').select('*').eq('id', id).single();
+      if (!error && data) {
+        o = data;
+        allOrders.push(o); // cache it
+      }
+    } catch(e) {}
+  }
+  if (!o) { toast('Not Found', 'Order data পাওয়া যায়নি, পেজ রিফ্রেশ করুন', 'error'); return; }
   currentOrderId = id;
   document.getElementById('orderModalTitle').textContent = `Order #${o.order_number || id.slice(0,8)}`;
   const badge = document.getElementById('orderModalBadge');
@@ -2664,11 +2675,12 @@ function refreshOrderModal(id) {
       <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>
     </div>`;
 
-  // Note block
-  document.getElementById('overview-note-block').innerHTML = o.admin_note
+  // Note block — uses tracking_note column (admin_note is deprecated)
+  const noteVal = o.tracking_note || o.admin_note || '';
+  document.getElementById('overview-note-block').innerHTML = noteVal
     ? `<div style="background:rgba(0,122,255,0.06);border:1px solid rgba(0,122,255,0.2);border-radius:10px;padding:12px 14px;font-size:0.8rem;color:var(--text2)">
         <div style="font-size:0.6rem;font-weight:700;font-family:var(--mono);color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px"><i class="fa-solid fa-message"></i> Note to Customer</div>
-        <div style="line-height:1.65;font-family:var(--font-bn)">${o.admin_note}</div>
+        <div style="line-height:1.65;font-family:var(--font-bn)">${noteVal}</div>
        </div>` : '';
 
   // Courier block
@@ -2765,10 +2777,11 @@ async function applyDiscount() {
 async function saveOrderNote() {
   if (!sb || !currentOrderId) return;
   const note = document.getElementById('oa-note').value.trim();
-  const { error } = await sb.from('orders').update({ admin_note: note, updated_at: new Date().toISOString() }).eq('id', currentOrderId);
+  // Use tracking_note column (admin_note column does not exist in schema)
+  const { error } = await sb.from('orders').update({ tracking_note: note, updated_at: new Date().toISOString() }).eq('id', currentOrderId);
   if (error) { toast('Failed', error.message, 'error'); return; }
   const o = allOrders.find(x => x.id === currentOrderId);
-  if (o) o.admin_note = note;
+  if (o) { o.tracking_note = note; delete o.admin_note; }
   refreshOrderModal(currentOrderId);
   toast('Note Saved', 'Customer note আপডেট হয়েছে', 'success');
 }
@@ -3139,20 +3152,43 @@ async function saveBanner() {
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Saving...';
 
-  // Try Supabase upload if connected
+  // Upload to Supabase storage — use 'banners' bucket (dedicated for banners)
   let imageUrl = null;
   if (sb) {
-    const bucket = getConfig().bucket;
-    const ext = selectedBannerFile.name.split('.').pop();
-    const fileName = `banner_${Date.now()}.${ext}`;
-    const { data, error } = await sb.storage.from(bucket).upload(fileName, selectedBannerFile, { cacheControl: '3600', upsert: false });
-    if (!error) {
-      const { data: urlData } = sb.storage.from(bucket).getPublicUrl(fileName);
-      imageUrl = urlData.publicUrl;
+    const BANNER_BUCKET = 'banners'; // dedicated banners bucket
+    const ext = selectedBannerFile.name.split('.').pop().toLowerCase();
+    const fileName = `banner_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+    // Try the banners bucket first, then fallback to product bucket
+    let uploadResult = await sb.storage.from(BANNER_BUCKET).upload(fileName, selectedBannerFile, { cacheControl: '3600', upsert: false });
+
+    if (uploadResult.error) {
+      // Fallback to product images bucket
+      const fallbackBucket = getConfig().bucket || 'product-images';
+      uploadResult = await sb.storage.from(fallbackBucket).upload(`banners/${fileName}`, selectedBannerFile, { cacheControl: '3600', upsert: false });
+      if (!uploadResult.error) {
+        const { data: urlData } = sb.storage.from(fallbackBucket).getPublicUrl(`banners/${fileName}`);
+        imageUrl = urlData?.publicUrl || null;
+      }
+    } else {
+      const { data: urlData } = sb.storage.from(BANNER_BUCKET).getPublicUrl(fileName);
+      imageUrl = urlData?.publicUrl || null;
+    }
+
+    // Save to Supabase `banners` table so index.html can load it
+    if (imageUrl && sb) {
+      await sb.from('banners').insert({
+        title,
+        image_url: imageUrl,
+        link: link || null,
+        sort_order: order,
+        is_active: true,
+        created_at: new Date().toISOString()
+      }).catch(e => console.warn('banners table insert failed:', e.message));
     }
   }
 
-  // Fallback: store as base64 in localStorage (demo mode)
+  // Fallback: store as base64 in localStorage (demo mode when no Supabase)
   if (!imageUrl) {
     imageUrl = await new Promise(res => {
       const r = new FileReader();
@@ -3168,7 +3204,7 @@ async function saveBanner() {
 
   btn.disabled = false;
   btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
-  toast('Success!', 'ব্যানার যোগ হয়েছে', 'success');
+  toast('Success!', 'ব্যানার যোগ হয়েছে এবং ওয়েবসাইটে দেখাবে', 'success');
   closeModal('bannerModal');
   selectedBannerFile = null;
   document.getElementById('bannerPreview').classList.add('empty');
