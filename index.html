@@ -8,33 +8,60 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* ── HIND SILIGURI NUMBER FIX ──
-   Bengali numerals (০-৯) clip in Hind Siliguri due to tight ascender/descender metrics.
-   We wrap with a generous line-height + overflow:visible to prevent clipping.
-   The .bn-num utility class targets pure-number spans where clipping is worst. */
+/* ── BENGALI NUMERAL RENDERING FIX ──────────────────────────
+   Hind Siliguri's Bengali digits (especially ১) have tall
+   ascenders that clip inside fixed-height flex containers.
+
+   Strategy:
+   1. All .bn elements get overflow:visible + comfortable line-height
+   2. Circle step-badges (checkout steps ১/২/৩) are converted to
+      use a dedicated class .step-circle so we can target them precisely
+   3. Global rule: any element using 'Hind Siliguri' inside a
+      constrained circle gets font-size bumped down and padding adjusted
+──────────────────────────────────────────────────────────── */
+
+/* 1. Base: all Bengali text gets room to breathe */
 .bn, [class*="bn"] {
-  line-height: 1.75;
+  line-height: 1.8;
   overflow: visible;
 }
-/* Specific fix for step-circle numbers and badge numbers inside Hind Siliguri */
-.bn-num {
+
+/* 2. Step-circle badges — sized so Bengali digits never clip */
+.step-circle {
   font-family: 'Hind Siliguri', sans-serif;
+  font-size: .8rem;
+  font-weight: 700;
   line-height: 1;
-  display: inline-block;
-  padding-top: 1px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;        /* let glyph breathe outside box model */
+  /* vertical centering tweak for Hind Siliguri ascenders */
+  padding-top: 2px;
 }
-/* Badge circles that show Bengali numerals */
-span[style*="border-radius:50%"] {
-  overflow: visible;
-  line-height: 1 !important;
+
+/* 3. Any inline Bengali-numeral span with border-radius — overflow must be visible */
+span[style*="border-radius:50%"],
+span[style*="border-radius: 50%"] {
+  overflow: visible !important;
   padding-top: 2px !important;
+}
+
+/* 4. hbadge (cart count) — uses Latin digits so keep tight */
+.hbadge {
+  overflow: hidden !important;
+  padding-top: 0 !important;
 }
 </style>
 <style>
 :root{
   --blue:#007AFF;--blue-dark:#0055CC;--blue-light:#F0F7FF;--blue-mid:#DAEEFF;
   --white:#fff;--border:#E1E8ED;--text:#1E293B;--text-mid:#475569;--text-light:#94A3B8;
-  --gold:#F59E0B;--gold-dark:#D97706;--gold-light:#FEF3C7;--green:#10B981;--red:#EF4444;--orange:#F97316;
+  --gold:#F5A623;--gold-dark:#D97706;--gold-light:#FEF3C7;--green:#10B981;--red:#EF4444;--orange:#F97316;
   --radius:12px;--radius-sm:8px;
   --glow:0 0 0 3px rgba(0,122,255,.12),0 6px 28px rgba(0,122,255,.10);
   --card-shadow:0 0 0 1px #E1E8ED,0 4px 20px rgba(0,122,255,.06);
@@ -413,7 +440,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .star-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);border:1.5px solid transparent}
 .star-row:hover{background:var(--blue-light)}
 .star-row.active{background:var(--blue-light);border-color:rgba(0,122,255,.3)}
-.gold-stars{color:var(--gold);font-size:.78rem;text-shadow:0 0 6px rgba(245,158,11,.5);letter-spacing:1px}
+.gold-stars{color:#F5A623;font-size:.82rem;letter-spacing:1px}
 .trow{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--t);font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)}
 .trow:hover{background:var(--blue-light)}
 .sw{width:34px;height:19px;border-radius:10px;background:var(--border);position:relative;transition:background var(--t);flex-shrink:0}
@@ -462,7 +489,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pname{font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pbrand{font-size:.7rem;color:var(--text-light);margin-bottom:7px}
 .prating{display:flex;align-items:center;gap:4px;margin-bottom:9px}
-.pstars{color:var(--gold);font-size:.82rem;text-shadow:0 0 8px rgba(245,158,11,.6),0 0 16px rgba(245,158,11,.3);letter-spacing:1px}
+.pstars{color:#F59E0B;font-size:.88rem;letter-spacing:2px;line-height:1}
 .prating span{font-size:.65rem;color:var(--text-light)}
 .pfooter{display:flex;align-items:flex-end;justify-content:space-between;gap:5px}
 .price-block .old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
@@ -1940,6 +1967,162 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   transition: transform var(--t), box-shadow var(--t);
 }
 .rev-photo-thumb:hover { transform: scale(1.04); box-shadow: 0 4px 16px rgba(0,0,0,.14); }
+
+/* ══════════════════════════════════════════════════
+   NOTIFICATION BELL
+══════════════════════════════════════════════════ */
+.notif-wrap { position: relative; }
+.notif-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 9px; border: none; background: transparent;
+  cursor: pointer; border-radius: var(--radius-sm);
+  color: var(--text-mid); transition: all var(--t);
+  font-family: 'Sora', sans-serif; position: relative;
+}
+.notif-btn i { font-size: .98rem; }
+.notif-btn span { font-size: .56rem; font-weight: 600; font-family: 'Hind Siliguri', sans-serif; }
+.notif-btn:hover { background: var(--blue-light); color: var(--blue); }
+.notif-badge {
+  position: absolute; top: 3px; right: 3px;
+  background: var(--red); color: white;
+  font-size: .5rem; font-weight: 700;
+  width: 14px; height: 14px; border-radius: 50%;
+  display: none; align-items: center; justify-content: center;
+  border: 2px solid white;
+}
+.notif-badge.show { display: flex; }
+.notif-panel {
+  display: none;
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: 320px;
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,.13), 0 0 0 1px rgba(0,122,255,.05);
+  z-index: 999; overflow: hidden;
+  animation: dropIn .18s cubic-bezier(.4,0,.2,1);
+}
+.notif-wrap.open .notif-panel { display: block; }
+.notif-panel-hd {
+  padding: 13px 16px; background: linear-gradient(135deg, var(--blue-light), #E8F3FF);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.notif-panel-hd h4 { font-family: 'Hind Siliguri', sans-serif; font-size: .82rem; font-weight: 700; color: var(--text); }
+.notif-mark-all {
+  font-family: 'Hind Siliguri', sans-serif; font-size: .68rem; color: var(--blue);
+  font-weight: 600; background: none; border: none; cursor: pointer; padding: 0;
+}
+.notif-mark-all:hover { text-decoration: underline; }
+.notif-list { max-height: 340px; overflow-y: auto; }
+.notif-list::-webkit-scrollbar { width: 3px; }
+.notif-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.notif-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--blue-light);
+  cursor: pointer; transition: background var(--t); position: relative;
+}
+.notif-item:hover { background: var(--blue-light); }
+.notif-item.unread { background: #F0F7FF; }
+.notif-item.unread::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--blue); border-radius: 0 2px 2px 0;
+}
+.notif-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; flex-shrink: 0;
+}
+.notif-text { flex: 1; min-width: 0; }
+.notif-title { font-family: 'Hind Siliguri', sans-serif; font-size: .78rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+.notif-sub { font-family: 'Hind Siliguri', sans-serif; font-size: .7rem; color: var(--text-mid); margin-top: 2px; line-height: 1.4; }
+.notif-time { font-size: .62rem; color: var(--text-light); margin-top: 3px; font-family: 'Sora', sans-serif; }
+.notif-empty { text-align: center; padding: 32px 20px; }
+.notif-empty i { font-size: 2rem; color: var(--text-light); opacity: .3; display: block; margin-bottom: 10px; }
+.notif-empty p { font-family: 'Hind Siliguri', sans-serif; font-size: .8rem; color: var(--text-light); }
+
+/* ══════════════════════════════════════════════════
+   PROFILE FULL PAGE
+══════════════════════════════════════════════════ */
+.profile-wrap { max-width: 680px; margin: 28px auto; padding: 0 22px 60px; }
+.profile-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 18px;
+  box-shadow: var(--card-shadow);
+}
+.profile-card-hd {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--blue-light), #E8F3FF);
+}
+.profile-card-hd i { color: var(--blue); font-size: .9rem; }
+.profile-card-hd h3 { font-family: 'Hind Siliguri', sans-serif; font-size: .88rem; font-weight: 700; color: var(--text); }
+.profile-card-body { padding: 20px; }
+.profile-avatar-row {
+  display: flex; align-items: center; gap: 18px; margin-bottom: 24px;
+  padding-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.8rem; font-weight: 700; flex-shrink: 0;
+  font-family: 'Hind Siliguri', sans-serif; overflow: hidden;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-info h4 { font-family: 'Hind Siliguri', sans-serif; font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.profile-avatar-info p { font-family: 'Sora', sans-serif; font-size: .78rem; color: var(--text-light); }
+.profile-field { margin-bottom: 16px; }
+.profile-field label { display: block; font-family: 'Hind Siliguri', sans-serif; font-size: .78rem; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; }
+.profile-inp {
+  width: 100%; padding: 10px 13px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'Hind Siliguri', sans-serif; font-size: .88rem;
+  color: var(--text); background: var(--blue-light);
+  outline: none; transition: border-color var(--t), background var(--t);
+}
+.profile-inp:focus { border-color: var(--blue); background: white; box-shadow: var(--glow); }
+.profile-inp:disabled { opacity: .6; cursor: not-allowed; }
+.profile-save-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px; border-radius: var(--radius);
+  background: var(--blue); color: white; border: none;
+  font-family: 'Hind Siliguri', sans-serif; font-size: .9rem; font-weight: 700;
+  cursor: pointer; transition: all var(--t);
+  box-shadow: 0 4px 14px rgba(0,122,255,.3);
+  margin-top: 4px;
+}
+.profile-save-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.profile-save-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.profile-stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.profile-stat {
+  text-align: center; padding: 16px 10px;
+  background: var(--blue-light); border-radius: var(--radius-sm);
+  border: 1px solid var(--blue-mid);
+}
+.profile-stat-val { font-family: 'Hind Siliguri', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--blue); }
+.profile-stat-lbl { font-family: 'Hind Siliguri', sans-serif; font-size: .68rem; color: var(--text-mid); font-weight: 600; margin-top: 3px; }
+
+/* ══════════════════════════════════════════════════
+   WISHLIST FULL PAGE
+══════════════════════════════════════════════════ */
+.wishlist-wrap { max-width: 1100px; margin: 24px auto; padding: 0 22px 60px; }
+
+/* ── Wishlist heart on product detail page ── */
+.fp-wish-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 18px; border-radius: var(--radius);
+  border: 1.5px solid var(--border); background: white;
+  color: var(--text-mid); font-family: 'Hind Siliguri', sans-serif;
+  font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: all var(--t); margin-bottom: 12px;
+}
+.fp-wish-btn:hover, .fp-wish-btn.wishlisted {
+  border-color: #FCA5A5; background: #FEF2F2; color: var(--red);
+}
+.fp-wish-btn.wishlisted i { font-weight: 900; }
+
 </style>
 </head>
 <body>
@@ -1990,7 +2173,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
       <!-- Track Order -->
       <button class="hbtn" onclick="openTrack()" style="padding:7px 11px">
         <i class="fa-solid fa-location-dot"></i>
-        <span style="font-size:.58rem;white-space:nowrap">Track Order</span>
+        <span style="font-size:.58rem;white-space:nowrap">ট্র্যাক অর্ডার</span>
       </button>
 
       <!-- Admin (hidden unless admin) -->
@@ -1998,6 +2181,27 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
         <i class="fa-solid fa-chart-line"></i>
         <span>অ্যাডমিন</span>
       </button>
+
+      <!-- Notification Bell -->
+      <div class="notif-wrap" id="notifWrap">
+        <button class="notif-btn" id="notifBtn" onclick="toggleNotifPanel()" aria-label="নোটিফিকেশন">
+          <i class="fa-regular fa-bell"></i>
+          <span>নোটিফিকেশন</span>
+          <span class="notif-badge" id="notifBadge"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-panel-hd">
+            <h4><i class="fa-solid fa-bell" style="color:var(--blue);margin-right:6px"></i>নোটিফিকেশন</h4>
+            <button class="notif-mark-all" onclick="markAllNotifsRead()">সব পড়া হয়েছে</button>
+          </div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty">
+              <i class="fa-regular fa-bell-slash"></i>
+              <p>কোনো নোটিফিকেশন নেই</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Cart -->
       <button class="hbtn" onclick="openCart()">
@@ -2045,14 +2249,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
             <a class="adrop-item" onclick="openTrack();closeDropdown()">
               <i class="fa-solid fa-box"></i> আমার অর্ডার
             </a>
-            <a class="adrop-item" href="#">
+            <a class="adrop-item" onclick="openWishlistPage();closeDropdown()">
               <i class="fa-regular fa-heart"></i> উইশলিস্ট
+            </a>
+            <a class="adrop-item" onclick="openProfilePage();closeDropdown()">
+              <i class="fa-solid fa-user-pen"></i> আমার প্রোফাইল
             </a>
             <a class="adrop-item" href="#">
               <i class="fa-solid fa-ticket"></i> কুপন ও অফার
-            </a>
-            <a class="adrop-item" href="#">
-              <i class="fa-solid fa-map-location-dot"></i> ঠিকানা ব্যবস্থাপনা
             </a>
             <div class="adrop-divider"></div>
             <button class="adrop-item danger" onclick="signOut();closeDropdown()">
@@ -2076,15 +2280,15 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   <!-- Category Nav -->
   <div class="nav-cats">
-    <button class="ncat active" onclick="filterCat('সব',this)"><i class="fa-solid fa-border-all"></i> সব পণ্য</button>
-    <button class="ncat" onclick="filterCat('বই',this)"><i class="fa-solid fa-book"></i> বই</button>
-    <button class="ncat" onclick="filterCat('ইলেকট্রনিক্স',this)"><i class="fa-solid fa-mobile-screen"></i> ইলেকট্রনিক্স</button>
-    <button class="ncat" onclick="filterCat('ফ্যাশন',this)"><i class="fa-solid fa-shirt"></i> ফ্যাশন</button>
-    <button class="ncat" onclick="filterCat('হোম',this)"><i class="fa-solid fa-house"></i> হোম & কিচেন</button>
-    <button class="ncat" onclick="filterCat('বিউটি',this)"><i class="fa-solid fa-spa"></i> বিউটি</button>
-    <button class="ncat" onclick="filterCat('স্টেশনারি',this)"><i class="fa-solid fa-pen-ruler"></i> স্টেশনারি</button>
-    <button class="ncat" onclick="filterCat('শিশু',this)"><i class="fa-solid fa-child"></i> শিশু পণ্য</button>
-    <button class="ncat" onclick="filterCat('স্পোর্টস',this)"><i class="fa-solid fa-dumbbell"></i> স্পোর্টস</button>
+    <button class="ncat active" onclick="openCatPage('সব',this)"><i class="fa-solid fa-border-all"></i> সব পণ্য</button>
+    <button class="ncat" onclick="openCatPage('বই',this)"><i class="fa-solid fa-book"></i> বই</button>
+    <button class="ncat" onclick="openCatPage('ইলেকট্রনিক্স',this)"><i class="fa-solid fa-mobile-screen"></i> ইলেকট্রনিক্স</button>
+    <button class="ncat" onclick="openCatPage('ফ্যাশন',this)"><i class="fa-solid fa-shirt"></i> ফ্যাশন</button>
+    <button class="ncat" onclick="openCatPage('হোম',this)"><i class="fa-solid fa-house"></i> হোম & কিচেন</button>
+    <button class="ncat" onclick="openCatPage('বিউটি',this)"><i class="fa-solid fa-spa"></i> বিউটি</button>
+    <button class="ncat" onclick="openCatPage('স্টেশনারি',this)"><i class="fa-solid fa-pen-ruler"></i> স্টেশনারি</button>
+    <button class="ncat" onclick="openCatPage('শিশু',this)"><i class="fa-solid fa-child"></i> শিশু পণ্য</button>
+    <button class="ncat" onclick="openCatPage('স্পোর্টস',this)"><i class="fa-solid fa-dumbbell"></i> স্পোর্টস</button>
   </div>
 </header>
 
@@ -2187,6 +2391,72 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 </div>
 
 <!-- ══════════════════════════════════════════════════
+     FULL-PAGE: CATEGORY VIEW
+══════════════════════════════════════════════════ -->
+<div id="page-category" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn bn" onclick="closeCatPage()">
+      <i class="fa-solid fa-arrow-left"></i> হোম
+    </button>
+    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
+      <span onclick="closeCatPage()" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
+      <span id="catPageBreadcrumb" style="color:var(--text);font-weight:700">ক্যাটাগরি</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <select class="sort-sel bn" id="catPageSort" onchange="renderCatPageProducts()" style="font-size:.72rem;padding:6px 10px">
+        <option value="popular">জনপ্রিয়</option>
+        <option value="low">দাম: কম → বেশি</option>
+        <option value="high">দাম: বেশি → কম</option>
+        <option value="discount">সর্বোচ্চ ছাড়</option>
+        <option value="rating">সেরা রেটিং</option>
+      </select>
+    </div>
+  </div>
+  <!-- Category hero strip -->
+  <div id="catPageHero" style="background:linear-gradient(120deg,var(--blue),var(--blue-dark));padding:24px 28px 20px;color:white">
+    <div style="display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto">
+      <div id="catPageIcon" style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0"></div>
+      <div>
+        <div id="catPageTitle" style="font-family:'Hind Siliguri',sans-serif;font-size:1.4rem;font-weight:900;line-height:1.2;letter-spacing:-.01em"></div>
+        <div id="catPageSubtitle" style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;opacity:.85;margin-top:3px"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Products grid -->
+  <div style="max-width:1100px;margin:24px auto;padding:0 22px 40px">
+    <div class="pgrid" id="catPageGrid"></div>
+    <div id="catPageEmpty" style="display:none;text-align:center;padding:60px 20px">
+      <i class="fa-solid fa-box-open" style="font-size:3rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
+      <div class="bn" style="font-size:.95rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কোনো পণ্য নেই</div>
+      <div class="bn" style="font-size:.78rem;color:var(--text-light)">এই ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি</div>
+    </div>
+  </div>
+</div><!-- /#page-category -->
+
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: SINGLE ORDER DETAIL
+══════════════════════════════════════════════════ -->
+<div id="page-order-detail" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn bn" onclick="closePage('order-detail')">
+      <i class="fa-solid fa-arrow-left"></i> অর্ডার তালিকা
+    </button>
+    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
+      <span onclick="closePage('order-detail')" style="cursor:pointer;color:var(--blue);font-weight:600">অর্ডার ট্র্যাক</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
+      <span id="odPageOrderNum" style="color:var(--text);font-weight:700">বিস্তারিত</span>
+    </div>
+  </div>
+  <div style="max-width:720px;margin:28px auto;padding:0 22px 48px">
+    <!-- Status hero strip -->
+    <div id="odPageHero" style="border-radius:var(--radius);overflow:hidden;margin-bottom:20px"></div>
+    <!-- Detail body -->
+    <div id="odPageBody"></div>
+  </div>
+</div><!-- /#page-order-detail -->
+
+<!-- ══════════════════════════════════════════════════
      FULL-PAGE: PRODUCT DETAIL  (/product/[slug])
 ══════════════════════════════════════════════════ -->
 <div id="page-product" class="full-page" aria-hidden="true">
@@ -2271,6 +2541,12 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
           <i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ</span>
         </button>
       </div>
+
+      <!-- Wishlist button -->
+      <button class="fp-wish-btn bn" id="fpWishBtn" onclick="toggleWishlist()">
+        <i class="fa-regular fa-heart" id="fpWishIcon"></i>
+        <span id="fpWishText">উইশলিস্টে সেভ করুন</span>
+      </button>
 
       <!-- Trust badges -->
       <div class="fp-trust">
@@ -2429,6 +2705,140 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
 </div><!-- /#page-product -->
 
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: MY PROFILE
+══════════════════════════════════════════════════ -->
+<div id="page-profile" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn bn" onclick="closePage('profile')">
+      <i class="fa-solid fa-arrow-left"></i> হোম
+    </button>
+    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
+      <span onclick="closePage('profile')" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
+      <span style="color:var(--text);font-weight:700">আমার প্রোফাইল</span>
+    </div>
+  </div>
+  <div class="profile-wrap">
+
+    <!-- Avatar + stats card -->
+    <div class="profile-card">
+      <div class="profile-card-hd">
+        <i class="fa-solid fa-user-circle"></i>
+        <h3>প্রোফাইল ওভারভিউ</h3>
+      </div>
+      <div class="profile-card-body">
+        <div class="profile-avatar-row">
+          <div class="profile-avatar" id="profileAvatar">U</div>
+          <div class="profile-avatar-info">
+            <h4 id="profileDisplayName">—</h4>
+            <p id="profileDisplayEmail">—</p>
+          </div>
+        </div>
+        <div class="profile-stat-row">
+          <div class="profile-stat">
+            <div class="profile-stat-val" id="profileStatOrders">—</div>
+            <div class="profile-stat-lbl">মোট অর্ডার</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-val" id="profileStatWishlist">—</div>
+            <div class="profile-stat-lbl">উইশলিস্ট</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-val" id="profileStatSpend">—</div>
+            <div class="profile-stat-lbl">মোট খরচ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit personal info -->
+    <div class="profile-card">
+      <div class="profile-card-hd">
+        <i class="fa-solid fa-user-pen"></i>
+        <h3>ব্যক্তিগত তথ্য সম্পাদনা</h3>
+      </div>
+      <div class="profile-card-body">
+        <div class="profile-field">
+          <label>পুরো নাম</label>
+          <input class="profile-inp bn" type="text" id="profileName" placeholder="আপনার পুরো নাম">
+        </div>
+        <div class="profile-field">
+          <label>ফোন নম্বর</label>
+          <input class="profile-inp" type="tel" id="profilePhone" placeholder="01XXXXXXXXX">
+        </div>
+        <div class="profile-field">
+          <label>ডিফল্ট ঠিকানা</label>
+          <textarea class="profile-inp bn" id="profileAddress" rows="3" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রাস্তা, এলাকা, জেলা..." style="resize:vertical;min-height:80px"></textarea>
+        </div>
+        <div class="profile-field">
+          <label>ইমেইল <span style="font-size:.68rem;color:var(--text-light);font-weight:400">(পরিবর্তনযোগ্য নয়)</span></label>
+          <input class="profile-inp" type="email" id="profileEmail" disabled placeholder="—">
+        </div>
+        <button class="profile-save-btn" id="profileSaveBtn" onclick="saveProfile()">
+          <i class="fa-solid fa-floppy-disk"></i> তথ্য সেভ করুন
+        </button>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="profile-card">
+      <div class="profile-card-hd" style="background:linear-gradient(135deg,#FEF2F2,#FFF5F5)">
+        <i class="fa-solid fa-right-from-bracket" style="color:var(--red)"></i>
+        <h3 style="color:var(--red)">অ্যাকাউন্ট</h3>
+      </div>
+      <div class="profile-card-body">
+        <button onclick="signOut();closePage('profile')" style="display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius-sm);border:1.5px solid var(--red);background:transparent;color:var(--red);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all var(--t)" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
+          <i class="fa-solid fa-right-from-bracket"></i> লগআউট করুন
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /#page-profile -->
+
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: WISHLIST
+══════════════════════════════════════════════════ -->
+<div id="page-wishlist" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn bn" onclick="closePage('wishlist')">
+      <i class="fa-solid fa-arrow-left"></i> হোম
+    </button>
+    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
+      <span onclick="closePage('wishlist')" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
+      <span style="color:var(--text);font-weight:700">আমার উইশলিস্ট</span>
+    </div>
+    <div style="margin-left:auto">
+      <button onclick="clearWishlist()" style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--red);background:none;border:none;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='none'">
+        <i class="fa-solid fa-trash-can" style="margin-right:4px"></i>সব মুছুন
+      </button>
+    </div>
+  </div>
+  <!-- Hero strip -->
+  <div style="background:linear-gradient(120deg,#EC4899,#BE185D);padding:20px 28px 18px;color:white">
+    <div style="display:flex;align-items:center;gap:12px;max-width:1100px;margin:0 auto">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">❤️</div>
+      <div>
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.2rem;font-weight:900">আমার উইশলিস্ট</div>
+        <div id="wishlistSubtitle" style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.85;margin-top:2px">সেভ করা পণ্যসমূহ</div>
+      </div>
+    </div>
+  </div>
+  <div class="wishlist-wrap">
+    <div class="pgrid" id="wishlistGrid"></div>
+    <div id="wishlistEmpty" style="display:none;text-align:center;padding:60px 20px">
+      <i class="fa-regular fa-heart" style="font-size:3.5rem;color:var(--text-light);opacity:.25;display:block;margin-bottom:16px"></i>
+      <div class="bn" style="font-size:1rem;font-weight:700;color:var(--text-mid);margin-bottom:6px">উইশলিস্ট খালি আছে</div>
+      <div class="bn" style="font-size:.82rem;color:var(--text-light);margin-bottom:20px">পণ্যের পেজে হার্ট আইকনে ক্লিক করে উইশলিস্টে যোগ করুন।</div>
+      <button onclick="closePage('wishlist')" style="display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:var(--radius-sm);background:var(--blue);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">
+        <i class="fa-solid fa-store"></i> শপিং করুন
+      </button>
+    </div>
+  </div>
+</div><!-- /#page-wishlist -->
+
 <!-- ── CART OVERLAY ── -->
 <div class="overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()" style="justify-content:flex-end;align-items:stretch">
   <div class="cart-panel">
@@ -2474,7 +2884,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
       <!-- Customer Info -->
       <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-          <span style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">১</span>
+          <span class="step-circle" style="background:var(--blue);color:white">১</span>
           ব্যক্তিগত তথ্য
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -2496,7 +2906,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
       <!-- Delivery Location -->
       <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-          <span style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">২</span>
+          <span class="step-circle" style="background:var(--blue);color:white">২</span>
           ডেলিভারি ঠিকানা
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
@@ -2513,10 +2923,8 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label class="bn">থানা / ইউনিয়ন *</label>
-            <select class="form-sel bn" id="cThana" onchange="calcDelivery()" disabled>
-              <option value="">— থানা —</option>
-            </select>
+            <label class="bn">থানা / ইউনিয়ন / পৌরসভা *</label>
+            <input class="form-inp bn" type="text" id="cThana" placeholder="থানা / ইউনিয়ন / পৌরসভার নাম লিখুন" oninput="calcDelivery()">
           </div>
         </div>
         <div class="form-group" style="margin-bottom:0">
@@ -2555,7 +2963,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
             </div>
             <div>
               <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#92400E;margin-bottom:2px">স্টক না থাকলে</div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">পণ্য সংগ্রহ করে পাঠানো হবে — সেক্ষেত্রে কিছুটা অতিরিক্ত সময় লাগতে পারে। আমরা আপনাকে ফোনে জানাব।</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">পণ্য সংগ্রহ করে পাঠানো হবে — সেক্ষেত্রে কিছুটা অতিরিক্ত সময় লাগতে পারে। আমরা আপনার অর্ডারের নোট দেওয়ার মাধ্যমে জানাব।</div>
             </div>
           </div>
         </div>
@@ -2564,7 +2972,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
       <!-- Payment Method -->
       <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-          <span style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">৩</span>
+          <span class="step-circle" style="background:var(--blue);color:white">৩</span>
           পেমেন্ট পদ্ধতি
         </div>
         <div style="display:flex;align-items:center;gap:12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px">
@@ -3175,6 +3583,33 @@ function updateCounts() {
   });
 }
 
+function buildProductCard(p) {
+  const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
+  return `<div class="pcard" onclick="openProduct('${p.id}')">
+    <div class="pcard-img">
+      <div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>
+      ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'&&disc?`<div class="disc-badge">-${disc}% ছাড়</div>`:''}
+      <button class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'<i class=\'fa-solid fa-heart\'></i>':'<i class=\'fa-regular fa-heart\'></i>'"><i class="fa-regular fa-heart"></i></button>
+    </div>
+    <div class="pcard-body">
+      <div class="pcat bn">${p.category}</div>
+      <div class="pname bn">${p.name}</div>
+      <div class="pbrand">${p.brand||''}</div>
+      <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
+      <div class="pfooter">
+        <div class="price-block">
+          ${p.old_price?`<div class="old bn">৳${Number(p.old_price).toLocaleString()}</div>`:''}
+          <div><span class="new bn">৳${Number(p.price).toLocaleString()}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
+        </div>
+        <div class="card-btns">
+          <button class="btn-cart bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে</button>
+          <button class="btn-buy bn" onclick="event.stopPropagation();openProductAndBuy('${p.id}')"><i class="fa-solid fa-bolt"></i>কিনুন</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderProducts(list) {
   const grid = document.getElementById('productGrid');
   document.getElementById('productCount').textContent = `(${list.length} টি পণ্য)`;
@@ -3182,32 +3617,7 @@ function renderProducts(list) {
     grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i><p class="bn">কোনো পণ্য পাওয়া যায়নি</p></div>';
     return;
   }
-  grid.innerHTML = list.map(p => {
-    const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
-    return `<div class="pcard" onclick="openProduct('${p.id}')">
-      <div class="pcard-img">
-        <div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>
-        ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'&&disc?`<div class="disc-badge">-${disc}% ছাড়</div>`:''}
-        <button class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'<i class=\'fa-solid fa-heart\'></i>':'<i class=\'fa-regular fa-heart\'></i>'"><i class="fa-regular fa-heart"></i></button>
-      </div>
-      <div class="pcard-body">
-        <div class="pcat bn">${p.category}</div>
-        <div class="pname bn">${p.name}</div>
-        <div class="pbrand">${p.brand||''}</div>
-        <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
-        <div class="pfooter">
-          <div class="price-block">
-            ${p.old_price?`<div class="old bn">৳${Number(p.old_price).toLocaleString()}</div>`:''}
-            <div><span class="new bn">৳${Number(p.price).toLocaleString()}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
-          </div>
-          <div class="card-btns">
-            <button class="btn-cart bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে</button>
-            <button class="btn-buy bn" onclick="event.stopPropagation();openProductAndBuy('${p.id}')"><i class="fa-solid fa-bolt"></i>কিনুন</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
 }
 
 function getFiltered() {
@@ -3317,6 +3727,10 @@ function closePage(name) {
   document.body.style.overflow = '';
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.pushState({}, 'গ্যালাক্সি মার্ট BD', '/');
+  if (name === 'order-detail') {
+    // Re-open track page when going back from order detail
+    openPage('track');
+  }
 }
 
 // ── Compute header height for full-page offset ──
@@ -4084,6 +4498,11 @@ async function tpLoadMyOrders() {
   const { data: allHist } = await sb.from('order_status_history')
     .select('*').in('order_id', orderIds).order('created_at', { ascending: false });
 
+  // Store order+history data for detail page
+  const tpOrderMap = {};
+  orders.forEach(o => { tpOrderMap[o.id] = { order: o, hist: (allHist||[]).filter(h=>h.order_id===o.id) }; });
+  window._tpOrderMap = tpOrderMap;
+
   el.innerHTML = orders.map((o, idx) => {
     const items = Array.isArray(o.items) ? o.items : [];
     const hist = (allHist || []).filter(h => h.order_id === o.id);
@@ -4124,14 +4543,9 @@ async function tpLoadMyOrders() {
       <div class="tp-oc-body">
         <div class="tp-oc-thumbs">${thumbsHtml}${moreHtml}</div>
         <div class="tp-oc-names" title="${namesSummary}">${namesSummary || 'পণ্য তথ্য নেই'}</div>
-        <button class="tp-oc-expand-btn" id="btn-${detailId}" onclick="tpToggleDetail('${detailId}',this)">
+        <button class="tp-oc-expand-btn" onclick="tpOpenOrderDetail('${o.id}')">
           <i class="fa-solid fa-route"></i> বিস্তারিত
         </button>
-      </div>
-      <div class="tp-oc-detail" id="${detailId}">
-        <div class="tp-oc-detail-inner">
-          ${buildTpOrderDetail(o, hist)}
-        </div>
       </div>
     </div>`;
   }).join('');
@@ -4222,6 +4636,13 @@ function buildTpOrderDetail(data, history) {
   }
 
   return metaHtml + itemsHtml + timelineHtml + histHtml;
+}
+
+// Opens the single order detail full page from the order list
+function tpOpenOrderDetail(orderId) {
+  const entry = window._tpOrderMap?.[orderId];
+  if (!entry) return;
+  openOrderDetailPage(entry.order, entry.hist);
 }
 
 // ── My Orders (legacy alias for any remaining calls) ──
@@ -4912,14 +5333,8 @@ function calcDelivery() {
   const totalQty = cart.reduce((s,x)=>s+x.qty, 0);
   const hasHighValue = cart.some(item => item.price > 700);
 
-  // Build breakdown note
-  let noteArr = [];
-  if (insideDhaka) noteArr.push('ঢাকার ভেতরে'); else noteArr.push('ঢাকার বাইরে');
-  if (totalQty >= 3) noteArr.push(`${totalQty} টি বই`);
-  if (hasHighValue) noteArr.push('হাই-ভ্যালু (+১৫৳)');
-
   document.getElementById('checkoutDelivery').textContent = `৳${charge}`;
-  document.getElementById('deliveryNote').textContent = noteArr.length ? ` (${noteArr.join(', ')})` : '';
+  document.getElementById('deliveryNote').textContent = '';
   const total = sub + charge - discount;
   document.getElementById('checkoutTotal').textContent = `৳${total.toLocaleString()}`;
 }
@@ -4934,17 +5349,15 @@ function populateDistricts() {
   });
   document.getElementById('cUpazila').innerHTML = '<option value="">— আগে জেলা বেছে নিন —</option>';
   document.getElementById('cUpazila').disabled = true;
-  document.getElementById('cThana').innerHTML = '<option value="">— আগে উপজেলা বেছে নিন —</option>';
-  document.getElementById('cThana').disabled = true;
+  document.getElementById('cThana').value = '';
+  document.getElementById('cThana').placeholder = 'থানা / ইউনিয়ন / পৌরসভার নাম লিখুন';
 }
 
 function onDistrictChange() {
   const district = document.getElementById('cDistrict').value;
   const upazilaEl = document.getElementById('cUpazila');
-  const thanaEl = document.getElementById('cThana');
   upazilaEl.innerHTML = '<option value="">— উপজেলা বেছে নিন —</option>';
-  thanaEl.innerHTML = '<option value="">— আগে উপজেলা বেছে নিন —</option>';
-  thanaEl.disabled = true;
+  document.getElementById('cThana').value = '';
   if (!district || !BD_LOCATIONS[district]) { upazilaEl.disabled = true; return; }
   upazilaEl.disabled = false;
   Object.keys(BD_LOCATIONS[district]).sort().forEach(u => {
@@ -4960,20 +5373,375 @@ function onDistrictChange() {
 function onUpazilaChange() {
   const district = document.getElementById('cDistrict').value;
   const upazila = document.getElementById('cUpazila').value;
-  const thanaEl = document.getElementById('cThana');
-  thanaEl.innerHTML = '<option value="">— থানা/ইউনিয়ন/পৌরসভা বেছে নিন —</option>';
-  if (!upazila || !BD_LOCATIONS[district]?.[upazila]) { thanaEl.disabled = true; return; }
-  thanaEl.disabled = false;
-  (BD_LOCATIONS[district][upazila] || []).forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t; opt.textContent = t;
-    thanaEl.appendChild(opt);
-  });
+  document.getElementById('cThana').value = '';
   calcDelivery();
 }
 
 // ── START ──
 init();
+
+// ══════════════════════════════════════════════════
+// CATEGORY FULL PAGE
+// ══════════════════════════════════════════════════
+const CAT_META = {
+  'সব':         { icon: '🛍️',  color: 'linear-gradient(120deg,var(--blue),var(--blue-dark))',   sub: 'সকল ক্যাটাগরির পণ্য একসাথে' },
+  'বই':         { icon: '📚',  color: 'linear-gradient(120deg,#7C3AED,#5B21B6)',                 sub: 'বই, উপন্যাস, পাঠ্যপুস্তক ও আরো' },
+  'ইলেকট্রনিক্স':{ icon: '📱', color: 'linear-gradient(120deg,#0EA5E9,#0369A1)',                 sub: 'স্মার্টফোন, ট্যাব, গ্যাজেট ও আনুষঙ্গিক' },
+  'ফ্যাশন':    { icon: '👗',  color: 'linear-gradient(120deg,#EC4899,#BE185D)',                  sub: 'পোশাক, জুতা, ব্যাগ ও আনুষঙ্গিক' },
+  'হোম':        { icon: '🏠',  color: 'linear-gradient(120deg,#10B981,#065F46)',                  sub: 'গৃহসজ্জা, কিচেন ও হোম ডেকোর' },
+  'বিউটি':     { icon: '💄',  color: 'linear-gradient(120deg,#F59E0B,#B45309)',                  sub: 'স্কিনকেয়ার, মেকআপ ও পার্সোনাল কেয়ার' },
+  'স্টেশনারি': { icon: '✏️',  color: 'linear-gradient(120deg,#6366F1,#4338CA)',                  sub: 'কলম, ডায়েরি, আর্ট সাপ্লাইজ' },
+  'শিশু':       { icon: '🧸',  color: 'linear-gradient(120deg,#F97316,#C2410C)',                  sub: 'শিশুদের খেলনা, পোশাক ও আনুষঙ্গিক' },
+  'স্পোর্টস':  { icon: '⚽',  color: 'linear-gradient(120deg,#14B8A6,#0F766E)',                  sub: 'স্পোর্টস ইকুইপমেন্ট ও ফিটনেস গিয়ার' },
+};
+
+let currentCatPage = 'সব';
+
+function openCatPage(cat, el) {
+  // For 'সব' category on home, just filter in place (home behaviour preserved)
+  // For any specific cat, open full page
+  if (cat === 'সব') {
+    // Reset and show all on home
+    document.querySelectorAll('.ncat').forEach(e => e.classList.remove('active'));
+    if (el) el.classList.add('active');
+    activeFilter.cat = 'সব';
+    filterCatSide('সব', document.querySelector('.fchip'));
+    return;
+  }
+
+  currentCatPage = cat;
+  const meta = CAT_META[cat] || { icon: '🛍️', color: 'linear-gradient(120deg,var(--blue),var(--blue-dark))', sub: '' };
+
+  // Hero strip
+  document.getElementById('catPageHero').style.background = meta.color;
+  document.getElementById('catPageIcon').textContent = meta.icon;
+  document.getElementById('catPageTitle').textContent = cat;
+  document.getElementById('catPageSubtitle').textContent = meta.sub;
+  document.getElementById('catPageBreadcrumb').textContent = cat;
+  document.getElementById('catPageSort').value = 'popular';
+
+  renderCatPageProducts();
+  openPage('category');
+}
+
+function closeCatPage() {
+  closePage('category');
+}
+
+function renderCatPageProducts() {
+  const grid  = document.getElementById('catPageGrid');
+  const empty = document.getElementById('catPageEmpty');
+  const sort  = document.getElementById('catPageSort')?.value || 'popular';
+
+  let list = currentCatPage === 'সব'
+    ? [...products]
+    : products.filter(p => p.category === currentCatPage);
+
+  if (sort === 'low')      list.sort((a,b) => a.price - b.price);
+  else if (sort === 'high') list.sort((a,b) => b.price - a.price);
+  else if (sort === 'rating') list.sort((a,b) => (b.rating||4) - (a.rating||4));
+  else if (sort === 'discount') list.sort((a,b) =>
+    (b.old_price?(1-b.price/b.old_price):0) - (a.old_price?(1-a.price/a.old_price):0));
+
+  const subtitle = document.getElementById('catPageSubtitle');
+  if (subtitle) subtitle.textContent = `${list.length} টি পণ্য পাওয়া গেছে`;
+
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+}
+
+// ══════════════════════════════════════════════════
+// SINGLE ORDER DETAIL FULL PAGE
+// ══════════════════════════════════════════════════
+function openOrderDetailPage(orderData, historyData) {
+  const o    = orderData;
+  const hist = historyData || [];
+
+  const badgeCls    = STATUS_BADGE_CLS[o.status] || 'osb-pending';
+  const statusLabel = STATUS_LABEL[o.status]      || o.status;
+  const statusIcon  = STATUS_ICON[o.status]       || 'fa-clock';
+
+  // Breadcrumb order number
+  document.getElementById('odPageOrderNum').textContent = o.order_number || 'বিস্তারিত';
+
+  // Hero strip with status
+  document.getElementById('odPageHero').innerHTML = `
+    <div style="background:linear-gradient(120deg,var(--blue),var(--blue-dark));padding:22px 24px;color:white;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="width:50px;height:50px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.4rem">
+        <i class="fa-solid ${statusIcon}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;opacity:.8;margin-bottom:3px">অর্ডার নম্বর</div>
+        <div style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.02em">${o.order_number || '—'}</div>
+      </div>
+      <span class="order-status-badge ${badgeCls}" style="font-size:.8rem;padding:6px 14px">
+        <i class="fa-solid ${statusIcon}"></i>${statusLabel}
+      </span>
+    </div>`;
+
+  // Full detail body
+  document.getElementById('odPageBody').innerHTML = buildOrderDetailPanel(o, hist);
+
+  openPage('order-detail');
+}
+
+// ══════════════════════════════════════════════════
+// MY PROFILE
+// ══════════════════════════════════════════════════
+async function openProfilePage() {
+  if (!currentUser) { openAuth(); return; }
+  openPage('profile');
+
+  // Fill static info
+  const name  = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+  const email = currentUser.email || '';
+  const av    = currentUser.user_metadata?.avatar_url;
+  const initl = name.charAt(0).toUpperCase();
+
+  document.getElementById('profileDisplayName').textContent = name;
+  document.getElementById('profileDisplayEmail').textContent = email;
+  document.getElementById('profileEmail').value = email;
+  const avEl = document.getElementById('profileAvatar');
+  if (av) { avEl.innerHTML = `<img src="${av}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; }
+  else { avEl.textContent = initl; }
+
+  // Load profile from Supabase (profiles table)
+  const { data: prof } = await sb.from('profiles')
+    .select('full_name,phone,address').eq('id', currentUser.id).single();
+  if (prof) {
+    document.getElementById('profileName').value    = prof.full_name || name;
+    document.getElementById('profilePhone').value   = prof.phone    || '';
+    document.getElementById('profileAddress').value = prof.address  || '';
+  } else {
+    document.getElementById('profileName').value = name;
+  }
+
+  // Load stats
+  const { data: orders } = await sb.from('orders').select('total,status').eq('user_id', currentUser.id);
+  const totalOrders = orders?.length || 0;
+  const totalSpend  = orders?.reduce((s,o) => s + (Number(o.total)||0), 0) || 0;
+  const wishCount   = getWishlistIds().length;
+
+  document.getElementById('profileStatOrders').textContent   = totalOrders;
+  document.getElementById('profileStatWishlist').textContent = wishCount;
+  document.getElementById('profileStatSpend').textContent    = `৳${totalSpend.toLocaleString()}`;
+}
+
+async function saveProfile() {
+  if (!currentUser) return;
+  const btn  = document.getElementById('profileSaveBtn');
+  const name = document.getElementById('profileName').value.trim();
+  const phone= document.getElementById('profilePhone').value.trim();
+  const addr = document.getElementById('profileAddress').value.trim();
+
+  if (!name) { toast('ত্রুটি','নাম দিন','w'); return; }
+
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ হচ্ছে...';
+
+  const { error } = await sb.from('profiles').upsert({
+    id: currentUser.id,
+    full_name: name,
+    phone: phone,
+    address: addr,
+    updated_at: new Date().toISOString()
+  });
+
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> তথ্য সেভ করুন';
+
+  if (error) { toast('ত্রুটি!', error.message || 'সেভ হয়নি', 'e'); return; }
+  toast('সেভ হয়েছে!', 'আপনার প্রোফাইল আপডেট হয়েছে', 's');
+  document.getElementById('profileDisplayName').textContent = name;
+}
+
+// ══════════════════════════════════════════════════
+// WISHLIST  (localStorage-based, works without auth)
+// ══════════════════════════════════════════════════
+const WISH_KEY = 'gm_wishlist';
+
+function getWishlistIds() {
+  try { return JSON.parse(localStorage.getItem(WISH_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveWishlistIds(ids) {
+  localStorage.setItem(WISH_KEY, JSON.stringify(ids));
+}
+function isWishlisted(id) { return getWishlistIds().includes(String(id)); }
+
+function toggleWishlist() {
+  if (!currentProduct) return;
+  const id  = String(currentProduct.id);
+  const ids = getWishlistIds();
+  const idx = ids.indexOf(id);
+  if (idx === -1) { ids.push(id); toast('উইশলিস্টে যোগ হয়েছে', `"${currentProduct.name.slice(0,24)}..." সেভ করা হয়েছে`, 's'); }
+  else            { ids.splice(idx, 1); toast('সরানো হয়েছে', 'উইশলিস্ট থেকে বাদ দেওয়া হয়েছে', 'i'); }
+  saveWishlistIds(ids);
+  updateFpWishBtn();
+}
+
+function updateFpWishBtn() {
+  if (!currentProduct) return;
+  const btn  = document.getElementById('fpWishBtn');
+  const icon = document.getElementById('fpWishIcon');
+  const txt  = document.getElementById('fpWishText');
+  if (!btn) return;
+  const on = isWishlisted(currentProduct.id);
+  btn.classList.toggle('wishlisted', on);
+  icon.className = on ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+  txt.textContent = on ? 'উইশলিস্টে আছে' : 'উইশলিস্টে সেভ করুন';
+}
+
+function openWishlistPage() {
+  renderWishlistGrid();
+  openPage('wishlist');
+}
+
+function renderWishlistGrid() {
+  const ids   = getWishlistIds();
+  const grid  = document.getElementById('wishlistGrid');
+  const empty = document.getElementById('wishlistEmpty');
+  const sub   = document.getElementById('wishlistSubtitle');
+  const list  = products.filter(p => ids.includes(String(p.id)));
+  if (sub) sub.textContent = `${list.length} টি সেভ করা পণ্য`;
+  if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+}
+
+function clearWishlist() {
+  if (!confirm('উইশলিস্ট থেকে সব পণ্য মুছে ফেলবেন?')) return;
+  saveWishlistIds([]);
+  renderWishlistGrid();
+  toast('মুছে ফেলা হয়েছে', 'উইশলিস্ট খালি করা হয়েছে', 'i');
+}
+
+// ══════════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════════
+let notifications = [];       // [{id, order_id, order_number, status, note, created_at, read}]
+let notifPollTimer = null;
+const NOTIF_READ_KEY = 'gm_notif_read';
+
+function getReadNotifIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(NOTIF_READ_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function markNotifRead(id) {
+  const ids = getReadNotifIds(); ids.add(id);
+  localStorage.setItem(NOTIF_READ_KEY, JSON.stringify([...ids]));
+}
+function markAllNotifsRead() {
+  notifications.forEach(n => markNotifRead(n.id));
+  renderNotifPanel();
+}
+
+async function loadNotifications() {
+  if (!currentUser) return;
+  // Fetch latest order status history for this user's orders
+  const { data: orders } = await sb.from('orders').select('id,order_number').eq('user_id', currentUser.id);
+  if (!orders || !orders.length) return;
+  const orderMap = {};
+  orders.forEach(o => { orderMap[o.id] = o.order_number; });
+  const orderIds = orders.map(o => o.id);
+
+  const { data: hist } = await sb.from('order_status_history')
+    .select('id,order_id,status,note,created_at')
+    .in('order_id', orderIds)
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (!hist) return;
+  const readIds = getReadNotifIds();
+  notifications = hist.map(h => ({
+    ...h,
+    order_number: orderMap[h.order_id] || '—',
+    read: readIds.has(String(h.id))
+  }));
+  renderNotifPanel();
+}
+
+function renderNotifPanel() {
+  const list    = document.getElementById('notifList');
+  const badge   = document.getElementById('notifBadge');
+  const unread  = notifications.filter(n => !n.read).length;
+
+  badge.textContent = unread > 9 ? '৯+' : String(unread);
+  badge.classList.toggle('show', unread > 0);
+
+  if (!notifications.length) {
+    list.innerHTML = `<div class="notif-empty"><i class="fa-regular fa-bell-slash"></i><p>কোনো নোটিফিকেশন নেই</p></div>`;
+    return;
+  }
+
+  const statusColors = { pending:'#FEF3C7', confirmed:'#DBEAFE', processing:'#EDE9FE', shipped:'#D1FAE5', delivered:'#D1FAE5', cancelled:'#FEE2E2' };
+  const statusIcons  = { pending:'fa-clock', confirmed:'fa-circle-check', processing:'fa-box', shipped:'fa-truck-fast', delivered:'fa-house-circle-check', cancelled:'fa-ban' };
+  const iconColors   = { pending:'#92400E', confirmed:'var(--blue)', processing:'#5B21B6', shipped:'var(--green)', delivered:'var(--green)', cancelled:'var(--red)' };
+
+  list.innerHTML = notifications.map(n => {
+    const bg  = statusColors[n.status]  || 'var(--blue-light)';
+    const ic  = statusIcons[n.status]   || 'fa-circle-dot';
+    const col = iconColors[n.status]    || 'var(--blue)';
+    const label = STATUS_LABEL[n.status] || n.status;
+    const timeAgo = fmtTimeAgo(n.created_at);
+    return `
+      <div class="notif-item ${n.read ? '' : 'unread'}" onclick="onNotifClick('${n.id}','${n.order_id}')">
+        <div class="notif-icon" style="background:${bg}">
+          <i class="fa-solid ${ic}" style="color:${col}"></i>
+        </div>
+        <div class="notif-text">
+          <div class="notif-title">${n.order_number} — ${label}</div>
+          ${n.note ? `<div class="notif-sub">${n.note}</div>` : ''}
+          <div class="notif-time"><i class="fa-regular fa-clock" style="margin-right:3px"></i>${timeAgo}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function onNotifClick(notifId, orderId) {
+  markNotifRead(String(notifId));
+  renderNotifPanel();
+  closeNotifPanel();
+  // Navigate to track page to show order
+  openTrack();
+}
+
+function toggleNotifPanel() {
+  const wrap = document.getElementById('notifWrap');
+  const isOpen = wrap.classList.toggle('open');
+  if (isOpen) loadNotifications();
+  // Close if clicked outside
+  if (isOpen) {
+    setTimeout(() => {
+      document.addEventListener('click', closeNotifOnClickOutside, { once: true });
+    }, 0);
+  }
+}
+function closeNotifPanel() {
+  document.getElementById('notifWrap')?.classList.remove('open');
+}
+function closeNotifOnClickOutside(e) {
+  const wrap = document.getElementById('notifWrap');
+  if (wrap && !wrap.contains(e.target)) closeNotifPanel();
+}
+
+function fmtTimeAgo(isoStr) {
+  if (!isoStr) return '';
+  const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+  if (diff < 60)   return 'এইমাত্র';
+  if (diff < 3600) return `${Math.floor(diff/60)} মিনিট আগে`;
+  if (diff < 86400) return `${Math.floor(diff/3600)} ঘণ্টা আগে`;
+  return `${Math.floor(diff/86400)} দিন আগে`;
+}
+
+function startNotifPolling() {
+  if (notifPollTimer) clearInterval(notifPollTimer);
+  loadNotifications();
+  notifPollTimer = setInterval(loadNotifications, 60000); // poll every 60s
+}
 
 // ══════════════════════════════════════════════════
 // MOBILE FILTER DRAWER
