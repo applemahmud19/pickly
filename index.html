@@ -509,7 +509,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative}
 .pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
-.pcard-img{height:210px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
+.pcard-img{height:230px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
 .pcard:hover .pcard-img{background:#f0f2f5}
 .pcard-icon{width:74px;height:74px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10)}
 .pcard:hover .pcard-icon{transform:scale(1.08) rotate(-3deg)}
@@ -1303,7 +1303,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   /* 2-col product grid */
   .pgrid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .pcard-img{height:170px}
+  .pcard-img{height:185px}
   .pcard-icon{width:58px;height:58px;font-size:1.5rem}
   .parea-header{flex-wrap:nowrap;gap:8px;align-items:center;margin-bottom:10px}
   .parea-header h2{font-size:.85rem;white-space:nowrap}
@@ -1354,7 +1354,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .promo-item:nth-child(n+4){display:none}
   .header-top{padding:8px 12px}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:8px}
-  .pcard-img{height:155px}
+  .pcard-img{height:168px}
   .ncat{padding:7px 12px;font-size:.74rem}
   .hbtn{padding:8px 9px}
 
@@ -3814,9 +3814,10 @@ function buildProductCard(p) {
     ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;border-radius:0;background:#fff" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     : '';
   const iconHtml = `<div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color});${p.image_url?'display:none':''}"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
-  // Books: show author; others: show brand
+  // Books: show author (new column) with brand fallback for legacy data; others: show brand
+  const authorDisplay = p.author || (isBook ? p.brand : null);
   const subLabel = isBook
-    ? (p.author ? `<i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${p.author}` : '')
+    ? (authorDisplay ? `<i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${authorDisplay}` : '')
     : (p.brand ? `<i class="fa-solid fa-tag" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${p.brand}` : '');
   return `<div class="pcard" onclick="openProduct('${p.id}')">
     <div class="pcard-img">
@@ -4009,8 +4010,7 @@ function openProduct(id, pushUrl = true) {
   setText('fpName', p.name);
 
   // ── Brand / Publisher ──
-  // For books: publisher shown only in the spec table below — hide the inline brand row
-  // For non-books: show brand inline as before
+  // Non-books: show brand inline. Books: brand field hidden (author shown below)
   const brandEl = document.getElementById('fpBrandRow');
   if (brandEl) {
     if (p.brand && !isBook) {
@@ -4018,15 +4018,17 @@ function openProduct(id, pushUrl = true) {
     } else { brandEl.textContent = ''; }
   }
 
-  // ── Author ──
+  // ── Author (books only) ──
+  // p.author = new dedicated column; p.brand fallback for legacy books where author was saved in brand
   const authorEl = document.getElementById('fpAuthorRow');
   if (authorEl) {
-    if (isBook && p.author) {
+    const authorName = isBook ? (p.author || p.brand) : null;
+    if (authorName) {
       authorEl.innerHTML = `
         <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(0,122,255,.15);border-radius:20px;padding:4px 12px 4px 10px;margin-bottom:6px">
           <i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.75rem"></i>
           <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text-mid)">লেখক:</span>
-          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--blue)">${p.author}</span>
+          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--blue)">${authorName}</span>
         </div>`;
     } else { authorEl.innerHTML = ''; }
   }
@@ -5230,15 +5232,16 @@ function buildSpecTable(p) {
   const isBook = p.category === 'বই';
   const rows = [];
   if (p.category) rows.push(['ক্যাটাগরি', p.category]);
-  // Publisher (brand) shown in table for ALL categories
-  if (p.brand) {
-    const lbl = isBook ? 'প্রকাশনী' : 'ব্র্যান্ড';
-    rows.push([lbl, p.brand]);
+  // Books: publisher from publisher column (separate from author/brand)
+  // Others: brand column
+  if (isBook && p.publisher) {
+    rows.push(['প্রকাশনী', p.publisher]);
+  } else if (!isBook && p.brand) {
+    rows.push(['ব্র্যান্ড', p.brand]);
   }
   // Book type shown only for books
   if (isBook && p.book_type) rows.push(['বইয়ের ধরণ', p.book_type]);
-  // Author shown only under the title (not in table)
-  // Stock and Badge rows removed intentionally
+  // Author stays under the product title — NOT in spec table
   if (p.rating) rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
   const table = document.getElementById('pdSpecTable');
   if (!table) return;
