@@ -8,19 +8,51 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* ── HIND SILIGURI NUMBER FIX ──
+   Bengali numerals (০-৯) clip in Hind Siliguri due to tight ascender/descender metrics.
+   We wrap with a generous line-height + overflow:visible to prevent clipping.
+   The .bn-num utility class targets pure-number spans where clipping is worst. */
+.bn, [class*="bn"] {
+  line-height: 1.75;
+  overflow: visible;
+}
+/* Specific fix for step-circle numbers and badge numbers inside Hind Siliguri */
+.bn-num {
+  font-family: 'Hind Siliguri', sans-serif;
+  line-height: 1;
+  display: inline-block;
+  padding-top: 1px;
+}
+/* Badge circles that show Bengali numerals */
+span[style*="border-radius:50%"] {
+  overflow: visible;
+  line-height: 1 !important;
+  padding-top: 2px !important;
+}
+</style>
+<style>
 :root{
   --blue:#007AFF;--blue-dark:#0055CC;--blue-light:#F0F7FF;--blue-mid:#DAEEFF;
   --white:#fff;--border:#E1E8ED;--text:#1E293B;--text-mid:#475569;--text-light:#94A3B8;
-  --gold:#FBBF24;--green:#10B981;--red:#EF4444;--orange:#F97316;
+  --gold:#F59E0B;--gold-dark:#D97706;--gold-light:#FEF3C7;--green:#10B981;--red:#EF4444;--orange:#F97316;
   --radius:12px;--radius-sm:8px;
   --glow:0 0 0 3px rgba(0,122,255,.12),0 6px 28px rgba(0,122,255,.10);
   --card-shadow:0 0 0 1px #E1E8ED,0 4px 20px rgba(0,122,255,.06);
   --t:.2s cubic-bezier(.4,0,.2,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Sora',sans-serif;background:#F8FAFC;color:var(--text);overflow-x:hidden}
-.bn{font-family:'Hind Siliguri',sans-serif}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Sora',sans-serif;font-size:1rem;line-height:1.6;background:#F8FAFC;color:var(--text);overflow-x:hidden}
+.bn{font-family:'Hind Siliguri',sans-serif;font-size:1rem;line-height:1.65}
+
+/* ── GLOBAL TYPOGRAPHY SCALE ── */
+h1,h2,h3{line-height:1.3}
+p,.para{font-size:1rem;line-height:1.7}
+label,.form-group label{font-size:.875rem!important;font-weight:700}
+.form-inp,.form-sel{font-size:.9375rem!important}
+.pname{font-size:.9375rem!important}
+.ci-name{font-size:.9rem!important}
+.meta-sm,.text-xs{font-size:.8125rem;color:var(--text-light)}
 
 /* ── LOADING SCREEN ── */
 #loadingScreen{position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
@@ -381,7 +413,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .star-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);border:1.5px solid transparent}
 .star-row:hover{background:var(--blue-light)}
 .star-row.active{background:var(--blue-light);border-color:rgba(0,122,255,.3)}
-.gold-stars{color:var(--gold);font-size:.72rem;text-shadow:0 0 6px rgba(251,191,36,.4)}
+.gold-stars{color:var(--gold);font-size:.78rem;text-shadow:0 0 6px rgba(245,158,11,.5);letter-spacing:1px}
 .trow{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--t);font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)}
 .trow:hover{background:var(--blue-light)}
 .sw{width:34px;height:19px;border-radius:10px;background:var(--border);position:relative;transition:background var(--t);flex-shrink:0}
@@ -430,7 +462,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pname{font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pbrand{font-size:.7rem;color:var(--text-light);margin-bottom:7px}
 .prating{display:flex;align-items:center;gap:4px;margin-bottom:9px}
-.pstars{color:var(--gold);font-size:.68rem;text-shadow:0 0 8px rgba(251,191,36,.45)}
+.pstars{color:var(--gold);font-size:.82rem;text-shadow:0 0 8px rgba(245,158,11,.6),0 0 16px rgba(245,158,11,.3);letter-spacing:1px}
 .prating span{font-size:.65rem;color:var(--text-light)}
 .pfooter{display:flex;align-items:flex-end;justify-content:space-between;gap:5px}
 .price-block .old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
@@ -567,7 +599,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
   margin-bottom:18px;
 }
-.pd-stars{color:var(--gold);font-size:1rem;letter-spacing:2px}
+.pd-stars{color:var(--gold);font-size:1.05rem;letter-spacing:2px;text-shadow:0 0 10px rgba(245,158,11,.55)}
 .pd-rating-num{font-size:.9rem;font-weight:700;color:var(--text)}
 .pd-reviews-count{font-size:.78rem;color:var(--text-light)}
 .pd-instock{
@@ -710,7 +742,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pd-rbar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .pd-rbar-lbl{font-size:.72rem;color:var(--text-mid);width:32px;flex-shrink:0;text-align:right}
 .pd-rbar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-.pd-rbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),#FBBF24)}
+.pd-rbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold-dark),var(--gold))}
 .pd-rbar-cnt{font-size:.68rem;color:var(--text-light);width:22px;flex-shrink:0}
 
 /* review list */
@@ -819,7 +851,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .modal-name{font-family:'Hind Siliguri',sans-serif;font-size:1.1rem;font-weight:700;line-height:1.3;margin-bottom:3px}
 .modal-brand{font-size:.78rem;color:var(--text-light);margin-bottom:10px}
 .modal-rating-row{display:flex;align-items:center;gap:7px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
-.modal-stars{color:var(--gold);font-size:.88rem;text-shadow:0 0 8px rgba(251,191,36,.45)}
+.modal-stars{color:var(--gold);font-size:.92rem;text-shadow:0 0 8px rgba(245,158,11,.55);letter-spacing:1px}
 .modal-price-block{margin-bottom:14px}
 .modal-old{font-size:.82rem;color:var(--text-light);text-decoration:line-through;margin-bottom:3px}
 .modal-new{font-size:1.7rem;font-weight:700;color:var(--text)}
@@ -887,7 +919,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .checkout-btn:hover{background:var(--blue-dark);box-shadow:0 8px 24px rgba(0,122,255,.3)}
 
 /* ── CHECKOUT MODAL ── */
-#checkoutModal .modal-box{width:90vw;max-width:500px;max-height:92vh;overflow-y:auto}
+/* checkout is now full-page */
 .form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
 .form-group label{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-mid)}
 .form-inp{padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);outline:none;background:var(--blue-light);transition:border-color var(--t)}
@@ -1236,7 +1268,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   /* Modal bottom-sheet style */
   .modal-box{width:100%!important;max-width:100%!important;border-radius:16px 16px 0 0;max-height:92vh}
-  #checkoutModal .modal-box{width:100%!important;max-width:100%!important;border-radius:16px 16px 0 0}
+  /* checkout full page on mobile */
 
   /* Toast */
   .toast-wrap{bottom:14px;right:10px;left:10px}
@@ -1288,14 +1320,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 /* ── Full-page top bar (back btn + breadcrumb) ── */
 .fp-topbar {
   position: sticky;
-  top: var(--header-h, 108px);
+  top: 0;
   z-index: 10;
   background: white;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 20px;
+  padding: 11px 22px;
   box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
 .fp-back-btn {
@@ -1400,7 +1432,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   display: flex; align-items: center; gap: 8px;
   margin: 12px 0 16px; flex-wrap: wrap;
 }
-.fp-stars { color: var(--gold); font-size: 1rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(251,191,36,.5); }
+.fp-stars { color: var(--gold); font-size: 1.1rem; letter-spacing: 2px; text-shadow: 0 0 12px rgba(245,158,11,.6), 0 0 4px rgba(245,158,11,.4); }
 .fp-rating-num { font-size: .82rem; font-weight: 700; color: var(--text-mid); }
 .fp-review-cnt {
   font-size: .76rem; color: var(--blue); text-decoration: underline;
@@ -1490,7 +1522,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 .fp-avg-block { text-align: center; flex-shrink: 0; }
 .fp-avg-score { font-size: 3.2rem; font-weight: 900; color: var(--blue); line-height: 1; }
-.fp-avg-stars { color: var(--gold); font-size: 1.1rem; margin: 4px 0; }
+.fp-avg-stars { color: var(--gold); font-size: 1.15rem; margin: 4px 0; text-shadow: 0 0 8px rgba(245,158,11,.5); }
 .fp-total-rev { font-size: .72rem; color: var(--text-light); }
 .fp-rating-bars { flex: 1; min-width: 160px; }
 .fp-review-list {}
@@ -1521,35 +1553,232 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   font-family:'Sora',sans-serif;
 }
 
-/* ── Track Order full-screen layout ── */
-.fp-track-body { max-width: 760px; margin: 0 auto; padding: 0 20px 60px; }
-.track-page-hero {
-  display: flex; align-items: center; gap: 16px;
-  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-  border-radius: 20px; padding: 24px 28px;
-  margin: 24px 0 0;
+/* ══════════════════════════════════════════════════
+   TRACK ORDER — Full Page, 2-Column Layout
+══════════════════════════════════════════════════ */
+
+/* Page wrapper */
+.tp-wrapper {
+  max-width: 1140px; margin: 0 auto;
+  padding: 28px 24px 60px;
 }
-.track-page-icon {
-  width: 52px; height: 52px; border-radius: 14px;
-  background: rgba(255,255,255,.2);
+
+/* Hero banner */
+.tp-hero {
+  display: flex; align-items: center; gap: 20px;
+  background: linear-gradient(120deg, var(--blue) 0%, var(--blue-dark) 100%);
+  border-radius: 20px; padding: 26px 32px; margin-bottom: 28px;
+  position: relative; overflow: hidden;
+}
+.tp-hero::after {
+  content:''; position:absolute; right:-30px; top:-30px;
+  width:180px; height:180px;
+  background:rgba(255,255,255,.06); border-radius:50%;
+}
+.tp-hero-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: rgba(255,255,255,.18); backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 1.4rem; flex-shrink: 0;
+  color: white; font-size: 1.5rem; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.2);
 }
-.track-page-content {
+.tp-hero-text h2 {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: 3px;
+}
+.tp-hero-text p {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .83rem; color: rgba(255,255,255,.82);
+}
+.tp-hero-badge {
+  margin-left: auto; flex-shrink: 0;
+  background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+  border-radius: 100px; padding: 6px 16px;
+  font-family: 'Hind Siliguri', sans-serif; font-size: .76rem;
+  color: white; font-weight: 600; display: flex; align-items: center; gap: 6px;
+  backdrop-filter: blur(6px);
+}
+
+/* 2-column grid */
+.tp-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Panels */
+.tp-panel {
   background: white; border-radius: 16px;
-  border: 1px solid var(--border);
-  margin-top: 20px; overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0,122,255,.06);
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,122,255,.05);
 }
-.track-page-content .track-tabs { padding: 0 20px; border-bottom: 1px solid var(--border); }
-.track-page-content .track-tab-content { padding: 20px; }
-.track-page-content .track-tab-content.active { display: block; }
+.tp-panel-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #FAFCFF, white);
+}
+.tp-panel-head-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--blue-light); border: 1px solid var(--blue-mid);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--blue); font-size: .88rem; flex-shrink: 0;
+}
+.tp-panel-title {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .92rem; font-weight: 800; color: var(--text);
+}
+.tp-panel-sub {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .7rem; color: var(--text-light); margin-top: 1px;
+}
+.tp-panel-body { padding: 20px; }
+
+/* Search panel (right col) */
+.tp-search-box {
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;
+}
+.tp-search-inp {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'Hind Siliguri', sans-serif; font-size: .84rem;
+  color: var(--text); outline: none; background: var(--blue-light);
+  transition: all var(--t);
+}
+.tp-search-inp:focus {
+  border-color: var(--blue); background: white; box-shadow: var(--glow);
+}
+.tp-search-btn {
+  width: 100%; padding: 11px;
+  border-radius: var(--radius-sm); border: none;
+  background: var(--blue); color: white; cursor: pointer;
+  font-family: 'Hind Siliguri', sans-serif; font-size: .84rem; font-weight: 700;
+  transition: all var(--t); display: flex; align-items: center;
+  justify-content: center; gap: 7px;
+}
+.tp-search-btn:hover { background: var(--blue-dark); }
+
+/* Search result area */
+.tp-search-result {
+  min-height: 80px;
+}
+.tp-search-hint {
+  text-align: center; padding: 28px 16px;
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .82rem; color: var(--text-light);
+}
+.tp-search-hint i { display: block; font-size: 2rem; opacity:.3; margin-bottom: 10px; }
+
+/* Order list (left col) */
+.tp-orders-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* Enhanced order card for track page */
+.tp-order-card {
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; transition: all var(--t);
+  background: white;
+}
+.tp-order-card:hover { border-color: rgba(0,122,255,.3); box-shadow: 0 4px 20px rgba(0,122,255,.09); }
+.tp-oc-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; background: linear-gradient(135deg,#FAFCFF,white);
+  border-bottom: 1px solid var(--blue-light); flex-wrap: wrap;
+}
+.tp-oc-id {
+  font-family: 'Sora', sans-serif; font-size: .88rem; font-weight: 800;
+  color: var(--blue); letter-spacing: .01em;
+}
+.tp-oc-label {
+  font-family: 'Hind Siliguri', sans-serif; font-size: .65rem;
+  color: var(--text-light); text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+.tp-oc-date {
+  font-family: 'Hind Siliguri', sans-serif; font-size: .68rem; color: var(--text-light);
+}
+.tp-oc-right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink:0; }
+.tp-oc-total {
+  font-family: 'Sora', sans-serif; font-size: .95rem; font-weight: 800; color: var(--text);
+}
+.tp-oc-body { padding: 13px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tp-oc-thumbs { display: flex; gap: 5px; flex-shrink: 0; }
+.tp-oc-thumb {
+  width: 40px; height: 40px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: var(--blue-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; overflow: hidden; flex-shrink: 0;
+}
+.tp-oc-thumb img { width:100%; height:100%; object-fit:cover; }
+.tp-oc-more {
+  width: 40px; height: 40px; border-radius: 8px;
+  background: var(--blue-mid); border: 1.5px solid rgba(0,122,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Hind Siliguri',sans-serif; font-size: .68rem; font-weight: 700; color: var(--blue);
+}
+.tp-oc-names {
+  flex:1; min-width:0;
+  font-family:'Hind Siliguri',sans-serif; font-size:.75rem; color:var(--text-mid);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.tp-oc-expand-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(0,122,255,.25); background: var(--blue-light);
+  color: var(--blue); font-family:'Hind Siliguri',sans-serif;
+  font-size: .76rem; font-weight: 700; cursor: pointer;
+  transition: all var(--t); white-space: nowrap; flex-shrink: 0;
+}
+.tp-oc-expand-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.tp-oc-expand-btn.open-state { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* Expandable detail */
+.tp-oc-detail {
+  max-height: 0; overflow: hidden;
+  transition: max-height .35s cubic-bezier(.4,0,.2,1);
+  border-top: 0px solid var(--border);
+}
+.tp-oc-detail.open {
+  max-height: 800px;
+  border-top: 1px solid var(--blue-light);
+}
+.tp-oc-detail-inner { padding: 16px 16px 18px; }
+
+/* Order number label in detail */
+.tp-detail-meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+  padding: 10px 14px; background: var(--blue-light);
+  border-radius: var(--radius-sm); margin-bottom: 16px;
+}
+.tp-detail-meta-item { display: flex; flex-direction: column; gap: 1px; }
+.tp-detail-meta-lbl {
+  font-family:'Hind Siliguri',sans-serif; font-size:.6rem; font-weight:700;
+  color:var(--text-light); text-transform:uppercase; letter-spacing:.06em;
+}
+.tp-detail-meta-val {
+  font-family:'Sora',sans-serif; font-size:.82rem; font-weight:700; color:var(--text);
+}
+.tp-detail-meta-val.blue { color:var(--blue); }
+
+/* Responsive */
+@media(max-width:860px){
+  .tp-grid { grid-template-columns: 1fr; }
+  .tp-panel.tp-search-panel { order: -1; }
+  .tp-wrapper { padding: 16px 14px 40px; }
+  .tp-hero { padding: 18px 20px; border-radius: 14px; }
+  .tp-hero-badge { display: none; }
+  .tp-hero-text h2 { font-size: 1.15rem; }
+}
+@media(max-width:480px){
+  .tp-search-box { gap: 8px; }
+  .tp-oc-head { gap: 8px; }
+  .tp-oc-body { gap: 8px; }
+}
 
 @media(max-width:480px){
   .fp-body { padding: 0 14px; }
   .fp-tabs-wrap { padding: 0 14px 40px; }
   .fp-rec-wrap { padding: 0 14px; }
-  .fp-track-body { padding: 0 14px 40px; }
   .fp-topbar { padding: 8px 14px; }
 }
 
@@ -1677,6 +1906,40 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 .pd-rev-text{font-family:'Hind Siliguri',sans-serif;font-size:.81rem;color:var(--text-mid);line-height:1.7}
 .pd-rev-empty{text-align:center;padding:28px 16px;color:var(--text-light);font-family:'Hind Siliguri',sans-serif;font-size:.84rem}
 .pd-rev-empty i{display:block;font-size:2rem;opacity:.3;margin-bottom:8px}
+
+/* ── Review Photo Upload Slots ── */
+.review-photo-slot {
+  width: 72px; height: 72px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-sm);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--blue-light);
+  transition: all var(--t);
+  position: relative; overflow: hidden;
+}
+.review-photo-slot:hover { border-color: var(--blue); background: white; }
+.review-photo-slot img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; border-radius: calc(var(--radius-sm) - 2px);
+}
+.review-photo-slot .remove-photo {
+  position: absolute; top: 3px; right: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(0,0,0,.55); color: white;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .55rem; z-index: 2;
+}
+/* Review photo display in review list */
+.rev-photos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.rev-photo-thumb {
+  width: 68px; height: 68px; border-radius: var(--radius-sm);
+  object-fit: cover; cursor: pointer;
+  border: 1.5px solid var(--border);
+  transition: transform var(--t), box-shadow var(--t);
+}
+.rev-photo-thumb:hover { transform: scale(1.04); box-shadow: 0 4px 16px rgba(0,0,0,.14); }
 </style>
 </head>
 <body>
@@ -2046,17 +2309,81 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
         <div id="pdRatingBars" class="fp-rating-bars"></div>
       </div>
       <div id="pdReviewList" class="fp-review-list"></div>
-      <div class="fp-write-review">
-        <div class="bn fp-wr-title"><i class="fa-solid fa-pen" style="color:var(--blue);margin-right:6px"></i>রিভিউ লিখুন</div>
-        <div style="display:flex;gap:8px;margin-bottom:12px" id="pdStarPicker">
-          <span class="pd-star-pick" onclick="selectReviewStar(1)">★</span>
-          <span class="pd-star-pick" onclick="selectReviewStar(2)">★</span>
-          <span class="pd-star-pick" onclick="selectReviewStar(3)">★</span>
-          <span class="pd-star-pick" onclick="selectReviewStar(4)">★</span>
-          <span class="pd-star-pick" onclick="selectReviewStar(5)">★</span>
+
+      <!-- Write Review Section — conditionally shown -->
+      <div class="fp-write-review" id="reviewFormWrap">
+        <!-- State 1: Not logged in -->
+        <div id="reviewStateGuest" style="display:none;text-align:center;padding:20px 16px">
+          <div style="width:52px;height:52px;background:var(--blue-light);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px">
+            <i class="fa-solid fa-user-lock" style="color:var(--blue);font-size:1.2rem"></i>
+          </div>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px">রিভিউ দিতে লগইন করুন</div>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);margin-bottom:14px">আপনার অ্যাকাউন্টে লগইন করলে রিভিউ দিতে পারবেন।</div>
+          <button onclick="openAuth();closePage('product')" class="btn-primary bn" style="padding:9px 22px;font-size:.85rem">
+            <i class="fa-solid fa-right-to-bracket"></i> লগইন করুন
+          </button>
         </div>
-        <textarea id="pdReviewText" class="pd-wr-inp bn" placeholder="আপনার অভিজ্ঞতা শেয়ার করুন..." style="width:100%;min-height:90px;resize:vertical"></textarea>
-        <button onclick="submitReview()" class="pd-wr-submit bn" style="margin-top:10px"><i class="fa-solid fa-paper-plane" style="margin-right:6px"></i>রিভিউ জমা দিন</button>
+
+        <!-- State 2: Logged in but NOT a buyer -->
+        <div id="reviewStateNotBuyer" style="display:none;text-align:center;padding:20px 16px">
+          <div style="width:52px;height:52px;background:#FEF3C7;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px">
+            <i class="fa-solid fa-bag-shopping" style="color:var(--gold);font-size:1.2rem"></i>
+          </div>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px">শুধু ক্রেতারা রিভিউ দিতে পারবেন</div>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);line-height:1.6">এই পণ্যটি কিনে ডেলিভারি পাওয়ার পরেই আপনি রিভিউ দিতে পারবেন। এটি আমাদের <strong>ভেরিফাইড রিভিউ</strong> সিস্টেম।</div>
+        </div>
+
+        <!-- State 3: Verified buyer — show form -->
+        <div id="reviewStateForm" style="display:none">
+          <div class="bn fp-wr-title" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <i class="fa-solid fa-pen" style="color:var(--blue)"></i>আপনার রিভিউ লিখুন
+            <span style="background:#D1FAE5;color:#065F46;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:100px;font-family:'Hind Siliguri',sans-serif"><i class="fa-solid fa-circle-check" style="margin-right:3px"></i>যাচাইকৃত ক্রেতা</span>
+          </div>
+          <!-- Star picker -->
+          <div style="margin-bottom:14px">
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--text-mid);margin-bottom:7px;font-weight:600">রেটিং দিন *</div>
+            <div style="display:flex;gap:6px;align-items:center" id="pdStarPicker">
+              <span class="pd-star-pick" onclick="selectReviewStar(1)" title="খুব খারাপ">★</span>
+              <span class="pd-star-pick" onclick="selectReviewStar(2)" title="খারাপ">★</span>
+              <span class="pd-star-pick" onclick="selectReviewStar(3)" title="ঠিক আছে">★</span>
+              <span class="pd-star-pick" onclick="selectReviewStar(4)" title="ভালো">★</span>
+              <span class="pd-star-pick" onclick="selectReviewStar(5)" title="অসাধারণ">★</span>
+              <span id="starLabel" style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-light);margin-left:6px"></span>
+            </div>
+          </div>
+          <!-- Text -->
+          <div style="margin-bottom:14px">
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--text-mid);margin-bottom:7px;font-weight:600">রিভিউ লিখুন *</div>
+            <textarea id="pdReviewText" class="pd-wr-inp bn" placeholder="পণ্যের মান, প্যাকেজিং, ডেলিভারি সম্পর্কে আপনার অভিজ্ঞতা শেয়ার করুন..." style="width:100%;min-height:100px;resize:vertical;font-size:.9rem"></textarea>
+          </div>
+          <!-- Photo Upload -->
+          <div style="margin-bottom:16px">
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;color:var(--text-mid);margin-bottom:7px;font-weight:600">ছবি যোগ করুন <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক, সর্বোচ্চ ৩টি)</span></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <!-- Upload slots -->
+              <label id="photoSlot1" class="review-photo-slot" style="cursor:pointer" title="ছবি যোগ করুন">
+                <input type="file" id="reviewPhoto1" accept="image/*" style="display:none" onchange="previewReviewPhoto(this,1)">
+                <i class="fa-solid fa-plus" style="font-size:1.2rem;color:var(--text-light)"></i>
+                <span style="font-size:.65rem;color:var(--text-light);margin-top:3px;font-family:'Hind Siliguri',sans-serif">ছবি</span>
+              </label>
+              <label id="photoSlot2" class="review-photo-slot" style="cursor:pointer;display:none" title="ছবি যোগ করুন">
+                <input type="file" id="reviewPhoto2" accept="image/*" style="display:none" onchange="previewReviewPhoto(this,2)">
+                <i class="fa-solid fa-plus" style="font-size:1.2rem;color:var(--text-light)"></i>
+                <span style="font-size:.65rem;color:var(--text-light);margin-top:3px;font-family:'Hind Siliguri',sans-serif">ছবি</span>
+              </label>
+              <label id="photoSlot3" class="review-photo-slot" style="cursor:pointer;display:none" title="ছবি যোগ করুন">
+                <input type="file" id="reviewPhoto3" accept="image/*" style="display:none" onchange="previewReviewPhoto(this,3)">
+                <i class="fa-solid fa-plus" style="font-size:1.2rem;color:var(--text-light)"></i>
+                <span style="font-size:.65rem;color:var(--text-light);margin-top:3px;font-family:'Hind Siliguri',sans-serif">ছবি</span>
+              </label>
+            </div>
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-light);margin-top:7px"><i class="fa-solid fa-circle-info" style="margin-right:4px"></i>JPG, PNG — প্রতিটি ছবি সর্বোচ্চ ৫ MB</div>
+          </div>
+          <button onclick="submitReview()" class="pd-wr-submit bn" style="padding:10px 24px;font-size:.9rem">
+            <i class="fa-solid fa-paper-plane" style="margin-right:7px"></i>রিভিউ জমা দিন
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2109,96 +2436,318 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
     <div class="cart-items" id="cartItems"></div>
     <div class="cart-foot">
       <div class="promo-row"><input class="promo-inp bn" type="text" placeholder="কুপন কোড..." id="couponInput"><button class="promo-btn bn" onclick="applyCoupon()">প্রয়োগ</button></div>
-      <div class="cod-note bn"><i class="fa-solid fa-truck-fast" style="color:var(--blue)"></i>ক্যাশ অন ডেলিভারি · ৳৫০০+ অর্ডারে ফ্রি ডেলিভারি</div>
-      <div class="cart-total-row"><span class="lbl bn">মোট মূল্য</span><span class="amt bn" id="cartTotal">৳ ০</span></div>
+      <div class="cod-note bn"><i class="fa-solid fa-truck-fast" style="color:var(--blue)"></i>ডেলিভারি চার্জ চেকআউটে নির্ধারিত হবে</div>
+      <div class="cart-total-row"><span class="lbl bn">বই মোট</span><span class="amt bn" id="cartTotal">৳ ০</span></div>
       <button class="checkout-btn bn" onclick="openCheckout()"><i class="fa-solid fa-bolt"></i>এক্সপ্রেস চেকআউট</button>
     </div>
   </div>
 </div>
 
-<!-- ── CHECKOUT MODAL ── -->
-<div class="overlay" id="checkoutModal" onclick="if(event.target===this)closeModal('checkoutModal')">
-  <div class="modal-box" style="width:90vw;max-width:500px;max-height:92vh;overflow-y:auto">
-    <div class="modal-hd"><h3 class="bn"><i class="fa-solid fa-bolt" style="color:var(--orange);margin-right:7px"></i>চেকআউট</h3><button class="close-btn" onclick="closeModal('checkoutModal')"><i class="fa-solid fa-xmark"></i></button></div>
-    <div style="padding:20px">
-      <div class="form-group"><label class="bn">আপনার নাম *</label><input class="form-inp bn" type="text" id="cName" placeholder="সম্পূর্ণ নাম"></div>
-      <div class="form-group"><label class="bn">মোবাইল নম্বর *</label><input class="form-inp" type="tel" id="cPhone" placeholder="01XXXXXXXXX"></div>
-      <div class="form-group"><label class="bn">ইমেইল</label><input class="form-inp" type="email" id="cEmail" placeholder="email@example.com"></div>
-      <div class="form-group">
-        <label class="bn">জেলা *</label>
-        <select class="form-sel bn" id="cDistrict">
-          <option value="">জেলা বেছে নিন</option>
-          <option>ঢাকা</option><option>চট্টগ্রাম</option><option>রাজশাহী</option><option>সিলেট</option><option>খুলনা</option><option>বরিশাল</option><option>ময়মনসিংহ</option><option>রংপুর</option><option>নরসিংদী</option><option>গাজীপুর</option><option>নারায়ণগঞ্জ</option>
-        </select>
-      </div>
-      <div class="form-group"><label class="bn">পূর্ণ ঠিকানা *</label><textarea class="form-inp bn" id="cAddress" rows="3" placeholder="বাড়ি নম্বর, রাস্তা, এলাকা..." style="resize:vertical;min-height:70px"></textarea></div>
-      <div style="background:var(--blue-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px">
-        <div class="bn" style="font-size:.72rem;font-weight:700;color:var(--text-mid);margin-bottom:6px">অর্ডার সারসংক্ষেপ</div>
-        <div id="checkoutSummary"></div>
-        <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center">
-          <span class="bn" style="font-size:.8rem;font-weight:700">মোট</span>
-          <span class="bn" style="font-size:1rem;font-weight:700;color:var(--blue)" id="checkoutTotal"></span>
-        </div>
-      </div>
-      <div class="cod-note bn"><i class="fa-solid fa-money-bill-wave" style="color:var(--green)"></i>পেমেন্ট: ক্যাশ অন ডেলিভারি (COD)</div>
-      <button class="btn-primary bn" style="width:100%;justify-content:center;margin-top:12px;padding:13px" onclick="placeOrder()" id="placeOrderBtn"><i class="fa-solid fa-check"></i>অর্ডার নিশ্চিত করুন</button>
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: CHECKOUT
+══════════════════════════════════════════════════ -->
+<div id="page-checkout" class="full-page" aria-hidden="true">
+
+  <!-- Sticky topbar -->
+  <div class="fp-topbar">
+    <button class="fp-back-btn bn" onclick="closeCheckoutPage()">
+      <i class="fa-solid fa-arrow-left"></i> কার্টে ফিরুন
+    </button>
+    <div class="fp-breadcrumb bn">
+      <span onclick="closeCheckoutPage()" style="cursor:pointer;color:var(--blue)">হোম</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light);margin:0 5px"></i>
+      <span onclick="closeCheckoutPage()" style="cursor:pointer;color:var(--blue)">কার্ট</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light);margin:0 5px"></i>
+      <span style="color:var(--text);font-weight:700">চেকআউট</span>
+    </div>
+    <div style="margin-left:auto">
+      <span style="font-family:'Hind Siliguri',sans-serif;font-size:.75rem;background:var(--green);color:white;padding:4px 12px;border-radius:100px;font-weight:700"><i class="fa-solid fa-lock" style="margin-right:4px"></i>নিরাপদ চেকআউট</span>
     </div>
   </div>
-</div>
+
+  <!-- Page body -->
+  <div style="max-width:1000px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start" id="checkoutPageBody">
+
+    <!-- ── LEFT COLUMN: Form ── -->
+    <div>
+
+      <!-- Customer Info -->
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">১</span>
+          ব্যক্তিগত তথ্য
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-group">
+            <label class="bn">আপনার নাম *</label>
+            <input class="form-inp bn" type="text" id="cName" placeholder="সম্পূর্ণ নাম">
+          </div>
+          <div class="form-group">
+            <label class="bn">মোবাইল নম্বর *</label>
+            <input class="form-inp" type="tel" id="cPhone" placeholder="01XXXXXXXXX">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="bn">ইমেইল <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক)</span></label>
+          <input class="form-inp" type="email" id="cEmail" placeholder="email@example.com">
+        </div>
+      </div>
+
+      <!-- Delivery Location -->
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">২</span>
+          ডেলিভারি ঠিকানা
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="bn">জেলা *</label>
+            <select class="form-sel bn" id="cDistrict" onchange="onDistrictChange()">
+              <option value="">— জেলা —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="bn">উপজেলা *</label>
+            <select class="form-sel bn" id="cUpazila" onchange="onUpazilaChange()" disabled>
+              <option value="">— উপজেলা —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="bn">থানা / ইউনিয়ন *</label>
+            <select class="form-sel bn" id="cThana" onchange="calcDelivery()" disabled>
+              <option value="">— থানা —</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="bn">বিস্তারিত ঠিকানা *</label>
+          <textarea class="form-inp bn" id="cAddress" rows="3" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রাস্তা, মহল্লা / এলাকার নাম..." style="resize:vertical;min-height:80px"></textarea>
+        </div>
+      </div>
+
+      <!-- Delivery Notice -->
+      <div style="background:linear-gradient(135deg,#FFF8E1,#FFFBF0);border:1px solid #FFE082;border-radius:var(--radius);padding:18px 20px;margin-bottom:18px">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:#7C4E00;margin-bottom:12px;display:flex;align-items:center;gap:7px">
+          <i class="fa-solid fa-truck-fast" style="color:#F59E0B;font-size:1rem"></i> ডেলিভারি সময়সীমা
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="width:32px;height:32px;background:#DCFCE7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="fa-solid fa-city" style="color:#16A34A;font-size:.78rem"></i>
+            </div>
+            <div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#166534;margin-bottom:2px">ঢাকার ভেতরে</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">স্টক থাকলে <strong>২-৩ কার্যদিবসের</strong> মধ্যে ডেলিভারি সম্ভব।</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="width:32px;height:32px;background:#DBEAFE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="fa-solid fa-map-location-dot" style="color:#1D4ED8;font-size:.78rem"></i>
+            </div>
+            <div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#1E3A8A;margin-bottom:2px">ঢাকার বাইরে</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">স্টক থাকলে <strong>৩-৫ কার্যদিবসের</strong> মধ্যে ডেলিভারি সম্ভব।</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding-top:10px;border-top:1px dashed #FFD54F">
+            <div style="width:32px;height:32px;background:#FEF3C7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="fa-solid fa-hourglass-half" style="color:#D97706;font-size:.78rem"></i>
+            </div>
+            <div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#92400E;margin-bottom:2px">স্টক না থাকলে</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">পণ্য সংগ্রহ করে পাঠানো হবে — সেক্ষেত্রে কিছুটা অতিরিক্ত সময় লাগতে পারে। আমরা আপনাকে ফোনে জানাব।</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;background:var(--blue);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:.75rem;flex-shrink:0">৩</span>
+          পেমেন্ট পদ্ধতি
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px">
+          <div style="width:42px;height:42px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="fa-solid fa-money-bill-wave" style="color:white;font-size:1.1rem"></i>
+          </div>
+          <div>
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9375rem;font-weight:700;color:var(--text)">ক্যাশ অন ডেলিভারি (COD)</div>
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8125rem;color:var(--text-mid);margin-top:2px">পণ্য হাতে পেয়ে টাকা দিন — কোনো অগ্রিম পেমেন্ট নেই</div>
+          </div>
+          <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:1.2rem;margin-left:auto"></i>
+        </div>
+      </div>
+
+    </div><!-- /left column -->
+
+    <!-- ── RIGHT COLUMN: Order Summary ── -->
+    <div style="position:sticky;top:80px">
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,var(--blue),var(--blue-dark));padding:16px 20px">
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:white;display:flex;align-items:center;gap:7px">
+            <i class="fa-solid fa-receipt"></i> অর্ডার সারসংক্ষেপ
+          </div>
+        </div>
+
+        <div style="padding:16px 18px">
+          <!-- Item list -->
+          <div id="checkoutSummary" style="margin-bottom:12px"></div>
+
+          <!-- Price breakdown -->
+          <div style="border-top:1px solid var(--border);padding-top:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:var(--text-mid)">বই মোট</span>
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:600" id="checkoutSubtotal">৳০</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:var(--text-mid)">
+                ডেলিভারি চার্জ
+                <span id="deliveryNote" style="font-size:.75rem;color:var(--blue);display:block;margin-top:1px"></span>
+              </span>
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:600;color:var(--orange)" id="checkoutDelivery">— জেলা বেছে নিন</span>
+            </div>
+            <div id="discountRow" style="display:none;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:var(--green)"><i class="fa-solid fa-tag" style="margin-right:4px"></i>কুপন ছাড়</span>
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:600;color:var(--green)" id="checkoutDiscountAmt"></span>
+            </div>
+            <div style="border-top:2px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700">সর্বমোট</span>
+              <span style="font-family:'Hind Siliguri',sans-serif;font-size:1.25rem;font-weight:800;color:var(--blue)" id="checkoutTotal">৳০</span>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <button class="btn-primary bn" style="width:100%;justify-content:center;margin-top:16px;padding:15px;font-size:1rem;border-radius:var(--radius)" onclick="placeOrder()" id="placeOrderBtn">
+            <i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন
+          </button>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-light);text-align:center;margin-top:10px">
+            <i class="fa-solid fa-lock" style="margin-right:4px"></i>আপনার তথ্য সম্পূর্ণ নিরাপদ
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust badges -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center">
+          <i class="fa-solid fa-rotate-left" style="color:var(--blue);font-size:1.1rem;display:block;margin-bottom:5px"></i>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)">সহজ রিটার্ন</div>
+        </div>
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center">
+          <i class="fa-solid fa-shield-halved" style="color:var(--green);font-size:1.1rem;display:block;margin-bottom:5px"></i>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)">১০০% অরিজিনাল</div>
+        </div>
+      </div>
+    </div><!-- /right column -->
+
+  </div><!-- /grid -->
+
+  <!-- Mobile responsive style override -->
+  <style>
+    @media(max-width:720px){
+      #checkoutPageBody{grid-template-columns:1fr!important;gap:16px!important}
+      #checkoutPageBody > div:last-child{position:static!important}
+    }
+    @media(max-width:600px){
+      #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+      #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important}
+    }
+  </style>
+
+</div><!-- /#page-checkout -->
 
 <!-- ══════════════════════════════════════════════════
      FULL-PAGE: TRACK ORDER  (/track-order)
 ══════════════════════════════════════════════════ -->
 <div id="page-track" class="full-page" aria-hidden="true">
 
+  <!-- Sticky breadcrumb topbar -->
   <div class="fp-topbar">
-    <button class="fp-back-btn" onclick="closePage('track')">
-      <i class="fa-solid fa-arrow-left"></i>
-      <span class="bn">হোম</span>
+    <button class="fp-back-btn bn" onclick="closePage('track')">
+      <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
-    <div class="fp-breadcrumb bn">
-      <span onclick="closePage('track')" style="cursor:pointer;color:var(--blue)">হোম</span>
-      <i class="fa-solid fa-chevron-right" style="font-size:.55rem;color:var(--text-light);margin:0 5px"></i>
-      <span style="color:var(--text);font-weight:600">অর্ডার ট্র্যাক</span>
+    <div class="fp-breadcrumb bn" style="font-size:.8rem;color:var(--text-mid);display:flex;align-items:center;gap:5px">
+      <span onclick="closePage('track')" style="cursor:pointer;color:var(--blue);font-weight:600">হোম</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:.52rem;color:var(--text-light)"></i>
+      <span style="color:var(--text);font-weight:700">অর্ডার ট্র্যাক</span>
     </div>
-    <div></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+      <span id="tpUserChip" style="display:none;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid);padding:4px 11px;border-radius:100px;font-weight:600"></span>
+    </div>
   </div>
 
-  <div class="fp-track-body">
+  <!-- Page body -->
+  <div class="tp-wrapper">
 
-    <!-- Hero heading -->
-    <div class="track-page-hero">
-      <div class="track-page-icon"><i class="fa-solid fa-route"></i></div>
-      <div>
-        <h2 class="bn" style="font-size:1.35rem;font-weight:800;color:white;margin-bottom:3px">অর্ডার ট্র্যাক করুন</h2>
-        <p class="bn" style="font-size:.82rem;color:rgba(255,255,255,.8)">রিয়েল-টাইম ডেলিভারি আপডেট দেখুন</p>
+    <!-- Hero banner -->
+    <div class="tp-hero">
+      <div class="tp-hero-icon"><i class="fa-solid fa-route"></i></div>
+      <div class="tp-hero-text">
+        <h2>অর্ডার ট্র্যাক করুন</h2>
+        <p>রিয়েল-টাইম ডেলিভারি আপডেট দেখুন</p>
+      </div>
+      <div class="tp-hero-badge">
+        <i class="fa-solid fa-circle" style="color:#4ade80;font-size:.5rem"></i>
+        Live Tracking
       </div>
     </div>
 
-    <div class="track-page-content">
+    <!-- 2-column grid: [আমার অর্ডার] [অর্ডার নম্বর সার্চ] -->
+    <div class="tp-grid">
 
-      <!-- Tabs -->
-      <div class="track-tabs" id="trackTabs" style="display:none">
-        <button class="track-tab bn" id="tab-btn-search" onclick="switchTrackTab('search',this)"><i class="fa-solid fa-magnifying-glass" style="margin-right:5px"></i>অর্ডার নম্বর</button>
-        <button class="track-tab active bn" id="tab-btn-myorders" onclick="switchTrackTab('myorders',this)"><i class="fa-solid fa-box" style="margin-right:5px"></i>আমার অর্ডার</button>
-      </div>
-
-      <!-- Search tab -->
-      <div class="track-tab-content" id="tab-search">
-        <div class="track-inp-row">
-          <input class="track-inp bn" type="text" id="trackInput" placeholder="অর্ডার নম্বর লিখুন (যেমন: GM-2026-04812)">
-          <button class="track-go bn" onclick="trackOrder()">ট্র্যাক</button>
+      <!-- LEFT: আমার অর্ডার (default view) -->
+      <div class="tp-panel">
+        <div class="tp-panel-head">
+          <div class="tp-panel-head-icon"><i class="fa-solid fa-box-open"></i></div>
+          <div>
+            <div class="tp-panel-title">আমার অর্ডার</div>
+            <div class="tp-panel-sub">আপনার সকল অর্ডারের তালিকা</div>
+          </div>
+          <span id="tpOrderCountBadge" style="display:none;margin-left:auto;background:var(--blue);color:white;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px;font-family:'Sora',sans-serif"></span>
         </div>
-        <div id="trackResult"></div>
+        <div class="tp-panel-body">
+          <div class="tp-orders-list" id="tpMyOrdersList">
+            <!-- populated by JS -->
+          </div>
+        </div>
       </div>
 
-      <!-- My orders tab -->
-      <div class="track-tab-content active" id="tab-myorders">
-        <div id="myOrdersList"></div>
+      <!-- RIGHT: অর্ডার নম্বর সার্চ -->
+      <div class="tp-panel tp-search-panel">
+        <div class="tp-panel-head">
+          <div class="tp-panel-head-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <div>
+            <div class="tp-panel-title">অর্ডার নম্বর দিয়ে খুঁজুন</div>
+            <div class="tp-panel-sub">Order ID লিখে সরাসরি ট্র্যাক করুন</div>
+          </div>
+        </div>
+        <div class="tp-panel-body">
+          <div class="tp-search-box">
+            <input class="tp-search-inp" type="text" id="tpTrackInput"
+              placeholder="Order ID (যেমন: GM-2026-04812)"
+              onkeydown="if(event.key==='Enter')tpTrackOrder()">
+            <button class="tp-search-btn bn" onclick="tpTrackOrder()">
+              <i class="fa-solid fa-magnifying-glass"></i> ট্র্যাক করুন
+            </button>
+          </div>
+          <!-- Quick example chips -->
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+            <span style="font-family:'Hind Siliguri',sans-serif;font-size:.68rem;color:var(--text-light);align-self:center">উদাহরণ:</span>
+            <button onclick="document.getElementById('tpTrackInput').value='GM-2026-04812';tpTrackOrder()" style="font-size:.68rem;padding:3px 10px;border-radius:100px;border:1px solid var(--border);background:var(--blue-light);color:var(--blue);cursor:pointer;font-family:'Sora',sans-serif;transition:all var(--t)">GM-2026-04812</button>
+          </div>
+          <div class="tp-search-result" id="tpSearchResult">
+            <div class="tp-search-hint">
+              <i class="fa-solid fa-search-location"></i>
+              <span class="bn">Order ID লিখে ট্র্যাক বাটনে চাপুন</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-    </div>
-  </div>
+    </div><!-- /tp-grid -->
+  </div><!-- /tp-wrapper -->
 
 </div><!-- /#page-track -->
 
@@ -2958,10 +3507,9 @@ function renderCartItems() {
     </div>
     <div class="ci-price bn">৳${(item.price*item.qty).toLocaleString()}</div>
   </div>`).join('');
+  // Cart shows ONLY book subtotal (no delivery)
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  const delivery = sub >= 500 ? 0 : 60;
-  const total = sub + delivery - discount;
-  document.getElementById('cartTotal').textContent = `৳ ${total.toLocaleString()}`;
+  document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString()}`;
 }
 function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); updateCartBadge();renderCartItems(); }
 function removeCart(id){ cart=cart.filter(x=>x.id!==id); updateCartBadge();renderCartItems(); }
@@ -2984,12 +3532,34 @@ async function applyCoupon() {
 function openCheckout() {
   if(!cart.length){ toast('কার্ট খালি','কার্টে পণ্য যোগ করুন','w'); return; }
   if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
-  const summary = cart.map(i=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="bn" style="font-size:.75rem">${i.name} ×${i.qty}</span><span style="font-size:.75rem;font-weight:700">৳${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
+  const summary = cart.map(i=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--blue-light)">
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.name}</div>
+        <div style="font-size:.8rem;color:var(--text-light);margin-top:1px">×${i.qty}</div>
+      </div>
+      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;margin-left:12px;flex-shrink:0">৳${(i.price*i.qty).toLocaleString()}</div>
+    </div>`).join('');
   document.getElementById('checkoutSummary').innerHTML = summary;
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  const delivery = sub >= 500 ? 0 : 60;
-  document.getElementById('checkoutTotal').textContent = `৳${(sub+delivery-discount).toLocaleString()}`;
-  closeCart(); openModal('checkoutModal');
+  document.getElementById('checkoutSubtotal').textContent = `৳${sub.toLocaleString()}`;
+  document.getElementById('checkoutDelivery').textContent = '— জেলা বেছে নিন';
+  document.getElementById('deliveryNote').textContent = '';
+  document.getElementById('checkoutTotal').textContent = `৳${(sub - discount).toLocaleString()}`;
+  if(discount > 0){
+    document.getElementById('discountRow').style.display = 'flex';
+    document.getElementById('checkoutDiscountAmt').textContent = `-৳${discount.toLocaleString()}`;
+  } else {
+    document.getElementById('discountRow').style.display = 'none';
+  }
+  populateDistricts();
+  updateHeaderHeight();
+  closeCart();
+  openPage('checkout');
+}
+
+function closeCheckoutPage() {
+  closePage('checkout');
 }
 
 async function placeOrder() {
@@ -2997,20 +3567,23 @@ async function placeOrder() {
   const phone = document.getElementById('cPhone').value.trim();
   const address = document.getElementById('cAddress').value.trim();
   const district = document.getElementById('cDistrict').value;
+  const upazila = document.getElementById('cUpazila').value;
+  const thana = document.getElementById('cThana').value;
   const email = document.getElementById('cEmail').value.trim();
-  if(!name||!phone||!address||!district){ toast('অসম্পূর্ণ তথ্য','সব তথ্য পূরণ করুন','w'); return; }
+  if(!name||!phone||!address||!district||!upazila||!thana){ toast('অসম্পূর্ণ তথ্য','সব তথ্য পূরণ করুন','w'); return; }
   const btn = document.getElementById('placeOrderBtn');
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> প্রসেস হচ্ছে...';
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  const delivery = sub >= 500 ? 0 : 60;
+  const delivery = calcDeliveryCharge();
   const total = sub + delivery - discount;
   const orderNum = 'GM-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*99999)).padStart(5,'0');
   const items = cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty}));
+  const fullDistrict = `${district} > ${upazila} > ${thana}`;
   const { data, error } = await sb.from('orders').insert({
     order_number: orderNum,
     user_id: currentUser?.id || null,
     customer_name: name, customer_phone: phone,
-    customer_address: address, customer_district: district, customer_email: email,
+    customer_address: address, customer_district: fullDistrict, customer_email: email,
     items, subtotal: sub, delivery_fee: delivery, discount, total, status: 'pending'
   }).select().single();
   btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
@@ -3018,7 +3591,7 @@ async function placeOrder() {
   // Insert initial status history
   await sb.from('order_status_history').insert({order_id:data.id, status:'pending', note:'অর্ডার নিশ্চিত হয়েছে'});
   cart = []; discount = 0; updateCartBadge(); renderCartItems();
-  closeModal('checkoutModal');
+  closePage('checkout');
   toast('অর্ডার সফল!', `অর্ডার নম্বর: ${orderNum}`, 's');
   setTimeout(()=>{
     const inp = document.getElementById('trackInput');
@@ -3323,13 +3896,21 @@ function openTrack(pushUrl = true) {
   if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD', '/track-order');
   document.title = 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD';
   updateHeaderHeight();
-  const tabs = document.getElementById('trackTabs');
-  if (tabs) tabs.style.display = currentUser ? 'flex' : 'none';
-  if (currentUser) {
-    const myOrdersTab = document.querySelector('[onclick*="myorders"]');
-    if (myOrdersTab) switchTrackTab('myorders', myOrdersTab);
+
+  // Show user chip in topbar if logged in
+  const chip = document.getElementById('tpUserChip');
+  if (chip) {
+    if (currentUser) {
+      chip.textContent = currentUser.email?.split('@')[0] || 'অ্যাকাউন্ট';
+      chip.style.display = 'inline-block';
+    } else {
+      chip.style.display = 'none';
+    }
   }
+
   openPage('track');
+  // Always load my orders on open
+  tpLoadMyOrders();
 }
 
 // ── TRACK TABS ──
@@ -3432,141 +4013,219 @@ function buildOrderCard(data, history) {
     ${historyHtml}`;
 }
 
-async function trackOrder() {
-  const num = document.getElementById('trackInput').value.trim();
-  if(!num){ toast('ত্রুটি','অর্ডার নম্বর লিখুন','w'); return; }
-  const res = document.getElementById('trackResult');
+async function tpTrackOrder() {
+  const num = (document.getElementById('tpTrackInput')?.value || '').trim();
+  if (!num) { toast('ত্রুটি', 'Order ID লিখুন', 'w'); return; }
+  const res = document.getElementById('tpSearchResult');
   res.innerHTML = '<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>খোঁজা হচ্ছে...</div>';
 
-  const { data, error } = await sb.from('orders').select('*').eq('order_number',num).single();
-  if(error||!data){
-    res.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="margin-right:7px"></i>এই অর্ডার নম্বরটি পাওয়া যায়নি</div>';
+  const { data, error } = await sb.from('orders').select('*').eq('order_number', num).single();
+  if (error || !data) {
+    res.innerHTML = `<div style="text-align:center;padding:20px">
+      <i class="fa-solid fa-circle-xmark" style="font-size:2rem;color:var(--red);opacity:.7;display:block;margin-bottom:10px"></i>
+      <div class="bn" style="font-size:.84rem;color:var(--red);font-weight:700">এই Order ID পাওয়া যায়নি</div>
+      <div class="bn" style="font-size:.74rem;color:var(--text-light);margin-top:5px">Order ID টি সঠিক কিনা দেখুন</div>
+    </div>`;
     return;
   }
-
-  // Fetch history
-  const { data: history } = await sb.from('order_status_history')
-    .select('*').eq('order_id', data.id).order('created_at', {ascending:false});
-
-  res.innerHTML = buildOrderCard(data, history||[]);
+  const { data: hist } = await sb.from('order_status_history')
+    .select('*').eq('order_id', data.id).order('created_at', { ascending: false });
+  res.innerHTML = buildTpOrderDetail(data, hist || []);
 }
 
-// ── My Orders (logged-in) — Enhanced Card View ──
-async function loadMyOrders() {
-  if(!currentUser){
-    document.getElementById('myOrdersList').innerHTML=`
-      <div style="text-align:center;padding:28px">
-        <i class="fa-solid fa-lock" style="font-size:2rem;color:var(--text-light);display:block;margin-bottom:10px;opacity:.4"></i>
-        <div class="bn" style="font-size:.84rem;color:var(--text-light);margin-bottom:14px">অর্ডার দেখতে লগইন করুন</div>
-        <button class="olist-track-btn" onclick="closePage('track');openAuth()">
+async function trackOrder() {
+  // legacy alias — redirect to new function
+  const legacyInput = document.getElementById('trackInput');
+  if (legacyInput) {
+    const inp = document.getElementById('tpTrackInput');
+    if (inp) inp.value = legacyInput.value;
+  }
+  tpTrackOrder();
+}
+
+// ── New 2-column track page: load my orders ──
+async function tpLoadMyOrders() {
+  const el = document.getElementById('tpMyOrdersList');
+  if (!el) return;
+
+  if (!currentUser) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:32px 20px">
+        <i class="fa-solid fa-lock" style="font-size:2.4rem;color:var(--text-light);display:block;margin-bottom:12px;opacity:.35"></i>
+        <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">লগইন করুন</div>
+        <div class="bn" style="font-size:.76rem;color:var(--text-light);margin-bottom:16px">আপনার অর্ডার দেখতে অ্যাকাউন্টে প্রবেশ করুন</div>
+        <button onclick="closePage('track');openAuth()" style="padding:9px 22px;border-radius:var(--radius-sm);border:none;background:var(--blue);color:white;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px">
           <i class="fa-solid fa-right-to-bracket"></i> লগইন করুন
         </button>
       </div>`;
     return;
   }
-  const el = document.getElementById('myOrdersList');
-  el.innerHTML='<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>আপনার অর্ডার লোড হচ্ছে...</div>';
+
+  el.innerHTML = '<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>অর্ডার লোড হচ্ছে...</div>';
 
   const { data: orders, error } = await sb.from('orders').select('*')
-    .eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(20);
+    .eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(20);
 
-  if(error||!orders||!orders.length){
-    el.innerHTML=`
-      <div style="text-align:center;padding:36px 20px">
-        <i class="fa-solid fa-box-open" style="font-size:2.4rem;color:var(--text-light);opacity:.35;display:block;margin-bottom:12px"></i>
-        <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--text-mid);margin-bottom:4px">কোনো অর্ডার নেই</div>
-        <div class="bn" style="font-size:.76rem;color:var(--text-light)">এখনো কোনো অর্ডার করা হয়নি</div>
+  if (error || !orders || !orders.length) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:40px 20px">
+        <i class="fa-solid fa-box-open" style="font-size:2.8rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
+        <div class="bn" style="font-size:.9rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কোনো অর্ডার নেই</div>
+        <div class="bn" style="font-size:.76rem;color:var(--text-light)">এখনো কোনো অর্ডার দেওয়া হয়নি</div>
       </div>`;
     return;
   }
 
-  // Fetch all histories at once
-  const orderIds = orders.map(o=>o.id);
-  const { data: allHistory } = await sb.from('order_status_history')
-    .select('*').in('order_id', orderIds).order('created_at',{ascending:false});
+  // Update count badge
+  const badge = document.getElementById('tpOrderCountBadge');
+  if (badge) { badge.textContent = orders.length; badge.style.display = 'inline-block'; }
 
-  el.innerHTML = orders.map((o, oIdx) => {
+  const orderIds = orders.map(o => o.id);
+  const { data: allHist } = await sb.from('order_status_history')
+    .select('*').in('order_id', orderIds).order('created_at', { ascending: false });
+
+  el.innerHTML = orders.map((o, idx) => {
     const items = Array.isArray(o.items) ? o.items : [];
-    const hist = (allHistory||[]).filter(h=>h.order_id===o.id);
-
-    // Build thumbnail strip — up to 4 thumbs
-    const thumbsToShow = items.slice(0,4);
-    const extraCount = items.length - thumbsToShow.length;
-    const thumbsHtml = thumbsToShow.map(item => {
-      if(item.image_url) {
-        return `<div class="olist-thumb" title="${item.name||''}"><img src="${item.image_url}" alt="${item.name||'পণ্য'}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-box\\' style=\\'color:var(--blue);font-size:.9rem\\'></i>'"></div>`;
-      }
-      // Use product icon/color from local products array if available
-      const prod = products.find(p => p.id === item.product_id || p.name === item.name);
-      const bg   = prod?.color ? prod.color+'22' : 'var(--blue-light)';
-      const clr  = prod?.color || 'var(--blue)';
-      const icon = prod?.icon  || 'fa-box';
-      return `<div class="olist-thumb" style="background:${bg}" title="${item.name||''}"><i class="fa-solid ${icon}" style="color:${clr};font-size:.9rem"></i></div>`;
-    }).join('');
-    const moreHtml = extraCount > 0 ? `<div class="olist-thumb-more">+${extraCount}</div>` : '';
-
-    // Item names summary
-    const namesSummary = items.map(i=>i.name||'পণ্য').join(' · ');
-
-    const badgeCls = STATUS_BADGE_CLS[o.status] || 'osb-pending';
+    const hist = (allHist || []).filter(h => h.order_id === o.id);
+    const badgeCls   = STATUS_BADGE_CLS[o.status] || 'osb-pending';
     const statusLabel = STATUS_LABEL[o.status] || o.status;
     const statusIcon  = STATUS_ICON[o.status]   || 'fa-clock';
+    const detailId = `tpd-${idx}`;
 
-    const detailId = `odetail-${oIdx}`;
-    const detailContent = buildOrderDetailPanel(o, hist);
+    // Thumbnails (up to 3)
+    const thumbsToShow = items.slice(0, 3);
+    const extraCount = items.length - thumbsToShow.length;
+    const thumbsHtml = thumbsToShow.map(item => {
+      const prod = products.find(p => p.id === item.product_id || p.name === item.name);
+      const bg   = prod?.color ? prod.color + '22' : 'var(--blue-light)';
+      const clr  = prod?.color || 'var(--blue)';
+      const icon = prod?.icon  || 'fa-box';
+      if (item.image_url) return `<div class="tp-oc-thumb"><img src="${item.image_url}" alt="" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${icon}\\' style=\\'color:${clr}\\'></i>'"></div>`;
+      return `<div class="tp-oc-thumb" style="background:${bg}"><i class="fa-solid ${icon}" style="color:${clr}"></i></div>`;
+    }).join('');
+    const moreHtml = extraCount > 0 ? `<div class="tp-oc-more">+${extraCount}</div>` : '';
+    const namesSummary = items.map(i => i.name || 'পণ্য').join(' · ');
 
     return `
-    <div class="olist-card">
-      <!-- Header row: order# + status + total -->
-      <div class="olist-card-head">
-        <div class="olist-card-meta">
-          <div class="olist-order-num">${o.order_number || '—'}</div>
-          <div class="olist-order-date">
-            <i class="fa-regular fa-calendar" style="margin-right:3px"></i>${fmtDateTime(o.created_at)}
-            &nbsp;·&nbsp;${items.length} পণ্য
-          </div>
+    <div class="tp-order-card">
+      <div class="tp-oc-head">
+        <div style="flex:1;min-width:0">
+          <div class="tp-oc-label">Order ID</div>
+          <div class="tp-oc-id">${o.order_number || '#—'}</div>
+          <div class="tp-oc-date"><i class="fa-regular fa-calendar" style="margin-right:3px"></i>${fmtDateTime(o.created_at)}</div>
         </div>
-        <div class="olist-right">
+        <div class="tp-oc-right">
           <span class="order-status-badge ${badgeCls}" style="margin-bottom:0">
             <i class="fa-solid ${statusIcon}"></i>${statusLabel}
           </span>
-          <div class="olist-total">৳${Number(o.total||0).toLocaleString()}</div>
+          <div class="tp-oc-total">৳${Number(o.total || 0).toLocaleString('en-IN')}</div>
         </div>
       </div>
-      <!-- Thumbnails + item names + track button -->
-      <div class="olist-thumbs">
-        ${thumbsHtml}${moreHtml}
-        <div class="olist-item-names" title="${namesSummary}">${namesSummary || 'পণ্য তথ্য নেই'}</div>
-        <button class="olist-track-btn" onclick="toggleOrderDetail('${detailId}', this)">
-          <i class="fa-solid fa-route"></i> Track Order
+      <div class="tp-oc-body">
+        <div class="tp-oc-thumbs">${thumbsHtml}${moreHtml}</div>
+        <div class="tp-oc-names" title="${namesSummary}">${namesSummary || 'পণ্য তথ্য নেই'}</div>
+        <button class="tp-oc-expand-btn" id="btn-${detailId}" onclick="tpToggleDetail('${detailId}',this)">
+          <i class="fa-solid fa-route"></i> বিস্তারিত
         </button>
       </div>
-      <!-- Expandable detail panel -->
-      <div class="olist-detail" id="${detailId}">
-        ${detailContent}
+      <div class="tp-oc-detail" id="${detailId}">
+        <div class="tp-oc-detail-inner">
+          ${buildTpOrderDetail(o, hist)}
+        </div>
       </div>
     </div>`;
   }).join('');
 }
 
-function toggleOrderDetail(id, btn) {
+function tpToggleDetail(id, btn) {
   const panel = document.getElementById(id);
-  if(!panel) return;
+  if (!panel) return;
   const isOpen = panel.classList.contains('open');
-  // Close all other details first
-  document.querySelectorAll('.olist-detail.open').forEach(p => {
-    p.classList.remove('open');
+  document.querySelectorAll('.tp-oc-detail.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.tp-oc-expand-btn').forEach(b => {
+    b.classList.remove('open-state');
+    b.innerHTML = '<i class="fa-solid fa-route"></i> বিস্তারিত';
   });
-  document.querySelectorAll('.olist-track-btn').forEach(b => {
-    b.innerHTML = '<i class="fa-solid fa-route"></i> Track Order';
-    b.style.background = '';
-  });
-  if(!isOpen) {
+  if (!isOpen) {
     panel.classList.add('open');
+    btn.classList.add('open-state');
     btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> বন্ধ করুন';
-    btn.style.background = 'var(--blue-dark)';
   }
 }
+
+// ── Detail panel builder for new track page ──
+function buildTpOrderDetail(data, history) {
+  const steps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+  const curIdx = data.status === 'cancelled' ? -1 : steps.indexOf(data.status);
+  const items = (data.items || []).map(i => i.name).filter(Boolean);
+
+  // Meta row: Order ID | জেলা | মোট | পণ্য সংখ্যা
+  const metaHtml = `
+    <div class="tp-detail-meta">
+      <div class="tp-detail-meta-item">
+        <div class="tp-detail-meta-lbl">Order ID</div>
+        <div class="tp-detail-meta-val blue">${data.order_number || '—'}</div>
+      </div>
+      <div class="tp-detail-meta-item">
+        <div class="tp-detail-meta-lbl">জেলা</div>
+        <div class="tp-detail-meta-val">${data.customer_district || '—'}</div>
+      </div>
+      <div class="tp-detail-meta-item">
+        <div class="tp-detail-meta-lbl">মোট মূল্য</div>
+        <div class="tp-detail-meta-val">৳${Number(data.total || 0).toLocaleString('en-IN')}</div>
+      </div>
+      <div class="tp-detail-meta-item">
+        <div class="tp-detail-meta-lbl">পণ্য</div>
+        <div class="tp-detail-meta-val">${(data.items || []).length} টি</div>
+      </div>
+    </div>`;
+
+  // Item list
+  const itemsHtml = items.length ? `
+    <div style="margin-bottom:14px">
+      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">অর্ডারের বিবরণ</div>
+      ${items.map(name => `<div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid);padding:5px 0;border-bottom:1px solid var(--blue-light);display:flex;align-items:center;gap:7px"><i class="fa-solid fa-box" style="color:var(--blue);font-size:.72rem"></i>${name}</div>`).join('')}
+    </div>` : '';
+
+  // Progress timeline
+  const timelineHtml = data.status === 'cancelled'
+    ? `<div style="background:#FEE2E2;border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:9px">
+        <i class="fa-solid fa-ban" style="color:var(--red)"></i>
+        <span class="bn" style="font-size:.82rem;font-weight:700;color:#991B1B">এই অর্ডারটি বাতিল করা হয়েছে</span>
+       </div>`
+    : `<div style="font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">ডেলিভারি অগ্রগতি</div>
+       <div class="timeline">
+        ${steps.map((s, i) => `
+          <div class="titem ${i < curIdx ? 'done' : i === curIdx ? 'active' : ''}">
+            <div class="tdot"></div>
+            <div class="ttitle bn">${STATUS_LABEL[s]}</div>
+            <div class="tdesc bn">${['অর্ডার গ্রহণ', 'অর্ডার নিশ্চিত', 'প্যাক হচ্ছে', 'Rider পৌঁছে দিচ্ছেন', 'Delivered'][i]}</div>
+          </div>`).join('')}
+       </div>`;
+
+  // History log
+  let histHtml = '';
+  if (history && history.length) {
+    histHtml = `
+      <div class="history-section">
+        <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেট লগ</span></div>
+        <div class="history-timeline">
+          ${history.map(h => `
+            <div class="hitem">
+              <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
+              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status] || 'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status] || h.status}</div>
+              ${h.note ? `<div class="hitem-note">${h.note}</div>` : ''}
+              <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return metaHtml + itemsHtml + timelineHtml + histHtml;
+}
+
+// ── My Orders (legacy alias for any remaining calls) ──
+async function loadMyOrders() { await tpLoadMyOrders(); }
 
 function buildOrderDetailPanel(data, history) {
   const steps = ['pending','confirmed','processing','shipped','delivered'];
@@ -3802,37 +4461,146 @@ function renderStars(rating) {
 
 function selectReviewStar(n) {
   pdReviewStar = n;
+  const labels = ['','খুব খারাপ','খারাপ','ঠিক আছে','ভালো','অসাধারণ ★'];
   document.querySelectorAll('#pdStarPicker .pd-star-pick').forEach((el,i) => {
     el.classList.toggle('filled', i < n);
     el.style.color = i < n ? 'var(--gold)' : 'var(--border)';
+    el.style.textShadow = i < n ? '0 0 8px rgba(245,158,11,.6)' : 'none';
+    el.style.fontSize = i < n ? '1.6rem' : '1.4rem';
   });
+  const lbl = document.getElementById('starLabel');
+  if (lbl) lbl.textContent = labels[n] || '';
+}
+
+// ── Photo preview for review slots ──
+function previewReviewPhoto(input, slotNum) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) { toast('ফাইল বড়', 'সর্বোচ্চ ৫ MB-এর ছবি দিন', 'w'); input.value = ''; return; }
+  const slot = document.getElementById('photoSlot' + slotNum);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    // Remove old preview
+    slot.querySelectorAll('img,.remove-photo,.fa-plus,span').forEach(el => el.remove());
+    // Add preview image
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    slot.appendChild(img);
+    // Add remove button
+    const rm = document.createElement('button');
+    rm.className = 'remove-photo';
+    rm.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    rm.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); clearPhotoSlot(slotNum); };
+    slot.appendChild(rm);
+    // Show next slot
+    if (slotNum < 3) document.getElementById('photoSlot' + (slotNum + 1)).style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhotoSlot(slotNum) {
+  const slot = document.getElementById('photoSlot' + slotNum);
+  const inp = document.getElementById('reviewPhoto' + slotNum);
+  inp.value = '';
+  slot.querySelectorAll('img,.remove-photo').forEach(el => el.remove());
+  // Restore icon + label
+  slot.innerHTML = `<input type="file" id="reviewPhoto${slotNum}" accept="image/*" style="display:none" onchange="previewReviewPhoto(this,${slotNum})">
+    <i class="fa-solid fa-plus" style="font-size:1.2rem;color:var(--text-light)"></i>
+    <span style="font-size:.65rem;color:var(--text-light);margin-top:3px;font-family:'Hind Siliguri',sans-serif">ছবি</span>`;
+  if (slotNum < 3) document.getElementById('photoSlot' + (slotNum + 1)).style.display = 'none';
+}
+
+// ── Check if current user has a delivered order for this product ──
+async function checkVerifiedBuyer(productId) {
+  if (!currentUser) return false;
+  try {
+    const { data } = await sb.from('orders')
+      .select('id,items,status')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'delivered');
+    if (!data) return false;
+    return data.some(order =>
+      (order.items || []).some(item => item.id === productId)
+    );
+  } catch { return false; }
+}
+
+// ── Update review form state based on login + purchase ──
+async function updateReviewFormState() {
+  const guest = document.getElementById('reviewStateGuest');
+  const notBuyer = document.getElementById('reviewStateNotBuyer');
+  const form = document.getElementById('reviewStateForm');
+  if (!guest || !notBuyer || !form) return;
+  guest.style.display = 'none';
+  notBuyer.style.display = 'none';
+  form.style.display = 'none';
+  if (!currentUser) {
+    guest.style.display = 'block'; return;
+  }
+  const isBuyer = await checkVerifiedBuyer(currentProduct?.id);
+  if (!isBuyer) {
+    notBuyer.style.display = 'block'; return;
+  }
+  form.style.display = 'block';
 }
 
 async function submitReview() {
   if (!currentProduct) return;
-  if (!pdReviewStar) { toast('রেটিং দিন','স্টার সিলেক্ট করুন','w'); return; }
+  if (!pdReviewStar) { toast('রেটিং দিন','★ স্টার সিলেক্ট করুন','w'); return; }
   const text = document.getElementById('pdReviewText').value.trim();
-  if (!text) { toast('রিভিউ লিখুন','রিভিউ টেক্সট দিন','w'); return; }
+  if (!text) { toast('রিভিউ লিখুন','একটু বিস্তারিত লিখুন','w'); return; }
   const name = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'অতিথি';
+
+  // Collect photo data URLs (base64 preview — in production upload to Storage)
+  const photos = [];
+  for (let i = 1; i <= 3; i++) {
+    const inp = document.getElementById('reviewPhoto' + i);
+    if (inp?.files?.[0]) {
+      const slot = document.getElementById('photoSlot' + i);
+      const previewImg = slot.querySelector('img');
+      if (previewImg) photos.push(previewImg.src);
+    }
+  }
+
+  const btn = document.querySelector('#reviewStateForm .pd-wr-submit');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> জমা হচ্ছে...'; }
 
   try {
     await sb.from('reviews').insert({
       product_id: currentProduct.id,
+      user_id: currentUser.id,
       reviewer_name: name,
       rating: pdReviewStar,
       review_text: text,
-      verified: !!currentUser,
+      photos: photos.length ? photos : null,
+      verified: true,
     });
-    toast('রিভিউ জমা হয়েছে!','ধন্যবাদ আপনার মতামতের জন্য','s');
+    toast('রিভিউ জমা হয়েছে!','ধন্যবাদ আপনার মতামতের জন্য ❤️','s');
   } catch {
     toast('রিভিউ সেভ হয়নি','লোকাল ভিউতে দেখাচ্ছে','i');
   }
 
-  // Optimistically add to UI
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:7px"></i>রিভিউ জমা দিন'; }
+
+  // Optimistic UI — prepend new review
+  const photosHtml = photos.length
+    ? `<div class="rev-photos">${photos.map(p=>`<img src="${p}" class="rev-photo-thumb" onclick="window.open('${p}','_blank')">`).join('')}</div>`
+    : '';
   const current = document.getElementById('pdReviewList');
   const newItem = document.createElement('div');
   newItem.className = 'pd-rev-item';
-  newItem.innerHTML = `<div class="pd-rev-head"><div class="pd-rev-avatar">${name.charAt(0).toUpperCase()}</div><div><div class="pd-rev-name">${name}</div><div class="pd-rev-stars">${renderStars(pdReviewStar)}</div></div><div class="pd-rev-date">আজ</div><span class="pd-rev-verified">✓ যাচাইকৃত</span></div><div class="pd-rev-text">${text}</div>`;
+  newItem.innerHTML = `
+    <div class="pd-rev-head">
+      <div class="pd-rev-avatar">${name.charAt(0).toUpperCase()}</div>
+      <div>
+        <div class="pd-rev-name">${name}</div>
+        <div class="pd-rev-stars">${renderStars(pdReviewStar)}</div>
+      </div>
+      <div class="pd-rev-date" style="margin-left:auto">আজ</div>
+      <span class="pd-rev-verified">✓ যাচাইকৃত ক্রেতা</span>
+    </div>
+    <div class="pd-rev-text">${text}</div>
+    ${photosHtml}`;
   if (current.firstChild && current.firstChild.classList?.contains('pd-rev-empty')) current.innerHTML = '';
   current.prepend(newItem);
 
@@ -3840,7 +4608,9 @@ async function submitReview() {
   document.getElementById('pdReviewText').value = '';
   pdReviewStar = 0;
   selectReviewStar(0);
-  // Update count badge
+  for (let i = 1; i <= 3; i++) clearPhotoSlot(i);
+  document.getElementById('photoSlot2').style.display = 'none';
+  document.getElementById('photoSlot3').style.display = 'none';
   const badge = document.getElementById('pdReviewCountBadge');
   if (badge) badge.textContent = (parseInt(badge.textContent)||0) + 1;
 }
@@ -4002,6 +4772,205 @@ document.addEventListener('DOMContentLoaded', () => {
     slider.addEventListener('mouseleave', startHeroAuto);
   }
 });
+
+// ══════════════════════════════════════════════════
+// DELIVERY CHARGE CALCULATION ENGINE
+// ══════════════════════════════════════════════════
+
+// Dhaka district upazilas (inside Dhaka = base 60 TK)
+const DHAKA_DISTRICT = 'ঢাকা';
+
+// Bangladesh location data: District > Upazila > Thana/Union/Pourosoova
+const BD_LOCATIONS = {
+  'ঢাকা': {
+    'ধানমন্ডি': ['ধানমন্ডি থানা','কলাবাগান','হাজারীবাগ'],
+    'গুলশান': ['গুলশান থানা','বাড্ডা','খিলক্ষেত'],
+    'মিরপুর': ['মিরপুর থানা','কাফরুল','পল্লবী','শাহআলী'],
+    'মোহাম্মদপুর': ['মোহাম্মদপুর থানা','আদাবর','শেরে বাংলা নগর'],
+    'উত্তরা': ['উত্তরা পশ্চিম','উত্তরা পূর্ব','উত্তরখান','দক্ষিণখান'],
+    'তেজগাঁও': ['তেজগাঁও শিল্পাঞ্চল','তেজগাঁও','শ্যামলী'],
+    'সাভার': ['সাভার পৌরসভা','আশুলিয়া','বিরুলিয়া','কাউন্দিয়া','শিমুলিয়া'],
+    'কেরানীগঞ্জ': ['কেরানীগঞ্জ মডেল','কলাতিয়া','রোহিতপুর','তারাবো'],
+    'দোহার': ['দোহার পৌরসভা','বিলাসপুর','মাহমুদপুর','নয়াবাড়ী'],
+    'নবাবগঞ্জ': ['নবাবগঞ্জ পৌরসভা','আগলা','বান্দুরা','কলাকোপা'],
+    'লালবাগ': ['লালবাগ থানা','চকবাজার','কামরাঙ্গীরচর'],
+    'রমনা': ['রমনা থানা','শাহবাগ','পল্টন','মতিঝিল'],
+    'ওয়ারী': ['ওয়ারী থানা','কোতোয়ালি','সুত্রাপুর','গেন্ডারিয়া'],
+  },
+  'গাজীপুর': {
+    'গাজীপুর সদর': ['গাজীপুর সদর পৌরসভা','বাসান','গাছা','কাউলতিয়া','মির্জাপুর'],
+    'কালিয়াকৈর': ['কালিয়াকৈর পৌরসভা','বোয়ালী','চাপাইর','মৌচাক','তেপীর'],
+    'কাপাসিয়া': ['কাপাসিয়া পৌরসভা','ঘাগটিয়া','সিংহশ্রী','তরগাঁও'],
+    'শ্রীপুর': ['শ্রীপুর পৌরসভা','গোসিঙ্গা','মাওনা','প্রহলাদপুর'],
+    'টঙ্গী': ['টঙ্গী পূর্ব','টঙ্গী পশ্চিম'],
+  },
+  'নারায়ণগঞ্জ': {
+    'নারায়ণগঞ্জ সদর': ['নারায়ণগঞ্জ সিটি','আলীগঞ্জ','বন্দর','ফতুল্লাহ','কাশিপুর'],
+    'আড়াইহাজার': ['আড়াইহাজার পৌরসভা','গোপালদী','হাইজাদী','ব্রাহ্মন্দী'],
+    'রূপগঞ্জ': ['রূপগঞ্জ পৌরসভা','ভুলতা','মুরাপাড়া','তারাবো'],
+    'সোনারগাঁও': ['সোনারগাঁও পৌরসভা','বৈদ্যেরবাজার','জামপুর','পিরোজপুর'],
+  },
+  'চট্টগ্রাম': {
+    'চট্টগ্রাম সদর': ['কোতোয়ালি','পাহাড়তলী','হালিশহর','পাঁচলাইশ','বাকলিয়া','চান্দগাঁও'],
+    'হাটহাজারী': ['হাটহাজারী পৌরসভা','বুড়িশ্চর','ছিপাতলী','ফতেয়াবাদ'],
+    'রাঙ্গুনিয়া': ['রাঙ্গুনিয়া পৌরসভা','ইসলামপুর','পোমরা','শিলক'],
+    'সীতাকুণ্ড': ['সীতাকুণ্ড পৌরসভা','বাড়বকুণ্ড','কুমিরা','মুরাদপুর'],
+    'মিরসরাই': ['মিরসরাই পৌরসভা','ঢালেয়া','খৈয়াছরা','মায়ানী'],
+    'বোয়ালখালী': ['বোয়ালখালী পৌরসভা','আমুচিয়া','চরণদ্বীপ','করলডেঙ্গা'],
+  },
+  'রাজশাহী': {
+    'রাজশাহী সদর': ['রাজশাহী সিটি','বোয়ালিয়া','মতিহার','শাহমখদুম'],
+    'গোদাগাড়ী': ['গোদাগাড়ী পৌরসভা','চর আষাড়িয়া দক্ষিণ','দেওপাড়া','মাটিকাটা'],
+    'তানোর': ['তানোর পৌরসভা','কামারগাঁও','মুন্ডুমালা','পাঁচন্দর'],
+    'পুঠিয়া': ['পুঠিয়া পৌরসভা','বানেশ্বর','বেলপুকুর','জিউপাড়া'],
+  },
+  'সিলেট': {
+    'সিলেট সদর': ['সিলেট সিটি','আখালিয়া','কানাইঘাট সদর','টুলটিকর'],
+    'বিয়ানীবাজার': ['বিয়ানীবাজার পৌরসভা','চারখাই','দুবাগ','মাথিউরা'],
+    'জৈন্তাপুর': ['জৈন্তাপুর পৌরসভা','চিকনাগুল','দরবস্ত','নিজ পাটলী'],
+    'গোলাপগঞ্জ': ['গোলাপগঞ্জ পৌরসভা','বাদেপাশা','ঢাকাদক্ষিণ','লক্ষ্মীপাশা'],
+  },
+  'খুলনা': {
+    'খুলনা সদর': ['খুলনা সিটি','দৌলতপুর','খালিশপুর','সোনাডাঙ্গা'],
+    'ডুমুরিয়া': ['ডুমুরিয়া পৌরসভা','আটলিয়া','চুকনগর','গুটুদিয়া'],
+    'ফুলতলা': ['ফুলতলা পৌরসভা','আটরা গিলাতলা','জামিরা','যোগীপোল'],
+    'রূপসা': ['রূপসা পৌরসভা','আইচগাতি','বাগমারা','নৈহাটী'],
+  },
+  'বরিশাল': {
+    'বরিশাল সদর': ['বরিশাল সিটি','চরবাড়িয়া','কড়াপুর','রহমতপুর'],
+    'বাবুগঞ্জ': ['বাবুগঞ্জ পৌরসভা','কেদারপুর','মাধবপাশা','রহিমগঞ্জ'],
+    'বাকেরগঞ্জ': ['বাকেরগঞ্জ পৌরসভা','চরামদ্দি','দাড়িয়াল','ফরিদপুর'],
+    'গৌরনদী': ['গৌরনদী পৌরসভা','বার্তা','মাহিলাড়া','নলচিরা'],
+  },
+  'ময়মনসিংহ': {
+    'ময়মনসিংহ সদর': ['ময়মনসিংহ সিটি','আকুয়া','বয়ড়া','চর ঈশ্বরদিয়া'],
+    'ভালুকা': ['ভালুকা পৌরসভা','ভালুকা','ধিতপুর','মল্লিকবাড়ী'],
+    'ত্রিশাল': ['ত্রিশাল পৌরসভা','আমিরাবাড়ী','বালিপাড়া','কানিহারী'],
+    'গফরগাঁও': ['গফরগাঁও পৌরসভা','দত্তেরবাজার','মশাখালী','পাইথল'],
+  },
+  'রংপুর': {
+    'রংপুর সদর': ['রংপুর সিটি','কাউনিয়া','পীরগঞ্জ','তারাগঞ্জ'],
+    'বদরগঞ্জ': ['বদরগঞ্জ পৌরসভা','কালুপাড়া','রামনাথপুর','শ্যামপুর'],
+    'গঙ্গাচড়া': ['গঙ্গাচড়া পৌরসভা','আলমবিদিতর','বারদহ','কোলকন্দ'],
+    'মিঠাপুকুর': ['মিঠাপুকুর পৌরসভা','বলদীপুকুর','চেংমারী','লতিবপুর'],
+  },
+  'কুমিল্লা': {
+    'কুমিল্লা সদর': ['কুমিল্লা সিটি','আদর্শ সদর','সদর দক্ষিণ'],
+    'দাউদকান্দি': ['দাউদকান্দি পৌরসভা','গৌরীপুর','ইলিয়টগঞ্জ','পাচগাছিয়া'],
+    'দেবিদ্বার': ['দেবিদ্বার পৌরসভা','বারপাড়া','ইউসুফপুর','সুবিল'],
+    'চান্দিনা': ['চান্দিনা পৌরসভা','বাতিসা','কাদুটি','মাধাইয়া'],
+  },
+  'ফরিদপুর': {
+    'ফরিদপুর সদর': ['ফরিদপুর পৌরসভা','অলিপুর','গেড়াখালী','কানাইপুর'],
+    'ভাঙ্গা': ['ভাঙ্গা পৌরসভা','আজিমনগর','কাউলিবেড়া','তুজারপুর'],
+    'বোয়ালমারী': ['বোয়ালমারী পৌরসভা','চতরা','গুনবহা','শেখর'],
+  },
+  'যশোর': {
+    'যশোর সদর': ['যশোর পৌরসভা','আরবপুর','চাঁচড়া','কাশিমপুর'],
+    'ঝিকরগাছা': ['ঝিকরগাছা পৌরসভা','বাঁকড়া','গদখালী','নাভারণ'],
+    'কেশবপুর': ['কেশবপুর পৌরসভা','গৌরীঘোনা','মজিদপুর','পাঁজিয়া'],
+  },
+  'নরসিংদী': {
+    'নরসিংদী সদর': ['নরসিংদী পৌরসভা','আমদিয়া','করিমপুর','মহিষাশুরা'],
+    'মনোহরদী': ['মনোহরদী পৌরসভা','চালাকচর','হাতিরদিয়া','লেবুতলা'],
+    'রায়পুরা': ['রায়পুরা পৌরসভা','মরজাল','নিজামপুর','পলাশতলী'],
+    'শিবপুর': ['শিবপুর পৌরসভা','জয়নগর','পুলেরচর','সাইদাবাদ'],
+  },
+};
+
+// Districts that are considered "Dhaka" for delivery pricing
+const DHAKA_DISTRICTS = ['ঢাকা','গাজীপুর','নারায়ণগঞ্জ'];
+
+function isDhaka(district) {
+  return DHAKA_DISTRICTS.includes(district);
+}
+
+function calcDeliveryCharge() {
+  const district = document.getElementById('cDistrict')?.value || '';
+  if (!district) return 0;
+  const totalQty = cart.reduce((s,x)=>s+x.qty, 0);
+  const insideDhaka = isDhaka(district);
+  const baseCharge = insideDhaka ? 60 : 75;
+  let charge = baseCharge;
+  // Weight/Quantity: 3+ books → +7 TK per extra (Dhaka) or +8 TK (Outside)
+  if (totalQty >= 3) {
+    const extraBooks = totalQty - 2;
+    charge += extraBooks * (insideDhaka ? 7 : 8);
+  }
+  // High-value product: any single book > 700 TK → +15 TK
+  const hasHighValue = cart.some(item => item.price > 700);
+  if (hasHighValue) charge += 15;
+  return charge;
+}
+
+function calcDelivery() {
+  const district = document.getElementById('cDistrict')?.value || '';
+  if (!district) return;
+  const charge = calcDeliveryCharge();
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty, 0);
+  const insideDhaka = isDhaka(district);
+  const totalQty = cart.reduce((s,x)=>s+x.qty, 0);
+  const hasHighValue = cart.some(item => item.price > 700);
+
+  // Build breakdown note
+  let noteArr = [];
+  if (insideDhaka) noteArr.push('ঢাকার ভেতরে'); else noteArr.push('ঢাকার বাইরে');
+  if (totalQty >= 3) noteArr.push(`${totalQty} টি বই`);
+  if (hasHighValue) noteArr.push('হাই-ভ্যালু (+১৫৳)');
+
+  document.getElementById('checkoutDelivery').textContent = `৳${charge}`;
+  document.getElementById('deliveryNote').textContent = noteArr.length ? ` (${noteArr.join(', ')})` : '';
+  const total = sub + charge - discount;
+  document.getElementById('checkoutTotal').textContent = `৳${total.toLocaleString()}`;
+}
+
+function populateDistricts() {
+  const sel = document.getElementById('cDistrict');
+  sel.innerHTML = '<option value="">— জেলা বেছে নিন —</option>';
+  Object.keys(BD_LOCATIONS).sort().forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+  document.getElementById('cUpazila').innerHTML = '<option value="">— আগে জেলা বেছে নিন —</option>';
+  document.getElementById('cUpazila').disabled = true;
+  document.getElementById('cThana').innerHTML = '<option value="">— আগে উপজেলা বেছে নিন —</option>';
+  document.getElementById('cThana').disabled = true;
+}
+
+function onDistrictChange() {
+  const district = document.getElementById('cDistrict').value;
+  const upazilaEl = document.getElementById('cUpazila');
+  const thanaEl = document.getElementById('cThana');
+  upazilaEl.innerHTML = '<option value="">— উপজেলা বেছে নিন —</option>';
+  thanaEl.innerHTML = '<option value="">— আগে উপজেলা বেছে নিন —</option>';
+  thanaEl.disabled = true;
+  if (!district || !BD_LOCATIONS[district]) { upazilaEl.disabled = true; return; }
+  upazilaEl.disabled = false;
+  Object.keys(BD_LOCATIONS[district]).sort().forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u; opt.textContent = u;
+    upazilaEl.appendChild(opt);
+  });
+  // Reset delivery display
+  document.getElementById('checkoutDelivery').textContent = '— (উপজেলা বেছে নিন)';
+  document.getElementById('deliveryNote').textContent = '';
+}
+
+function onUpazilaChange() {
+  const district = document.getElementById('cDistrict').value;
+  const upazila = document.getElementById('cUpazila').value;
+  const thanaEl = document.getElementById('cThana');
+  thanaEl.innerHTML = '<option value="">— থানা/ইউনিয়ন/পৌরসভা বেছে নিন —</option>';
+  if (!upazila || !BD_LOCATIONS[district]?.[upazila]) { thanaEl.disabled = true; return; }
+  thanaEl.disabled = false;
+  (BD_LOCATIONS[district][upazila] || []).forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    thanaEl.appendChild(opt);
+  });
+  calcDelivery();
+}
 
 // ── START ──
 init();
