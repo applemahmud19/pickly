@@ -22,14 +22,14 @@
 
 /* 1. Base: all Bengali text gets room to breathe */
 .bn, [class*="bn"] {
-  line-height: 1.8;
+  line-height: 1.9;
   overflow: visible;
 }
 
 /* 2. Step-circle badges — sized so Bengali digits never clip */
 .step-circle {
   font-family: 'Hind Siliguri', sans-serif;
-  font-size: .8rem;
+  font-size: .78rem;
   font-weight: 700;
   line-height: 1;
   width: 32px;
@@ -39,9 +39,10 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  overflow: visible;        /* let glyph breathe outside box model */
-  /* Hind Siliguri Bengali numerals sit slightly high — nudge down */
-  padding-top: 4px;
+  overflow: visible;
+  /* Hind Siliguri Bengali numerals sit high — nudge down */
+  padding-top: 5px;
+  padding-bottom: 1px;
   letter-spacing: 0;
 }
 
@@ -71,7 +72,7 @@ span[style*="border-radius: 50%"] {
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
 body{font-family:'Sora',sans-serif;font-size:1rem;line-height:1.65;background:#F8FAFC;color:var(--text);overflow-x:hidden}
-.bn{font-family:'Hind Siliguri',sans-serif;font-size:1rem;line-height:1.8}
+.bn{font-family:'Hind Siliguri',sans-serif;font-size:1rem;line-height:1.9}
 
 /* ── GLOBAL TYPOGRAPHY SCALE ── */
 h1,h2,h3{line-height:1.3}
@@ -99,7 +100,20 @@ label,.form-group label{font-size:.875rem!important;font-weight:700}
   display:flex;
   align-items:center;
   justify-content:space-between;
-  /* no border-radius — flush with header edges */
+  max-height: 50px;
+  overflow: hidden;
+  transition: max-height .3s cubic-bezier(.4,0,.2,1),
+              padding .3s cubic-bezier(.4,0,.2,1),
+              opacity .25s;
+  will-change: max-height;
+}
+/* Hide blue bar when user scrolls down */
+header.bar-hidden .social-bar {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 .social-bar span{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:rgba(255,255,255,.9)}
 .social-links{display:flex;gap:4px;align-items:center}
@@ -491,8 +505,8 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative}
 .pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
-.pcard-img{height:162px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
-.pcard:hover .pcard-img{background:#E3EFFF}
+.pcard-img{height:162px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
+.pcard:hover .pcard-img{background:#f0f2f5}
 .pcard-icon{width:74px;height:74px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10)}
 .pcard:hover .pcard-icon{transform:scale(1.08) rotate(-3deg)}
 .disc-badge,.new-badge,.hot-badge{position:absolute;top:9px;left:9px;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;color:white}
@@ -1060,13 +1074,13 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .olist-thumb{
   width:42px;height:42px;border-radius:8px;
   border:1.5px solid var(--border);
-  background:var(--blue-light);
+  background:#f8f9fa;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;flex-shrink:0;
   font-size:1.1rem;transition:transform var(--t);
 }
 .olist-thumb:hover{transform:scale(1.08)}
-.olist-thumb img{width:100%;height:100%;object-fit:cover}
+.olist-thumb img{width:100%;height:100%;object-fit:contain;padding:3px}
 .olist-thumb-more{
   width:42px;height:42px;border-radius:8px;
   background:var(--blue-mid);border:1.5px solid rgba(0,122,255,.2);
@@ -1495,7 +1509,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   position: relative;
   border-radius: 20px;
   overflow: hidden;
-  background: var(--blue-light);
+  background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1846,11 +1860,11 @@ footer, footer *:not(i):not([class*="fa-"]) {
 .tp-oc-thumbs { display: flex; gap: 5px; flex-shrink: 0; }
 .tp-oc-thumb {
   width: 40px; height: 40px; border-radius: 8px;
-  border: 1.5px solid var(--border); background: var(--blue-light);
+  border: 1.5px solid var(--border); background: #f8f9fa;
   display: flex; align-items: center; justify-content: center;
   font-size: 1rem; overflow: hidden; flex-shrink: 0;
 }
-.tp-oc-thumb img { width:100%; height:100%; object-fit:cover; }
+.tp-oc-thumb img { width:100%; height:100%; object-fit:contain; padding:3px; }
 .tp-oc-more {
   width: 40px; height: 40px; border-radius: 8px;
   background: var(--blue-mid); border: 1.5px solid rgba(0,122,255,.2);
@@ -3053,7 +3067,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
           <span class="step-circle" style="background:var(--blue);color:white">২</span>
           ডেলিভারি ঠিকানা
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="location-fields-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
           <div class="form-group" style="margin-bottom:0">
             <label class="bn">জেলা *</label>
             <select class="form-sel bn" id="cDistrict" onchange="onDistrictChange()">
@@ -3780,7 +3794,7 @@ function buildProductCard(p) {
   const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
   // FIX: Show real image from Supabase Storage when image_url exists; fall back to icon
   const imgHtml = p.image_url
-    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:6px;border-radius:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     : '';
   const iconHtml = `<div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color});${p.image_url?'display:none':''}"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
   return `<div class="pcard" onclick="openProduct('${p.id}')">
@@ -3975,11 +3989,12 @@ function openProduct(id, pushUrl = true) {
   setText('fpName', p.name);
 
   // ── Brand / Publisher ──
+  // For books: publisher shown only in the spec table below — hide the inline brand row
+  // For non-books: show brand inline as before
   const brandEl = document.getElementById('fpBrandRow');
   if (brandEl) {
-    if (p.brand) {
-      const label = isBook ? '<i class="fa-solid fa-book-open" style="color:var(--blue);margin-right:4px"></i>প্রকাশনী:' : '<i class="fa-solid fa-tag" style="color:var(--blue);margin-right:4px"></i>ব্র্যান্ড:';
-      brandEl.innerHTML = `<span style="font-weight:700;color:var(--text-mid)">${label}</span> <span style="font-weight:600;color:var(--blue)">${p.brand}</span>`;
+    if (p.brand && !isBook) {
+      brandEl.innerHTML = `<span style="font-weight:700;color:var(--text-mid)"><i class="fa-solid fa-tag" style="color:var(--blue);margin-right:4px"></i>ব্র্যান্ড:</span> <span style="font-weight:600;color:var(--blue)">${p.brand}</span>`;
     } else { brandEl.textContent = ''; }
   }
 
@@ -3987,7 +4002,12 @@ function openProduct(id, pushUrl = true) {
   const authorEl = document.getElementById('fpAuthorRow');
   if (authorEl) {
     if (isBook && p.author) {
-      authorEl.innerHTML = `<div style="font-size:.8rem;color:var(--text-mid);margin-bottom:4px"><span style="font-weight:700"><i class="fa-solid fa-pen-nib" style="color:var(--blue);margin-right:4px"></i>লেখক:</span> <span>${p.author}</span></div>`;
+      authorEl.innerHTML = `
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(0,122,255,.15);border-radius:20px;padding:4px 12px 4px 10px;margin-bottom:6px">
+          <i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.75rem"></i>
+          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text-mid)">লেখক:</span>
+          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--blue)">${p.author}</span>
+        </div>`;
     } else { authorEl.innerHTML = ''; }
   }
 
@@ -3996,8 +4016,8 @@ function openProduct(id, pushUrl = true) {
   if (iconEl) {
     if (p.image_url) {
       // FIX: Show real image from Supabase Storage when available
-      iconEl.style.cssText = 'width:200px;height:200px;border-radius:16px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,.14);';
-      iconEl.outerHTML = `<img id="fpIcon" src="${p.image_url}" alt="${p.name}" style="width:200px;height:200px;border-radius:16px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,.14)" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
+      iconEl.style.cssText = 'width:200px;height:200px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10);';
+      iconEl.outerHTML = `<img id="fpIcon" src="${p.image_url}" alt="${p.name}" style="width:200px;height:200px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10)" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
     } else {
       iconEl.style.cssText = `width:140px;height:140px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 12px 40px rgba(0,0,0,.14);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
       iconEl.innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
@@ -4178,7 +4198,7 @@ async function applyCheckoutCoupon() {
       .select('*').eq('code', code).eq('is_active', true).single();
 
     if (error || !data) {
-      showCheckoutPromoMsg('❌ এই কুপন কোড পাওয়া যায়নি বা মেয়াদ শেষ হয়েছে', 'e');
+      showCheckoutPromoMsg('এই কুপন কোড পাওয়া যায়নি বা মেয়াদ শেষ হয়েছে', 'e');
       btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
       btn.disabled = false;
       return;
@@ -4187,7 +4207,7 @@ async function applyCheckoutCoupon() {
     const sub = cart.reduce((s,x) => s + x.price * x.qty, 0);
 
     if (sub < data.min_order) {
-      showCheckoutPromoMsg(`⚠️ ন্যূনতম ৳${data.min_order.toLocaleString()} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, 'w');
+      showCheckoutPromoMsg(`ন্যূনতম ৳${data.min_order.toLocaleString()} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, 'w');
       btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
       btn.disabled = false;
       return;
@@ -4209,12 +4229,12 @@ async function applyCheckoutCoupon() {
       ? `${data.discount_value}% (৳${discount.toLocaleString()})`
       : `৳${discount.toLocaleString()}`;
 
-    showCheckoutPromoMsg(`✅ "${data.code}" কুপন প্রয়োগ হয়েছে! ${discLabel} ছাড় পেয়েছেন।`, 's');
+    showCheckoutPromoMsg(`"${data.code}" কুপন প্রয়োগ হয়েছে! ${discLabel} ছাড় পেয়েছেন।`, 's');
     refreshCheckoutTotals();
     toast('কুপন প্রয়োগ সফল!', `${discLabel} ছাড় পেলেন`, 's');
 
   } catch (err) {
-    showCheckoutPromoMsg('❌ কুপন যাচাই করা যায়নি, আবার চেষ্টা করুন', 'e');
+    showCheckoutPromoMsg('কুপন যাচাই করা যায়নি, আবার চেষ্টা করুন', 'e');
     btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
     btn.disabled = false;
   }
@@ -4353,7 +4373,13 @@ async function trackOrder() {
   const items = (data.items||[]).map(i=>i.name).join(', ');
   res.innerHTML = `
     <div class="order-info-card">
-      <div class="oid-lbl">${data.order_number}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div class="oid-lbl">${data.order_number}</div>
+        <button onclick="copyOrderIdToast('${data.order_number}',this)"
+          style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;background:var(--blue-light);border:1px solid rgba(0,122,255,.2);color:var(--blue);font-size:.68rem;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;transition:all .2s">
+          <i class="fa-regular fa-copy"></i> <span>Copy</span>
+        </button>
+      </div>
       <div class="oname bn">${items.slice(0,50)}${items.length>50?'...':''}</div>
       <div class="oeta bn">জেলা: <strong>${data.customer_district||'—'}</strong> · মোট: <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString()}</strong></div>
     </div>
@@ -4868,7 +4894,7 @@ async function tpLoadMyOrders() {
       const bg   = prod?.color ? prod.color + '22' : 'var(--blue-light)';
       const clr  = prod?.color || 'var(--blue)';
       const icon = prod?.icon  || 'fa-box';
-      if (item.image_url) return `<div class="tp-oc-thumb"><img src="${item.image_url}" alt="" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${icon}\\' style=\\'color:${clr}\\'></i>'"></div>`;
+      if (item.image_url || prod?.image_url) return `<div class="tp-oc-thumb"><img src="${item.image_url || prod.image_url}" alt="" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${icon}\\' style=\\'color:${clr}\\'></i>'"></div>`;
       return `<div class="tp-oc-thumb" style="background:${bg}"><i class="fa-solid ${icon}" style="color:${clr}"></i></div>`;
     }).join('');
     const moreHtml = extraCount > 0 ? `<div class="tp-oc-more">+${extraCount}</div>` : '';
@@ -5092,7 +5118,7 @@ function buildOrderDetailPanel(data, history) {
         <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--blue-light)">
           <div style="width:32px;height:32px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
             ${item.image_url
-              ? `<img src="${item.image_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-box\\' style=\\'color:var(--blue);font-size:.75rem\\'></i>'">`
+              ? `<img src="${item.image_url}" style="width:100%;height:100%;object-fit:contain;padding:3px" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-box\\' style=\\'color:var(--blue);font-size:.75rem\\'></i>'">`
               : '<i class="fa-solid fa-box" style="color:var(--blue);font-size:.75rem"></i>'}
           </div>
           <div style="flex:1;min-width:0">
@@ -5176,20 +5202,19 @@ function switchPdTab(tab) {
 function buildSpecTable(p) {
   const isBook = p.category === 'বই';
   const rows = [];
-  if (p.category)    rows.push(['ক্যাটাগরি', p.category]);
+  if (p.category) rows.push(['ক্যাটাগরি', p.category]);
+  // Publisher (brand) shown in table for ALL categories
   if (p.brand) {
     const lbl = isBook ? 'প্রকাশনী' : 'ব্র্যান্ড';
     rows.push([lbl, p.brand]);
   }
-  if (p.author)      rows.push(['লেখক', p.author]);
-  if (p.stock != null) rows.push(['স্টক', p.stock > 0 ? `${p.stock} টি উপলব্ধ` : 'স্টক নেই']);
-  if (p.rating)      rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
-  if (p.badge && p.badge !== 'null') rows.push(['ব্যাজ', p.badge === 'sale' ? 'সেল' : p.badge === 'hot' ? 'হট আইটেম' : 'নতুন']);
+  // Author shown only under the title (not in table)
+  // Stock and Badge rows removed intentionally
+  if (p.rating) rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
   const table = document.getElementById('pdSpecTable');
   if (!table) return;
   if (!rows.length) { table.innerHTML = ''; return; }
   table.innerHTML = `<tbody>${rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
-  // wrap in a card
   table.style.cssText = 'width:100%;border-collapse:collapse;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)';
 }
 
@@ -5974,6 +5999,13 @@ const BD_LOCATIONS = {
     'লামা': ['লামা পৌরসভা','আজিজনগর','ফাঁসিয়াখালী','রুপসীপাড়া'],
     'রোয়াংছড়ি': ['রোয়াংছড়ি পৌরসভা','নোয়াপতং','রোয়াংছড়ি','তারাছা'],
   },
+  'শেরপুর': {
+    'শেরপুর সদর': ['শেরপুর পৌরসভা','বাজিতখিলা','গাজিরখামার','লছমনপুর'],
+    'নালিতাবাড়ী': ['নালিতাবাড়ী পৌরসভা','কাকরকান্দি','নালিতাবাড়ী','পোড়াগাঁও'],
+    'নকলা': ['নকলা পৌরসভা','চন্দ্রকোনা','গণপদ্দী','পাঠাকাটা'],
+    'ঝিনাইগাতী': ['ঝিনাইগাতী পৌরসভা','ধানশাইল','ঘাগড়া','রামচন্দ্রকুড়া'],
+    'শ্রীবর্দী': ['শ্রীবর্দী পৌরসভা','ভেলুয়া','গৌড়দ্বার','সিংহজানী'],
+  },
 };
 
 // Districts that are considered "Dhaka" for delivery pricing
@@ -6044,39 +6076,69 @@ function _buildDistrictSearch() {
     const st = document.createElement('style');
     st.id = 'districtSearchStyle';
     st.textContent = `
+      /* ── District searchable dropdown ── */
       .district-search-wrap { position: relative; }
       .district-search-wrap select { display: none; }
+
+      /* Fake input — mirrors .form-inp exactly */
       .district-fake-input {
         display: flex; align-items: center; gap: 8px;
-        background: white; border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm); padding: 10px 13px;
-        font-family: 'Hind Siliguri', sans-serif; font-size: .9375rem;
-        cursor: pointer; color: var(--text); transition: border-color var(--t);
-        min-height: 44px;
+        padding: 9px 11px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .9375rem;
+        color: var(--text);
+        background: var(--blue-light);
+        cursor: pointer;
+        transition: border-color var(--t), box-shadow var(--t), background var(--t);
+        box-sizing: border-box;
+        width: 100%;
+        line-height: 1.4;
       }
-      .district-fake-input:focus-within, .district-fake-input.open {
-        border-color: var(--blue); box-shadow: var(--glow);
+      .district-fake-input:hover { border-color: rgba(0,122,255,.4); }
+      .district-fake-input.open,
+      .district-fake-input:focus-within {
+        border-color: var(--blue);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(0,122,255,.12);
       }
-      .district-fake-input .dfi-val { flex: 1; }
-      .district-fake-input i { color: var(--text-light); font-size: .75rem; transition: transform var(--t); }
-      .district-fake-input.open i { transform: rotate(180deg); }
+      .district-fake-input .dfi-val {
+        flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        font-size: .9375rem;
+      }
+      .district-fake-input .dfi-placeholder { color: var(--text-light); }
+      .district-fake-input .dfi-chevron {
+        color: var(--text-light); font-size: .72rem;
+        transition: transform var(--t); flex-shrink: 0;
+      }
+      .district-fake-input.open .dfi-chevron { transform: rotate(180deg); }
+
+      /* Dropdown panel */
       .district-dropdown {
         display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
-        background: white; border: 1.5px solid var(--blue); border-radius: var(--radius);
-        box-shadow: 0 8px 32px rgba(0,122,255,.14); z-index: 999; overflow: hidden;
-        max-height: 260px;
+        background: white; border: 1.5px solid var(--blue);
+        border-radius: var(--radius, 12px);
+        box-shadow: 0 8px 32px rgba(0,122,255,.16);
+        z-index: 9999; overflow: hidden;
       }
       .district-dropdown.open { display: block; }
+
+      /* Search row */
       .district-search-box {
-        padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--blue-light);
+        padding: 9px 12px; border-bottom: 1px solid var(--border);
+        background: var(--blue-light);
         display: flex; align-items: center; gap: 8px;
       }
-      .district-search-box i { color: var(--text-light); font-size: .78rem; }
+      .district-search-box i { color: var(--blue); font-size: .78rem; flex-shrink: 0; }
       .district-search-box input {
         flex: 1; border: none; background: transparent; outline: none;
         font-family: 'Hind Siliguri', sans-serif; font-size: .88rem; color: var(--text);
       }
-      .district-list { overflow-y: auto; max-height: 200px; }
+      .district-search-box input::placeholder { color: var(--text-light); }
+
+      /* Options */
+      .district-list { overflow-y: auto; max-height: 210px; }
       .district-opt {
         padding: 9px 14px; font-family: 'Hind Siliguri', sans-serif; font-size: .88rem;
         cursor: pointer; color: var(--text); transition: background var(--t);
@@ -6084,9 +6146,17 @@ function _buildDistrictSearch() {
       }
       .district-opt:hover { background: var(--blue-light); color: var(--blue); }
       .district-opt.selected { background: var(--blue); color: white; }
-      .district-opt i { font-size: .72rem; opacity: .6; }
-      .district-no-result { padding: 14px; text-align: center; color: var(--text-light);
-        font-family: 'Hind Siliguri', sans-serif; font-size: .82rem; }
+      .district-opt.selected .district-opt-icon { opacity: 1; }
+      .district-opt-icon { font-size: .7rem; opacity: .45; flex-shrink: 0; }
+      .district-no-result {
+        padding: 16px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .82rem;
+      }
+
+      /* Mobile: collapse 3-col grid to single column */
+      @media (max-width: 540px) {
+        .location-fields-grid { grid-template-columns: 1fr !important; }
+      }
     `;
     document.head.appendChild(st);
   }
@@ -6100,7 +6170,7 @@ function _buildDistrictSearch() {
   // Fake input display
   const fakeInput = document.createElement('div');
   fakeInput.className = 'district-fake-input';
-  fakeInput.innerHTML = '<span class="dfi-val bn" style="color:var(--text-light)">— জেলা বেছে নিন —</span><i class="fa-solid fa-chevron-down"></i>';
+  fakeInput.innerHTML = '<span class="dfi-val dfi-placeholder bn">— জেলা বেছে নিন —</span><i class="fa-solid fa-chevron-down dfi-chevron"></i>';
   wrapper.appendChild(fakeInput);
 
   // Dropdown
@@ -6128,16 +6198,16 @@ function _buildDistrictSearch() {
     }
     list.innerHTML = filtered.map(d => `
       <div class="district-opt ${sel.value === d ? 'selected' : ''}" data-val="${d}">
-        <i class="fa-solid fa-location-dot"></i>
+        <i class="fa-solid fa-location-dot district-opt-icon"></i>
         <span class="bn">${d}</span>
       </div>`).join('');
     list.querySelectorAll('.district-opt').forEach(opt => {
       opt.addEventListener('click', () => {
         sel.value = opt.dataset.val;
-        fakeInput.querySelector('.dfi-val').textContent = opt.dataset.val;
-        fakeInput.querySelector('.dfi-val').style.color = '';
+        const valEl = fakeInput.querySelector('.dfi-val');
+        valEl.textContent = opt.dataset.val;
+        valEl.classList.remove('dfi-placeholder');
         closeDropdown();
-        // Trigger change
         sel.dispatchEvent(new Event('change'));
         onDistrictChange();
       });
@@ -6332,6 +6402,25 @@ function copyOrderId(id) {
       if (btn) { btn.style.background = 'rgba(255,255,255,.18)'; btn.style.borderColor = 'rgba(255,255,255,.35)'; }
     }, 2000);
   }).catch(() => toast('Copy ব্যর্থ','ম্যানুয়ালি কপি করুন','w'));
+}
+
+function copyOrderIdToast(id, btn) {
+  if (!id) return;
+  navigator.clipboard.writeText(id).then(() => {
+    toast('Copied!', `অর্ডার নম্বর কপি হয়েছে: ${id}`, 's');
+    if (btn) {
+      const span = btn.querySelector('span');
+      const icon = btn.querySelector('i');
+      if (span) span.textContent = 'Copied!';
+      if (icon) { icon.className = 'fa-solid fa-check'; }
+      btn.style.background = '#D1FAE5'; btn.style.borderColor = '#10B981'; btn.style.color = '#065F46';
+      setTimeout(() => {
+        if (span) span.textContent = 'Copy';
+        if (icon) { icon.className = 'fa-regular fa-copy'; }
+        btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = '';
+      }, 2200);
+    }
+  }).catch(() => toast('Copy ব্যর্থ', 'ম্যানুয়ালি কপি করুন', 'w'));
 }
 
 // ══════════════════════════════════════════════════
@@ -6625,11 +6714,40 @@ function updateHeaderHeight() {
   }
 }
 
-// ── Scroll shadow on header ──
+// ── Scroll shadow on header + hide/show top blue bar ──
+let _lastScrollY = 0;
+let _scrollTicking = false;
+
 function handleHeaderScroll() {
   const h = document.getElementById('mainHeader');
-  if (h) {
-    h.classList.toggle('scrolled', window.scrollY > 4);
+  if (!h) return;
+  const scrollY = window.scrollY;
+
+  h.classList.toggle('scrolled', scrollY > 4);
+
+  // Hide the blue social bar when scrolling down past 60px; show when scrolling up
+  let barChanged = false;
+  if (scrollY > 60) {
+    const scrollingDown = scrollY > _lastScrollY;
+    const wasHidden = h.classList.contains('bar-hidden');
+    h.classList.toggle('bar-hidden', scrollingDown);
+    barChanged = h.classList.contains('bar-hidden') !== wasHidden;
+  } else {
+    const wasHidden = h.classList.contains('bar-hidden');
+    h.classList.remove('bar-hidden');
+    barChanged = wasHidden;
+  }
+
+  if (barChanged) setTimeout(updateHeaderHeight, 320); // after CSS transition
+
+  _lastScrollY = scrollY;
+  _scrollTicking = false;
+}
+
+function onScroll() {
+  if (!_scrollTicking) {
+    requestAnimationFrame(handleHeaderScroll);
+    _scrollTicking = true;
   }
 }
 
@@ -6638,7 +6756,7 @@ document.addEventListener('DOMContentLoaded', () => {
   handleHeaderScroll();
 });
 window.addEventListener('resize', updateHeaderHeight);
-window.addEventListener('scroll', handleHeaderScroll, { passive: true });
+window.addEventListener('scroll', onScroll, { passive: true });
 </script>
 </body>
 </html>
