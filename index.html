@@ -506,7 +506,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pname{font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pbrand{font-size:.7rem;color:var(--text-light);margin-bottom:7px}
 .prating{display:flex;align-items:center;gap:4px;margin-bottom:9px}
-.pstars{color:#F5A623;font-size:.88rem;letter-spacing:2px;line-height:1}
+.pstars{color:#F5A623;font-size:.88rem;letter-spacing:1px;line-height:1;overflow:visible}
 .prating span{font-size:.65rem;color:var(--text-light)}
 .pfooter{display:flex;align-items:flex-end;justify-content:space-between;gap:5px}
 .price-block .old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
@@ -918,6 +918,9 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 }
 .btn-primary i{color:#FFFFFF;font-size:.88rem}
 .btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.35)}
+/* FIX: Missing .btn-outline class — used in auth modal for signup button */
+.btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:var(--radius);background:transparent;color:var(--blue);border:1.5px solid var(--blue);font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all var(--t);letter-spacing:.01em;white-space:nowrap}
+.btn-outline:hover{background:var(--blue-light);transform:translateY(-1px)}
 .modal-btns .btn-primary{flex:1;justify-content:center;padding:13px 22px}
 .btn-buy-lg{
   flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -3752,9 +3755,14 @@ function updateCounts() {
 
 function buildProductCard(p) {
   const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
+  // FIX: Show real image from Supabase Storage when image_url exists; fall back to icon
+  const imgHtml = p.image_url
+    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : '';
+  const iconHtml = `<div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color});${p.image_url?'display:none':''}"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
   return `<div class="pcard" onclick="openProduct('${p.id}')">
     <div class="pcard-img">
-      <div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>
+      ${imgHtml}${iconHtml}
       ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'&&disc?`<div class="disc-badge">-${disc}% ছাড়</div>`:''}
       <button class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'<i class=\'fa-solid fa-heart\'></i>':'<i class=\'fa-regular fa-heart\'></i>'"><i class="fa-regular fa-heart"></i></button>
     </div>
@@ -3960,14 +3968,20 @@ function openProduct(id, pushUrl = true) {
     } else { authorEl.innerHTML = ''; }
   }
 
-  // ── Icon ──
+  // ── Icon / Image ──
   const iconEl = document.getElementById('fpIcon');
   if (iconEl) {
-    iconEl.style.cssText = `width:140px;height:140px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 12px 40px rgba(0,0,0,.14);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
-    iconEl.innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
+    if (p.image_url) {
+      // FIX: Show real image from Supabase Storage when available
+      iconEl.style.cssText = 'width:200px;height:200px;border-radius:16px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,.14);';
+      iconEl.outerHTML = `<img id="fpIcon" src="${p.image_url}" alt="${p.name}" style="width:200px;height:200px;border-radius:16px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,.14)" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
+    } else {
+      iconEl.style.cssText = `width:140px;height:140px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 12px 40px rgba(0,0,0,.14);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
+      iconEl.innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
+    }
   }
   const imgCard = document.getElementById('fpImgCard');
-  if (imgCard) imgCard.style.background = p.color + '18';
+  if (imgCard) imgCard.style.background = p.image_url ? '#fff' : p.color + '18';
 
   // ── Badge ──
   const badgeWrap = document.getElementById('fpBadgeWrap');
@@ -4376,14 +4390,10 @@ async function signOut() {
     // 3. Reset UI state immediately
     currentUser = null;
     isAdmin = false;
-    // 4. Reset account button to guest state
-    const authBtn = document.getElementById('authBtn');
-    if (authBtn) {
-      authBtn.innerHTML = `<i class="fa-regular fa-circle-user" style="font-size:.88rem"></i> লগইন`;
-    }
-    // 5. Hide admin button if visible
-    const adminBtnWrap = document.getElementById('adminBtnWrap');
-    if (adminBtnWrap) adminBtnWrap.style.display = 'none';
+    // 4. Reset account button to guest state (use updateAuthUI which handles all UI reset)
+    // adminBtn is the correct id (not adminBtnWrap)
+    const adminBtn2 = document.getElementById('adminBtn');
+    if (adminBtn2) adminBtn2.style.display = 'none';
     // 6. Close any open pages/dropdowns
     closeDropdown();
     // Close full-page panels if open
@@ -4473,7 +4483,7 @@ async function loadAdminOrders() {
 }
 
 async function updateOrderStatus(id, status) {
-  const { error } = await sb.from('orders').update({status, updated_at:new Date()}).eq('id',id);
+  const { error } = await sb.from('orders').update({status, updated_at:new Date().toISOString()}).eq('id',id);
   if(error) toast('ত্রুটি',error.message,'e');
   else { toast('আপডেট হয়েছে','অর্ডার স্ট্যাটাস পরিবর্তন হয়েছে','s'); await sb.from('order_status_history').insert({order_id:id,status,note:`স্ট্যাটাস পরিবর্তন: ${status}`}); }
 }
