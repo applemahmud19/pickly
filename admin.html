@@ -1799,7 +1799,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 ══════════════════════════════════════ */
 const ALLOWED_EMAIL = 'applemahmud4004@gmail.com';
 const SB_URL_DEFAULT = 'https://srasvcuycvfspbwhnbpl.supabase.co';
-const SB_KEY_DEFAULT = 'PASTE_YOUR_NEW_ANON_KEY_HERE'; // ← paste new anon key
+const SB_KEY_DEFAULT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYXN2Y3V5Y3Zmc3Bid2huYnBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzc4MjIsImV4cCI6MjA5MzcxMzgyMn0.FMU8DM-a0wg3Yxke1q-L79_kqYU3UkS4dibeH04AGJU'; // Supabase anon key
 const BUCKET_DEFAULT = 'product-images';
 
 /* ══════════════════════════════════════
@@ -2586,7 +2586,7 @@ async function updateOrderStatus(id, status) {
   toast('Status Updated', `Order → ${cap(status)}`, 'success');
   // Also update status buttons inside the modal if it's open for this order
   if (currentOrderId === id) refreshOrderModal(id);
-  await sb.from('order_status_history').insert({ order_id: id, status, note: 'Updated by admin', changed_at: new Date().toISOString() }).catch(() => {});
+  await sb.from('order_status_history').insert({ order_id: id, status, note: 'Updated by admin', created_at: new Date().toISOString() }).catch(() => {});
 }
 
 function switchOrderTab(tab) {
@@ -2598,8 +2598,10 @@ function toggleOrderEdit() {
   switchOrderTab('edit');
 }
 
-function viewOrder(id) {
-  const o = allOrders.find(x => x.id === id); if (!o) return;
+async function viewOrder(id) {
+  // FIX: If orders haven't loaded yet, fetch them first so the modal isn't blank
+  if (!allOrders.length) await loadOrders();
+  const o = allOrders.find(x => x.id === id); if (!o) { toast('Not Found', 'Order data not loaded yet, please refresh', 'error'); return; }
   currentOrderId = id;
   document.getElementById('orderModalTitle').textContent = `Order #${o.order_number || id.slice(0,8)}`;
   const badge = document.getElementById('orderModalBadge');
@@ -3227,7 +3229,7 @@ function updatePromoValueLabel() {
     : 'Discount Amount (৳) <span class="required">*</span>';
 }
 
-function savePromo() {
+async function savePromo() {
   const id = document.getElementById('editPromoId').value;
   const code = document.getElementById('promoCode').value.trim().toUpperCase();
   const type = document.getElementById('promoType').value;
@@ -3246,6 +3248,26 @@ function savePromo() {
   }
 
   const promo = { id: id || Date.now(), code, type, value, minOrder, maxUses, usedCount: 0, expiry: expiry || null, desc, isActive: true, createdAt: new Date().toISOString() };
+
+  // FIX: Save to Supabase `coupons` table so the frontend can apply it at checkout.
+  // Column mapping: code, discount_type, discount_value, min_order, is_active
+  if (sb) {
+    const couponPayload = {
+      code,
+      discount_type: type === 'percent' ? 'percent' : 'fixed',
+      discount_value: value,
+      min_order: minOrder,
+      is_active: true,
+    };
+    if (id) {
+      // For edits find the Supabase row by code and update it
+      const { error } = await sb.from('coupons').update(couponPayload).eq('code', code);
+      if (error) toast('Supabase Sync Warning', 'localStorage updated but DB sync failed: ' + error.message, 'warning');
+    } else {
+      const { error } = await sb.from('coupons').insert(couponPayload);
+      if (error) toast('Supabase Sync Warning', 'localStorage updated but DB sync failed: ' + error.message, 'warning');
+    }
+  }
 
   if (id) {
     const idx = allPromos.findIndex(p => p.id == id);
@@ -3291,18 +3313,26 @@ function editPromo(id) {
   openModal('promoModal');
 }
 
-function togglePromo(id) {
+async function togglePromo(id) {
   const p = allPromos.find(x => x.id == id);
   if (!p) return;
   p.isActive = !p.isActive;
   localStorage.setItem('gm_promos', JSON.stringify(allPromos));
+  // FIX: Sync toggle to Supabase coupons table
+  if (sb) {
+    await sb.from('coupons').update({ is_active: p.isActive }).eq('code', p.code);
+  }
   toast(p.isActive ? 'Activated' : 'Deactivated', `"${p.code}" ${p.isActive ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে`, 'info');
   renderPromos();
 }
 
-function deletePromo(id) {
+async function deletePromo(id) {
   const p = allPromos.find(x => x.id == id);
   if (!confirm(`"${p?.code}" কোডটি মুছে ফেলবেন?`)) return;
+  // FIX: Remove from Supabase coupons table
+  if (sb && p?.code) {
+    await sb.from('coupons').delete().eq('code', p.code);
+  }
   allPromos = allPromos.filter(x => x.id != id);
   localStorage.setItem('gm_promos', JSON.stringify(allPromos));
   toast('Deleted', 'প্রমো কোড মুছে ফেলা হয়েছে', 'info');
