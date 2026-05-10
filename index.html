@@ -14,10 +14,8 @@
 
    Strategy:
    1. All .bn elements get overflow:visible + comfortable line-height
-   2. Circle step-badges (checkout steps ১/২/৩) are converted to
-      use a dedicated class .step-circle so we can target them precisely
-   3. Global rule: any element using 'Hind Siliguri' inside a
-      constrained circle gets font-size bumped down and padding adjusted
+   2. Circle step-badges use .step-circle with precise padding
+   3. Price/badge spans with Bengali numerals get overflow:visible
 ──────────────────────────────────────────────────────────── */
 
 /* 1. Base: all Bengali text gets room to breathe */
@@ -26,10 +24,10 @@
   overflow: visible;
 }
 
-/* 2. Step-circle badges — sized so Bengali digits never clip */
+/* 2. Step-circle badges — Bengali digits need extra vertical room */
 .step-circle {
   font-family: 'Hind Siliguri', sans-serif;
-  font-size: .78rem;
+  font-size: .76rem;
   font-weight: 700;
   line-height: 1;
   width: 32px;
@@ -40,23 +38,30 @@
   justify-content: center;
   flex-shrink: 0;
   overflow: visible;
-  /* Hind Siliguri Bengali numerals sit high — nudge down */
-  padding-top: 5px;
-  padding-bottom: 1px;
+  /* Hind Siliguri Bengali numerals have tall ascenders — shift down */
+  padding-top: 6px;
+  padding-bottom: 0;
   letter-spacing: 0;
 }
 
-/* 3. Any inline Bengali-numeral span with border-radius — overflow must be visible */
+/* 3. Any inline Bengali-numeral span with border-radius */
 span[style*="border-radius:50%"],
 span[style*="border-radius: 50%"] {
   overflow: visible !important;
-  padding-top: 2px !important;
+  padding-top: 4px !important;
 }
 
-/* 4. hbadge (cart count) — uses Latin digits so keep tight */
+/* 4. hbadge uses Latin digits — keep tight */
 .hbadge {
   overflow: hidden !important;
   padding-top: 0 !important;
+}
+
+/* 5. Price tags, discount badges with Bengali ৳ numerals */
+.fp-new-price, .old, .new, .rec-card-price, .cart-total-row .amt,
+.fp-disc-badge, .disc-pct, .disc-badge {
+  overflow: visible;
+  line-height: 1.5;
 }
 </style>
 <style>
@@ -100,39 +105,38 @@ label,.form-group label{font-size:.875rem!important;font-weight:700}
   display:flex;
   align-items:center;
   justify-content:space-between;
-  max-height: 50px;
-  overflow: hidden;
-  transition: max-height .3s cubic-bezier(.4,0,.2,1),
-              padding .3s cubic-bezier(.4,0,.2,1),
-              opacity .25s;
-  will-change: max-height;
+  height:38px;
+  overflow:hidden;
+  /* Use transform+opacity only — never animate height/max-height (causes jitter) */
+  transition: transform .28s cubic-bezier(.4,0,.2,1),
+              opacity .22s cubic-bezier(.4,0,.2,1);
+  transform-origin: top;
+  will-change: transform, opacity;
 }
-/* Hide blue bar when user scrolls down */
+/* Hide blue bar when user scrolls down — translateY avoids layout shift */
 header.bar-hidden .social-bar {
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
+  transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
+  position: absolute;
+  width: 100%;
+  top: 0;
 }
+/* Reserve space so header height never jumps */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow var(--t);
+  isolation: isolate;
+}
+header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .social-bar span{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:rgba(255,255,255,.9)}
 .social-links{display:flex;gap:4px;align-items:center}
 .slink{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;transition:background var(--t)}
 .slink:hover{background:rgba(255,255,255,.3)}
-
-/* ── HEADER ── */
-header{
-  position:sticky;
-  top:0;
-  z-index:200;
-  /* solid white — social bar inside provides its own blue bg */
-  background:#FFFFFF;
-  border-bottom:1px solid var(--border);
-  transition:box-shadow var(--t);
-  /* Prevent any backdrop-filter from conflicting with z-index stacking */
-  isolation: isolate;
-}
-header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 
 /* Header top row: Logo | Search | Actions — perfect 3-column alignment */
 .header-top{
@@ -505,7 +509,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative}
 .pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
-.pcard-img{height:162px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
+.pcard-img{height:210px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
 .pcard:hover .pcard-img{background:#f0f2f5}
 .pcard-icon{width:74px;height:74px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10)}
 .pcard:hover .pcard-icon{transform:scale(1.08) rotate(-3deg)}
@@ -519,9 +523,17 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .pcard-body{padding:11px}
 .pcat{font-family:'Hind Siliguri',sans-serif;font-size:.62rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .pname{font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.pbrand{font-size:.7rem;color:var(--text-light);margin-bottom:7px}
+.pbrand{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;font-weight:600;color:var(--blue);margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+/* ── GLOBAL STAR COLOUR — golden, shadow-free ── */
+.pstars, .fp-stars, .pd-stars, .gold-stars,
+.fp-avg-stars, .pd-review-starsrow, .pd-review-stars,
+.modal-stars, .rec-card-stars {
+  color: #F5A623 !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
 .prating{display:flex;align-items:center;gap:4px;margin-bottom:9px}
-.pstars{color:#F5A623;font-size:.88rem;letter-spacing:1px;line-height:1;overflow:visible}
+.pstars{font-size:.88rem;letter-spacing:1px;line-height:1;overflow:visible}
 .prating span{font-size:.65rem;color:var(--text-light)}
 .pfooter{display:flex;align-items:flex-end;justify-content:space-between;gap:5px}
 .price-block .old{font-size:.67rem;color:var(--text-light);text-decoration:line-through}
@@ -957,7 +969,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .cart-items{flex:1;overflow-y:auto;padding:13px 19px}
 .ci{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--blue-light)}
 .ci:last-child{border-bottom:none}
-.ci-icon{width:48px;height:48px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.ci-icon{width:56px;height:56px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
 .ci-info{flex:1}
 .ci-name{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:600;margin-bottom:2px}
 .ci-brand{font-size:.68rem;color:var(--text-light);margin-bottom:5px}
@@ -986,7 +998,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .form-group label{font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-mid)}
 .form-inp{padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);outline:none;background:var(--blue-light);transition:border-color var(--t)}
 .form-inp:focus{border-color:var(--blue);background:white}
-.form-sel{padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text);background:var(--blue-light);outline:none;cursor:pointer}
+.form-sel{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.9375rem;color:var(--text);background:var(--blue-light);outline:none;cursor:pointer;appearance:auto;-webkit-appearance:auto;min-height:42px;transition:border-color var(--t),box-shadow var(--t),background var(--t)}.form-sel:focus{border-color:var(--blue);background:white;box-shadow:var(--glow)}
 
 /* ── TRACK MODAL ── */
 /* track modal replaced by full page */
@@ -1291,7 +1303,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
   /* 2-col product grid */
   .pgrid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .pcard-img{height:130px}
+  .pcard-img{height:170px}
   .pcard-icon{width:58px;height:58px;font-size:1.5rem}
   .parea-header{flex-wrap:nowrap;gap:8px;align-items:center;margin-bottom:10px}
   .parea-header h2{font-size:.85rem;white-space:nowrap}
@@ -1342,7 +1354,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .promo-item:nth-child(n+4){display:none}
   .header-top{padding:8px 12px}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:8px}
-  .pcard-img{height:118px}
+  .pcard-img{height:155px}
   .ncat{padding:7px 12px;font-size:.74rem}
   .hbtn{padding:8px 9px}
 
@@ -2001,7 +2013,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   transition:all var(--t);display:flex;flex-direction:column;
 }
 .rec-card:hover{border-color:rgba(0,122,255,.35);box-shadow:0 6px 22px rgba(0,122,255,.12);transform:translateY(-3px)}
-.rec-card-img{height:88px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;flex-shrink:0}
+.rec-card-img{height:110px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;flex-shrink:0;overflow:hidden;position:relative}
 .rec-card-body{padding:9px 10px 11px;flex:1;display:flex;flex-direction:column;gap:2px}
 .rec-card-cat{font-family:'Hind Siliguri',sans-serif;font-size:.6rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
 .rec-card-name{font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -2440,13 +2452,13 @@ footer, footer *:not(i):not([class*="fa-"]) {
   <!-- Category Nav -->
   <div class="nav-cats">
     <button class="ncat active" onclick="openCatPage('সব',this)"><i class="fa-solid fa-border-all"></i> সব পণ্য</button>
-    <button class="ncat" onclick="openCatPage('বই',this)"><i class="fa-solid fa-book"></i> বই</button>
+    <button class="ncat" onclick="openCatPage('বই',this)"><i class="fa-solid fa-book-open"></i> বই</button>
     <button class="ncat" onclick="openCatPage('ইলেকট্রনিক্স',this)"><i class="fa-solid fa-mobile-screen"></i> ইলেকট্রনিক্স</button>
     <button class="ncat" onclick="openCatPage('ফ্যাশন',this)"><i class="fa-solid fa-shirt"></i> ফ্যাশন</button>
-    <button class="ncat" onclick="openCatPage('হোম',this)"><i class="fa-solid fa-house"></i> হোম & কিচেন</button>
-    <button class="ncat" onclick="openCatPage('বিউটি',this)"><i class="fa-solid fa-spa"></i> বিউটি</button>
-    <button class="ncat" onclick="openCatPage('স্টেশনারি',this)"><i class="fa-solid fa-pen-ruler"></i> স্টেশনারি</button>
-    <button class="ncat" onclick="openCatPage('শিশু',this)"><i class="fa-solid fa-child"></i> শিশু পণ্য</button>
+    <button class="ncat" onclick="openCatPage('হোম',this)"><i class="fa-solid fa-couch"></i> হোম & কিচেন</button>
+    <button class="ncat" onclick="openCatPage('বিউটি',this)"><i class="fa-solid fa-star"></i> বিউটি</button>
+    <button class="ncat" onclick="openCatPage('স্টেশনারি',this)"><i class="fa-solid fa-pencil"></i> স্টেশনারি</button>
+    <button class="ncat" onclick="openCatPage('শিশু',this)"><i class="fa-solid fa-baby"></i> শিশু পণ্য</button>
     <button class="ncat" onclick="openCatPage('স্পোর্টস',this)"><i class="fa-solid fa-dumbbell"></i> স্পোর্টস</button>
   </div>
 </header>
@@ -3549,10 +3561,14 @@ const REC_CARD_W = 158; // card width (148) + gap (10)
 
 function buildRecCard(p) {
   const disc = p.old_price ? Math.round((1 - p.price / p.old_price) * 100) : 0;
+  const recImgHtml = p.image_url
+    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:6px;border-radius:0;background:#fff" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+       <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color};display:none"></i>`
+    : `<i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color}"></i>`;
   return `
     <div class="rec-card" onclick="openProduct('${p.id}')">
-      <div class="rec-card-img" style="background:linear-gradient(135deg,${p.color}22,${p.color}11)">
-        <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color}"></i>
+      <div class="rec-card-img" style="background:${p.image_url?'#fff':`linear-gradient(135deg,${p.color}22,${p.color}11)`}">
+        ${recImgHtml}
       </div>
       <div class="rec-card-body">
         <div class="rec-card-cat">${p.category}</div>
@@ -3792,11 +3808,16 @@ function updateCounts() {
 
 function buildProductCard(p) {
   const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
-  // FIX: Show real image from Supabase Storage when image_url exists; fall back to icon
+  const isBook = p.category === 'বই';
+  // Show real image; fall back to icon
   const imgHtml = p.image_url
-    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:6px;border-radius:0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;border-radius:0;background:#fff" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     : '';
   const iconHtml = `<div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color});${p.image_url?'display:none':''}"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
+  // Books: show author; others: show brand
+  const subLabel = isBook
+    ? (p.author ? `<i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${p.author}` : '')
+    : (p.brand ? `<i class="fa-solid fa-tag" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${p.brand}` : '');
   return `<div class="pcard" onclick="openProduct('${p.id}')">
     <div class="pcard-img">
       ${imgHtml}${iconHtml}
@@ -3806,7 +3827,7 @@ function buildProductCard(p) {
     <div class="pcard-body">
       <div class="pcat bn">${p.category}</div>
       <div class="pname bn">${p.name}</div>
-      <div class="pbrand">${p.brand||''}</div>
+      <div class="pbrand bn">${subLabel}</div>
       <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
       <div class="pfooter">
         <div class="price-block">
@@ -3814,8 +3835,7 @@ function buildProductCard(p) {
           <div><span class="new bn">৳${Number(p.price).toLocaleString()}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
         </div>
         <div class="card-btns">
-          <button class="btn-cart bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে</button>
-          <button class="btn-buy bn" onclick="event.stopPropagation();openProductAndBuy('${p.id}')"><i class="fa-solid fa-bolt"></i>কিনুন</button>
+          <button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
         </div>
       </div>
     </div>
@@ -4016,8 +4036,8 @@ function openProduct(id, pushUrl = true) {
   if (iconEl) {
     if (p.image_url) {
       // FIX: Show real image from Supabase Storage when available
-      iconEl.style.cssText = 'width:200px;height:200px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10);';
-      iconEl.outerHTML = `<img id="fpIcon" src="${p.image_url}" alt="${p.name}" style="width:200px;height:200px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10)" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
+      iconEl.style.cssText = 'width:240px;height:240px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10);';
+      iconEl.outerHTML = `<img id="fpIcon" src="${p.image_url}" alt="${p.name}" style="width:240px;height:240px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10)" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
     } else {
       iconEl.style.cssText = `width:140px;height:140px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 12px 40px rgba(0,0,0,.14);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
       iconEl.innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
@@ -4131,8 +4151,14 @@ function updateCartBadge() { document.getElementById('cartBadge').textContent = 
 function renderCartItems() {
   const el = document.getElementById('cartItems');
   if(!cart.length){ el.innerHTML='<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p class="bn">কার্ট খালি আছে</p></div>'; document.getElementById('cartTotal').textContent='৳ ০'; return; }
-  el.innerHTML = cart.map(item=>`<div class="ci">
-    <div class="ci-icon" style="background:${item.color}22"><i class="fa-solid ${item.icon||'fa-box'}" style="color:${item.color};font-size:1.3rem"></i></div>
+  el.innerHTML = cart.map(item=>{
+    const thumbHtml = item.image_url
+      ? `<div class="ci-icon" style="background:#f8f9fa;border:1px solid var(--border);overflow:hidden;padding:0">
+           <img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:contain;padding:3px" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${item.icon||'fa-box'}\\' style=\\'color:${item.color};font-size:1.3rem\\'></i>';this.parentElement.style.background='${item.color}22'">
+         </div>`
+      : `<div class="ci-icon" style="background:${item.color}22"><i class="fa-solid ${item.icon||'fa-box'}" style="color:${item.color};font-size:1.3rem"></i></div>`;
+    return `<div class="ci">
+    ${thumbHtml}
     <div class="ci-info">
       <div class="ci-name bn">${item.name}</div>
       <div class="ci-brand">${item.brand||''}</div>
@@ -4144,7 +4170,8 @@ function renderCartItems() {
       </div>
     </div>
     <div class="ci-price bn">৳${(item.price*item.qty).toLocaleString()}</div>
-  </div>`).join('');
+  </div>`;
+  }).join('');
   // Cart shows ONLY book subtotal (no delivery)
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
   document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString()}`;
@@ -5208,6 +5235,8 @@ function buildSpecTable(p) {
     const lbl = isBook ? 'প্রকাশনী' : 'ব্র্যান্ড';
     rows.push([lbl, p.brand]);
   }
+  // Book type shown only for books
+  if (isBook && p.book_type) rows.push(['বইয়ের ধরণ', p.book_type]);
   // Author shown only under the title (not in table)
   // Stock and Badge rows removed intentionally
   if (p.rating) rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
@@ -6271,15 +6300,15 @@ init();
 // CATEGORY FULL PAGE
 // ══════════════════════════════════════════════════
 const CAT_META = {
-  'সব':         { icon: '🛍️',  color: 'linear-gradient(120deg,var(--blue),var(--blue-dark))',   sub: 'সকল ক্যাটাগরির পণ্য একসাথে' },
-  'বই':         { icon: '📚',  color: 'linear-gradient(120deg,#7C3AED,#5B21B6)',                 sub: 'বই, উপন্যাস, পাঠ্যপুস্তক ও আরো' },
-  'ইলেকট্রনিক্স':{ icon: '📱', color: 'linear-gradient(120deg,#0EA5E9,#0369A1)',                 sub: 'স্মার্টফোন, ট্যাব, গ্যাজেট ও আনুষঙ্গিক' },
-  'ফ্যাশন':    { icon: '👗',  color: 'linear-gradient(120deg,#EC4899,#BE185D)',                  sub: 'পোশাক, জুতা, ব্যাগ ও আনুষঙ্গিক' },
-  'হোম':        { icon: '🏠',  color: 'linear-gradient(120deg,#10B981,#065F46)',                  sub: 'গৃহসজ্জা, কিচেন ও হোম ডেকোর' },
-  'বিউটি':     { icon: '💄',  color: 'linear-gradient(120deg,#F59E0B,#B45309)',                  sub: 'স্কিনকেয়ার, মেকআপ ও পার্সোনাল কেয়ার' },
-  'স্টেশনারি': { icon: '✏️',  color: 'linear-gradient(120deg,#6366F1,#4338CA)',                  sub: 'কলম, ডায়েরি, আর্ট সাপ্লাইজ' },
-  'শিশু':       { icon: '🧸',  color: 'linear-gradient(120deg,#F97316,#C2410C)',                  sub: 'শিশুদের খেলনা, পোশাক ও আনুষঙ্গিক' },
-  'স্পোর্টস':  { icon: '⚽',  color: 'linear-gradient(120deg,#14B8A6,#0F766E)',                  sub: 'স্পোর্টস ইকুইপমেন্ট ও ফিটনেস গিয়ার' },
+  'সব':         { icon: 'fa-border-all',    color: 'linear-gradient(120deg,var(--blue),var(--blue-dark))',   sub: 'সকল ক্যাটাগরির পণ্য একসাথে' },
+  'বই':         { icon: 'fa-book-open',      color: 'linear-gradient(120deg,#7C3AED,#5B21B6)',                 sub: 'বই, উপন্যাস, পাঠ্যপুস্তক ও আরো' },
+  'ইলেকট্রনিক্স':{ icon: 'fa-mobile-screen', color: 'linear-gradient(120deg,#0EA5E9,#0369A1)',                 sub: 'স্মার্টফোন, ট্যাব, গ্যাজেট ও আনুষঙ্গিক' },
+  'ফ্যাশন':    { icon: 'fa-shirt',           color: 'linear-gradient(120deg,#EC4899,#BE185D)',                  sub: 'পোশাক, জুতা, ব্যাগ ও আনুষঙ্গিক' },
+  'হোম':        { icon: 'fa-couch',           color: 'linear-gradient(120deg,#10B981,#065F46)',                  sub: 'গৃহসজ্জা, কিচেন ও হোম ডেকোর' },
+  'বিউটি':     { icon: 'fa-star',             color: 'linear-gradient(120deg,#F59E0B,#B45309)',                  sub: 'স্কিনকেয়ার, মেকআপ ও পার্সোনাল কেয়ার' },
+  'স্টেশনারি': { icon: 'fa-pencil',           color: 'linear-gradient(120deg,#6366F1,#4338CA)',                  sub: 'কলম, ডায়েরি, আর্ট সাপ্লাইজ' },
+  'শিশু':       { icon: 'fa-baby',             color: 'linear-gradient(120deg,#F97316,#C2410C)',                  sub: 'শিশুদের খেলনা, পোশাক ও আনুষঙ্গিক' },
+  'স্পোর্টস':  { icon: 'fa-dumbbell',         color: 'linear-gradient(120deg,#14B8A6,#0F766E)',                  sub: 'স্পোর্টস ইকুইপমেন্ট ও ফিটনেস গিয়ার' },
 };
 
 let currentCatPage = 'সব';
@@ -6301,7 +6330,7 @@ function openCatPage(cat, el) {
 
   // Hero strip
   document.getElementById('catPageHero').style.background = meta.color;
-  document.getElementById('catPageIcon').textContent = meta.icon;
+  document.getElementById('catPageIcon').innerHTML = `<i class="fa-solid ${meta.icon}" style="color:white;font-size:1.4rem"></i>`;
   document.getElementById('catPageTitle').textContent = cat;
   document.getElementById('catPageSubtitle').textContent = meta.sub;
   document.getElementById('catPageBreadcrumb').textContent = cat;
@@ -6725,20 +6754,12 @@ function handleHeaderScroll() {
 
   h.classList.toggle('scrolled', scrollY > 4);
 
-  // Hide the blue social bar when scrolling down past 60px; show when scrolling up
-  let barChanged = false;
-  if (scrollY > 60) {
-    const scrollingDown = scrollY > _lastScrollY;
-    const wasHidden = h.classList.contains('bar-hidden');
-    h.classList.toggle('bar-hidden', scrollingDown);
-    barChanged = h.classList.contains('bar-hidden') !== wasHidden;
-  } else {
-    const wasHidden = h.classList.contains('bar-hidden');
+  // Hide the blue social bar when scrolling down past 80px; show when near top
+  if (scrollY > 80) {
+    h.classList.toggle('bar-hidden', scrollY > _lastScrollY);
+  } else if (scrollY < 10) {
     h.classList.remove('bar-hidden');
-    barChanged = wasHidden;
   }
-
-  if (barChanged) setTimeout(updateHeaderHeight, 320); // after CSS transition
 
   _lastScrollY = scrollY;
   _scrollTicking = false;
