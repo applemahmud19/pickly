@@ -1715,132 +1715,142 @@ body {
 </div><!-- /appShell -->
 
 <!-- ══════════════════════════════════════
-     PRODUCT MODAL
+     PRODUCT MODAL — Compact Side-by-Side
 ══════════════════════════════════════ -->
 <div class="modal-overlay" id="productModal" onclick="if(event.target===this)closeModal('productModal')">
-  <div class="modal-box">
-    <div class="modal-header">
+  <div class="modal-box" style="max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="modal-header" style="flex-shrink:0">
       <div class="modal-title" id="productModalTitle">পণ্য যোগ করুন</div>
       <button class="modal-close" onclick="closeModal('productModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="overflow-y:auto;flex:1;padding:16px">
       <input type="hidden" id="editProductId">
-      <div style="display:grid;gap:14px">
 
-        <!-- Image Upload -->
-        <div class="form-group">
+      <!-- Two-column layout: Left = image, Right = fields -->
+      <div style="display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start">
+
+        <!-- LEFT COLUMN: Image Upload -->
+        <div style="display:flex;flex-direction:column;gap:8px;position:sticky;top:0">
           <label class="form-label">Product Image</label>
-          <div class="upload-preview empty" id="imagePreview">
+          <div class="upload-preview empty" id="imagePreview" style="height:170px;max-height:170px;aspect-ratio:unset;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
           </div>
-          <div class="upload-zone" id="uploadZone">
+          <div class="upload-zone" id="uploadZone" style="padding:10px 8px;gap:3px;min-height:unset">
             <input type="file" id="imageFile" accept="image/*" onchange="handleImageSelect(this)">
-            <i class="fa-solid fa-cloud-arrow-up uz-icon"></i>
-            <div class="uz-title">ছবি এখানে ড্র্যাগ করুন অথবা ক্লিক করুন</div>
-            <div class="uz-sub">PNG, JPG, WEBP · Max 5MB</div>
-            <div class="uz-drag-hint">✦ Drop to upload!</div>
+            <i class="fa-solid fa-cloud-arrow-up uz-icon" style="font-size:1.2rem"></i>
+            <div class="uz-title" style="font-size:0.72rem">ক্লিক বা ড্র্যাগ করুন</div>
+            <div class="uz-sub" style="font-size:0.62rem">PNG, JPG, WEBP · Max 5MB</div>
           </div>
           <div class="upload-progress" id="uploadProgress">
             <div class="upload-progress-bar" id="uploadProgressBar"></div>
           </div>
-          <div style="font-size:0.7rem;color:var(--text3);margin-top:4px" id="uploadFileName"></div>
+          <div style="font-size:0.62rem;color:var(--text3);word-break:break-all;line-height:1.4" id="uploadFileName"></div>
         </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Product Name <span class="required">*</span></label>
-            <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits">
-          </div>
-          <!-- Brand (for non-book products) -->
-          <div class="form-group" id="brandField">
-            <label class="form-label">Brand Name</label>
-            <input class="form-inp" type="text" id="pBrand" placeholder="e.g. Samsung, Nike...">
-          </div>
-          <!-- Author (for books only — shown when category = বই) -->
-          <div class="form-group conditional-field" id="authorField">
-            <label class="form-label bn-label">লেখকের নাম (Author)</label>
-            <input class="form-inp" type="text" id="pAuthor" placeholder="যেমন: হুমায়ূন আহমেদ, James Clear...">
-          </div>
-        </div>
+        <!-- RIGHT COLUMN: All input fields -->
+        <div style="display:grid;gap:10px">
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Category <span class="required">*</span></label>
-            <select class="form-inp" id="pCategory" onchange="handleCategoryChange(this.value)">
-              <option value="">— Select —</option>
-              <option value="বই">বই (Books)</option>
-              <option value="ইলেকট্রনিক্স">ইলেকট্রনিক্স</option>
-              <option value="ফ্যাশন">ফ্যাশন</option>
-              <option value="হোম">হোম & কিচেন</option>
-              <option value="বিউটি">বিউটি</option>
-              <option value="স্টেশনারি">স্টেশনারি</option>
-              <option value="শিশু">শিশু পণ্য</option>
-              <option value="স্পোর্টস">স্পোর্টস</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Badge</label>
-            <select class="form-inp" id="pBadge">
-              <option value="">None</option>
-              <option value="new">New</option>
-              <option value="hot">Hot</option>
-              <option value="sale">Sale</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Conditional: Publisher + Book Type (only for বই) -->
-        <div class="conditional-field" id="publisherField" style="gap:0">
-          <div class="form-grid" style="width:100%;gap:12px">
+          <!-- Name + Brand/Author row -->
+          <div class="form-grid" style="gap:10px">
             <div class="form-group">
-              <label class="form-label bn-label">প্রকাশনীর নাম</label>
-              <input class="form-inp" type="text" id="pPublisher" placeholder="যেমন: অন্যপ্রকাশ, প্রথমা...">
+              <label class="form-label">Product Name <span class="required">*</span></label>
+              <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits" style="padding:8px 11px">
+            </div>
+            <div class="form-group" id="brandField">
+              <label class="form-label">Brand Name</label>
+              <input class="form-inp" type="text" id="pBrand" placeholder="e.g. Samsung, Nike..." style="padding:8px 11px">
+            </div>
+            <div class="form-group conditional-field" id="authorField">
+              <label class="form-label bn-label">লেখকের নাম (Author)</label>
+              <input class="form-inp" type="text" id="pAuthor" placeholder="যেমন: হুমায়ূন আহমেদ..." style="padding:8px 11px">
+            </div>
+          </div>
+
+          <!-- Category + Badge row -->
+          <div class="form-grid" style="gap:10px">
+            <div class="form-group">
+              <label class="form-label">Category <span class="required">*</span></label>
+              <select class="form-inp" id="pCategory" onchange="handleCategoryChange(this.value)" style="padding:8px 11px">
+                <option value="">— Select —</option>
+                <option value="বই">বই (Books)</option>
+                <option value="ইলেকট্রনিক্স">ইলেকট্রনিক্স</option>
+                <option value="ফ্যাশন">ফ্যাশন</option>
+                <option value="হোম">হোম & কিচেন</option>
+                <option value="বিউটি">বিউটি</option>
+                <option value="স্টেশনারি">স্টেশনারি</option>
+                <option value="শিশু">শিশু পণ্য</option>
+                <option value="স্পোর্টস">স্পোর্টস</option>
+              </select>
             </div>
             <div class="form-group">
-              <label class="form-label bn-label" style="display:flex;align-items:center;justify-content:space-between">
-                বইয়ের ধরণ
-                <button type="button" onclick="openAddBookTypeModal()" style="font-size:0.65rem;padding:2px 8px;border-radius:6px;border:1px solid rgba(0,122,255,0.3);background:var(--blue-ll);color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;gap:4px"><i class="fa-solid fa-plus" style="font-size:0.55rem"></i> নতুন ধরণ</button>
-              </label>
-              <select class="form-inp" id="pBookType">
-                <option value="">— ধরণ বেছে নিন —</option>
+              <label class="form-label">Badge</label>
+              <select class="form-inp" id="pBadge" style="padding:8px 11px">
+                <option value="">None</option>
+                <option value="new">New</option>
+                <option value="hot">Hot</option>
+                <option value="sale">Sale</option>
               </select>
             </div>
           </div>
-        </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Sale Price (৳) <span class="required">*</span></label>
-            <input class="form-inp" type="number" id="pPrice" placeholder="0" min="0">
+          <!-- Publisher + Book Type (books only) -->
+          <div class="conditional-field" id="publisherField" style="gap:0">
+            <div class="form-grid" style="width:100%;gap:10px">
+              <div class="form-group">
+                <label class="form-label bn-label">প্রকাশনীর নাম</label>
+                <input class="form-inp" type="text" id="pPublisher" placeholder="যেমন: অন্যপ্রকাশ..." style="padding:8px 11px">
+              </div>
+              <div class="form-group">
+                <label class="form-label bn-label" style="display:flex;align-items:center;justify-content:space-between">
+                  বইয়ের ধরণ
+                  <button type="button" onclick="openAddBookTypeModal()" style="font-size:0.62rem;padding:2px 7px;border-radius:5px;border:1px solid rgba(0,122,255,0.3);background:var(--blue-ll);color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;gap:3px"><i class="fa-solid fa-plus" style="font-size:0.5rem"></i> নতুন</button>
+                </label>
+                <select class="form-inp" id="pBookType" style="padding:8px 11px">
+                  <option value="">— ধরণ বেছে নিন —</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Original Price (৳)</label>
-            <input class="form-inp" type="number" id="pOldPrice" placeholder="0" min="0">
-          </div>
-        </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Stock Qty <span class="required">*</span></label>
-            <input class="form-inp" type="number" id="pStock" placeholder="0" min="0">
+          <!-- Price row -->
+          <div class="form-grid" style="gap:10px">
+            <div class="form-group">
+              <label class="form-label">Sale Price (৳) <span class="required">*</span></label>
+              <input class="form-inp" type="number" id="pPrice" placeholder="0" min="0" style="padding:8px 11px">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Original Price (৳)</label>
+              <input class="form-inp" type="number" id="pOldPrice" placeholder="0" min="0" style="padding:8px 11px">
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Color Hex</label>
-            <input class="form-inp" type="text" id="pColor" placeholder="#007AFF">
+
+          <!-- Stock + Color row -->
+          <div class="form-grid" style="gap:10px">
+            <div class="form-group">
+              <label class="form-label">Stock Qty <span class="required">*</span></label>
+              <input class="form-inp" type="number" id="pStock" placeholder="0" min="0" style="padding:8px 11px">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Color Hex</label>
+              <input class="form-inp" type="text" id="pColor" placeholder="#007AFF" style="padding:8px 11px">
+            </div>
           </div>
-        </div>
 
-        <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea class="form-inp" id="pDescription" placeholder="পণ্যের বিবরণ লিখুন..."></textarea>
-        </div>
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label">Description <span style="color:var(--text3);font-weight:400;font-family:var(--font);text-transform:none;letter-spacing:0;font-size:0.65rem">(supports bullet points with * and line breaks)</span></label>
+            <textarea class="form-inp" id="pDescription" placeholder="পণ্যের বিবরণ লিখুন...&#10;* বুলেট পয়েন্টের জন্য * দিয়ে শুরু করুন&#10;* প্রতিটি লাইন নতুন পয়েন্ট হবে" style="min-height:72px;max-height:130px;padding:8px 11px;font-family:var(--font-bn);line-height:1.6;white-space:pre-line;resize:vertical"></textarea>
+          </div>
 
-        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
-          <button class="btn btn-ghost" onclick="closeModal('productModal')">Cancel</button>
-          <button class="btn btn-primary" onclick="saveProduct()" id="saveProductBtn">
-            <i class="fa-solid fa-floppy-disk"></i> Save Product
-          </button>
-        </div>
+        </div><!-- /right column -->
+      </div><!-- /two-column grid -->
+
+      <!-- Sticky footer buttons -->
+      <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:12px;margin-top:4px;border-top:1px solid var(--border)">
+        <button class="btn btn-ghost" onclick="closeModal('productModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveProduct()" id="saveProductBtn">
+          <i class="fa-solid fa-floppy-disk"></i> Save Product
+        </button>
       </div>
     </div>
   </div>
@@ -1914,7 +1924,25 @@ body {
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">District</label>
-              <input class="form-inp" type="text" id="oe-district" placeholder="e.g. Dhaka">
+              <select class="form-inp" id="oe-district" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                <option value="">— Select District —</option>
+                <option>Dhaka</option><option>Chittagong</option><option>Sylhet</option><option>Rajshahi</option>
+                <option>Khulna</option><option>Barisal</option><option>Rangpur</option><option>Mymensingh</option>
+                <option>Comilla</option><option>Narayanganj</option><option>Gazipur</option><option>Narsingdi</option>
+                <option>Munshiganj</option><option>Manikganj</option><option>Faridpur</option><option>Madaripur</option>
+                <option>Gopalganj</option><option>Shariatpur</option><option>Kishoreganj</option><option>Tangail</option>
+                <option>Jamalpur</option><option>Sherpur</option><option>Netrokona</option><option>Brahmanbaria</option>
+                <option>Chandpur</option><option>Lakshmipur</option><option>Noakhali</option><option>Feni</option>
+                <option>Cox's Bazar</option><option>Rangamati</option><option>Khagrachhari</option><option>Bandarban</option>
+                <option>Bogura</option><option>Joypurhat</option><option>Naogaon</option><option>Natore</option>
+                <option>Chapainawabganj</option><option>Pabna</option><option>Sirajganj</option><option>Kurigram</option>
+                <option>Lalmonirhat</option><option>Nilphamari</option><option>Gaibandha</option><option>Thakurgaon</option>
+                <option>Dinajpur</option><option>Panchagarh</option><option>Jashore</option><option>Satkhira</option>
+                <option>Magura</option><option>Jhenaidah</option><option>Narail</option><option>Chuadanga</option>
+                <option>Meherpur</option><option>Kushtia</option><option>Bagerhat</option><option>Pirojpur</option>
+                <option>Jhalokati</option><option>Bhola</option><option>Patuakhali</option><option>Barguna</option>
+                <option>Habiganj</option><option>Moulvibazar</option><option>Sunamganj</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">Delivery Fee (৳)</label>
@@ -3281,7 +3309,19 @@ function fillOrderEditForm(o) {
   document.getElementById('oe-name').value = o.customer_name || '';
   document.getElementById('oe-phone').value = o.customer_phone || '';
   document.getElementById('oe-email').value = o.customer_email || '';
-  document.getElementById('oe-district').value = o.customer_district || '';
+  // District: try exact match in select, fall back to first option
+  const districtSel = document.getElementById('oe-district');
+  if (districtSel) {
+    const districtVal = o.customer_district || '';
+    const matchOpt = Array.from(districtSel.options).find(opt => opt.value === districtVal || opt.text === districtVal);
+    districtSel.value = matchOpt ? matchOpt.value : '';
+    // If not found as option but has a value, add a temporary option
+    if (!matchOpt && districtVal) {
+      const opt = document.createElement('option');
+      opt.value = districtVal; opt.text = districtVal; opt.selected = true;
+      districtSel.appendChild(opt);
+    }
+  }
   document.getElementById('oe-address').value = o.customer_address || '';
   document.getElementById('oe-delivery-fee').value = o.delivery_fee || '';
   // Reset override fields
