@@ -735,14 +735,37 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .order-tab-panel.active { display: block; animation: secIn 0.2s ease both; }
 
 .oe-item-row {
-  display: grid; grid-template-columns: 1fr 80px 90px;
+  display: grid; grid-template-columns: 1fr 72px 90px 32px;
   gap: 8px; align-items: center;
   padding: 9px 12px; border-radius: 9px;
   background: var(--bg3); border: 1px solid var(--border);
   font-size: 0.8rem;
 }
+.oe-item-row.manual-item { border-color: rgba(175,82,222,0.3); background: rgba(175,82,222,0.05); }
 .oe-item-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .oe-item-sub { font-size: 0.68rem; color: var(--text3); }
+.oe-item-remove { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.2); color: var(--red); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; transition: all var(--t); flex-shrink: 0; }
+.oe-item-remove:hover { background: rgba(255,59,48,0.18); }
+/* ── Order Edit: responsive price override grid ── */
+.oe-price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 580px) {
+  .oe-price-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  .oe-price-grid { grid-template-columns: 1fr; }
+  .oe-item-row { grid-template-columns: 1fr 56px 72px 26px; gap: 4px; padding: 7px 8px; font-size: 0.76rem; }
+}
+@media (max-width: 480px) {
+  .oe-item-row { grid-template-columns: 1fr 64px 80px 28px; gap: 5px; padding: 8px 9px; }
+  /* Manual item panel responsive */
+  #oe-manual-item-panel .manual-item-grid { grid-template-columns: 1fr 1fr !important; }
+  #oe-manual-item-panel .manual-item-grid .manual-add-btn { grid-column: 1 / -1; }
+}
 
 
 @media (max-width: 900px) {
@@ -799,6 +822,7 @@ body {
   .login-title { font-size: 1.1rem; }
   .google-btn { padding: 12px 14px; font-size: 0.84rem; }
   .login-security { font-size: 0.74rem; }
+  #oe-price-override-grid { grid-template-columns: 1fr 1fr !important; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1894,22 +1918,89 @@ body {
             </div>
             <div class="form-group">
               <label class="form-label">Delivery Fee (৳)</label>
-              <input class="form-inp" type="number" id="oe-delivery-fee" placeholder="0" min="0">
+              <input class="form-inp" type="number" id="oe-delivery-fee" placeholder="0" min="0" oninput="recalcOrderTotal()">
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Address</label>
             <textarea class="form-inp" id="oe-address" rows="2" placeholder="Full delivery address..."></textarea>
           </div>
+
+          <!-- Items Section -->
           <div style="margin-top:4px">
-            <div style="font-size:0.68rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">
-              <i class="fa-solid fa-boxes-stacked" style="margin-right:5px"></i>Items — Quantity & Price
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+              <div style="font-size:0.68rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em">
+                <i class="fa-solid fa-boxes-stacked" style="margin-right:5px"></i>Items — Quantity & Price
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-secondary btn-xs" onclick="toggleAddProductSearch()">
+                  <i class="fa-solid fa-magnifying-glass"></i> Add Product
+                </button>
+                <button class="btn btn-ghost btn-xs" onclick="addManualItem()">
+                  <i class="fa-solid fa-gift"></i> Manual Item
+                </button>
+              </div>
             </div>
+
+            <!-- Add Product Search Panel -->
+            <div id="oe-product-search-panel" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:10px">
+              <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Search & Add Existing Product</div>
+              <div class="search-bar" style="margin-bottom:8px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search product by name..." id="oe-product-search-inp" oninput="searchProductsForOrder()" autocomplete="off">
+              </div>
+              <div id="oe-product-search-results" style="display:grid;gap:5px;max-height:180px;overflow-y:auto"></div>
+            </div>
+
+            <!-- Manual Item Panel -->
+            <div id="oe-manual-item-panel" style="display:none;background:rgba(175,82,222,0.06);border:1px solid rgba(175,82,222,0.2);border-radius:10px;padding:11px;margin-bottom:10px">
+              <div style="font-size:0.62rem;font-weight:700;color:var(--purple);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px"><i class="fa-solid fa-gift"></i> Add Manual Gift / Item</div>
+            <div style="display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:flex-end" class="manual-item-grid">
+                <div class="form-group" style="margin:0">
+                  <label class="form-label">Item / Gift Name</label>
+                  <input class="form-inp" type="text" id="oe-manual-name" placeholder="e.g. Free Gift, Custom Item..." style="font-size:0.82rem;padding:7px 10px">
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label class="form-label">Price (৳)</label>
+                  <input class="form-inp" type="number" id="oe-manual-price" placeholder="0" min="0" style="font-size:0.82rem;padding:7px 10px">
+                </div>
+                <button class="btn btn-secondary btn-sm manual-add-btn" onclick="confirmAddManualItem()" style="white-space:nowrap;align-self:flex-end">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+
             <div id="oe-items-list" style="display:grid;gap:7px"></div>
           </div>
+
+          <!-- Manual Price Override Section -->
+          <div style="background:linear-gradient(135deg,var(--bg3),var(--bg));border:1.5px solid var(--border2);border-radius:11px;padding:13px;margin-top:2px">
+            <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
+              <i class="fa-solid fa-calculator" style="color:var(--blue);margin-right:5px"></i>Price Override & Summary
+            </div>
+            <div class="oe-price-grid">
+              <div class="form-group" style="margin:0">
+                <label class="form-label" style="font-size:0.6rem">Subtotal (৳)</label>
+                <input class="form-inp" type="number" id="oe-subtotal-override" placeholder="Auto" min="0" style="font-size:0.8rem;padding:7px 10px;background:var(--surface)" oninput="recalcOrderTotal()" title="Leave blank to auto-calculate from items">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label" style="font-size:0.6rem">Discount (৳)</label>
+                <input class="form-inp" type="number" id="oe-discount-override" placeholder="0" min="0" style="font-size:0.8rem;padding:7px 10px" oninput="recalcOrderTotal()">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label" style="font-size:0.6rem">Total Override (৳)</label>
+                <input class="form-inp" type="number" id="oe-total-override" placeholder="Auto" min="0" style="font-size:0.8rem;padding:7px 10px;border-color:rgba(0,122,255,0.35)" title="Override final total manually">
+              </div>
+            </div>
+            <div id="oe-total-preview" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:0.8rem;display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--text2)">Calculated Total</span>
+              <span id="oe-calc-total" style="font-weight:800;color:var(--blue);font-size:1rem">৳0</span>
+            </div>
+          </div>
+
           <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;border-top:1px solid var(--border)">
             <button class="btn btn-ghost" onclick="switchOrderTab('overview')">Cancel</button>
-            <button class="btn btn-primary" onclick="saveOrderEdits()">
+            <button class="btn btn-primary" id="saveOrderEditsBtn" onclick="saveOrderEdits()">
               <i class="fa-solid fa-floppy-disk"></i> Save Changes
             </button>
           </div>
@@ -2973,6 +3064,19 @@ function renderAnalytics() {
 /* ══════════════════════════════════════
    PRODUCTS TABLE
 ══════════════════════════════════════ */
+/* Strip all emoji / pictographic characters from a string */
+function stripEmojis(str) {
+  if (!str) return str;
+  return str.replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+            .replace(/[\u{2600}-\u{27BF}]/gu, '')
+            .replace(/[\u{FE00}-\u{FE0F}]/gu, '')
+            .replace(/[\u{1F900}-\u{1F9FF}]/gu, '')
+            .replace(/[\u{1FA00}-\u{1FA9F}]/gu, '')
+            .replace(/[\u200D\uFE0F]/g, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+}
+
 function renderProducts() {
   const q  = (document.getElementById('productSearch')?.value || '').toLowerCase();
   const cf = document.getElementById('productCatFilter')?.value || '';
@@ -2989,12 +3093,13 @@ function renderProducts() {
   }
 
   tbody.innerHTML = filtered.map(p => {
+    const cleanName = stripEmojis(p.name || '');
     const disc = p.old_price ? Math.round((1 - p.price / p.old_price) * 100) : 0;
     const imgEl = p.image_url
       ? `<img src="${p.image_url}" style="width:52px;height:52px;border-radius:8px;object-fit:contain;border:1px solid var(--border);background:#f8f9fa;padding:2px" onerror="this.style.display='none'">`
       : `<div style="width:38px;height:38px;border-radius:8px;background:${p.color||'#007AFF'}18;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;color:${p.color||'#007AFF'}"><i class="fa-solid ${p.icon||'fa-box'}"></i></div>`;
     return `<tr>
-      <td><div style="display:flex;align-items:center;gap:10px">${imgEl}<div><div style="font-weight:600;font-size:0.84rem">${p.name || '—'}</div><div style="font-size:0.7rem;color:var(--text3)">${p.category==='বই' && p.author ? '✍ '+p.author : (p.brand || '—')}</div></div></div></td>
+      <td><div style="display:flex;align-items:center;gap:10px">${imgEl}<div><div style="font-weight:600;font-size:0.84rem">${cleanName || '—'}</div><div style="font-size:0.7rem;color:var(--text3)">${p.category==='বই' && p.author ? p.author : (p.brand || '—')}</div></div></div></td>
       <td><span style="font-size:0.7rem;font-weight:700;font-family:var(--mono);background:var(--blue-ll);color:var(--blue);padding:2px 8px;border-radius:6px;border:1px solid rgba(0,122,255,0.2)">${p.category || '—'}</span></td>
       <td><div style="font-weight:700">৳${Number(p.price || 0).toLocaleString()}</div>${p.old_price ? `<div style="font-size:0.7rem;text-decoration:line-through;color:var(--text3)">৳${Number(p.old_price).toLocaleString()}</div>` : ''}${disc ? `<div style="font-size:0.65rem;color:var(--red);font-weight:700">-${disc}%</div>` : ''}</td>
       <td style="font-family:var(--mono);font-size:0.82rem;color:${p.stock > 10 ? 'var(--green)' : p.stock > 0 ? 'var(--amber)' : 'var(--red)'};font-weight:600">${p.stock || 0}</td>
@@ -3172,19 +3277,160 @@ function refreshOrderModal(id) {
 }
 
 function fillOrderEditForm(o) {
+  console.log('[fillOrderEditForm] Populating edit form for order:', o.id, o.order_number);
   document.getElementById('oe-name').value = o.customer_name || '';
   document.getElementById('oe-phone').value = o.customer_phone || '';
   document.getElementById('oe-email').value = o.customer_email || '';
   document.getElementById('oe-district').value = o.customer_district || '';
   document.getElementById('oe-address').value = o.customer_address || '';
   document.getElementById('oe-delivery-fee').value = o.delivery_fee || '';
+  // Reset override fields
+  document.getElementById('oe-subtotal-override').value = '';
+  document.getElementById('oe-discount-override').value = o.discount || '';
+  document.getElementById('oe-total-override').value = '';
+  // Hide sub-panels
+  document.getElementById('oe-product-search-panel').style.display = 'none';
+  document.getElementById('oe-manual-item-panel').style.display = 'none';
+  document.getElementById('oe-product-search-inp').value = '';
+  document.getElementById('oe-product-search-results').innerHTML = '';
+  document.getElementById('oe-manual-name').value = '';
+  document.getElementById('oe-manual-price').value = '';
+  // Render items with remove button
+  renderEditItems(o);
+}
+
+/* Working item list for the edit tab — supports add/remove */
+let editItemsCache = [];
+
+function renderEditItems(o) {
   const items = Array.isArray(o.items) ? o.items : [];
-  document.getElementById('oe-items-list').innerHTML = items.map((item, idx) => `
-    <div class="oe-item-row">
-      <div><div class="oe-item-name">${item.name || 'Item'}</div><div class="oe-item-sub">Unit Price</div></div>
-      <input class="form-inp" type="number" value="${item.qty||1}" min="1" style="font-size:0.78rem;padding:6px 9px;text-align:center" id="oe-qty-${idx}" placeholder="Qty">
-      <input class="form-inp" type="number" value="${item.price||0}" min="0" style="font-size:0.78rem;padding:6px 9px" id="oe-price-${idx}" placeholder="Price">
-    </div>`).join('') || '<div style="color:var(--text3);font-size:0.78rem;padding:8px">No items</div>';
+  editItemsCache = items.map(i => ({ ...i })); // deep copy
+  rebuildItemsUI();
+}
+
+function rebuildItemsUI() {
+  const list = document.getElementById('oe-items-list');
+  if (!editItemsCache.length) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:0.78rem;padding:8px;text-align:center">No items — add products above</div>';
+    recalcOrderTotal();
+    return;
+  }
+  list.innerHTML = editItemsCache.map((item, idx) => `
+    <div class="oe-item-row ${item._manual ? 'manual-item' : ''}">
+      <div>
+        <div class="oe-item-name">${item.name || 'Item'}${item._manual ? ' <span style="font-size:0.6rem;color:var(--purple);font-family:var(--mono);font-weight:700">MANUAL</span>' : ''}</div>
+        <div class="oe-item-sub">Unit Price</div>
+      </div>
+      <input class="form-inp" type="number" value="${item.qty||1}" min="1" style="font-size:0.78rem;padding:6px 9px;text-align:center" id="oe-qty-${idx}" placeholder="Qty" oninput="updateItemCache(${idx})">
+      <input class="form-inp" type="number" value="${item.price||0}" min="0" style="font-size:0.78rem;padding:6px 9px" id="oe-price-${idx}" placeholder="Price" oninput="updateItemCache(${idx})">
+      <button class="oe-item-remove" onclick="removeEditItem(${idx})" title="Remove item"><i class="fa-solid fa-xmark"></i></button>
+    </div>`).join('');
+  recalcOrderTotal();
+}
+
+function updateItemCache(idx) {
+  const qty   = parseInt(document.getElementById(`oe-qty-${idx}`)?.value)   || 1;
+  const price = parseFloat(document.getElementById(`oe-price-${idx}`)?.value) || 0;
+  if (editItemsCache[idx]) { editItemsCache[idx].qty = qty; editItemsCache[idx].price = price; }
+  recalcOrderTotal();
+}
+
+function removeEditItem(idx) {
+  console.log('[removeEditItem] Removing item at index:', idx, editItemsCache[idx]?.name);
+  editItemsCache.splice(idx, 1);
+  rebuildItemsUI();
+}
+
+function recalcOrderTotal() {
+  // Gather values from inputs (live, before save)
+  const itemsForCalc = editItemsCache.map((item, idx) => {
+    const qtyEl   = document.getElementById(`oe-qty-${idx}`);
+    const priceEl = document.getElementById(`oe-price-${idx}`);
+    return {
+      qty:   qtyEl   ? (parseInt(qtyEl.value)   || item.qty   || 1) : (item.qty   || 1),
+      price: priceEl ? (parseFloat(priceEl.value) || item.price || 0) : (item.price || 0),
+    };
+  });
+  const autoSubtotal  = itemsForCalc.reduce((s,i) => s + i.price * i.qty, 0);
+  const subtotalInput = parseFloat(document.getElementById('oe-subtotal-override')?.value);
+  const subtotal      = !isNaN(subtotalInput) && subtotalInput >= 0 ? subtotalInput : autoSubtotal;
+  const delivery      = parseFloat(document.getElementById('oe-delivery-fee')?.value) || 0;
+  const discount      = parseFloat(document.getElementById('oe-discount-override')?.value) || 0;
+  const calcTotal     = Math.max(0, subtotal + delivery - discount);
+  const el = document.getElementById('oe-calc-total');
+  if (el) el.textContent = '৳' + calcTotal.toLocaleString();
+}
+
+/* Add product from existing products list */
+function toggleAddProductSearch() {
+  const panel = document.getElementById('oe-product-search-panel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    document.getElementById('oe-product-search-inp').focus();
+    searchProductsForOrder();
+  }
+}
+
+function searchProductsForOrder() {
+  const q = (document.getElementById('oe-product-search-inp').value || '').toLowerCase().trim();
+  const results = document.getElementById('oe-product-search-results');
+  const filtered = allProducts.filter(p =>
+    p.is_active !== false &&
+    (!q || (p.name||'').toLowerCase().includes(q) || (p.author||'').toLowerCase().includes(q) || (p.brand||'').toLowerCase().includes(q))
+  ).slice(0, 6);
+
+  if (!filtered.length) {
+    results.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:0.78rem;padding:10px;font-family:var(--font-bn)">কোনো পণ্য পাওয়া যায়নি</div>`;
+    return;
+  }
+  results.innerHTML = filtered.map(p => `
+    <div onclick="addProductToOrder('${p.id}')" style="display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all var(--t)" onmouseover="this.style.borderColor='var(--blue)';this.style.background='var(--blue-ll)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+      ${p.image_url ? `<img src="${p.image_url}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;border:1px solid var(--border);flex-shrink:0;background:#f8f9fa;padding:1px">` : `<div style="width:36px;height:36px;border-radius:6px;background:${p.color||'#007AFF'}18;display:flex;align-items:center;justify-content:center;color:${p.color||'#007AFF'};flex-shrink:0"><i class="fa-solid fa-box" style="font-size:0.8rem"></i></div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+        <div style="font-size:0.65rem;color:var(--text3);font-family:var(--mono)">৳${Number(p.price||0).toLocaleString()} · Stock: ${p.stock||0}</div>
+      </div>
+      <i class="fa-solid fa-plus" style="color:var(--blue);font-size:0.75rem;flex-shrink:0"></i>
+    </div>`).join('');
+}
+
+function addProductToOrder(productId) {
+  const p = allProducts.find(x => x.id === productId);
+  if (!p) return;
+  console.log('[addProductToOrder] Adding product to order:', p.name, '৳'+p.price);
+  // Check if already in list
+  const existing = editItemsCache.find(i => i.product_id === productId && !i._manual);
+  if (existing) {
+    existing.qty = (existing.qty || 1) + 1;
+    toast('Qty Updated', `${p.name} — qty increased`, 'info');
+  } else {
+    editItemsCache.push({ product_id: productId, name: p.name, price: p.price, qty: 1 });
+    toast('Added', `${p.name} added to order`, 'success');
+  }
+  rebuildItemsUI();
+  // Close search panel
+  document.getElementById('oe-product-search-panel').style.display = 'none';
+}
+
+/* Manual item */
+function addManualItem() {
+  const panel = document.getElementById('oe-manual-item-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') document.getElementById('oe-manual-name').focus();
+}
+
+function confirmAddManualItem() {
+  const name  = document.getElementById('oe-manual-name').value.trim();
+  const price = parseFloat(document.getElementById('oe-manual-price').value) || 0;
+  if (!name) { toast('Validation', 'আইটেমের নাম দিন', 'error'); return; }
+  console.log('[confirmAddManualItem] Adding manual item:', name, '৳'+price);
+  editItemsCache.push({ name, price, qty: 1, _manual: true });
+  document.getElementById('oe-manual-name').value  = '';
+  document.getElementById('oe-manual-price').value = '';
+  document.getElementById('oe-manual-item-panel').style.display = 'none';
+  rebuildItemsUI();
+  toast('Manual Item Added', `"${name}" → ৳${price.toLocaleString()}`, 'success');
 }
 
 function fillOrderActionsForm(o) {
@@ -3229,6 +3475,7 @@ function updateDiscountPreview() {
 }
 
 async function applyDiscount() {
+  console.log('[applyDiscount] ▶ START — orderId:', currentOrderId);
   if (!sb || !currentOrderId) return;
   const type = document.getElementById('oa-discount-type').value;
   const val = parseFloat(document.getElementById('oa-discount-val').value);
@@ -3237,15 +3484,32 @@ async function applyDiscount() {
   const currentTotal = Number(o.total || 0);
   const discAmt = type === 'percent' ? Math.round(currentTotal * val / 100) : val;
   const newTotal = Math.max(0, currentTotal - discAmt);
-  const { error } = await sb.from('orders').update({
-    discount: discAmt, discount_type: type, total: newTotal, updated_at: new Date().toISOString()
-  }).eq('id', currentOrderId);
-  if (error) { toast('Failed', error.message, 'error'); return; }
-  o.discount = discAmt; o.discount_type = type; o.total = newTotal;
-  renderOrders(); renderDashboard();
-  refreshOrderModal(currentOrderId);
-  fillOrderActionsForm(o);
-  toast('Discount Applied', `-৳${discAmt.toLocaleString()} → New total ৳${newTotal.toLocaleString()}`, 'success');
+  console.log('[applyDiscount] type:', type, '| val:', val, '| discAmt:', discAmt, '| newTotal:', newTotal);
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    console.error('[applyDiscount] ✗ TIMEOUT — 10 seconds exceeded');
+    toast('Connection Timeout', 'সার্ভার রেসপন্স করছে না। আবার চেষ্টা করুন।', 'error');
+  }, 10000);
+
+  try {
+    const { error } = await sb.from('orders').update({
+      discount: discAmt, discount_type: type, total: newTotal, updated_at: new Date().toISOString()
+    }).eq('id', currentOrderId);
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+    if (error) { console.error('[applyDiscount] ✗ error:', error); toast('Failed', error.message, 'error'); return; }
+    console.log('[applyDiscount] ✓ Discount applied successfully');
+    o.discount = discAmt; o.discount_type = type; o.total = newTotal;
+    renderOrders(); renderDashboard();
+    refreshOrderModal(currentOrderId);
+    fillOrderActionsForm(o);
+    toast('Discount Applied', `-৳${discAmt.toLocaleString()} → New total ৳${newTotal.toLocaleString()}`, 'success');
+  } catch(err) {
+    clearTimeout(timeoutId);
+    if (!timedOut) { console.error('[applyDiscount] ✗ Exception:', err); toast('Failed', err.message, 'error'); }
+  }
 }
 
 async function saveOrderNote() {
@@ -3261,6 +3525,7 @@ async function saveOrderNote() {
 }
 
 async function saveCourierInfo() {
+  console.log('[saveCourierInfo] ▶ START — orderId:', currentOrderId);
   if (!sb || !currentOrderId) return;
   const service = document.getElementById('oc-service').value;
   const trackingId = document.getElementById('oc-tracking-id').value.trim();
@@ -3270,48 +3535,135 @@ async function saveCourierInfo() {
   // Auto-set status to shipped if still pending/confirmed
   const o = allOrders.find(x => x.id === currentOrderId);
   if (o && ['pending','confirmed','processing'].includes(o.status)) updates.status = 'shipped';
-  const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
-  if (error) { toast('Failed', error.message, 'error'); return; }
-  if (o) { Object.assign(o, updates); }
-  renderOrders(); renderDashboard();
-  refreshOrderModal(currentOrderId);
-  fillOrderCourierForm(o);
-  toast('Courier Saved!', `${service || 'Courier'} info সেভ হয়েছে। Status → Shipped`, 'success');
+  console.log('[saveCourierInfo] updates:', JSON.stringify(updates));
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    console.error('[saveCourierInfo] ✗ TIMEOUT — 10 seconds exceeded');
+    toast('Connection Timeout', 'সার্ভার রেসপন্স করছে না। আবার চেষ্টা করুন।', 'error');
+  }, 10000);
+
+  try {
+    const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+    if (error) { console.error('[saveCourierInfo] ✗ error:', error); toast('Failed', error.message, 'error'); return; }
+    console.log('[saveCourierInfo] ✓ Courier info saved');
+    if (o) { Object.assign(o, updates); }
+    renderOrders(); renderDashboard();
+    refreshOrderModal(currentOrderId);
+    fillOrderCourierForm(o);
+    toast('Courier Saved!', `${service || 'Courier'} info সেভ হয়েছে। Status → Shipped`, 'success');
+  } catch(err) {
+    clearTimeout(timeoutId);
+    if (!timedOut) { console.error('[saveCourierInfo] ✗ Exception:', err); toast('Failed', err.message, 'error'); }
+  }
 }
 
 async function saveOrderEdits() {
-  if (!sb || !currentOrderId) return;
-  const o = allOrders.find(x => x.id === currentOrderId); if (!o) return;
-  const items = Array.isArray(o.items) ? o.items : [];
-  // Collect updated items
-  const updatedItems = items.map((item, idx) => ({
-    ...item,
-    qty: parseInt(document.getElementById(`oe-qty-${idx}`)?.value) || item.qty || 1,
-    price: parseFloat(document.getElementById(`oe-price-${idx}`)?.value) || item.price || 0,
-  }));
-  const subtotal = updatedItems.reduce((s,i) => s + Number(i.price)*Number(i.qty), 0);
-  const delivery = parseFloat(document.getElementById('oe-delivery-fee').value) || Number(o.delivery_fee || 0);
-  const discount = Number(o.discount || 0);
-  const newTotal = Math.max(0, subtotal + delivery - discount);
+  console.log('[saveOrderEdits] ▶ START — orderId:', currentOrderId);
+  if (!sb || !currentOrderId) {
+    console.warn('[saveOrderEdits] ✗ Missing sb or currentOrderId — aborting');
+    return;
+  }
+  const o = allOrders.find(x => x.id === currentOrderId);
+  if (!o) {
+    console.warn('[saveOrderEdits] ✗ Order not found in allOrders cache — aborting');
+    return;
+  }
+
+  // --- Step 1: Collect updated items from editItemsCache (supports manual & existing products) ---
+  console.log('[saveOrderEdits] Step 1 — Collecting items from editItemsCache, count:', editItemsCache.length);
+  const updatedItems = editItemsCache.map((item, idx) => {
+    const qty   = parseInt(document.getElementById(`oe-qty-${idx}`)?.value)   || item.qty   || 1;
+    const price = parseFloat(document.getElementById(`oe-price-${idx}`)?.value) || item.price || 0;
+    console.log(`  [item ${idx}] name="${item.name}" qty=${qty} price=${price} manual=${!!item._manual}`);
+    return { ...item, qty, price };
+  });
+
+  // --- Step 2: Compute subtotal (auto from items, or manual override) ---
+  const autoSubtotal   = updatedItems.reduce((s,i) => s + Number(i.price)*Number(i.qty), 0);
+  const subtotalInput  = parseFloat(document.getElementById('oe-subtotal-override')?.value);
+  const subtotal       = (!isNaN(subtotalInput) && subtotalInput >= 0) ? subtotalInput : autoSubtotal;
+  console.log('[saveOrderEdits] Step 2 — autoSubtotal:', autoSubtotal, '| subtotalOverride:', subtotalInput, '| used subtotal:', subtotal);
+
+  // --- Step 3: Delivery & discount ---
+  const delivery = parseFloat(document.getElementById('oe-delivery-fee')?.value);
+  const deliveryFee = (!isNaN(delivery) && delivery >= 0) ? delivery : Number(o.delivery_fee || 0);
+  const discountInput = parseFloat(document.getElementById('oe-discount-override')?.value);
+  const discount = (!isNaN(discountInput) && discountInput >= 0) ? discountInput : Number(o.discount || 0);
+  console.log('[saveOrderEdits] Step 3 — deliveryFee:', deliveryFee, '| discount:', discount);
+
+  // --- Step 4: Final total (manual override wins, else calculated) ---
+  const totalOverrideInput = parseFloat(document.getElementById('oe-total-override')?.value);
+  const calcTotal  = Math.max(0, subtotal + deliveryFee - discount);
+  const newTotal   = (!isNaN(totalOverrideInput) && totalOverrideInput >= 0) ? totalOverrideInput : calcTotal;
+  console.log('[saveOrderEdits] Step 4 — calcTotal:', calcTotal, '| totalOverride:', totalOverrideInput, '| newTotal:', newTotal);
+
+  // --- Step 5: Build updates object ---
   const updates = {
-    customer_name: document.getElementById('oe-name').value.trim(),
-    customer_phone: document.getElementById('oe-phone').value.trim(),
-    customer_email: document.getElementById('oe-email').value.trim(),
+    customer_name:     document.getElementById('oe-name').value.trim(),
+    customer_phone:    document.getElementById('oe-phone').value.trim(),
+    customer_email:    document.getElementById('oe-email').value.trim(),
     customer_district: document.getElementById('oe-district').value.trim(),
-    customer_address: document.getElementById('oe-address').value.trim(),
-    delivery_fee: delivery,
-    items: updatedItems,
-    subtotal: subtotal,
-    total: newTotal,
-    updated_at: new Date().toISOString()
+    customer_address:  document.getElementById('oe-address').value.trim(),
+    delivery_fee:      deliveryFee,
+    discount:          discount,
+    items:             updatedItems,
+    subtotal:          subtotal,
+    total:             newTotal,
+    updated_at:        new Date().toISOString()
   };
-  const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
-  if (error) { toast('Save Failed', error.message, 'error'); return; }
-  Object.assign(o, updates);
-  renderOrders(); renderDashboard();
-  refreshOrderModal(currentOrderId);
-  switchOrderTab('overview');
-  toast('Order Updated!', 'Customer info & items সেভ হয়েছে', 'success');
+  console.log('[saveOrderEdits] Step 5 — updates object:', JSON.stringify({
+    ...updates, items: `[${updates.items.length} items]`
+  }));
+
+  // --- Step 6: Show loader, start 10s timeout ---
+  const btn = document.getElementById('saveOrderEditsBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
+  console.log('[saveOrderEdits] Step 6 — Loader shown, starting 10s timeout');
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    console.error('[saveOrderEdits] ✗ TIMEOUT — operation exceeded 10 seconds');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
+    toast('Connection Timeout', 'সার্ভার রেসপন্স করছে না। আবার চেষ্টা করুন।', 'error');
+  }, 10000);
+
+  // --- Step 7: Execute Supabase update ---
+  console.log('[saveOrderEdits] Step 7 — Calling Supabase update...');
+  try {
+    const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
+    clearTimeout(timeoutId);
+    if (timedOut) {
+      console.warn('[saveOrderEdits] ✗ Response arrived after timeout — ignoring');
+      return;
+    }
+    if (error) {
+      console.error('[saveOrderEdits] ✗ Supabase error:', error);
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
+      toast('Save Failed', error.message, 'error');
+      return;
+    }
+    console.log('[saveOrderEdits] ✓ Supabase update successful');
+    Object.assign(o, updates);
+    renderOrders(); renderDashboard();
+    refreshOrderModal(currentOrderId);
+    switchOrderTab('overview');
+    console.log('[saveOrderEdits] ✓ DONE — UI refreshed');
+    toast('Order Updated!', 'Customer info, items & pricing সেভ হয়েছে', 'success');
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (!timedOut) {
+      console.error('[saveOrderEdits] ✗ Unexpected error:', err);
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
+      toast('Save Failed', err.message || 'Unknown error', 'error');
+    }
+  } finally {
+    if (btn && !timedOut) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
+  }
 }
 
 /* ══════════════════════════════════════
