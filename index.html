@@ -170,14 +170,19 @@ header.bar-hidden .social-bar {
 header {
   position: sticky;
   top: 0;
-  z-index: 200;
+  z-index: 1000;
   background: #FFFFFF;
   border-bottom: 1px solid var(--border);
-  /* No transition on height — only shadow */
-  transition: box-shadow var(--t);
+  /* Only animate shadow — never height, avoids reflow-shake */
+  transition: box-shadow .25s cubic-bezier(.4,0,.2,1);
   isolation: isolate;
+  /* GPU layer — prevents repaint-flicker during scroll */
+  will-change: box-shadow;
+  transform: translateZ(0);
 }
-header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
+header.scrolled{
+  box-shadow: 0 2px 20px rgba(0,122,255,.13), 0 1px 0 rgba(0,0,0,.06);
+}
 .social-bar span{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:rgba(255,255,255,.9)}
 .social-links{display:flex;gap:4px;align-items:center}
 .slink{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.15);color:white;display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;transition:background var(--t)}
@@ -204,7 +209,10 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .search-box{display:flex;align-items:center;background:var(--blue-light);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);width:100%}
 .search-box:focus-within{border-color:var(--blue);background:white;box-shadow:var(--glow)}
 .search-box i{padding:0 12px;color:var(--text-light);font-size:.82rem;flex-shrink:0}
-.search-box input{flex:1;border:none;background:transparent;font-family:'Sora',sans-serif;font-size:.85rem;color:var(--text);padding:10px 0;outline:none;min-width:0}
+.search-box input{flex:1;border:none;background:transparent;font-family:'Sora',sans-serif;font-size:.85rem;color:var(--text);padding:10px 0;outline:none;min-width:0;
+  /* iOS: font-size below 16px triggers auto-zoom on focus — prevent it */
+  -webkit-text-size-adjust:100%;
+}
 .search-box input::placeholder{color:var(--text-light)}
 .search-btn{padding:10px 18px;background:var(--blue);color:white;border:none;cursor:pointer;font-size:.78rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;transition:background var(--t);flex-shrink:0;white-space:nowrap}
 .search-btn:hover{background:var(--blue-dark)}
@@ -316,8 +324,21 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   padding:8px 14px 10px;
   background:rgba(255,255,255,.97);
   border-top:1px solid var(--border);
+  /* Prevent height jump when focused — lock the row height */
+  min-height:52px;
+  box-sizing:border-box;
 }
-.mobile-search-row .search-box{width:100%}
+.mobile-search-row .search-box{
+  width:100%;
+  /* Prevent zoom-scale on iOS when font-size < 16px */
+  font-size:16px;
+}
+/* iOS keyboard shake fix — prevent viewport resize from reflowing header */
+.mobile-search-row input{
+  font-size:16px !important;
+  -webkit-text-size-adjust:100%;
+  transform:translateZ(0);
+}
 
 /* ── NAV CATS ── */
 .nav-cats{display:flex;padding:0 22px;border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
@@ -363,7 +384,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   Also ensures the banner is never partially hidden.
 */
 .hero-slider{position:relative;border-radius:14px;overflow:hidden;height:auto;min-height:240px}
-.hero-slides{display:flex;transition:transform .55s cubic-bezier(.4,0,.2,1);height:100%}
+.hero-slides{display:flex;transition:transform .55s cubic-bezier(.4,0,.2,1);height:100%;will-change:transform}
 .hero-slide{
   min-width:100%;flex-shrink:0;
   display:flex;align-items:stretch;
@@ -527,7 +548,12 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .hero-badge,.hero-btns,.hero-stats,.ldot{display:none}
 
 /* ── MAIN LAYOUT ── */
-.main{display:flex;min-height:80vh}
+.main{
+  display:flex;
+  min-height:80vh;
+  /* Contain layout so card animations don't cause full-page repaints */
+  contain: layout style;
+}
 
 /* ── SIDEBAR ── */
 /* BANNER STABILITY FIX: Use var(--header-h) instead of hardcoded 108px.
@@ -562,7 +588,12 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 .sw.on::after{transform:translateX(15px)}
 
 /* ── PRODUCT AREA ── */
-.product-area{flex:1;padding:18px 20px}
+.product-area{
+  flex:1;
+  padding:18px 20px;
+  /* Isolate paint — card hover animations won't repaint the sidebar */
+  contain: layout;
+}
 .parea-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:9px}
 .parea-header h2{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700}
 .parea-header h2 span{color:var(--text-light);font-size:.75rem;font-weight:400;margin-left:5px}
@@ -584,7 +615,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 
 /* ── PRODUCT GRID ── */
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
-.pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative}
+.pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative;will-change:transform,box-shadow}
 .pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
 .pcard-img{height:230px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
 .pcard:hover .pcard-img{background:#f0f2f5}
@@ -667,11 +698,19 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 
 /* back bar */
 .pd-topbar{
-  position:sticky;top:0;z-index:10;
-  background:rgba(255,255,255,.97);backdrop-filter:blur(16px);
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(255,255,255,.98);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
-  padding:12px 24px;
+  box-shadow:0 1px 8px rgba(0,0,0,.06);
+  padding:10px 24px;
   display:flex;align-items:center;gap:12px;
+  /* Ensure it stays in document flow, never overlaps image below */
+  will-change:transform;
+  transform:translateZ(0);
 }
 .pd-back{
   display:flex;align-items:center;gap:7px;
@@ -695,8 +734,10 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
   grid-template-columns:1fr 1fr;
   gap:32px;
   max-width:1100px;
-  margin:28px auto;
+  margin:20px auto 40px;
   padding:0 24px;
+  /* Ensure image panel is always below the sticky topbar, never behind it */
+  clear:both;
 }
 
 /* image panel */
@@ -989,7 +1030,7 @@ header.scrolled{box-shadow:0 2px 24px rgba(0,122,255,.12)}
 
 /* mobile responsive for pd page */
 @media(max-width:768px){
-  .pd-main{grid-template-columns:1fr;gap:16px;padding:0 14px;margin:16px auto}
+  .pd-main{grid-template-columns:1fr;gap:16px;padding:0 14px;margin:12px auto 40px}
   .pd-title{font-size:1.25rem}
   .pd-new-price{font-size:1.5rem}
   .pd-tabs-section{padding:0 14px}
@@ -1464,9 +1505,9 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
     500 — mobile drawer sidebar
     400 — cart overlay, auth modal, admin panel
     300 — overlays (backdrop)
-    200 — sticky header (always on top of pages)
+   1000 — sticky header (always on top of all pages)
     150 — full-page slides
-     20 — fp-topbar (within full-page stacking context)
+     50 — pd-topbar (within full-page stacking context)
      10 — dropdowns, notif panel (within header stacking context)
 ══════════════════════════════════════════════════ */
 
@@ -8004,7 +8045,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-window.addEventListener('resize', updateHeaderHeight);
+window.addEventListener('resize', () => {
+  // Debounce: ignore rapid resize bursts from virtual keyboard open/close
+  // (iOS/Android fire many resize events when keyboard appears)
+  clearTimeout(window._resizeDebounce);
+  window._resizeDebounce = setTimeout(updateHeaderHeight, 120);
+});
 window.addEventListener('scroll', onScroll, { passive: true });
 
 // ══════════════════════════════════════════════════
