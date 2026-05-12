@@ -133,14 +133,75 @@ label,.form-group label{font-size:.875rem!important;font-weight:700}
 .meta-sm,.text-xs{font-size:.8125rem;color:var(--text-light)}
 
 /* ── LOADING SCREEN ── */
-#loadingScreen{position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
-#loadingScreen.hide{opacity:0;pointer-events:none}
-.loader-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:16px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.8rem;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.loader-text{font-family:'Hind Siliguri',sans-serif;font-size:.9rem;color:var(--text-light)}
-.loader-bar{width:200px;height:3px;background:var(--blue-mid);border-radius:2px;overflow:hidden}
-.loader-bar-inner{height:100%;width:0;background:var(--blue);border-radius:2px;animation:load 1.8s ease forwards}
-@keyframes load{to{width:100%}}
+/* ── PRELOADER — full-screen, above everything including header ── */
+#loadingScreen{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100vh;
+  background:#ffffff;
+  /* Must exceed header z-index (9999) and any other fixed layers */
+  z-index:99999;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  /* Smooth fade-out when .hide is applied */
+  transition:opacity .45s cubic-bezier(.4,0,.2,1), visibility .45s;
+  visibility:visible;
+  opacity:1;
+}
+#loadingScreen.hide{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+/* Body locked while loader active — prevents scroll flash */
+body.loading{overflow:hidden!important}
+
+.loader-logo{
+  width:72px;height:72px;
+  background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+  border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:2rem;
+  box-shadow:0 8px 32px rgba(0,122,255,.28);
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+.loader-brand{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:1.1rem;font-weight:700;
+  color:var(--blue);
+  letter-spacing:.01em;
+}
+.loader-text{
+  font-family:'Hind Siliguri',sans-serif;
+  font-size:.82rem;
+  color:var(--text-light);
+  margin-top:-10px;
+}
+
+/* Progress bar */
+.loader-bar{
+  width:220px;height:4px;
+  background:var(--blue-mid);
+  border-radius:4px;overflow:hidden;
+  margin-top:4px;
+}
+.loader-bar-inner{
+  height:100%;width:0;
+  background:linear-gradient(90deg,var(--blue),#38BDF8);
+  border-radius:4px;
+  animation:load 1.9s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes load{
+  0%  {width:0%}
+  60% {width:75%}
+  85% {width:90%}
+  100%{width:100%}
+}
 
 /* ── SOCIAL BAR ── */
 /*
@@ -3469,12 +3530,13 @@ html, body {
 })();
 </script>
 </head>
-<body>
+<body class="loading">
 
 <!-- LOADING -->
 <div id="loadingScreen">
   <div class="loader-logo"><i class="fa-solid fa-store"></i></div>
-  <div class="loader-text bn">গ্যালাক্সি মার্ট BD লোড হচ্ছে...</div>
+  <div class="loader-brand bn">গ্যালাক্সি মার্ট BD</div>
+  <div class="loader-text bn">লোড হচ্ছে...</div>
   <div class="loader-bar"><div class="loader-bar-inner"></div></div>
 </div>
 
@@ -5029,7 +5091,12 @@ document.addEventListener('click', function(e) {
 });
 
 function hiddenLoader() {
-  setTimeout(() => document.getElementById('loadingScreen').classList.add('hide'), 1800);
+  setTimeout(() => {
+    const ls = document.getElementById('loadingScreen');
+    if (ls) ls.classList.add('hide');
+    document.body.classList.remove('loading');
+    document.body.style.overflow = 'auto';
+  }, 1800);
 }
 
 // Safety net: force-hide loader after 12s regardless — prevents infinite white screen
@@ -5037,6 +5104,8 @@ setTimeout(() => {
   const ls = document.getElementById('loadingScreen');
   if (ls && !ls.classList.contains('hide')) {
     ls.classList.add('hide');
+    document.body.classList.remove('loading');
+    document.body.style.overflow = 'auto';
     toast('Connection Timeout!', 'কিছু ডেটা লোড হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন এবং পেজ রিফ্রেশ করুন।', 'e');
   }
 }, 12000);
