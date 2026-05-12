@@ -899,6 +899,65 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 /* ═══════════════════════════════════════
    TIMEFRAME DROPDOWN (continued)
 ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   CMS — Content Manager Styles
+═══════════════════════════════════════ */
+.cms-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: 9px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  font-size: 0.82rem; font-weight: 600; color: var(--text2);
+  cursor: pointer; transition: all var(--t);
+}
+.cms-tab:hover { background: var(--hover); color: var(--text); }
+.cms-tab.active {
+  background: var(--blue); border-color: var(--blue);
+  color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.25);
+}
+.cms-panel { display: none; }
+.cms-panel.active { display: block; animation: secIn 0.25s ease both; }
+
+.cms-page-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border-radius: 9px;
+  font-family: var(--font-bn); font-size: 0.82rem;
+  color: var(--text2); cursor: pointer; transition: all var(--t);
+  margin-bottom: 4px;
+}
+.cms-page-btn:hover { background: var(--hover); color: var(--text); }
+.cms-page-btn.active { background: var(--blue-l); color: var(--blue); font-weight: 600; }
+.cms-page-btn i { width: 16px; text-align: center; flex-shrink: 0; }
+
+.cms-size-btn.active,
+.cms-weight-btn.active {
+  background: var(--blue) !important;
+  color: white !important;
+  border-color: var(--blue) !important;
+}
+
+.promo-bar-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.promo-bar-row input { flex: 1; }
+.promo-bar-row .del-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  background: rgba(255,59,48,0.08); color: var(--red);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; flex-shrink: 0; transition: all var(--t);
+}
+.promo-bar-row .del-btn:hover { background: var(--red); color: white; }
+
+.footer-link-row {
+  display: grid; grid-template-columns: 1fr 1fr 32px; gap: 6px; align-items: center;
+}
+.footer-link-row .del-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  background: rgba(255,59,48,0.08); color: var(--red);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; flex-shrink: 0; transition: all var(--t);
+}
+.footer-link-row .del-btn:hover { background: var(--red); color: white; }
+
 .order-tab {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 14px; border-radius: 9px 9px 0 0;
@@ -1377,6 +1436,9 @@ body {
       </div>
       <div class="nav-item" data-sec="settings">
         <i class="fa-solid fa-gear"></i> Settings
+      </div>
+      <div class="nav-item" data-sec="cms">
+        <i class="fa-solid fa-pen-ruler"></i> <span style="font-family:var(--font-bn)">কন্টেন্ট ম্যানেজার</span>
       </div>
     </nav>
 
@@ -1924,6 +1986,178 @@ body {
                 </td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CONTENT MANAGER (CMS) ══ -->
+      <div class="section" id="sec-cms">
+        <!-- Sub-tabs -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="cmsTabs">
+          <button class="cms-tab active" data-ctab="announcement" onclick="switchCmsTab('announcement')"><i class="fa-solid fa-bullhorn"></i> <span style="font-family:var(--font-bn)">অ্যানাউন্সমেন্ট বার</span></button>
+          <button class="cms-tab" data-ctab="pages" onclick="switchCmsTab('pages')"><i class="fa-solid fa-file-lines"></i> <span style="font-family:var(--font-bn)">পেজ কন্টেন্ট</span></button>
+          <button class="cms-tab" data-ctab="footer" onclick="switchCmsTab('footer')"><i class="fa-solid fa-link"></i> <span style="font-family:var(--font-bn)">ফুটার লিঙ্ক</span></button>
+        </div>
+
+        <!-- ── TAB 1: Announcement Bar ── -->
+        <div class="cms-panel active" id="ctab-announcement">
+          <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+            <!-- Promo Items Editor -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-scroll"></i></div>
+                  <span style="font-family:var(--font-bn)">স্ক্রোলিং অফার টেক্সট</span>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="addPromoBarItem()"><i class="fa-solid fa-plus"></i> নতুন</button>
+              </div>
+              <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px" id="promoBarList">
+                <!-- populated by JS -->
+              </div>
+              <div style="padding:0 20px 18px">
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="savePromoBar()">
+                  <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">সেভ ও সাইটে প্রকাশ করুন</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Style & Free Delivery Controls -->
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-truck-fast"></i></div>
+                    <span style="font-family:var(--font-bn)">ফ্রি ডেলিভারি লিমিট</span>
+                  </div>
+                </div>
+                <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+                  <div class="form-group">
+                    <label class="form-label" style="font-family:var(--font-bn)">ন্যূনতম অর্ডার পরিমাণ (৳)</label>
+                    <input class="form-inp" type="number" id="freeDeliveryAmt" placeholder="999" min="0">
+                    <div style="font-size:0.68rem;color:var(--text3);margin-top:4px;font-family:var(--font-bn)">যেমন: ৯৯৯ দিলে "৳৯৯৯+ অর্ডারে ফ্রি ডেলিভারি" দেখাবে</div>
+                  </div>
+                  <button class="btn btn-primary" onclick="saveFreeDelivery()">
+                    <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">সেভ করুন</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <div class="panel-title-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-text-height"></i></div>
+                    <span style="font-family:var(--font-bn)">স্টাইল কন্ট্রোল</span>
+                  </div>
+                </div>
+                <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+                  <div class="form-group">
+                    <label class="form-label" style="font-family:var(--font-bn)">ফন্ট সাইজ</label>
+                    <div style="display:flex;gap:6px">
+                      <button class="btn btn-ghost btn-sm cms-size-btn active" data-size="small" onclick="selectPromoSize('small')" style="flex:1;font-family:var(--font-bn)">ছোট</button>
+                      <button class="btn btn-ghost btn-sm cms-size-btn" data-size="medium" onclick="selectPromoSize('medium')" style="flex:1;font-family:var(--font-bn)">মাঝারি</button>
+                      <button class="btn btn-ghost btn-sm cms-size-btn" data-size="large" onclick="selectPromoSize('large')" style="flex:1;font-family:var(--font-bn)">বড়</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" style="font-family:var(--font-bn)">টেক্সট ওজন</label>
+                    <div style="display:flex;gap:6px">
+                      <button class="btn btn-ghost btn-sm cms-weight-btn active" data-weight="normal" onclick="selectPromoWeight('normal')" style="flex:1;font-family:var(--font-bn)">সাধারণ</button>
+                      <button class="btn btn-ghost btn-sm cms-weight-btn" data-weight="bold" onclick="selectPromoWeight('bold')" style="flex:1;font-family:var(--font-bn);font-weight:700">বোল্ড</button>
+                    </div>
+                  </div>
+                  <button class="btn btn-primary" onclick="savePromoStyle()">
+                    <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">স্টাইল সেভ করুন</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB 2: Page Content ── -->
+        <div class="cms-panel" id="ctab-pages">
+          <div style="display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start">
+            <!-- Page List -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-file-lines"></i></div>
+                  <span style="font-family:var(--font-bn)">পেজ তালিকা</span>
+                </div>
+              </div>
+              <div style="padding:12px">
+                <div class="cms-page-btn active" data-page="about" onclick="switchCmsPage('about')"><i class="fa-solid fa-circle-info"></i> আমাদের সম্পর্কে</div>
+                <div class="cms-page-btn" data-page="privacy" onclick="switchCmsPage('privacy')"><i class="fa-solid fa-shield-halved"></i> গোপনীয়তা নীতি</div>
+                <div class="cms-page-btn" data-page="terms" onclick="switchCmsPage('terms')"><i class="fa-solid fa-scale-balanced"></i> শর্তাবলী</div>
+                <div class="cms-page-btn" data-page="faq" onclick="switchCmsPage('faq')"><i class="fa-solid fa-circle-question"></i> FAQ</div>
+              </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-pen"></i></div>
+                  <span style="font-family:var(--font-bn)" id="cmsPageEditorTitle">আমাদের সম্পর্কে</span>
+                </div>
+                <span style="font-size:0.68rem;color:var(--text3);font-family:var(--font-bn)" id="cmsPageLastSaved">সেভ হয়নি</span>
+              </div>
+              <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                <div class="form-group">
+                  <label class="form-label" style="font-family:var(--font-bn)">পেজ শিরোনাম</label>
+                  <input class="form-inp" type="text" id="cmsPageTitle" placeholder="পেজের শিরোনাম লিখুন...">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-family:var(--font-bn)">কন্টেন্ট (HTML সাপোর্টেড)</label>
+                  <textarea class="form-inp" id="cmsPageBody" rows="14" placeholder="পেজের কন্টেন্ট লিখুন..." style="resize:vertical;font-family:var(--font-bn);line-height:1.7;font-size:0.85rem"></textarea>
+                </div>
+                <div style="display:flex;gap:10px">
+                  <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveCmsPage()">
+                    <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">সেভ ও প্রকাশ করুন</span>
+                  </button>
+                  <button class="btn btn-ghost" onclick="previewCmsPage()">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB 3: Footer Links ── -->
+        <div class="cms-panel" id="ctab-footer">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+            <!-- Footer Group Editor -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(50,173,230,0.1);color:var(--cyan)"><i class="fa-solid fa-link"></i></div>
+                  <span style="font-family:var(--font-bn)">ফুটার লিঙ্ক</span>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="addFooterLink()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px" id="footerLinkList">
+                <!-- populated by JS -->
+              </div>
+              <div style="padding:0 20px 18px">
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="saveFooterLinks()">
+                  <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">ফুটার লিঙ্ক সেভ করুন</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-eye"></i></div>
+                  <span style="font-family:var(--font-bn)">প্রিভিউ</span>
+                </div>
+              </div>
+              <div style="padding:18px 20px" id="footerPreview">
+                <div style="font-family:var(--font-bn);font-size:0.75rem;color:var(--text3);text-align:center;padding:20px">লিঙ্ক যোগ করলে এখানে প্রিভিউ দেখাবে</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -4558,13 +4792,14 @@ function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
   if (sec === 'promos')     renderPromos();
   if (sec === 'admins')     renderAdminList();
   if (sec === 'categories') { renderCategoryList(); renderBookTypeList(); }
+  if (sec === 'cms')        initCms();
 }
 
 function navToOrders(statusFilter) {
@@ -5731,6 +5966,281 @@ async function _doToggleBlock(u, newBlocked) {
     clearTimeout(timeoutId);
     if (!timedOut) toast('Error', e.message || 'Update failed', 'error');
   }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   CMS — CONTENT MANAGER  (localStorage ↔ main site bridge)
+   Key convention:
+     gm_cms_promobar   → promo bar items  (array of {text, icon})
+     gm_cms_promo_style→ {size, weight}
+     gm_cms_freedel    → free delivery amount (number)
+     gm_cms_page_<key> → {title, body, savedAt}
+     gm_cms_footer     → footer links (array of {label, url})
+══════════════════════════════════════════════════════════════ */
+
+/* ── State ── */
+let cmsCurrentPage = 'about';
+let cmsPromoSize   = 'small';
+let cmsPromoWeight = 'normal';
+
+const CMS_PAGE_NAMES = {
+  about:   'আমাদের সম্পর্কে',
+  privacy: 'গোপনীয়তা নীতি',
+  terms:   'শর্তাবলী',
+  faq:     'FAQ'
+};
+
+const DEFAULT_PROMO_ITEMS = [
+  { icon: 'fa-truck-fast',    text: '৳৯৯৯+ অর্ডারে ফ্রি ডেলিভারি' },
+  { icon: 'fa-tag',           text: 'ঈদ স্পেশাল — ৩০% পর্যন্ত ছাড়' },
+  { icon: 'fa-shield-halved', text: '১০০% অরিজিনাল পণ্য গ্যারান্টি' },
+  { icon: 'fa-rotate-left',   text: 'সহজ রিটার্ন পলিসি' }
+];
+
+const DEFAULT_FOOTER_LINKS = [
+  { label: 'অর্ডার ট্র্যাক',  url: '#track' },
+  { label: 'রিটার্ন পলিসি',   url: '#returns' },
+  { label: 'যোগাযোগ',        url: '#contact' },
+  { label: 'FAQ',             url: '#faq' }
+];
+
+/* ── Init ── */
+function initCms() {
+  renderPromoBarList();
+  loadPromoStyle();
+  loadFreeDelivery();
+  loadCmsPage(cmsCurrentPage);
+  renderFooterLinkList();
+}
+
+/* ══ TAB SWITCHER ══ */
+function switchCmsTab(tab) {
+  document.querySelectorAll('.cms-tab').forEach(b => b.classList.toggle('active', b.dataset.ctab === tab));
+  document.querySelectorAll('.cms-panel').forEach(p => p.classList.toggle('active', p.id === 'ctab-' + tab));
+}
+
+/* ══ PAGE SWITCHER ══ */
+function switchCmsPage(page) {
+  cmsCurrentPage = page;
+  document.querySelectorAll('.cms-page-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  document.getElementById('cmsPageEditorTitle').textContent = CMS_PAGE_NAMES[page] || page;
+  loadCmsPage(page);
+}
+
+/* ══ PROMO BAR ══ */
+function getPromoBarItems() {
+  return JSON.parse(localStorage.getItem('gm_cms_promobar') || JSON.stringify(DEFAULT_PROMO_ITEMS));
+}
+
+function renderPromoBarList() {
+  const items = getPromoBarItems();
+  const list  = document.getElementById('promoBarList');
+  list.innerHTML = items.map((item, i) => `
+    <div class="promo-bar-row" id="pbrow-${i}">
+      <input class="form-inp" type="text" value="${escHtml(item.icon)}" placeholder="fa-truck-fast (FA icon)"
+        style="font-family:var(--mono);font-size:0.78rem;max-width:160px"
+        onchange="updatePromoBarItem(${i},'icon',this.value)">
+      <input class="form-inp" type="text" value="${escHtml(item.text)}" placeholder="অফারের টেক্সট লিখুন..."
+        style="font-family:var(--font-bn)"
+        onchange="updatePromoBarItem(${i},'text',this.value)">
+      <button class="del-btn" onclick="deletePromoBarItem(${i})" title="মুছুন"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('');
+}
+
+function updatePromoBarItem(i, field, val) {
+  const items = getPromoBarItems();
+  items[i][field] = val;
+  localStorage.setItem('gm_cms_promobar', JSON.stringify(items));
+}
+
+function deletePromoBarItem(i) {
+  const items = getPromoBarItems();
+  items.splice(i, 1);
+  localStorage.setItem('gm_cms_promobar', JSON.stringify(items));
+  renderPromoBarList();
+}
+
+function addPromoBarItem() {
+  const items = getPromoBarItems();
+  items.push({ icon: 'fa-star', text: 'নতুন অফার' });
+  localStorage.setItem('gm_cms_promobar', JSON.stringify(items));
+  renderPromoBarList();
+}
+
+function savePromoBar() {
+  // Re-read current input values (user may have typed without onchange)
+  const rows = document.querySelectorAll('#promoBarList .promo-bar-row');
+  const items = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    items.push({ icon: inputs[0].value.trim(), text: inputs[1].value.trim() });
+  });
+  localStorage.setItem('gm_cms_promobar', JSON.stringify(items));
+  toast('সফল ✓', 'প্রমো বার আপডেট হয়েছে — সাইট রিফ্রেশ করলে দেখাবে', 'success');
+  broadcastCmsUpdate('promobar', items);
+}
+
+/* ══ FREE DELIVERY ══ */
+function loadFreeDelivery() {
+  const amt = localStorage.getItem('gm_cms_freedel') || '999';
+  document.getElementById('freeDeliveryAmt').value = amt;
+}
+
+function saveFreeDelivery() {
+  const amt = parseInt(document.getElementById('freeDeliveryAmt').value) || 999;
+  localStorage.setItem('gm_cms_freedel', String(amt));
+  toast('সফল ✓', `ফ্রি ডেলিভারি লিমিট ৳${amt}+ সেভ হয়েছে`, 'success');
+  broadcastCmsUpdate('freedel', amt);
+}
+
+/* ══ PROMO STYLE ══ */
+function loadPromoStyle() {
+  const s = JSON.parse(localStorage.getItem('gm_cms_promo_style') || '{"size":"small","weight":"normal"}');
+  cmsPromoSize   = s.size   || 'small';
+  cmsPromoWeight = s.weight || 'normal';
+  document.querySelectorAll('.cms-size-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.size === cmsPromoSize));
+  document.querySelectorAll('.cms-weight-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.weight === cmsPromoWeight));
+}
+
+function selectPromoSize(size) {
+  cmsPromoSize = size;
+  document.querySelectorAll('.cms-size-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.size === size));
+}
+
+function selectPromoWeight(weight) {
+  cmsPromoWeight = weight;
+  document.querySelectorAll('.cms-weight-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.weight === weight));
+}
+
+function savePromoStyle() {
+  const style = { size: cmsPromoSize, weight: cmsPromoWeight };
+  localStorage.setItem('gm_cms_promo_style', JSON.stringify(style));
+  toast('সফল ✓', 'প্রমো বার স্টাইল সেভ হয়েছে', 'success');
+  broadcastCmsUpdate('promostyle', style);
+}
+
+/* ══ PAGE CONTENT ══ */
+function loadCmsPage(page) {
+  const data = JSON.parse(localStorage.getItem('gm_cms_page_' + page) || 'null');
+  document.getElementById('cmsPageTitle').value = data ? data.title : '';
+  document.getElementById('cmsPageBody').value  = data ? data.body  : '';
+  document.getElementById('cmsPageLastSaved').textContent = data
+    ? 'সর্বশেষ সেভ: ' + new Date(data.savedAt).toLocaleString('bn-BD')
+    : 'সেভ হয়নি';
+}
+
+function saveCmsPage() {
+  const page  = cmsCurrentPage;
+  const title = document.getElementById('cmsPageTitle').value.trim();
+  const body  = document.getElementById('cmsPageBody').value.trim();
+  if (!title && !body) { toast('সতর্কতা', 'শিরোনাম বা কন্টেন্ট লিখুন', 'warning'); return; }
+  const data = { title, body, savedAt: Date.now() };
+  localStorage.setItem('gm_cms_page_' + page, JSON.stringify(data));
+  document.getElementById('cmsPageLastSaved').textContent = 'সর্বশেষ সেভ: ' + new Date().toLocaleString('bn-BD');
+  toast('সফল ✓', `"${CMS_PAGE_NAMES[page]}" পেজ সেভ হয়েছে`, 'success');
+  broadcastCmsUpdate('page_' + page, data);
+}
+
+function previewCmsPage() {
+  const title = document.getElementById('cmsPageTitle').value || CMS_PAGE_NAMES[cmsCurrentPage];
+  const body  = document.getElementById('cmsPageBody').value || '<p>কোনো কন্টেন্ট নেই।</p>';
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${escHtml(title)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Hind Siliguri',sans-serif;max-width:760px;margin:40px auto;padding:0 20px;line-height:1.8;color:#0F172A}
+    h1{font-size:1.8rem;margin-bottom:24px;color:#007AFF}p{margin-bottom:14px}</style></head>
+    <body><h1>${escHtml(title)}</h1>${body}</body></html>`);
+  w.document.close();
+}
+
+/* ══ FOOTER LINKS ══ */
+function getFooterLinks() {
+  return JSON.parse(localStorage.getItem('gm_cms_footer') || JSON.stringify(DEFAULT_FOOTER_LINKS));
+}
+
+function renderFooterLinkList() {
+  const links = getFooterLinks();
+  const list  = document.getElementById('footerLinkList');
+  list.innerHTML = links.map((lnk, i) => `
+    <div class="footer-link-row">
+      <input class="form-inp" type="text" value="${escHtml(lnk.label)}" placeholder="লিঙ্কের নাম"
+        style="font-family:var(--font-bn);font-size:0.82rem"
+        onchange="updateFooterLink(${i},'label',this.value)">
+      <input class="form-inp" type="text" value="${escHtml(lnk.url)}" placeholder="#track বা https://..."
+        style="font-family:var(--mono);font-size:0.76rem"
+        onchange="updateFooterLink(${i},'url',this.value)">
+      <button class="del-btn" onclick="deleteFooterLink(${i})"><i class="fa-solid fa-trash"></i></button>
+    </div>`).join('');
+  renderFooterPreview(links);
+}
+
+function updateFooterLink(i, field, val) {
+  const links = getFooterLinks();
+  links[i][field] = val;
+  localStorage.setItem('gm_cms_footer', JSON.stringify(links));
+  renderFooterPreview(links);
+}
+
+function deleteFooterLink(i) {
+  const links = getFooterLinks();
+  links.splice(i, 1);
+  localStorage.setItem('gm_cms_footer', JSON.stringify(links));
+  renderFooterLinkList();
+}
+
+function addFooterLink() {
+  const links = getFooterLinks();
+  links.push({ label: 'নতুন লিঙ্ক', url: '#' });
+  localStorage.setItem('gm_cms_footer', JSON.stringify(links));
+  renderFooterLinkList();
+}
+
+function saveFooterLinks() {
+  const rows = document.querySelectorAll('#footerLinkList .footer-link-row');
+  const links = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    links.push({ label: inputs[0].value.trim(), url: inputs[1].value.trim() });
+  });
+  localStorage.setItem('gm_cms_footer', JSON.stringify(links));
+  renderFooterPreview(links);
+  toast('সফল ✓', 'ফুটার লিঙ্ক সেভ হয়েছে', 'success');
+  broadcastCmsUpdate('footer', links);
+}
+
+function renderFooterPreview(links) {
+  const el = document.getElementById('footerPreview');
+  if (!links || !links.length) {
+    el.innerHTML = '<div style="font-family:var(--font-bn);font-size:0.75rem;color:var(--text3);text-align:center;padding:20px">লিঙ্ক যোগ করুন</div>';
+    return;
+  }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">
+    ${links.map(l => `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--bg3)">
+      <i class="fa-solid fa-link" style="color:var(--blue);font-size:0.7rem;flex-shrink:0"></i>
+      <span style="font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text);flex:1">${escHtml(l.label)}</span>
+      <span style="font-family:var(--mono);font-size:0.68rem;color:var(--text3)">${escHtml(l.url)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+/* ══ BROADCAST (BroadcastChannel API for cross-tab sync) ══ */
+function broadcastCmsUpdate(key, value) {
+  try {
+    const ch = new BroadcastChannel('gm_cms');
+    ch.postMessage({ key, value });
+    ch.close();
+  } catch(e) { /* BroadcastChannel not supported — localStorage only */ }
+}
+
+/* ── Helper ── */
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ── Boot: populate dropdowns on page load ── */
