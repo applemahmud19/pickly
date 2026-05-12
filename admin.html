@@ -1007,6 +1007,16 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
   gap: 10px;
   margin-bottom: 10px;
 }
+/* ── Order Edit Modal: two-column → single column on small screens ── */
+.oe-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 680px) {
+  .oe-two-col { grid-template-columns: 1fr !important; }
+}
 @media (max-width: 580px) {
   .oe-price-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -2429,7 +2439,7 @@ body {
       <!-- TAB: EDIT INFO — Two-Column Layout -->
       <div class="order-tab-panel" id="otab-edit">
         <!-- Two-column grid: Left = items/products, Right = customer info + price -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start" class="oe-two-col">
 
           <!-- LEFT: Product list + Add items -->
           <div style="display:flex;flex-direction:column;gap:10px">
@@ -3874,16 +3884,18 @@ async function updateOrderStatus(id, status, customNote) {
     cancelled:   'অর্ডারটি বাতিল করা হয়েছে।',
   };
   const note = customNote || BN_STATUS_NOTE[status] || `Status updated to ${status} by admin`;
-  const { error } = await sb.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+  const now = new Date().toISOString();
+  const { error } = await sb.from('orders').update({ status, updated_at: now }).eq('id', id);
   if (error) { toast('Update Failed', error.message, 'error'); return; }
+  // Insert history FIRST so loadStatusHistory shows the new entry immediately
+  await sb.from('order_status_history').insert({
+    order_id: id, status, note, created_at: now
+  }).catch(e => console.warn('[updateOrderStatus] history insert failed:', e.message));
   const o = allOrders.find(x => x.id === id);
   if (o) o.status = status;
   renderOrders(); renderDashboard();
   toast('✅ Success', `Status → ${cap(status)} — User tracking synced`, 'success');
   if (currentOrderId === id) refreshOrderModal(id);
-  await sb.from('order_status_history').insert({
-    order_id: id, status, note, created_at: new Date().toISOString()
-  }).catch(() => {});
 }
 
 /* ── Part 2: Item-level status update ── */
@@ -4115,37 +4127,47 @@ function refreshOrderModal(id) {
     { label: 'শিপিং', statuses: ['processing','shipped','delivered'] },
     { label: '', statuses: ['cancelled'] },
   ];
-  document.getElementById('statusBtnRow').innerHTML = statusGroups.map(g =>
-    `<div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
-      ${g.label ? `<div style="font-size:0.55rem;font-weight:700;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.09em;padding:0 2px;font-family:var(--font-bn);letter-spacing:0;font-size:0.6rem">${g.label}</div>` : ''}
-      <div style="display:flex;flex-wrap:wrap;gap:4px">
-        ${g.statuses.map(s => {
+  const btnColors = {
+    pending:    { idle:'background:rgba(255,159,10,0.1);color:#D97706;border-color:rgba(255,159,10,0.3)', active:'background:#D97706;color:white;border-color:#D97706' },
+    confirmed:  { idle:'background:rgba(0,122,255,0.1);color:var(--blue);border-color:rgba(0,122,255,0.3)', active:'background:var(--blue);color:white;border-color:var(--blue)' },
+    in_stock:   { idle:'background:rgba(0,122,255,0.08);color:var(--blue);border-color:rgba(0,122,255,0.25)', active:'background:var(--blue);color:white;border-color:var(--blue)' },
+    collecting: { idle:'background:rgba(255,159,10,0.1);color:#D97706;border-color:rgba(255,159,10,0.3)', active:'background:#D97706;color:white;border-color:#D97706' },
+    collected:  { idle:'background:rgba(50,173,230,0.1);color:var(--cyan);border-color:rgba(50,173,230,0.3)', active:'background:var(--cyan);color:white;border-color:var(--cyan)' },
+    processing: { idle:'background:rgba(175,82,222,0.1);color:var(--purple);border-color:rgba(175,82,222,0.3)', active:'background:var(--purple);color:white;border-color:var(--purple)' },
+    shipped:    { idle:'background:rgba(50,173,230,0.12);color:var(--cyan);border-color:rgba(50,173,230,0.35)', active:'background:var(--cyan);color:white;border-color:var(--cyan)' },
+    delivered:  { idle:'background:rgba(52,199,89,0.12);color:var(--green);border-color:rgba(52,199,89,0.35)', active:'background:var(--green);color:white;border-color:var(--green)' },
+    cancelled:  { idle:'background:rgba(255,59,48,0.08);color:var(--red);border-color:rgba(255,59,48,0.25)', active:'background:var(--red);color:white;border-color:var(--red)' },
+  };
+  document.getElementById('statusBtnRow').innerHTML = `
+    <div style="display:grid;gap:10px;width:100%">
+      ${statusGroups.filter(g => g.label).map(g => `
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+          <div style="font-size:0.58rem;font-weight:700;font-family:var(--font-bn);color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px">
+            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--blue)"></span>${g.label}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(${g.statuses.length},1fr);gap:6px">
+            ${g.statuses.map(s => {
+              const isActive = s === o.status;
+              const c = btnColors[s] || { idle:'', active:'' };
+              return `<button
+                onclick="updateOrderStatus('${o.id}','${s}')"
+                style="border:1.5px solid;border-radius:8px;padding:7px 4px;font-size:0.68rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;text-align:center;${isActive ? c.active : c.idle}${isActive ? ';box-shadow:0 2px 8px rgba(0,0,0,.12)' : ''}"
+                title="${STATUS_LABEL_BN[s] || s}"
+              >${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}
+      <div style="display:flex;justify-content:flex-end">
+        ${statusGroups.filter(g => !g.label).flatMap(g => g.statuses).map(s => {
           const isActive = s === o.status;
-          const btnColors = {
-            in_stock:   'background:rgba(0,122,255,0.1);color:var(--blue);border-color:rgba(0,122,255,0.3)',
-            collecting: 'background:rgba(255,159,10,0.1);color:#D97706;border-color:rgba(255,159,10,0.3)',
-            collected:  'background:rgba(0,122,255,0.14);color:var(--blue);border-color:rgba(0,122,255,0.4)',
-            shipped:    'background:rgba(50,173,230,0.12);color:var(--cyan);border-color:rgba(50,173,230,0.35)',
-            delivered:  'background:rgba(52,199,89,0.12);color:var(--green);border-color:rgba(52,199,89,0.35)',
-            cancelled:  'background:rgba(255,59,48,0.1);color:var(--red);border-color:rgba(255,59,48,0.3)',
-          };
-          const activeStyle = isActive
-            ? (s === 'in_stock'   ? 'background:var(--blue);color:white;border-color:var(--blue)' :
-               s === 'collecting' ? 'background:#D97706;color:white;border-color:#D97706' :
-               s === 'collected'  ? 'background:var(--blue);color:white;border-color:var(--blue)' :
-               s === 'shipped'    ? 'background:var(--cyan);color:white;border-color:var(--cyan)' :
-               s === 'delivered'  ? 'background:var(--green);color:white;border-color:var(--green)' :
-               s === 'cancelled'  ? 'background:var(--red);color:white;border-color:var(--red)' :
-               '')
-            : (btnColors[s] || '');
-          return `<button class="btn btn-sm ${isActive ? '' : 'btn-ghost'}"
+          const c = btnColors[s] || { idle:'', active:'' };
+          return `<button
             onclick="updateOrderStatus('${o.id}','${s}')"
-            style="flex:1;min-width:64px;justify-content:center;font-size:0.65rem;font-family:var(--font-bn);${activeStyle}"
-          >${STATUS_LABEL_BN[s] || cap(s)}</button>`;
+            style="border:1.5px solid;border-radius:8px;padding:7px 16px;font-size:0.68rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;${isActive ? c.active : c.idle}"
+          >${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
         }).join('')}
       </div>
-    </div>`
-  ).join('');
+    </div>`;
 
   // ── STATUS HISTORY TIMELINE (async fetch) ──
   loadStatusHistory(id);
