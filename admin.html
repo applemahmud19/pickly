@@ -765,6 +765,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
   display: flex; flex-direction: column; overflow: hidden;
   box-shadow: var(--shadow-lg);
   animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 0;
 }
 @keyframes modalIn { from { transform: scale(0.95) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
 .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
@@ -777,7 +778,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 }
 .modal-close:hover { background: rgba(255,59,48,0.1); color: var(--red); border-color: rgba(255,59,48,0.3); }
 /* Fix 1: body is the only scrollable zone */
-.modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; min-height: 0; }
+.modal-body { padding: 18px 20px; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0; }
 
 /* ═══════════════════════════════════════
    CHART
@@ -1014,8 +1015,12 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
   gap: 14px;
   align-items: start;
 }
-@media (max-width: 680px) {
+@media (max-width: 768px) {
   .oe-two-col { grid-template-columns: 1fr !important; }
+  .oe-two-col > div { min-width: 0; }
+  .oe-inner-grid { grid-template-columns: 1fr !important; }
+  .oe-price-grid { grid-template-columns: 1fr 1fr !important; }
+  #oe-price-override-grid { grid-template-columns: 1fr 1fr !important; }
 }
 @media (max-width: 580px) {
   .oe-price-grid { grid-template-columns: 1fr 1fr; }
@@ -2495,7 +2500,7 @@ body {
               <i class="fa-solid fa-user" style="margin-right:4px"></i>Customer Info
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="oe-inner-grid">
               <div class="form-group" style="gap:3px">
                 <label class="form-label" style="font-size:0.58rem">Customer Name</label>
                 <input class="form-inp" type="text" id="oe-name" placeholder="Customer Name" style="font-size:0.8rem;padding:7px 9px">
@@ -2509,7 +2514,7 @@ body {
               <label class="form-label" style="font-size:0.58rem">Email</label>
               <input class="form-inp" type="email" id="oe-email" placeholder="customer@email.com" style="font-size:0.8rem;padding:7px 9px">
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="oe-inner-grid">
               <div class="form-group" style="gap:3px">
                 <label class="form-label" style="font-size:0.58rem">District</label>
                 <select class="form-inp" id="oe-district" style="min-width:0;font-size:0.8rem;padding:7px 9px">
@@ -3869,6 +3874,8 @@ function renderOrders() {
    ADVANCED ORDER MANAGEMENT
 ══════════════════════════════════════ */
 let currentOrderId = null;
+// Local cache for status history — updated immediately on admin action, before DB confirms
+const localStatusHistoryCache = {}; // keyed by orderId
 
 async function updateOrderStatus(id, status, customNote) {
   if (!sb) return;
@@ -3887,7 +3894,10 @@ async function updateOrderStatus(id, status, customNote) {
   const now = new Date().toISOString();
   const { error } = await sb.from('orders').update({ status, updated_at: now }).eq('id', id);
   if (error) { toast('Update Failed', error.message, 'error'); return; }
-  // Insert history FIRST so loadStatusHistory shows the new entry immediately
+  // Push to local cache IMMEDIATELY — so history panel updates without waiting for DB round-trip
+  if (!localStatusHistoryCache[id]) localStatusHistoryCache[id] = [];
+  localStatusHistoryCache[id].unshift({ status, note, created_at: now, _local: true });
+  // Also insert to DB (fire-and-forget)
   await sb.from('order_status_history').insert({
     order_id: id, status, note, created_at: now
   }).catch(e => console.warn('[updateOrderStatus] history insert failed:', e.message));
@@ -3931,6 +3941,8 @@ async function updateItemStatus(orderId, itemIdx, newStatus, selectEl) {
 
   const ITEM_STATUS_LABELS = { pending:'Pending', in_stock:'স্টকে আছে', sourcing:'সংগ্রহ করা হচ্ছে', collected:'সংগ্রহ করা হয়েছে', dispatched:'পাঠানো হয়েছে' };
   toast('✅ Item Updated', `"${o.items[itemIdx].name}" → ${ITEM_STATUS_LABELS[newStatus] || newStatus}`, 'success');
+  // Re-render the items block in the modal so item status is immediately reflected
+  if (currentOrderId === orderId) refreshOrderModal(orderId);
 }
 
 function switchOrderTab(tab) {
@@ -4094,14 +4106,17 @@ function refreshOrderModal(id) {
       </div>`;
     }).join('') || '<div style="color:var(--text3);font-size:0.78rem;padding:10px">No items data</div>'}`;
 
-  // Price block
+  // Price block — always show Subtotal, Delivery Charge, Discount rows
   const subtotal = items.reduce((s,i) => s + Number(i.price||0)*Number(i.qty||1), 0);
+  const deliveryFeeAmt = Number(o.delivery_fee || 0);
+  const discountAmt    = Number(o.discount || 0);
   document.getElementById('overview-price-block').innerHTML = `
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
-      <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text2);margin-bottom:5px"><span>Subtotal</span><span>৳${subtotal.toLocaleString()}</span></div>
-      ${o.delivery_fee ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text2);margin-bottom:5px"><span>Delivery</span><span>৳${Number(o.delivery_fee).toLocaleString()}</span></div>` : ''}
-      ${o.discount ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--red);margin-bottom:5px"><span><i class="fa-solid fa-tag"></i> Discount</span><span>-৳${Number(o.discount).toLocaleString()}</span></div>` : ''}
-      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>
+      <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px"><i class="fa-solid fa-calculator" style="margin-right:4px"></i>Price Breakdown</div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text2);margin-bottom:6px"><span>Subtotal</span><span style="font-weight:600">৳${subtotal.toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text2);margin-bottom:6px"><span>Delivery Charge</span><span style="font-weight:600;color:${deliveryFeeAmt > 0 ? 'var(--text)' : 'var(--green)'}">৳${deliveryFeeAmt > 0 ? deliveryFeeAmt.toLocaleString() : '0 (Free)'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:6px"><span style="color:var(--red)"><i class="fa-solid fa-tag" style="font-size:0.65rem"></i> Discount</span><span style="font-weight:600;color:${discountAmt > 0 ? 'var(--red)' : 'var(--text3)'}">-৳${discountAmt.toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:2px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>
     </div>`;
 
   // Note block — uses tracking_note column
@@ -4139,11 +4154,14 @@ function refreshOrderModal(id) {
     cancelled:  { idle:'background:rgba(255,59,48,0.08);color:var(--red);border-color:rgba(255,59,48,0.25)', active:'background:var(--red);color:white;border-color:var(--red)' },
   };
   document.getElementById('statusBtnRow').innerHTML = `
-    <div style="display:grid;gap:10px;width:100%">
-      ${statusGroups.filter(g => g.label).map(g => `
+    <div style="display:grid;gap:8px;width:100%">
+      ${statusGroups.filter(g => g.label).map(g => {
+        const groupColors = { 'অর্ডার প্রক্রিয়া':'var(--amber)', 'পণ্য সংগ্রহ':'var(--cyan)', 'শিপিং':'var(--green)' };
+        const dotColor = groupColors[g.label] || 'var(--blue)';
+        return `
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
-          <div style="font-size:0.58rem;font-weight:700;font-family:var(--font-bn);color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px">
-            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--blue)"></span>${g.label}
+          <div style="font-size:0.6rem;font-weight:700;font-family:var(--font-bn);color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px">
+            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${dotColor}"></span>${g.label}
           </div>
           <div style="display:grid;grid-template-columns:repeat(${g.statuses.length},1fr);gap:6px">
             ${g.statuses.map(s => {
@@ -4151,20 +4169,21 @@ function refreshOrderModal(id) {
               const c = btnColors[s] || { idle:'', active:'' };
               return `<button
                 onclick="updateOrderStatus('${o.id}','${s}')"
-                style="border:1.5px solid;border-radius:8px;padding:7px 4px;font-size:0.68rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;text-align:center;${isActive ? c.active : c.idle}${isActive ? ';box-shadow:0 2px 8px rgba(0,0,0,.12)' : ''}"
+                style="border:1.5px solid;border-radius:8px;padding:9px 6px;font-size:0.72rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;text-align:center;white-space:nowrap;${isActive ? c.active : c.idle}${isActive ? ';box-shadow:0 2px 8px rgba(0,0,0,.15)' : ''}"
                 title="${STATUS_LABEL_BN[s] || s}"
               >${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
             }).join('')}
           </div>
-        </div>`).join('')}
-      <div style="display:flex;justify-content:flex-end">
+        </div>`;
+      }).join('')}
+      <div style="display:flex;justify-content:flex-end;margin-top:2px">
         ${statusGroups.filter(g => !g.label).flatMap(g => g.statuses).map(s => {
           const isActive = s === o.status;
           const c = btnColors[s] || { idle:'', active:'' };
           return `<button
             onclick="updateOrderStatus('${o.id}','${s}')"
-            style="border:1.5px solid;border-radius:8px;padding:7px 16px;font-size:0.68rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;${isActive ? c.active : c.idle}"
-          >${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
+            style="border:1.5px solid;border-radius:8px;padding:8px 20px;font-size:0.72rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;${isActive ? c.active : c.idle}"
+          ><i class="fa-solid fa-ban" style="margin-right:4px;font-size:0.65rem"></i>${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
         }).join('')}
       </div>
     </div>`;
@@ -5404,13 +5423,39 @@ async function loadStatusHistory(orderId) {
   if (!el || !sb) return;
   el.innerHTML = `<div style="text-align:center;padding:12px"><div class="spinner" style="margin:auto"></div></div>`;
   try {
-    const { data, error } = await sb.from('order_status_history')
+    const { data: dbData, error } = await sb.from('order_status_history')
       .select('id,status,note,created_at')
       .eq('order_id', orderId)
       .order('created_at', { ascending: false })
       .limit(15);
-    if (error || !data?.length) {
-      el.innerHTML = `<div style="color:var(--text3);font-size:0.76rem;text-align:center;padding:10px;font-family:var(--font-bn)">কোনো ইতিহাস নেই</div>`;
+    // Merge DB data with local cache (deduplicate by created_at+status)
+    const localEntries = localStatusHistoryCache[orderId] || [];
+    const dbEntries = (!error && dbData?.length) ? dbData : [];
+    const seen = new Set(dbEntries.map(h => h.status + '|' + h.created_at));
+    const merged = [...localEntries.filter(h => !seen.has(h.status + '|' + h.created_at)), ...dbEntries];
+    const data = merged.length ? merged : null;
+    if (!data?.length) {
+      // Fallback: show current order status if no history at all
+      const o = allOrders.find(x => x.id === orderId);
+      const colorMap2 = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
+      const pmap2 = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+      el.innerHTML = `
+        <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px"><i class="fa-solid fa-clock-rotate-left" style="margin-right:4px"></i>Status History</div>
+        <div style="position:relative;padding-left:20px">
+          <div style="position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border);border-radius:2px"></div>
+          <div style="position:relative;margin-bottom:12px">
+            <div style="position:absolute;left:-16px;top:2px;width:10px;height:10px;border-radius:50%;background:${colorMap2[o?.status||'pending']||'var(--amber)'};border:2px solid var(--surface)"></div>
+            <div style="display:flex;align-items:flex-start;gap:7px">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                  <span class="pill ${pmap2[o?.status||'pending']||'pill-pending'}" style="font-size:0.55rem;padding:2px 7px;font-family:var(--font-bn)">${STATUS_LABEL_BN[o?.status||'pending']||cap(o?.status||'pending')}</span>
+                  <span style="font-size:0.62rem;color:var(--text3);font-family:var(--mono)">${fmtDateTime(o?.created_at)}</span>
+                </div>
+                <div style="font-size:0.75rem;color:var(--text2);line-height:1.55;font-family:var(--font-bn);background:var(--bg3);border-radius:7px;padding:7px 10px;border-left:2px solid ${colorMap2[o?.status||'pending']||'var(--amber)'}">অর্ডারটি তৈরি করা হয়েছে।</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
       return;
     }
     const iconMap = { pending:'fa-clock', confirmed:'fa-circle-check', in_stock:'fa-boxes-stacked', collecting:'fa-hand-holding', collected:'fa-box-open', processing:'fa-gear', shipped:'fa-truck-fast', delivered:'fa-house-circle-check', cancelled:'fa-ban' };
