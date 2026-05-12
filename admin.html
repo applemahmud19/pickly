@@ -474,6 +474,100 @@ body {
 .pill-inactive   { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
 .pill-inactive::before   { background: var(--text3); }
 
+/* ── NEW TRACKING STATUS PILLS ── */
+.pill-in_stock       { background: rgba(0,122,255,0.09);  color: var(--blue);   border: 1px solid rgba(0,122,255,0.22); }
+.pill-in_stock::before   { background: var(--blue); }
+.pill-collecting     { background: rgba(255,159,10,0.13); color: #D97706;       border: 1px solid rgba(255,159,10,0.3); }
+.pill-collecting::before { background: #D97706; }
+.pill-collected      { background: rgba(0,122,255,0.13);  color: var(--blue);   border: 1px solid rgba(0,122,255,0.3); }
+.pill-collected::before  { background: var(--blue); }
+
+/* ── ORDER TIMELINE / PROGRESS ── */
+.order-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  position: relative;
+  padding: 16px 0 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.order-timeline::-webkit-scrollbar { display: none; }
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 72px;
+  position: relative;
+  z-index: 1;
+}
+.timeline-step::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: -50%;
+  right: 50%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.timeline-step:first-child::before { display: none; }
+.timeline-step.done::before  { background: linear-gradient(90deg, var(--green), var(--green)); }
+.timeline-step.active::before { background: linear-gradient(90deg, var(--green), var(--blue)); }
+
+.tl-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; border: 2px solid var(--border);
+  background: var(--surface); color: var(--text3);
+  transition: all 0.3s; z-index: 1; position: relative;
+}
+.timeline-step.done .tl-dot {
+  background: var(--green); border-color: var(--green); color: white;
+  box-shadow: 0 0 0 3px rgba(52,199,89,0.18);
+}
+.timeline-step.active .tl-dot {
+  background: var(--blue); border-color: var(--blue); color: white;
+  box-shadow: 0 0 0 4px rgba(0,122,255,0.18);
+  animation: tl-pulse 1.6s ease-in-out infinite;
+}
+@keyframes tl-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(0,122,255,0.18); }
+  50%       { box-shadow: 0 0 0 7px rgba(0,122,255,0.08); }
+}
+.tl-label {
+  font-size: 0.58rem; font-weight: 700; color: var(--text3);
+  text-align: center; margin-top: 6px; line-height: 1.3;
+  font-family: var(--font-bn); max-width: 70px;
+}
+.timeline-step.done .tl-label   { color: var(--green); }
+.timeline-step.active .tl-label { color: var(--blue);  }
+
+/* ── TRACKING NOTE BADGE ── */
+.tracking-note-badge {
+  background: rgba(0,122,255,0.07);
+  border: 1px solid rgba(0,122,255,0.2);
+  border-radius: 10px; padding: 10px 14px;
+  font-size: 0.8rem; color: var(--text2);
+  line-height: 1.6;
+  font-family: var(--font-bn);
+}
+.tracking-note-badge .tn-label {
+  font-size: 0.58rem; font-weight: 700; font-family: var(--mono);
+  color: var(--blue); text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 5px; display: flex; align-items: center; gap: 5px;
+}
+
+/* ── STATUS SELECT COLORS ── */
+.status-select[data-status="in_stock"]   { color: var(--blue);   border-color: rgba(0,122,255,0.3); }
+.status-select[data-status="collecting"] { color: #D97706;       border-color: rgba(255,159,10,0.3); }
+.status-select[data-status="collected"]  { color: var(--blue);   border-color: rgba(0,122,255,0.35); }
+.status-select[data-status="shipped"]    { color: var(--cyan);   border-color: rgba(50,173,230,0.35); }
+.status-select[data-status="delivered"]  { color: var(--green);  border-color: rgba(52,199,89,0.35); }
+.status-select[data-status="cancelled"]  { color: var(--red);    border-color: rgba(255,59,48,0.3); }
+
 /* ═══════════════════════════════════════
    FORM ELEMENTS
 ═══════════════════════════════════════ */
@@ -538,6 +632,21 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .kpi-label, [data-bn], .login-sub, .login-security, .login-error, .toast-sub {
   font-family: var(--font-bn);
 }
+
+/* ═══════════════════════════════════════
+   USER MANAGEMENT
+═══════════════════════════════════════ */
+.user-avatar-cell {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; font-weight: 700; color: white;
+  flex-shrink: 0; overflow: hidden;
+}
+.user-avatar-cell img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.pill-blocked { background: rgba(255,59,48,0.10); color: var(--red); border: 1px solid rgba(255,59,48,0.25); }
+.pill-blocked::before { background: var(--red); }
 
 /* ═══════════════════════════════════════
    DESCRIPTION DISPLAY — rich formatting
@@ -1219,6 +1328,10 @@ body {
         <i class="fa-solid fa-clipboard-list"></i> Orders
         <span class="nav-badge" id="nb-orders">—</span>
       </div>
+      <div class="nav-item" data-sec="users">
+        <i class="fa-solid fa-users"></i> Users
+        <span class="nav-badge" id="nb-users">—</span>
+      </div>
 
       <div class="sb-section">Insights</div>
       <div class="nav-item" data-sec="analytics">
@@ -1497,8 +1610,11 @@ body {
                 <option value="">All Status</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
+                <option value="in_stock">স্টক এ আছে</option>
+                <option value="collecting">সংগ্রহের প্রক্রিয়া</option>
+                <option value="collected">সংগ্রহ সম্পন্ন</option>
                 <option value="processing">Processing</option>
-                <option value="shipped">Shipped</option>
+                <option value="shipped">পাঠানো হয়েছে</option>
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </select>
@@ -1518,6 +1634,92 @@ body {
             </table>
           </div>
           <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="orderFooter">Loading...</div>
+        </div>
+      </div>
+
+      <!-- ══ USERS ══ -->
+      <div class="section" id="sec-users">
+        <!-- KPI strip -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px" id="userKPIGrid">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-users"></i></div>
+              <span class="kpi-badge na">Total</span>
+            </div>
+            <div class="kpi-val" id="kpi-total-users">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">মোট ইউজার</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-user-check"></i></div>
+              <span class="kpi-badge up" id="kpi-active-users-badge">Active</span>
+            </div>
+            <div class="kpi-val" id="kpi-active-users">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">সক্রিয় ইউজার</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-user-slash"></i></div>
+              <span class="kpi-badge dn" id="kpi-blocked-users-badge">Blocked</span>
+            </div>
+            <div class="kpi-val" id="kpi-blocked-users">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">ব্লক করা ইউজার</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-user-plus"></i></div>
+              <span class="kpi-badge na">আজ</span>
+            </div>
+            <div class="kpi-val" id="kpi-new-users-today">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের নতুন ইউজার</div>
+          </div>
+        </div>
+
+        <!-- User Table Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-users"></i></div>
+              User Management
+            </div>
+            <div class="panel-actions">
+              <div class="search-bar" style="min-width:200px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="নাম, ইমেইল বা ফোন দিয়ে খুঁজুন..." id="userSearch" oninput="renderUsers()">
+              </div>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:130px" id="userStatusFilter" onchange="renderUsers()">
+                <option value="">All Users</option>
+                <option value="active">Active Only</option>
+                <option value="blocked">Blocked Only</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="loadUsers()">
+                <i class="fa-solid fa-rotate-right"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>
+                    <button onclick="toggleUserSort()" style="background:none;border:none;color:var(--text3);font:inherit;font-size:inherit;cursor:pointer;display:flex;align-items:center;gap:4px;text-transform:uppercase;letter-spacing:0.1em;font-size:0.62rem;font-weight:700;font-family:var(--mono)">
+                      Join Date <i class="fa-solid fa-arrow-down-short-wide" id="userSortIcon"></i>
+                    </button>
+                  </th>
+                  <th>Orders</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="userFooter">Loading...</div>
         </div>
       </div>
 
@@ -2438,6 +2640,76 @@ body {
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     USER DETAIL MODAL
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="userDetailModal" onclick="if(event.target===this)closeModal('userDetailModal')">
+  <div class="modal-box" style="max-width:580px">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="modal-title" id="udmTitle">User Details</div>
+        <span id="udmStatusBadge" class="pill pill-active" style="font-size:0.62rem">Active</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('userDetailModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+
+      <!-- Avatar + name strip -->
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-bottom:16px">
+        <div id="udmAvatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:white;flex-shrink:0;overflow:hidden">U</div>
+        <div style="min-width:0;flex:1">
+          <div id="udmName" style="font-size:1rem;font-weight:700;color:var(--text)">—</div>
+          <div id="udmEmail" style="font-size:0.76rem;color:var(--text3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:0.6rem;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">Member since</div>
+          <div id="udmJoinDate" style="font-size:0.8rem;font-weight:600;color:var(--text2)">—</div>
+        </div>
+      </div>
+
+      <!-- Info grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px"><i class="fa-solid fa-phone" style="color:var(--green);margin-right:5px"></i>Phone</div>
+          <div id="udmPhone" style="font-size:0.88rem;font-weight:600;color:var(--text)">—</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px"><i class="fa-solid fa-map-pin" style="color:var(--amber);margin-right:5px"></i>District</div>
+          <div id="udmDistrict" style="font-size:0.88rem;font-weight:600;color:var(--text)">—</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px"><i class="fa-solid fa-cart-shopping" style="color:var(--blue);margin-right:5px"></i>Total Orders</div>
+          <div id="udmOrders" style="font-size:1.1rem;font-weight:800;color:var(--blue)">—</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px"><i class="fa-solid fa-bangladeshi-taka-sign" style="color:var(--purple);margin-right:5px"></i>Total Spent</div>
+          <div id="udmSpent" style="font-size:1.1rem;font-weight:800;color:var(--purple)">৳0</div>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px">
+        <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px"><i class="fa-solid fa-location-dot" style="color:var(--red);margin-right:5px"></i>Address</div>
+        <div id="udmAddress" style="font-size:0.84rem;color:var(--text2);line-height:1.6;font-family:var(--font-bn)">—</div>
+      </div>
+
+      <!-- Recent orders list -->
+      <div>
+        <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px"><i class="fa-solid fa-clock-rotate-left" style="margin-right:5px"></i>Recent Orders</div>
+        <div id="udmRecentOrders" style="display:grid;gap:5px;max-height:180px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Action footer -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-danger" id="udmBlockBtn" onclick="confirmToggleBlock()">
+          <i class="fa-solid fa-ban"></i> Block User
+        </button>
+        <button class="btn btn-ghost" onclick="closeModal('userDetailModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -3263,7 +3535,12 @@ function renderOrders() {
     return;
   }
 
-  const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const statusOptions = ['pending', 'confirmed', 'in_stock', 'collecting', 'collected', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const statusLabels  = {
+    pending:'Pending', confirmed:'Confirmed',
+    in_stock:'স্টক এ আছে', collecting:'সংগ্রহ চলছে', collected:'সংগ্রহ সম্পন্ন',
+    processing:'Processing', shipped:'পাঠানো হয়েছে', delivered:'Delivered', cancelled:'Cancelled'
+  };
   tbody.innerHTML = filtered.map(o => {
     const items = Array.isArray(o.items) ? o.items : [];
     const names = items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
@@ -3276,8 +3553,8 @@ function renderOrders() {
       <td style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</td>
       <td>${pillHTML(o.status)}</td>
       <td style="font-size:0.72rem;color:var(--text3)">${fmtDate(o.created_at)}</td>
-      <td><select class="status-select" onchange="updateOrderStatus('${o.id}', this.value)">
-        ${statusOptions.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${cap(s)}</option>`).join('')}
+      <td><select class="status-select" data-status="${o.status||''}" onchange="updateOrderStatus('${o.id}', this.value); this.dataset.status=this.value; applyStatusSelectColor(this)">
+        ${statusOptions.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${statusLabels[s]||cap(s)}</option>`).join('')}
       </select></td>
     </tr>`;
   }).join('');
@@ -3288,17 +3565,30 @@ function renderOrders() {
 ══════════════════════════════════════ */
 let currentOrderId = null;
 
-async function updateOrderStatus(id, status) {
+async function updateOrderStatus(id, status, customNote) {
   if (!sb) return;
+  const BN_STATUS_NOTE = {
+    pending:     'অর্ডারটি পেন্ডিং অবস্থায় আছে।',
+    confirmed:   'অর্ডারটি নিশ্চিত করা হয়েছে।',
+    in_stock:    'পণ্যটি স্টকে পাওয়া গেছে — প্রক্রিয়াকরণ শুরু হবে।',
+    collecting:  'পণ্যটি সংগ্রহের প্রক্রিয়া চলছে।',
+    collected:   'পণ্যটি সংগ্রহ সম্পন্ন হয়েছে — শীঘ্রই পাঠানো হবে।',
+    processing:  'পণ্যটি প্যাক হচ্ছে, প্রেরণের জন্য প্রস্তুত হচ্ছে।',
+    shipped:     'পণ্যটি কুরিয়ারে পাঠানো হয়েছে — ডেলিভারির অপেক্ষায় আছে।',
+    delivered:   'পণ্যটি সফলভাবে ডেলিভারি হয়েছে। ধন্যবাদ!',
+    cancelled:   'অর্ডারটি বাতিল করা হয়েছে।',
+  };
+  const note = customNote || BN_STATUS_NOTE[status] || `Status updated to ${status} by admin`;
   const { error } = await sb.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
   if (error) { toast('Update Failed', error.message, 'error'); return; }
   const o = allOrders.find(x => x.id === id);
   if (o) o.status = status;
   renderOrders(); renderDashboard();
-  toast('Status Updated', `Order → ${cap(status)}`, 'success');
-  // Also update status buttons inside the modal if it's open for this order
+  toast('Status Updated', `Order → ${STATUS_LABEL_BN[status] || cap(status)}`, 'success');
   if (currentOrderId === id) refreshOrderModal(id);
-  await sb.from('order_status_history').insert({ order_id: id, status, note: 'Updated by admin', created_at: new Date().toISOString() }).catch(() => {});
+  await sb.from('order_status_history').insert({
+    order_id: id, status, note, created_at: new Date().toISOString()
+  }).catch(() => {});
 }
 
 function switchOrderTab(tab) {
@@ -3363,12 +3653,12 @@ async function viewOrder(id) {
 function refreshOrderModal(id) {
   const o = allOrders.find(x => x.id === id); if (!o) return;
   const items = Array.isArray(o.items) ? o.items : [];
-  const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const statusOptions = ['pending', 'confirmed', 'in_stock', 'collecting', 'collected', 'processing', 'shipped', 'delivered', 'cancelled'];
 
   // Update badge
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
   const badge = document.getElementById('orderModalBadge');
-  if (badge) { badge.className = 'pill ' + (pmap[o.status] || 'pill-pending'); badge.textContent = cap(o.status || 'pending'); }
+  if (badge) { badge.className = 'pill ' + (pmap[o.status] || 'pill-pending'); badge.textContent = STATUS_LABEL_BN[o.status] || cap(o.status || 'pending'); }
 
   // Customer block
   document.getElementById('overview-customer-block').innerHTML = `
@@ -3385,6 +3675,40 @@ function refreshOrderModal(id) {
         <div style="font-size:0.76rem;color:var(--text2);line-height:1.5">${o.customer_address || '—'}</div>
         ${o.delivery_fee ? `<div style="margin-top:5px;font-size:0.7rem;color:var(--text3)">Delivery Fee: <strong>৳${Number(o.delivery_fee).toLocaleString()}</strong></div>` : ''}
       </div>
+    </div>`;
+
+  // ── ORDER PROGRESS TIMELINE ──
+  const tlSteps = [
+    { key: 'pending',    icon: 'fa-clock',         label: 'অর্ডার\nপেন্ডিং' },
+    { key: 'confirmed',  icon: 'fa-circle-check',  label: 'নিশ্চিত' },
+    { key: 'in_stock',   icon: 'fa-boxes-stacked', label: 'স্টকে আছে' },
+    { key: 'collecting', icon: 'fa-hand-holding',  label: 'সংগ্রহ\nচলছে' },
+    { key: 'collected',  icon: 'fa-box-open',      label: 'সংগ্রহ\nসম্পন্ন' },
+    { key: 'shipped',    icon: 'fa-truck-fast',    label: 'পাঠানো\nহয়েছে' },
+    { key: 'delivered',  icon: 'fa-house-circle-check', label: 'ডেলিভারি' },
+  ];
+  const ORDER_FLOW = ['pending','confirmed','in_stock','collecting','collected','processing','shipped','delivered'];
+  const currentIdx = ORDER_FLOW.indexOf(o.status);
+  const isCancelled = o.status === 'cancelled';
+
+  const timelineHTML = isCancelled
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--red);font-size:0.82rem;font-family:var(--font-bn)"><i class="fa-solid fa-ban"></i> অর্ডারটি বাতিল করা হয়েছে।</div>`
+    : `<div class="order-timeline">${tlSteps.map((step, i) => {
+        const stepIdx = ORDER_FLOW.indexOf(step.key);
+        const isDone   = currentIdx > stepIdx;
+        const isActive = currentIdx === stepIdx || (step.key === 'collected' && o.status === 'processing');
+        return `<div class="timeline-step ${isDone ? 'done' : ''} ${isActive ? 'active' : ''}">
+          <div class="tl-dot"><i class="fa-solid ${step.icon}" style="font-size:0.65rem"></i></div>
+          <div class="tl-label">${step.label.replace(/\n/g,'<br>')}</div>
+        </div>`;
+      }).join('')}</div>`;
+
+  document.getElementById('overview-timeline-block').innerHTML = `
+    <div style="margin-bottom:4px">
+      <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:0">
+        <i class="fa-solid fa-route" style="margin-right:5px;color:var(--blue)"></i>অর্ডার অগ্রগতি
+      </div>
+      ${timelineHTML}
     </div>`;
 
   // Items block
@@ -3405,12 +3729,12 @@ function refreshOrderModal(id) {
       <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>
     </div>`;
 
-  // Note block — uses tracking_note column (admin_note is deprecated)
+  // Note block — uses tracking_note column
   const noteVal = o.tracking_note || o.admin_note || '';
   document.getElementById('overview-note-block').innerHTML = noteVal
-    ? `<div style="background:rgba(0,122,255,0.06);border:1px solid rgba(0,122,255,0.2);border-radius:10px;padding:12px 14px;font-size:0.8rem;color:var(--text2)">
-        <div style="font-size:0.6rem;font-weight:700;font-family:var(--mono);color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px"><i class="fa-solid fa-message"></i> Note to Customer</div>
-        <div style="line-height:1.65;font-family:var(--font-bn)">${noteVal}</div>
+    ? `<div class="tracking-note-badge">
+        <div class="tn-label"><i class="fa-solid fa-message"></i> Admin Note (Customer দেখতে পাবেন)</div>
+        <div>${noteVal}</div>
        </div>` : '';
 
   // Courier block
@@ -3421,10 +3745,47 @@ function refreshOrderModal(id) {
         <a href="${o.tracking_link}" target="_blank" style="font-size:0.76rem;color:var(--blue);word-break:break-all">${o.tracking_link}</a>
        </div>` : '';
 
-  // Status buttons
-  document.getElementById('statusBtnRow').innerHTML = statusOptions.map(s =>
-    `<button class="btn btn-sm ${s === o.status ? 'btn-primary' : 'btn-ghost'}" onclick="updateOrderStatus('${o.id}','${s}')" style="flex:1;min-width:80px;justify-content:center;font-size:0.7rem">${cap(s)}</button>`
+  // ── STATUS BUTTONS — grouped with Bengali labels ──
+  const statusGroups = [
+    { label: 'অর্ডার প্রক্রিয়া', statuses: ['pending','confirmed'] },
+    { label: 'পণ্য সংগ্রহ', statuses: ['in_stock','collecting','collected'] },
+    { label: 'শিপিং', statuses: ['processing','shipped','delivered'] },
+    { label: '', statuses: ['cancelled'] },
+  ];
+  document.getElementById('statusBtnRow').innerHTML = statusGroups.map(g =>
+    `<div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+      ${g.label ? `<div style="font-size:0.55rem;font-weight:700;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.09em;padding:0 2px;font-family:var(--font-bn);letter-spacing:0;font-size:0.6rem">${g.label}</div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${g.statuses.map(s => {
+          const isActive = s === o.status;
+          const btnColors = {
+            in_stock:   'background:rgba(0,122,255,0.1);color:var(--blue);border-color:rgba(0,122,255,0.3)',
+            collecting: 'background:rgba(255,159,10,0.1);color:#D97706;border-color:rgba(255,159,10,0.3)',
+            collected:  'background:rgba(0,122,255,0.14);color:var(--blue);border-color:rgba(0,122,255,0.4)',
+            shipped:    'background:rgba(50,173,230,0.12);color:var(--cyan);border-color:rgba(50,173,230,0.35)',
+            delivered:  'background:rgba(52,199,89,0.12);color:var(--green);border-color:rgba(52,199,89,0.35)',
+            cancelled:  'background:rgba(255,59,48,0.1);color:var(--red);border-color:rgba(255,59,48,0.3)',
+          };
+          const activeStyle = isActive
+            ? (s === 'in_stock'   ? 'background:var(--blue);color:white;border-color:var(--blue)' :
+               s === 'collecting' ? 'background:#D97706;color:white;border-color:#D97706' :
+               s === 'collected'  ? 'background:var(--blue);color:white;border-color:var(--blue)' :
+               s === 'shipped'    ? 'background:var(--cyan);color:white;border-color:var(--cyan)' :
+               s === 'delivered'  ? 'background:var(--green);color:white;border-color:var(--green)' :
+               s === 'cancelled'  ? 'background:var(--red);color:white;border-color:var(--red)' :
+               '')
+            : (btnColors[s] || '');
+          return `<button class="btn btn-sm ${isActive ? '' : 'btn-ghost'}"
+            onclick="updateOrderStatus('${o.id}','${s}')"
+            style="flex:1;min-width:64px;justify-content:center;font-size:0.65rem;font-family:var(--font-bn);${activeStyle}"
+          >${STATUS_LABEL_BN[s] || cap(s)}</button>`;
+        }).join('')}
+      </div>
+    </div>`
   ).join('');
+
+  // ── STATUS HISTORY TIMELINE (async fetch) ──
+  loadStatusHistory(id);
 }
 
 function fillOrderEditForm(o) {
@@ -4595,9 +4956,85 @@ function renderPromos() {
 /* ══════════════════════════════════════
    HELPERS
 ══════════════════════════════════════ */
+/* ── GLOBAL STATUS LABEL MAP (Bengali) ── */
+const STATUS_LABEL_BN = {
+  pending:     'পেন্ডিং',
+  confirmed:   'নিশ্চিত',
+  in_stock:    'স্টক এ আছে',
+  collecting:  'সংগ্রহ চলছে',
+  collected:   'সংগ্রহ সম্পন্ন',
+  processing:  'প্রক্রিয়াকরণ',
+  shipped:     'পাঠানো হয়েছে',
+  delivered:   'ডেলিভারি হয়েছে',
+  cancelled:   'বাতিল',
+};
+
 function pillHTML(status) {
-  const map = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
-  return `<span class="pill ${map[status] || 'pill-pending'}">${cap(status || 'pending')}</span>`;
+  const map = {
+    pending:'pill-pending', confirmed:'pill-confirmed',
+    in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected',
+    processing:'pill-processing', shipped:'pill-shipped',
+    delivered:'pill-delivered', cancelled:'pill-cancelled'
+  };
+  const label = STATUS_LABEL_BN[status] || cap(status || 'pending');
+  return `<span class="pill ${map[status] || 'pill-pending'}" style="font-family:var(--font-bn)">${label}</span>`;
+}
+
+function applyStatusSelectColor(sel) {
+  const colorMap = {
+    in_stock:   'color:#007AFF;border-color:rgba(0,122,255,0.3)',
+    collecting: 'color:#D97706;border-color:rgba(255,159,10,0.3)',
+    collected:  'color:#007AFF;border-color:rgba(0,122,255,0.4)',
+    shipped:    'color:#32ADE6;border-color:rgba(50,173,230,0.35)',
+    delivered:  'color:#34C759;border-color:rgba(52,199,89,0.35)',
+    cancelled:  'color:#FF3B30;border-color:rgba(255,59,48,0.3)',
+  };
+  sel.style.cssText = colorMap[sel.value] || '';
+}
+
+/* ── STATUS HISTORY PANEL ── */
+async function loadStatusHistory(orderId) {
+  const el = document.getElementById('overview-history-block');
+  if (!el || !sb) return;
+  el.innerHTML = `<div style="text-align:center;padding:12px"><div class="spinner" style="margin:auto"></div></div>`;
+  try {
+    const { data, error } = await sb.from('order_status_history')
+      .select('id,status,note,created_at')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: false })
+      .limit(15);
+    if (error || !data?.length) {
+      el.innerHTML = `<div style="color:var(--text3);font-size:0.76rem;text-align:center;padding:10px;font-family:var(--font-bn)">কোনো ইতিহাস নেই</div>`;
+      return;
+    }
+    const iconMap = { pending:'fa-clock', confirmed:'fa-circle-check', in_stock:'fa-boxes-stacked', collecting:'fa-hand-holding', collected:'fa-box-open', processing:'fa-gear', shipped:'fa-truck-fast', delivered:'fa-house-circle-check', cancelled:'fa-ban' };
+    const colorMap = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
+    el.innerHTML = `
+      <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px"><i class="fa-solid fa-clock-rotate-left" style="margin-right:4px"></i>Status History</div>
+      <div style="position:relative;padding-left:20px">
+        <div style="position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border);border-radius:2px"></div>
+        ${data.map(h => `
+          <div style="position:relative;margin-bottom:12px">
+            <div style="position:absolute;left:-16px;top:2px;width:10px;height:10px;border-radius:50%;background:${colorMap[h.status]||'var(--blue)'};border:2px solid var(--surface);box-shadow:0 0 0 1px ${colorMap[h.status]||'var(--blue)'}44"></div>
+            <div style="display:flex;align-items:flex-start;gap:7px">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                  <span class="pill ${({'pending':'pill-pending','confirmed':'pill-confirmed','in_stock':'pill-in_stock','collecting':'pill-collecting','collected':'pill-collected','processing':'pill-processing','shipped':'pill-shipped','delivered':'pill-delivered','cancelled':'pill-cancelled'})[h.status]||'pill-pending'}" style="font-size:0.55rem;padding:2px 7px;font-family:var(--font-bn)">${STATUS_LABEL_BN[h.status]||cap(h.status)}</span>
+                  <span style="font-size:0.62rem;color:var(--text3);font-family:var(--mono)">${fmtDateTime(h.created_at)}</span>
+                </div>
+                ${h.note ? `<div style="font-size:0.75rem;color:var(--text2);line-height:1.55;font-family:var(--font-bn);background:var(--bg3);border-radius:7px;padding:7px 10px;border-left:2px solid ${colorMap[h.status]||'var(--blue)'}">${h.note}</div>` : ''}
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--red);font-size:0.76rem;padding:10px">History লোড ব্যর্থ</div>`;
+  }
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
 }
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -4822,6 +5259,357 @@ function deleteBookType(idx) {
   renderBookTypeList();
   populateBookTypeDropdown();
   toast('Removed', `"${name}" মুছে ফেলা হয়েছে`, 'info');
+}
+
+/* ══════════════════════════════════════════════════════
+   USER MANAGEMENT — Full System
+══════════════════════════════════════════════════════ */
+let allUsers = [];
+let userSortDesc = true; // newest first by default
+let currentViewUserId = null;
+
+/* ── Load users from Supabase ── */
+async function loadUsers() {
+  if (!sb) return;
+
+  const tbody = document.getElementById('userTableBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>';
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--red)">
+      <i class="fa-solid fa-triangle-exclamation"></i> Connection Timeout —
+      <button class="btn btn-ghost btn-sm" onclick="loadUsers()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+    </td></tr>`;
+    toast('Connection Timeout', 'Users লোড হচ্ছে না। Retry করুন।', 'error');
+  }, 10000);
+
+  try {
+    // Try `profiles` table first, fall back to `users`
+    let data, error;
+    ({ data, error } = await sb
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false }));
+
+    if (error && (error.code === '42P01' || error.message?.includes('does not exist'))) {
+      // profiles table doesn't exist → try users table
+      ({ data, error } = await sb
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false }));
+    }
+
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+
+    if (error) {
+      toast('Users Error', error.message, 'error');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3)">
+        <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-database"></i></div>
+        <div class="empty-title">Table not found</div>
+        <div class="empty-sub">Supabase-এ <code>profiles</code> বা <code>users</code> টেবিল নেই</div></div>
+      </td></tr>`;
+      return;
+    }
+
+    allUsers = (data || []).map(u => ({
+      id:           u.id,
+      name:         u.full_name || u.name || u.display_name || u.username || 'Unknown',
+      email:        u.email || '',
+      phone:        u.phone || u.phone_number || '',
+      district:     u.district || u.city || '',
+      address:      u.address || u.full_address || '',
+      avatar_url:   u.avatar_url || u.photo_url || null,
+      status:       u.status || (u.is_blocked ? 'blocked' : 'active'),
+      is_blocked:   u.is_blocked || u.blocked || false,
+      created_at:   u.created_at || u.registered_at || null,
+      updated_at:   u.updated_at || null,
+      raw:          u,
+    }));
+
+    const nbEl = document.getElementById('nb-users');
+    if (nbEl) nbEl.textContent = allUsers.length;
+
+    renderUserKPIs();
+    renderUsers();
+
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (!timedOut) toast('Users Error', e.message || 'Failed to load', 'error');
+  }
+}
+
+/* ── KPI cards ── */
+function renderUserKPIs() {
+  const total   = allUsers.length;
+  const active  = allUsers.filter(u => !u.is_blocked).length;
+  const blocked = allUsers.filter(u => u.is_blocked).length;
+
+  const today = new Date().toDateString();
+  const newToday = allUsers.filter(u => u.created_at && new Date(u.created_at).toDateString() === today).length;
+
+  const safe = id => { const el = document.getElementById(id); if (el) el.textContent = arguments[1]; };
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  setEl('kpi-total-users', total);
+  setEl('kpi-active-users', active);
+  setEl('kpi-active-users-badge', active + ' active');
+  setEl('kpi-blocked-users', blocked);
+  setEl('kpi-blocked-users-badge', blocked + ' blocked');
+  setEl('kpi-new-users-today', newToday);
+}
+
+/* ── Sort toggle ── */
+function toggleUserSort() {
+  userSortDesc = !userSortDesc;
+  const icon = document.getElementById('userSortIcon');
+  if (icon) icon.className = userSortDesc ? 'fa-solid fa-arrow-down-short-wide' : 'fa-solid fa-arrow-up-short-wide';
+  renderUsers();
+}
+
+/* ── Render users table ── */
+function renderUsers() {
+  const q  = (document.getElementById('userSearch')?.value || '').toLowerCase();
+  const sf = document.getElementById('userStatusFilter')?.value || '';
+
+  let filtered = allUsers.filter(u =>
+    (!sf ||
+      (sf === 'active'  && !u.is_blocked) ||
+      (sf === 'blocked' &&  u.is_blocked)
+    ) &&
+    (!q ||
+      (u.name  || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.phone || '').toLowerCase().includes(q)
+    )
+  );
+
+  // Sort by join date
+  filtered.sort((a, b) => {
+    const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return userSortDesc ? tb - ta : ta - tb;
+  });
+
+  const footerEl = document.getElementById('userFooter');
+  if (footerEl) footerEl.textContent = `Showing ${filtered.length} of ${allUsers.length} users`;
+
+  const tbody = document.getElementById('userTableBody');
+  if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fa-solid fa-users-slash"></i></div>
+        <div class="empty-title">কোনো ইউজার পাওয়া যায়নি</div>
+        <div class="empty-sub" style="font-family:var(--font-bn)">সার্চ বা ফিল্টার পরিবর্তন করুন</div>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(u => {
+    // Count & total spent from orders
+    const userOrders = allOrders.filter(o =>
+      (o.user_id && o.user_id === u.id) ||
+      (o.customer_email && o.customer_email === u.email) ||
+      (o.customer_phone && u.phone && o.customer_phone === u.phone)
+    );
+    const orderCount  = userOrders.length;
+    const totalSpent  = userOrders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0);
+
+    const statusPill = u.is_blocked
+      ? `<span class="pill pill-blocked">Blocked</span>`
+      : `<span class="pill pill-active">Active</span>`;
+
+    const avatarHtml = u.avatar_url
+      ? `<div class="user-avatar-cell"><img src="${u.avatar_url}" alt="${u.name}"></div>`
+      : `<div class="user-avatar-cell" style="font-size:0.75rem">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
+
+    const blockBtnLabel = u.is_blocked ? 'Unblock' : 'Block';
+    const blockBtnClass = u.is_blocked ? 'btn-secondary' : 'btn-danger';
+
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          ${avatarHtml}
+          <div>
+            <div style="font-weight:600;font-size:0.84rem">${u.name || '—'}</div>
+            <div style="font-size:0.68rem;color:var(--text3);font-family:var(--mono)">#${String(u.id).slice(0,8)}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:0.78rem;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email || '—'}</td>
+      <td style="font-family:var(--mono);font-size:0.78rem">${u.phone || '—'}</td>
+      <td style="font-size:0.74rem;color:var(--text2)">${u.created_at ? fmtDate(u.created_at) : '—'}</td>
+      <td>
+        <div style="font-weight:700;font-size:0.84rem;color:var(--blue)">${orderCount}</div>
+        <div style="font-size:0.66rem;color:var(--text3);font-family:var(--mono)">৳${totalSpent.toLocaleString()}</div>
+      </td>
+      <td>${statusPill}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-xs" onclick="viewUserDetail('${u.id}')">
+            <i class="fa-solid fa-eye"></i> View
+          </button>
+          <button class="btn ${blockBtnClass} btn-xs" onclick="quickToggleBlock('${u.id}')">
+            <i class="fa-solid ${u.is_blocked ? 'fa-unlock' : 'fa-ban'}"></i> ${blockBtnLabel}
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── View user detail modal ── */
+function viewUserDetail(userId) {
+  const u = allUsers.find(x => x.id === userId || x.id === Number(userId));
+  if (!u) { toast('Not Found', 'ইউজার পাওয়া যায়নি', 'error'); return; }
+  currentViewUserId = u.id;
+
+  // Avatar
+  const avatarEl = document.getElementById('udmAvatar');
+  if (avatarEl) {
+    if (u.avatar_url) {
+      avatarEl.innerHTML = `<img src="${u.avatar_url}" alt="${u.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      avatarEl.textContent = (u.name || 'U').charAt(0).toUpperCase();
+      avatarEl.style.fontSize = '1.4rem';
+    }
+  }
+
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val || '—'; };
+
+  setEl('udmTitle',    u.name || 'User Details');
+  setEl('udmName',     u.name);
+  setEl('udmEmail',    u.email);
+  setEl('udmPhone',    u.phone);
+  setEl('udmDistrict', u.district);
+  setEl('udmAddress',  u.address);
+  setEl('udmJoinDate', u.created_at ? fmtDate(u.created_at) : '—');
+
+  // Status badge
+  const badge = document.getElementById('udmStatusBadge');
+  if (badge) {
+    badge.className = 'pill ' + (u.is_blocked ? 'pill-blocked' : 'pill-active');
+    badge.textContent = u.is_blocked ? 'Blocked' : 'Active';
+  }
+
+  // Orders stats
+  const userOrders = allOrders.filter(o =>
+    (o.user_id && o.user_id === u.id) ||
+    (o.customer_email && o.customer_email === u.email) ||
+    (o.customer_phone && u.phone && o.customer_phone === u.phone)
+  );
+  const totalSpent = userOrders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0);
+  setEl('udmOrders', userOrders.length);
+  setEl('udmSpent',  '৳' + totalSpent.toLocaleString());
+
+  // Recent orders list
+  const recentEl = document.getElementById('udmRecentOrders');
+  if (recentEl) {
+    const recent = userOrders.slice(0, 5);
+    if (!recent.length) {
+      recentEl.innerHTML = `<div style="color:var(--text3);font-size:0.78rem;text-align:center;padding:12px;font-family:var(--font-bn)">কোনো অর্ডার নেই</div>`;
+    } else {
+      const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+      recentEl.innerHTML = recent.map(o => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:0.78rem">
+          <div>
+            <span style="font-family:var(--mono);font-weight:600;color:var(--blue)">${o.order_number || '#' + String(o.id).slice(0,8)}</span>
+            <span style="color:var(--text3);margin-left:6px;font-size:0.68rem">${fmtDate(o.created_at)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="pill ${pmap[o.status] || 'pill-pending'}" style="font-size:0.58rem">${cap(o.status || 'pending')}</span>
+            <span style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</span>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // Block button label
+  const blockBtn = document.getElementById('udmBlockBtn');
+  if (blockBtn) {
+    blockBtn.className = u.is_blocked ? 'btn btn-secondary' : 'btn btn-danger';
+    blockBtn.innerHTML = u.is_blocked
+      ? '<i class="fa-solid fa-unlock"></i> Unblock User'
+      : '<i class="fa-solid fa-ban"></i> Block User';
+  }
+
+  openModal('userDetailModal');
+}
+
+/* ── Quick block toggle from table row ── */
+async function quickToggleBlock(userId) {
+  const u = allUsers.find(x => x.id === userId || x.id === Number(userId));
+  if (!u) return;
+  const newBlocked = !u.is_blocked;
+  const action = newBlocked ? 'Block' : 'Unblock';
+  if (!confirm(`"${u.name}" কে ${action} করবেন?`)) return;
+  await _doToggleBlock(u, newBlocked);
+}
+
+/* ── Block from detail modal ── */
+async function confirmToggleBlock() {
+  const u = allUsers.find(x => x.id === currentViewUserId || x.id === Number(currentViewUserId));
+  if (!u) return;
+  const newBlocked = !u.is_blocked;
+  const action = newBlocked ? 'Block' : 'Unblock';
+  if (!confirm(`"${u.name}" কে ${action} করবেন?`)) return;
+  await _doToggleBlock(u, newBlocked);
+  // Refresh modal
+  closeModal('userDetailModal');
+  viewUserDetail(u.id);
+}
+
+async function _doToggleBlock(u, newBlocked) {
+  if (!sb) { toast('Error', 'Supabase connected নেই', 'error'); return; }
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    toast('Connection Timeout', 'Status update ব্যর্থ হয়েছে', 'error');
+  }, 10000);
+
+  try {
+    // Try profiles first, then users
+    let error;
+    ({ error } = await sb.from('profiles').update({
+      is_blocked: newBlocked,
+      status: newBlocked ? 'blocked' : 'active',
+      updated_at: new Date().toISOString()
+    }).eq('id', u.id));
+
+    if (error && (error.code === '42P01' || error.message?.includes('does not exist'))) {
+      ({ error } = await sb.from('users').update({
+        is_blocked: newBlocked,
+        status: newBlocked ? 'blocked' : 'active',
+        updated_at: new Date().toISOString()
+      }).eq('id', u.id));
+    }
+
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+
+    if (error) { toast('Update Failed', error.message, 'error'); return; }
+
+    // Update local cache
+    u.is_blocked = newBlocked;
+    u.status = newBlocked ? 'blocked' : 'active';
+
+    renderUserKPIs();
+    renderUsers();
+    toast(newBlocked ? 'User Blocked' : 'User Unblocked',
+      `"${u.name}" ${newBlocked ? 'ব্লক করা হয়েছে' : 'আনব্লক করা হয়েছে'}`,
+      newBlocked ? 'warning' : 'success');
+
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (!timedOut) toast('Error', e.message || 'Update failed', 'error');
+  }
 }
 
 /* ── Boot: populate dropdowns on page load ── */
