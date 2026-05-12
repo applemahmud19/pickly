@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>গ্যালাক্সি মার্ট BD</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Primary Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<!-- Backup CDN — loads if primary fails -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" crossorigin="anonymous" onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.5.0/css/all.css'">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── BENGALI NUMERAL RENDERING FIX ──────────────────────────
@@ -3366,7 +3369,105 @@ html, body {
   .pd-spec-table, .fp-spec-table { max-width: 100%; overflow-x: auto; display: block; }
 }
 
+/* ── BREADCRUMB ICON & SPACING FIXES ─────────────────────────────────── */
+
+/* Ensure Font Awesome icons render correctly everywhere */
+.fa-solid, .fas, .far, .fab {
+  font-display: block;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Breadcrumb: proper spacing between icon and text */
+.fp-breadcrumb .bc-link,
+.fp-breadcrumb .bc-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Home icon inside breadcrumb links */
+.bc-home-icon {
+  font-size: .72rem;
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+/* Breadcrumb separator: proper size, color, spacing */
+.fp-breadcrumb .bc-sep {
+  font-size: .55rem !important;
+  color: var(--text-light) !important;
+  opacity: .65;
+  flex-shrink: 0;
+  margin: 0 1px;
+}
+
+/* Category nav icon spacing */
+.ncat i {
+  margin-right: 4px;
+  font-size: .85em;
+}
+
+/* Back button icon spacing */
+.fp-back-btn i {
+  margin-right: 5px;
+}
+
+/* ── BUY NOW BUTTON BRAND POLISH ─────────────────────────────────────── */
+.fp-btn-buy,
+.fp-mobile-buy-btn {
+  background: linear-gradient(135deg, #F97316 0%, #EA6C00 100%) !important;
+  box-shadow: 0 4px 14px rgba(249,115,22,.35) !important;
+  transition: all .2s cubic-bezier(.4,0,.2,1) !important;
+  letter-spacing: .01em;
+}
+.fp-btn-buy:hover,
+.fp-mobile-buy-btn:hover {
+  background: linear-gradient(135deg, #EA6C00 0%, #C45D00 100%) !important;
+  box-shadow: 0 8px 24px rgba(249,115,22,.45) !important;
+  transform: translateY(-2px) !important;
+}
+.fp-btn-buy:active,
+.fp-mobile-buy-btn:active {
+  transform: translateY(0) scale(.98) !important;
+  box-shadow: 0 2px 8px rgba(249,115,22,.3) !important;
+}
+
+/* Breadcrumb bar padding polish */
+.fp-topbar {
+  padding: 0 14px !important;
+  min-height: 48px !important;
+  border-bottom: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+/* ───────────────────────────────────────────────────────────────────── */
 </style>
+
+<!-- Font Awesome icon load verifier + fallback activator -->
+<script>
+(function(){
+  function faLoaded() {
+    // Probe: create a test element and check computed font-family
+    var t = document.createElement('span');
+    t.className = 'fas fa-home';
+    t.style.cssText = 'position:absolute;visibility:hidden;font-size:20px;left:-9999px;top:-9999px';
+    document.head.appendChild(t);
+    var w = t.getBoundingClientRect().width;
+    document.head.removeChild(t);
+    return w > 0;
+  }
+  // After page load, if FA icons are missing, inject another fallback
+  window.addEventListener('load', function() {
+    if (!faLoaded()) {
+      var lnk = document.createElement('link');
+      lnk.rel = 'stylesheet';
+      lnk.href = 'https://use.fontawesome.com/releases/v6.5.0/css/all.css';
+      document.head.appendChild(lnk);
+    }
+  });
+})();
+</script>
 </head>
 <body>
 
@@ -3642,7 +3743,7 @@ html, body {
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
-      <span class="bc-link" onclick="closeCatPage()">হোম</span>
+      <span class="bc-link" onclick="closeCatPage()"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-current" id="catPageBreadcrumb">ক্যাটাগরি</span>
     </nav>
@@ -3710,7 +3811,7 @@ html, body {
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
-      <span class="bc-link" onclick="closePage('product')">হোম</span>
+      <span class="bc-link" onclick="closePage('product')"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-link" id="fpBreadCat" onclick="closePage('product')"></span>
       <i class="fa-solid fa-chevron-right bc-sep" id="fpBreadSep2"></i>
@@ -3966,7 +4067,7 @@ html, body {
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
-      <span class="bc-link" onclick="closePage('profile')">হোম</span>
+      <span class="bc-link" onclick="closePage('profile')"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-current">আমার প্রোফাইল</span>
     </nav>
@@ -4058,7 +4159,7 @@ html, body {
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
-      <span class="bc-link" onclick="closePage('wishlist')">হোম</span>
+      <span class="bc-link" onclick="closePage('wishlist')"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-current">আমার উইশলিস্ট</span>
     </nav>
@@ -4116,7 +4217,7 @@ html, body {
       <i class="fa-solid fa-arrow-left"></i> কার্টে ফিরুন
     </button>
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
-      <span class="bc-link" onclick="closeCheckoutPage()">হোম</span>
+      <span class="bc-link" onclick="closeCheckoutPage()"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-link" onclick="closeCheckoutPage()">কার্ট</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
@@ -4356,7 +4457,7 @@ html, body {
       <i class="fa-solid fa-arrow-left"></i> হোম
     </button>
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
-      <span class="bc-link" onclick="closePage('track')">হোম</span>
+      <span class="bc-link" onclick="closePage('track')"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-current">অর্ডার ট্র্যাক</span>
     </nav>
