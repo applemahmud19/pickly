@@ -1556,17 +1556,21 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 .fp-topbar {
   position: sticky;
   top: 0;
-  z-index: 20;          /* above full-page content, below nothing (it's in its own stacking context) */
-  background: #FFFFFF;
+  z-index: 30;
+  background: rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 22px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  box-shadow: 0 2px 14px rgba(0,0,0,.07);
   min-height: 50px;
-  /* ensure it never scrolls behind the main sticky header */
   isolation: isolate;
+  /* Prevent any content from sliding behind this bar */
+  will-change: transform;
+  transform: translateZ(0);
 }
 .fp-back-btn {
   display: flex;
@@ -1644,7 +1648,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   grid-template-columns: 380px 1fr;
   gap: 32px;
   max-width: 1100px;
-  margin: 28px auto 0;
+  margin: 24px auto 40px;
   padding: 0 24px;
 }
 @media(max-width:860px){
@@ -1736,25 +1740,36 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   font-size: .82rem; color: var(--green); font-weight: 600;
 }
 .fp-qty-row { display: flex; align-items: center; gap: 10px; }
-.fp-cta {
-  display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
-}
+/* ── CTA BUTTONS ── */
+.fp-cta { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+/* Buy Now — orange, stands out from cart button */
 .fp-btn-buy {
-  flex: 1; min-width: 140px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 16px 22px;
   background: linear-gradient(135deg, var(--orange), #EA580C);
-  color: white; border: none; border-radius: var(--radius);
-  font-size: .95rem; font-weight: 700; cursor: pointer;
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
   box-shadow: 0 4px 16px rgba(249,115,22,.35);
   transition: all var(--t);
+  letter-spacing: .01em;
 }
-.fp-btn-buy:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(249,115,22,.45); }
-/* Step 4 fix: hide Buy Now button — Cart-only checkout flow */
-.fp-btn-buy { display: none !important; }
-/* Step 4: fp-cta full width when only cart btn remains */
-.fp-cta { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
-.fp-btn-cart { flex: 1; min-width: 140px;
+.fp-btn-buy:hover {
+  background: #D95D00;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(249,115,22,.55);
+}
+/* Cart button — blue */
+.fp-btn-cart {
+  flex: 1; min-width: 140px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 16px 22px;
   background: var(--blue); color: white;
