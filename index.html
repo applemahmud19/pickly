@@ -2838,22 +2838,30 @@ body {
   box-shadow: 0 4px 20px rgba(0,122,255,.12) !important;
   transform: translateY(-2px) !important;
 }
+/* ── PRODUCT CARD IMAGE — fixed height, no stretch ── */
+.pcard {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  position: relative !important;
+}
 .pcard-img {
   width: 100% !important;
+  height: 180px !important;
   position: relative !important;
   background: #F5F8FC !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  aspect-ratio: 1 / 1 !important;
-  height: auto !important;
   overflow: hidden !important;
+  flex-shrink: 0 !important;
 }
 .pcard-img img {
   width: 100% !important;
-  height: 100% !important;
+  height: 180px !important;
   object-fit: contain !important;
   padding: 8px !important;
+  display: block !important;
 }
 .pcard-body {
   padding: 8px 10px 10px !important;
@@ -2861,6 +2869,10 @@ body {
   flex-direction: column !important;
   gap: 2px !important;
   flex: 1 !important;
+}
+/* Button always at bottom */
+.pcard-body .pfooter {
+  margin-top: auto !important;
 }
 .pname {
   font-family: 'Hind Siliguri', sans-serif !important;
@@ -2927,7 +2939,10 @@ body {
   overflow: visible !important;
 }
 
-/* ── 2. MAIN GRID ── */
+/* ── 2. MAIN GRID — equal card heights ── */
+.pgrid {
+  align-items: stretch !important;
+}
 @media (max-width: 880px) {
   .pgrid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -2935,6 +2950,8 @@ body {
     padding: 0 !important;
   }
   .product-area { padding: 12px 12px 24px !important; }
+  .pcard-img { height: 165px !important; }
+  .pcard-img img { height: 165px !important; }
   .card-btns { flex-direction: column !important; gap: 4px !important; }
   .btn-cart, .btn-buy {
     width: 100% !important;
@@ -2945,6 +2962,8 @@ body {
 }
 @media (max-width: 480px) {
   .pgrid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .pcard-img { height: 145px !important; }
+  .pcard-img img { height: 145px !important; }
   .pcard-body { padding: 7px 8px 9px !important; }
   .pname { font-size: .76rem !important; }
   .price-block .new { font-size: .84rem !important; }
@@ -4841,8 +4860,8 @@ function buildProductCard(p) {
   // Books: show author (new column) with brand fallback for legacy data; others: show brand
   const authorDisplay = p.author || (isBook ? p.brand : null);
   const subLabel = isBook
-    ? (authorDisplay ? `<i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${authorDisplay}` : '')
-    : (p.brand ? `<i class="fa-solid fa-tag" style="color:var(--blue);font-size:.6rem;margin-right:3px"></i>${p.brand}` : '');
+    ? (authorDisplay ? authorDisplay : '')
+    : (p.brand ? p.brand : '');
   return `<div class="pcard" onclick="openProduct('${p.id}')">
     <div class="pcard-img">
       ${imgHtml}${iconHtml}
