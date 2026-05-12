@@ -539,6 +539,59 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
   font-family: var(--font-bn);
 }
 
+/* ═══════════════════════════════════════
+   DESCRIPTION DISPLAY — rich formatting
+═══════════════════════════════════════ */
+.product-description {
+  white-space: pre-line;
+  line-height: 1.7;
+  font-family: var(--font-bn);
+  color: var(--text2);
+  font-size: 0.88rem;
+}
+.product-description .desc-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.product-description .desc-bullet::before {
+  content: '•';
+  color: var(--blue);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ═══════════════════════════════════════
+   ORDER EDIT — Two-Column Responsive
+═══════════════════════════════════════ */
+@media (max-width: 600px) {
+  #otab-edit > div:first-child {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════
+   ORDER EDIT — Two-Column Responsive
+═══════════════════════════════════════ */
+@media (max-width: 600px) {
+  #otab-edit > div:first-child {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Upload progress bar */
+.upload-progress {
+  height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.upload-progress-bar {
+  height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.3s ease; border-radius: 2px;
+}
+
+
+
 .conditional-field { display: none; animation: slideDown 0.25s ease both; }
 .conditional-field.visible { display: flex; flex-direction: column; gap: 5px; }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
@@ -627,10 +680,6 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .toast-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; flex-shrink: 0; }
 .toast-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
 .toast-sub { font-size: 0.7rem; color: var(--text2); margin-top: 1px; font-family: var(--font-bn); }
-
-/* Progress bar for upload */
-.upload-progress { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin-top: 8px; display: none; }
-.upload-progress-bar { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.3s; }
 
 /* ═══════════════════════════════════════
    BANNER CARDS
@@ -1715,76 +1764,72 @@ body {
 </div><!-- /appShell -->
 
 <!-- ══════════════════════════════════════
-     PRODUCT MODAL — Compact Side-by-Side
+     PRODUCT MODAL — Compact Side-by-Side v2
 ══════════════════════════════════════ -->
 <div class="modal-overlay" id="productModal" onclick="if(event.target===this)closeModal('productModal')">
-  <div class="modal-box" style="max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
-    <div class="modal-header" style="flex-shrink:0">
-      <div class="modal-title" id="productModalTitle">পণ্য যোগ করুন</div>
+  <div class="modal-box" style="max-width:820px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="modal-header" style="flex-shrink:0;padding:14px 18px">
+      <div class="modal-title" id="productModalTitle" style="font-size:0.92rem">পণ্য যোগ করুন</div>
       <button class="modal-close" onclick="closeModal('productModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-body" style="overflow-y:auto;flex:1;padding:16px">
+
+    <!-- Scrollable body -->
+    <div style="overflow-y:auto;flex:1;padding:14px 18px">
       <input type="hidden" id="editProductId">
 
-      <!-- Two-column layout: Left = image, Right = fields -->
-      <div style="display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start">
+      <!-- Two-column: Left = image (fixed), Right = all fields -->
+      <div style="display:grid;grid-template-columns:175px 1fr;gap:14px;align-items:start">
 
-        <!-- LEFT COLUMN: Image Upload -->
-        <div style="display:flex;flex-direction:column;gap:8px;position:sticky;top:0">
-          <label class="form-label">Product Image</label>
-          <div class="upload-preview empty" id="imagePreview" style="height:170px;max-height:170px;aspect-ratio:unset;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <!-- LEFT: Image upload (sticky) -->
+        <div style="display:flex;flex-direction:column;gap:6px;position:sticky;top:0">
+          <label class="form-label" style="margin-bottom:2px">Product Image</label>
+          <!-- Preview — fixed 155px height, no scrolling -->
+          <div class="upload-preview empty" id="imagePreview" style="height:155px;max-height:155px;aspect-ratio:unset;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
           </div>
-          <div class="upload-zone" id="uploadZone" style="padding:10px 8px;gap:3px;min-height:unset">
+          <!-- Upload zone — compact -->
+          <div class="upload-zone" id="uploadZone" style="padding:8px 6px;gap:2px;min-height:unset">
             <input type="file" id="imageFile" accept="image/*" onchange="handleImageSelect(this)">
-            <i class="fa-solid fa-cloud-arrow-up uz-icon" style="font-size:1.2rem"></i>
-            <div class="uz-title" style="font-size:0.72rem">ক্লিক বা ড্র্যাগ করুন</div>
-            <div class="uz-sub" style="font-size:0.62rem">PNG, JPG, WEBP · Max 5MB</div>
+            <i class="fa-solid fa-cloud-arrow-up uz-icon" style="font-size:1rem"></i>
+            <div class="uz-title" style="font-size:0.68rem;font-weight:600">ক্লিক বা ড্র্যাগ করুন</div>
+            <div class="uz-sub" style="font-size:0.58rem">PNG · JPG · WEBP · Max 5MB</div>
           </div>
-          <div class="upload-progress" id="uploadProgress">
+          <div class="upload-progress" id="uploadProgress" style="display:none">
             <div class="upload-progress-bar" id="uploadProgressBar"></div>
           </div>
-          <div style="font-size:0.62rem;color:var(--text3);word-break:break-all;line-height:1.4" id="uploadFileName"></div>
+          <div style="font-size:0.58rem;color:var(--text3);word-break:break-all;line-height:1.4" id="uploadFileName"></div>
         </div>
 
-        <!-- RIGHT COLUMN: All input fields -->
-        <div style="display:grid;gap:10px">
+        <!-- RIGHT: All fields — compact grid -->
+        <div style="display:grid;gap:8px">
 
-          <!-- Name + Brand/Author row -->
-          <div class="form-grid" style="gap:10px">
-            <div class="form-group">
-              <label class="form-label">Product Name <span class="required">*</span></label>
-              <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits" style="padding:8px 11px">
+          <!-- Row 1: Name + Category -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.62rem">Product Name <span class="required">*</span></label>
+              <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits" style="padding:7px 10px;font-size:0.82rem">
             </div>
-            <div class="form-group" id="brandField">
-              <label class="form-label">Brand Name</label>
-              <input class="form-inp" type="text" id="pBrand" placeholder="e.g. Samsung, Nike..." style="padding:8px 11px">
-            </div>
-            <div class="form-group conditional-field" id="authorField">
-              <label class="form-label bn-label">লেখকের নাম (Author)</label>
-              <input class="form-inp" type="text" id="pAuthor" placeholder="যেমন: হুমায়ূন আহমেদ..." style="padding:8px 11px">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.62rem">Category <span class="required">*</span></label>
+              <select class="form-inp" id="pCategory" onchange="handleCategoryChange(this.value)" style="padding:7px 10px;font-size:0.82rem">
+                <option value="">— Select —</option>
+              </select>
             </div>
           </div>
 
-          <!-- Category + Badge row -->
-          <div class="form-grid" style="gap:10px">
-            <div class="form-group">
-              <label class="form-label">Category <span class="required">*</span></label>
-              <select class="form-inp" id="pCategory" onchange="handleCategoryChange(this.value)" style="padding:8px 11px">
-                <option value="">— Select —</option>
-                <option value="বই">বই (Books)</option>
-                <option value="ইলেকট্রনিক্স">ইলেকট্রনিক্স</option>
-                <option value="ফ্যাশন">ফ্যাশন</option>
-                <option value="হোম">হোম & কিচেন</option>
-                <option value="বিউটি">বিউটি</option>
-                <option value="স্টেশনারি">স্টেশনারি</option>
-                <option value="শিশু">শিশু পণ্য</option>
-                <option value="স্পোর্টস">স্পোর্টস</option>
-              </select>
+          <!-- Row 2: Brand / Author (conditional) + Badge -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="form-group" id="brandField" style="gap:3px">
+              <label class="form-label" style="font-size:0.62rem">Brand Name</label>
+              <input class="form-inp" type="text" id="pBrand" placeholder="e.g. Samsung, Nike..." style="padding:7px 10px;font-size:0.82rem">
             </div>
-            <div class="form-group">
-              <label class="form-label">Badge</label>
-              <select class="form-inp" id="pBadge" style="padding:8px 11px">
+            <div class="form-group conditional-field" id="authorField" style="gap:3px">
+              <label class="form-label bn-label" style="font-size:0.68rem">লেখকের নাম</label>
+              <input class="form-inp" type="text" id="pAuthor" placeholder="যেমন: হুমায়ূন আহমেদ..." style="padding:7px 10px;font-size:0.82rem">
+            </div>
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.62rem">Badge</label>
+              <select class="form-inp" id="pBadge" style="padding:7px 10px;font-size:0.82rem">
                 <option value="">None</option>
                 <option value="new">New</option>
                 <option value="hot">Hot</option>
@@ -1793,65 +1838,66 @@ body {
             </div>
           </div>
 
-          <!-- Publisher + Book Type (books only) -->
+          <!-- Row 3: Publisher + Book Type (books only) -->
           <div class="conditional-field" id="publisherField" style="gap:0">
-            <div class="form-grid" style="width:100%;gap:10px">
-              <div class="form-group">
-                <label class="form-label bn-label">প্রকাশনীর নাম</label>
-                <input class="form-inp" type="text" id="pPublisher" placeholder="যেমন: অন্যপ্রকাশ..." style="padding:8px 11px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">প্রকাশনীর নাম</label>
+                <input class="form-inp" type="text" id="pPublisher" placeholder="যেমন: অন্যপ্রকাশ..." style="padding:7px 10px;font-size:0.82rem">
               </div>
-              <div class="form-group">
-                <label class="form-label bn-label" style="display:flex;align-items:center;justify-content:space-between">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem;display:flex;align-items:center;justify-content:space-between">
                   বইয়ের ধরণ
-                  <button type="button" onclick="openAddBookTypeModal()" style="font-size:0.62rem;padding:2px 7px;border-radius:5px;border:1px solid rgba(0,122,255,0.3);background:var(--blue-ll);color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600;display:flex;align-items:center;gap:3px"><i class="fa-solid fa-plus" style="font-size:0.5rem"></i> নতুন</button>
+                  <button type="button" onclick="openAddBookTypeModal()" style="font-size:0.58rem;padding:2px 6px;border-radius:4px;border:1px solid rgba(0,122,255,0.3);background:var(--blue-ll);color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600"><i class="fa-solid fa-plus" style="font-size:0.48rem"></i> নতুন</button>
                 </label>
-                <select class="form-inp" id="pBookType" style="padding:8px 11px">
+                <select class="form-inp" id="pBookType" style="padding:7px 10px;font-size:0.82rem">
                   <option value="">— ধরণ বেছে নিন —</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Price row -->
-          <div class="form-grid" style="gap:10px">
-            <div class="form-group">
-              <label class="form-label">Sale Price (৳) <span class="required">*</span></label>
-              <input class="form-inp" type="number" id="pPrice" placeholder="0" min="0" style="padding:8px 11px">
+          <!-- Row 4: Price + Old Price + Stock + Color (4-col) -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.6rem">Sale Price (৳) <span class="required">*</span></label>
+              <input class="form-inp" type="number" id="pPrice" placeholder="0" min="0" style="padding:7px 10px;font-size:0.82rem">
             </div>
-            <div class="form-group">
-              <label class="form-label">Original Price (৳)</label>
-              <input class="form-inp" type="number" id="pOldPrice" placeholder="0" min="0" style="padding:8px 11px">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.6rem">Original Price (৳)</label>
+              <input class="form-inp" type="number" id="pOldPrice" placeholder="0" min="0" style="padding:7px 10px;font-size:0.82rem">
             </div>
-          </div>
-
-          <!-- Stock + Color row -->
-          <div class="form-grid" style="gap:10px">
-            <div class="form-group">
-              <label class="form-label">Stock Qty <span class="required">*</span></label>
-              <input class="form-inp" type="number" id="pStock" placeholder="0" min="0" style="padding:8px 11px">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.6rem">Stock Qty <span class="required">*</span></label>
+              <input class="form-inp" type="number" id="pStock" placeholder="0" min="0" style="padding:7px 10px;font-size:0.82rem">
             </div>
-            <div class="form-group">
-              <label class="form-label">Color Hex</label>
-              <input class="form-inp" type="text" id="pColor" placeholder="#007AFF" style="padding:8px 11px">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.6rem">Color Hex</label>
+              <input class="form-inp" type="text" id="pColor" placeholder="#007AFF" style="padding:7px 10px;font-size:0.82rem">
             </div>
           </div>
 
-          <!-- Description -->
-          <div class="form-group">
-            <label class="form-label">Description <span style="color:var(--text3);font-weight:400;font-family:var(--font);text-transform:none;letter-spacing:0;font-size:0.65rem">(supports bullet points with * and line breaks)</span></label>
-            <textarea class="form-inp" id="pDescription" placeholder="পণ্যের বিবরণ লিখুন...&#10;* বুলেট পয়েন্টের জন্য * দিয়ে শুরু করুন&#10;* প্রতিটি লাইন নতুন পয়েন্ট হবে" style="min-height:72px;max-height:130px;padding:8px 11px;font-family:var(--font-bn);line-height:1.6;white-space:pre-line;resize:vertical"></textarea>
+          <!-- Row 5: Description — rich text with bullet + line-break support -->
+          <div class="form-group" style="gap:3px">
+            <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;gap:6px">
+              Description
+              <span style="color:var(--text3);font-weight:400;font-family:var(--font);text-transform:none;letter-spacing:0;font-size:0.6rem;background:var(--bg3);padding:1px 7px;border-radius:4px;border:1px solid var(--border)">* = বুলেট পয়েন্ট · Enter = নতুন লাইন</span>
+            </label>
+            <textarea class="form-inp" id="pDescription"
+              placeholder="পণ্যের বিবরণ লিখুন...&#10;* এই পণ্যের প্রথম বৈশিষ্ট্য&#10;* দ্বিতীয় বৈশিষ্ট্য&#10;&#10;নতুন প্যারাগ্রাফের জন্য খালি লাইন দিন।"
+              style="min-height:78px;max-height:120px;padding:8px 11px;font-family:var(--font-bn);line-height:1.6;white-space:pre-line;resize:vertical;font-size:0.82rem"></textarea>
           </div>
 
         </div><!-- /right column -->
       </div><!-- /two-column grid -->
+    </div><!-- /scrollable body -->
 
-      <!-- Sticky footer buttons -->
-      <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:12px;margin-top:4px;border-top:1px solid var(--border)">
-        <button class="btn btn-ghost" onclick="closeModal('productModal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveProduct()" id="saveProductBtn">
-          <i class="fa-solid fa-floppy-disk"></i> Save Product
-        </button>
-      </div>
+    <!-- Sticky footer — always visible -->
+    <div style="flex-shrink:0;display:flex;justify-content:flex-end;gap:9px;padding:12px 18px;border-top:1px solid var(--border);background:var(--surface)">
+      <button class="btn btn-ghost" onclick="closeModal('productModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()" id="saveProductBtn">
+        <i class="fa-solid fa-floppy-disk"></i> Save Product
+      </button>
     </div>
   </div>
 </div>
@@ -1860,8 +1906,8 @@ body {
      ORDER DETAIL MODAL (Advanced)
 ══════════════════════════════════════ -->
 <div class="modal-overlay" id="orderModal" onclick="if(event.target===this)closeModal('orderModal')">
-  <div class="modal-box" style="max-width:680px">
-    <div class="modal-header">
+  <div class="modal-box" style="max-width:780px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">
+    <div class="modal-header" style="flex-shrink:0">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="modal-title" id="orderModalTitle">Order Details</div>
         <span id="orderModalBadge" class="pill" style="font-size:0.62rem"></span>
@@ -1873,7 +1919,7 @@ body {
         <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-    <div class="modal-body" id="orderModalContent">
+    <div class="modal-body" id="orderModalContent" style="overflow-y:auto;flex:1">
       <!-- Tabs -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
         <button class="order-tab active" data-tab="overview" onclick="switchOrderTab('overview')">
@@ -1904,134 +1950,146 @@ body {
         </div>
       </div>
 
-      <!-- TAB: EDIT INFO -->
+      <!-- TAB: EDIT INFO — Two-Column Layout -->
       <div class="order-tab-panel" id="otab-edit">
-        <div style="display:grid;gap:13px">
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">Customer Name</label>
-              <input class="form-inp" type="text" id="oe-name" placeholder="Customer Name">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Phone</label>
-              <input class="form-inp" type="text" id="oe-phone" placeholder="01XXXXXXXXX">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-inp" type="email" id="oe-email" placeholder="customer@email.com">
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">District</label>
-              <select class="form-inp" id="oe-district" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                <option value="">— Select District —</option>
-                <option>Dhaka</option><option>Chittagong</option><option>Sylhet</option><option>Rajshahi</option>
-                <option>Khulna</option><option>Barisal</option><option>Rangpur</option><option>Mymensingh</option>
-                <option>Comilla</option><option>Narayanganj</option><option>Gazipur</option><option>Narsingdi</option>
-                <option>Munshiganj</option><option>Manikganj</option><option>Faridpur</option><option>Madaripur</option>
-                <option>Gopalganj</option><option>Shariatpur</option><option>Kishoreganj</option><option>Tangail</option>
-                <option>Jamalpur</option><option>Sherpur</option><option>Netrokona</option><option>Brahmanbaria</option>
-                <option>Chandpur</option><option>Lakshmipur</option><option>Noakhali</option><option>Feni</option>
-                <option>Cox's Bazar</option><option>Rangamati</option><option>Khagrachhari</option><option>Bandarban</option>
-                <option>Bogura</option><option>Joypurhat</option><option>Naogaon</option><option>Natore</option>
-                <option>Chapainawabganj</option><option>Pabna</option><option>Sirajganj</option><option>Kurigram</option>
-                <option>Lalmonirhat</option><option>Nilphamari</option><option>Gaibandha</option><option>Thakurgaon</option>
-                <option>Dinajpur</option><option>Panchagarh</option><option>Jashore</option><option>Satkhira</option>
-                <option>Magura</option><option>Jhenaidah</option><option>Narail</option><option>Chuadanga</option>
-                <option>Meherpur</option><option>Kushtia</option><option>Bagerhat</option><option>Pirojpur</option>
-                <option>Jhalokati</option><option>Bhola</option><option>Patuakhali</option><option>Barguna</option>
-                <option>Habiganj</option><option>Moulvibazar</option><option>Sunamganj</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Delivery Fee (৳)</label>
-              <input class="form-inp" type="number" id="oe-delivery-fee" placeholder="0" min="0" oninput="recalcOrderTotal()">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Address</label>
-            <textarea class="form-inp" id="oe-address" rows="2" placeholder="Full delivery address..."></textarea>
-          </div>
+        <!-- Two-column grid: Left = items/products, Right = customer info + price -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
 
-          <!-- Items Section -->
-          <div style="margin-top:4px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-              <div style="font-size:0.68rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em">
-                <i class="fa-solid fa-boxes-stacked" style="margin-right:5px"></i>Items — Quantity & Price
-              </div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-secondary btn-xs" onclick="toggleAddProductSearch()">
-                  <i class="fa-solid fa-magnifying-glass"></i> Add Product
-                </button>
-                <button class="btn btn-ghost btn-xs" onclick="addManualItem()">
-                  <i class="fa-solid fa-gift"></i> Manual Item
-                </button>
-              </div>
+          <!-- LEFT: Product list + Add items -->
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">
+              <i class="fa-solid fa-boxes-stacked" style="margin-right:4px"></i>Items & Quantities
             </div>
 
-            <!-- Add Product Search Panel -->
-            <div id="oe-product-search-panel" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:10px">
-              <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Search & Add Existing Product</div>
-              <div class="search-bar" style="margin-bottom:8px">
+            <!-- Add buttons -->
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-secondary btn-xs" onclick="toggleAddProductSearch()" style="flex:1;justify-content:center">
+                <i class="fa-solid fa-magnifying-glass"></i> Add Product
+              </button>
+              <button class="btn btn-ghost btn-xs" onclick="addManualItem()" style="flex:1;justify-content:center">
+                <i class="fa-solid fa-gift"></i> Manual Item
+              </button>
+            </div>
+
+            <!-- Product Search Panel -->
+            <div id="oe-product-search-panel" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px">
+              <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Search Existing Product</div>
+              <div class="search-bar" style="margin-bottom:7px">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Search product by name..." id="oe-product-search-inp" oninput="searchProductsForOrder()" autocomplete="off">
+                <input type="text" placeholder="Search by name..." id="oe-product-search-inp" oninput="searchProductsForOrder()" autocomplete="off">
               </div>
-              <div id="oe-product-search-results" style="display:grid;gap:5px;max-height:180px;overflow-y:auto"></div>
+              <div id="oe-product-search-results" style="display:grid;gap:4px;max-height:160px;overflow-y:auto"></div>
             </div>
 
             <!-- Manual Item Panel -->
-            <div id="oe-manual-item-panel" style="display:none;background:rgba(175,82,222,0.06);border:1px solid rgba(175,82,222,0.2);border-radius:10px;padding:11px;margin-bottom:10px">
-              <div style="font-size:0.62rem;font-weight:700;color:var(--purple);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px"><i class="fa-solid fa-gift"></i> Add Manual Gift / Item</div>
-            <div style="display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:flex-end" class="manual-item-grid">
-                <div class="form-group" style="margin:0">
-                  <label class="form-label">Item / Gift Name</label>
-                  <input class="form-inp" type="text" id="oe-manual-name" placeholder="e.g. Free Gift, Custom Item..." style="font-size:0.82rem;padding:7px 10px">
+            <div id="oe-manual-item-panel" style="display:none;background:rgba(175,82,222,0.06);border:1px solid rgba(175,82,222,0.2);border-radius:10px;padding:10px">
+              <div style="font-size:0.58rem;font-weight:700;color:var(--purple);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px"><i class="fa-solid fa-gift"></i> Manual Gift / Item</div>
+              <div style="display:grid;grid-template-columns:1fr 90px auto;gap:7px;align-items:flex-end">
+                <div class="form-group" style="margin:0;gap:3px">
+                  <label class="form-label" style="font-size:0.58rem">Item Name</label>
+                  <input class="form-inp" type="text" id="oe-manual-name" placeholder="e.g. Free Gift..." style="font-size:0.8rem;padding:6px 9px">
                 </div>
-                <div class="form-group" style="margin:0">
-                  <label class="form-label">Price (৳)</label>
-                  <input class="form-inp" type="number" id="oe-manual-price" placeholder="0" min="0" style="font-size:0.82rem;padding:7px 10px">
+                <div class="form-group" style="margin:0;gap:3px">
+                  <label class="form-label" style="font-size:0.58rem">Price (৳)</label>
+                  <input class="form-inp" type="number" id="oe-manual-price" placeholder="0" min="0" style="font-size:0.8rem;padding:6px 9px">
                 </div>
-                <button class="btn btn-secondary btn-sm manual-add-btn" onclick="confirmAddManualItem()" style="white-space:nowrap;align-self:flex-end">
+                <button class="btn btn-secondary btn-sm" onclick="confirmAddManualItem()" style="white-space:nowrap;align-self:flex-end;font-size:0.72rem">
                   <i class="fa-solid fa-plus"></i> Add
                 </button>
               </div>
             </div>
 
-            <div id="oe-items-list" style="display:grid;gap:7px"></div>
+            <!-- Items list -->
+            <div id="oe-items-list" style="display:grid;gap:6px;max-height:240px;overflow-y:auto"></div>
           </div>
 
-          <!-- Manual Price Override Section -->
-          <div style="background:linear-gradient(135deg,var(--bg3),var(--bg));border:1.5px solid var(--border2);border-radius:11px;padding:13px;margin-top:2px">
-            <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
-              <i class="fa-solid fa-calculator" style="color:var(--blue);margin-right:5px"></i>Price Override & Summary
+          <!-- RIGHT: Customer info + Price override -->
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">
+              <i class="fa-solid fa-user" style="margin-right:4px"></i>Customer Info
             </div>
-            <div class="oe-price-grid">
-              <div class="form-group" style="margin:0">
-                <label class="form-label" style="font-size:0.6rem">Subtotal (৳)</label>
-                <input class="form-inp" type="number" id="oe-subtotal-override" placeholder="Auto" min="0" style="font-size:0.8rem;padding:7px 10px;background:var(--surface)" oninput="recalcOrderTotal()" title="Leave blank to auto-calculate from items">
-              </div>
-              <div class="form-group" style="margin:0">
-                <label class="form-label" style="font-size:0.6rem">Discount (৳)</label>
-                <input class="form-inp" type="number" id="oe-discount-override" placeholder="0" min="0" style="font-size:0.8rem;padding:7px 10px" oninput="recalcOrderTotal()">
-              </div>
-              <div class="form-group" style="margin:0">
-                <label class="form-label" style="font-size:0.6rem">Total Override (৳)</label>
-                <input class="form-inp" type="number" id="oe-total-override" placeholder="Auto" min="0" style="font-size:0.8rem;padding:7px 10px;border-color:rgba(0,122,255,0.35)" title="Override final total manually">
-              </div>
-            </div>
-            <div id="oe-total-preview" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:0.8rem;display:flex;justify-content:space-between;align-items:center">
-              <span style="color:var(--text2)">Calculated Total</span>
-              <span id="oe-calc-total" style="font-weight:800;color:var(--blue);font-size:1rem">৳0</span>
-            </div>
-          </div>
 
-          <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;border-top:1px solid var(--border)">
-            <button class="btn btn-ghost" onclick="switchOrderTab('overview')">Cancel</button>
-            <button class="btn btn-primary" id="saveOrderEditsBtn" onclick="saveOrderEdits()">
-              <i class="fa-solid fa-floppy-disk"></i> Save Changes
-            </button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label" style="font-size:0.58rem">Customer Name</label>
+                <input class="form-inp" type="text" id="oe-name" placeholder="Customer Name" style="font-size:0.8rem;padding:7px 9px">
+              </div>
+              <div class="form-group" style="gap:3px">
+                <label class="form-label" style="font-size:0.58rem">Phone</label>
+                <input class="form-inp" type="text" id="oe-phone" placeholder="01XXXXXXXXX" style="font-size:0.8rem;padding:7px 9px">
+              </div>
+            </div>
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.58rem">Email</label>
+              <input class="form-inp" type="email" id="oe-email" placeholder="customer@email.com" style="font-size:0.8rem;padding:7px 9px">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label" style="font-size:0.58rem">District</label>
+                <select class="form-inp" id="oe-district" style="min-width:0;font-size:0.8rem;padding:7px 9px">
+                  <option value="">— Select District —</option>
+                  <option>Dhaka</option><option>Chittagong</option><option>Sylhet</option><option>Rajshahi</option>
+                  <option>Khulna</option><option>Barisal</option><option>Rangpur</option><option>Mymensingh</option>
+                  <option>Comilla</option><option>Narayanganj</option><option>Gazipur</option><option>Narsingdi</option>
+                  <option>Munshiganj</option><option>Manikganj</option><option>Faridpur</option><option>Madaripur</option>
+                  <option>Gopalganj</option><option>Shariatpur</option><option>Kishoreganj</option><option>Tangail</option>
+                  <option>Jamalpur</option><option>Sherpur</option><option>Netrokona</option><option>Brahmanbaria</option>
+                  <option>Chandpur</option><option>Lakshmipur</option><option>Noakhali</option><option>Feni</option>
+                  <option>Cox's Bazar</option><option>Rangamati</option><option>Khagrachhari</option><option>Bandarban</option>
+                  <option>Bogura</option><option>Joypurhat</option><option>Naogaon</option><option>Natore</option>
+                  <option>Chapainawabganj</option><option>Pabna</option><option>Sirajganj</option><option>Kurigram</option>
+                  <option>Lalmonirhat</option><option>Nilphamari</option><option>Gaibandha</option><option>Thakurgaon</option>
+                  <option>Dinajpur</option><option>Panchagarh</option><option>Jashore</option><option>Satkhira</option>
+                  <option>Magura</option><option>Jhenaidah</option><option>Narail</option><option>Chuadanga</option>
+                  <option>Meherpur</option><option>Kushtia</option><option>Bagerhat</option><option>Pirojpur</option>
+                  <option>Jhalokati</option><option>Bhola</option><option>Patuakhali</option><option>Barguna</option>
+                  <option>Habiganj</option><option>Moulvibazar</option><option>Sunamganj</option>
+                </select>
+              </div>
+              <div class="form-group" style="gap:3px">
+                <label class="form-label" style="font-size:0.58rem">Delivery Fee (৳)</label>
+                <input class="form-inp" type="number" id="oe-delivery-fee" placeholder="0" min="0" oninput="recalcOrderTotal()" style="font-size:0.8rem;padding:7px 9px">
+              </div>
+            </div>
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.58rem">Address</label>
+              <textarea class="form-inp" id="oe-address" rows="2" placeholder="Full delivery address..." style="font-size:0.8rem;padding:7px 9px;min-height:56px"></textarea>
+            </div>
+
+            <!-- Price Override & Live Total -->
+            <div style="background:linear-gradient(135deg,var(--bg3),var(--bg));border:1.5px solid var(--border2);border-radius:10px;padding:11px">
+              <div style="font-size:0.58rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px">
+                <i class="fa-solid fa-calculator" style="color:var(--blue);margin-right:4px"></i>Price Override & Summary
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:9px">
+                <div class="form-group" style="margin:0;gap:2px">
+                  <label class="form-label" style="font-size:0.56rem">Subtotal (৳)</label>
+                  <input class="form-inp" type="number" id="oe-subtotal-override" placeholder="Auto" min="0" style="font-size:0.76rem;padding:6px 8px;background:var(--surface)" oninput="recalcOrderTotal()" title="Leave blank to auto-calc from items">
+                </div>
+                <div class="form-group" style="margin:0;gap:2px">
+                  <label class="form-label" style="font-size:0.56rem">Discount (৳)</label>
+                  <input class="form-inp" type="number" id="oe-discount-override" placeholder="0" min="0" style="font-size:0.76rem;padding:6px 8px" oninput="recalcOrderTotal()">
+                </div>
+                <div class="form-group" style="margin:0;gap:2px">
+                  <label class="form-label" style="font-size:0.56rem">Total Override (৳)</label>
+                  <input class="form-inp" type="number" id="oe-total-override" placeholder="Auto" min="0" style="font-size:0.76rem;padding:6px 8px;border-color:rgba(0,122,255,0.35)" title="Override final total manually">
+                </div>
+              </div>
+              <!-- Live calculated total -->
+              <div id="oe-total-preview" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.8rem;display:flex;justify-content:space-between;align-items:center">
+                <span style="color:var(--text2);font-size:0.76rem">Calculated Total</span>
+                <span id="oe-calc-total" style="font-weight:800;color:var(--blue);font-size:1rem">৳0</span>
+              </div>
+            </div>
           </div>
+        </div><!-- /two-column -->
+
+        <!-- Sticky Save Footer -->
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:12px;margin-top:8px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface);z-index:10">
+          <button class="btn btn-ghost" onclick="switchOrderTab('overview')">Cancel</button>
+          <button class="btn btn-primary" id="saveOrderEditsBtn" onclick="saveOrderEdits()">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+          </button>
         </div>
       </div>
 
@@ -2539,21 +2597,68 @@ async function refreshAll() {
 
 async function loadProducts() {
   if (!sb) return;
-  const { data, error } = await sb.from('products').select('*').order('created_at', { ascending: false });
-  if (error) { toast('Products Error', error.message, 'error'); return; }
-  allProducts = data || [];
-  document.getElementById('nb-products').textContent = allProducts.length;
-  populateProductCatFilter();
-  renderProducts();
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    toast('Connection Timeout', 'Products লোড হচ্ছে না। Refresh করুন।', 'error');
+  }, 10000);
+  try {
+    const { data, error } = await sb.from('products').select('*').order('created_at', { ascending: false });
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+    if (error) { toast('Products Error', error.message, 'error'); return; }
+    allProducts = data || [];
+    document.getElementById('nb-products').textContent = allProducts.length;
+    populateProductCatFilter();
+    renderProducts();
+  } catch(e) {
+    clearTimeout(timeoutId);
+    if (!timedOut) toast('Products Error', e.message || 'Failed to load', 'error');
+  }
 }
 
 async function loadOrders() {
   if (!sb) return;
-  const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
-  if (error) { toast('Orders Error', error.message, 'error'); return; }
-  allOrders = data || [];
-  document.getElementById('nb-orders').textContent = allOrders.length;
-  renderOrders();
+  // Show loading state
+  const tbody = document.getElementById('orderTableBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>';
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--red)"><i class="fa-solid fa-triangle-exclamation"></i> Connection Timeout — <button class="btn btn-ghost btn-sm" onclick="loadOrders()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Retry</button></td></tr>';
+    toast('Connection Timeout', 'Orders লোড হচ্ছে না। Retry করুন।', 'error');
+  }, 10000);
+  try {
+    const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+    if (error) { toast('Orders Error', error.message, 'error'); return; }
+    allOrders = data || [];
+    document.getElementById('nb-orders').textContent = allOrders.length;
+    renderOrders();
+  } catch(e) {
+    clearTimeout(timeoutId);
+    if (!timedOut) toast('Orders Error', e.message || 'Failed to load', 'error');
+  }
+}
+
+/* ══════════════════════════════════════
+   DESCRIPTION RENDERER — bullet + pre-line
+══════════════════════════════════════ */
+function renderDescription(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  const html = lines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('* ') || trimmed.startsWith('• ')) {
+      const content = trimmed.replace(/^[*•]\s*/, '');
+      return `<div class="desc-bullet">${content}</div>`;
+    }
+    if (!trimmed) return '<div style="height:0.5em"></div>';
+    return `<div>${trimmed}</div>`;
+  }).join('');
+  return `<div class="product-description">${html}</div>`;
 }
 
 /* ══════════════════════════════════════
@@ -3206,20 +3311,42 @@ function toggleOrderEdit() {
 }
 
 async function viewOrder(id) {
-  // FIX: If orders haven't loaded or this order is missing, fetch directly from Supabase
-  if (!allOrders.length) await loadOrders();
+  // Show loading state first
+  openModal('orderModal');
+  document.getElementById('orderModalTitle').textContent = 'Loading...';
+  document.getElementById('orderModalBadge').className = 'pill pill-pending';
+  document.getElementById('orderModalBadge').textContent = '...';
+
+  // Guard: load orders if not cached yet
+  if (!allOrders.length) {
+    try { await loadOrders(); } catch(e) {}
+  }
+
   let o = allOrders.find(x => x.id === id);
   if (!o) {
-    // Fetch directly from Supabase
+    // Fetch directly from Supabase with 10s timeout
+    let fetchTimedOut = false;
+    const fetchTimeout = setTimeout(() => {
+      fetchTimedOut = true;
+      document.getElementById('orderModalContent').innerHTML = '<div style="text-align:center;padding:32px;color:var(--red)"><i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;margin-bottom:10px;display:block"></i>Connection Timeout<br><button class="btn btn-ghost btn-sm" onclick="closeModal(\'orderModal\');viewOrder(\''+id+'\')" style="margin-top:12px">Retry</button></div>';
+    }, 10000);
     try {
-      const { data, error } = await sb.from('orders').select('*').eq('id', id).single();
-      if (!error && data) {
-        o = data;
-        allOrders.push(o); // cache it
-      }
-    } catch(e) {}
+      if (sb) {
+        const { data, error } = await sb.from('orders').select('*').eq('id', id).single();
+        clearTimeout(fetchTimeout);
+        if (!fetchTimedOut && !error && data) {
+          o = data;
+          allOrders.push(o);
+        }
+      } else { clearTimeout(fetchTimeout); }
+    } catch(e) { clearTimeout(fetchTimeout); }
   }
-  if (!o) { toast('Not Found', 'Order data পাওয়া যায়নি, পেজ রিফ্রেশ করুন', 'error'); return; }
+
+  if (!o) {
+    document.getElementById('orderModalContent').innerHTML = '<div style="text-align:center;padding:32px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="font-size:2rem;margin-bottom:10px;display:block"></i>Order not found.<br><button class="btn btn-ghost btn-sm" onclick="closeModal(\'orderModal\')" style="margin-top:12px">Close</button></div>';
+    return;
+  }
+
   currentOrderId = id;
   document.getElementById('orderModalTitle').textContent = `Order #${o.order_number || id.slice(0,8)}`;
   const badge = document.getElementById('orderModalBadge');
@@ -3228,13 +3355,9 @@ async function viewOrder(id) {
   badge.textContent = cap(o.status || 'pending');
   switchOrderTab('overview');
   refreshOrderModal(id);
-  // Pre-fill edit tab
   fillOrderEditForm(o);
-  // Pre-fill actions tab
   fillOrderActionsForm(o);
-  // Pre-fill courier tab
   fillOrderCourierForm(o);
-  openModal('orderModal');
 }
 
 function refreshOrderModal(id) {
