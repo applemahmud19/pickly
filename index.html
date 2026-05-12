@@ -3503,6 +3503,412 @@ html, body {
   gap: 10px !important;
 }
 /* ───────────────────────────────────────────────────────────────────── */
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE-ONLY OPTIMIZATION BLOCK
+   ALL rules below are inside @media (max-width: 768px)
+   Zero impact on desktop / web version.
+══════════════════════════════════════════════════════════════════════ */
+
+/* ── Bottom Navigation Bar (mobile only) ── */
+.mob-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  /* ── 1. Bottom Safe Area padding so content isn't hidden behind bottom nav ── */
+  body {
+    padding-bottom: 68px !important;
+  }
+
+  /* ── 2. Bottom Navigation Bar ── */
+  .mob-bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    background: #FFFFFF;
+    border-top: 1px solid #E1E8ED;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.09);
+    height: 62px;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    align-items: stretch;
+  }
+  .mob-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #94A3B8;
+    font-family: 'Hind Siliguri', sans-serif;
+    font-size: .6rem;
+    font-weight: 600;
+    padding: 6px 4px;
+    border-radius: 12px;
+    transition: all .18s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    text-decoration: none;
+  }
+  .mob-nav-item i {
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: transform .18s cubic-bezier(.4,0,.2,1);
+  }
+  .mob-nav-item.active,
+  .mob-nav-item:hover {
+    color: #007AFF;
+  }
+  .mob-nav-item.active i,
+  .mob-nav-item:hover i {
+    transform: translateY(-2px);
+  }
+  .mob-nav-item .mob-badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 16px);
+    background: #EF4444;
+    color: white;
+    font-size: .48rem;
+    font-weight: 800;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 100px;
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+  }
+
+  /* ── 3. Header — clean, compact, professional ── */
+  #mainHeader {
+    box-shadow: 0 1px 12px rgba(0,0,0,.07);
+  }
+
+  /* Hide the blue social bar on mobile to save space */
+  .social-bar {
+    display: none !important;
+  }
+
+  /* Header top row: hamburger | logo | cart/account only */
+  .header-top {
+    grid-template-columns: auto 1fr auto !important;
+    padding: 8px 12px !important;
+    gap: 10px !important;
+    min-height: 54px !important;
+    align-items: center !important;
+  }
+
+  /* Make logo text slightly smaller so it fits */
+  .logo-text {
+    font-size: .85rem !important;
+  }
+  .logo-text small {
+    display: none !important;
+  }
+  .logo-icon {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: .95rem !important;
+  }
+
+  /* Actions group — hide track order & notification on mobile (moved to bottom nav) */
+  .hactions > button[onclick*="openTrack"],
+  .notif-wrap {
+    display: none !important;
+  }
+
+  /* Keep only cart badge and account button */
+  .hactions {
+    gap: 2px !important;
+  }
+  .hbtn {
+    padding: 7px 9px !important;
+  }
+  .auth-btn {
+    padding: 6px 10px !important;
+    font-size: .7rem !important;
+    gap: 5px !important;
+  }
+  /* Hide chevron on auth button to save space */
+  #authChevron {
+    display: none !important;
+  }
+
+  /* ── 4. Mobile Search Row — clean, full width ── */
+  .mobile-search-row {
+    padding: 7px 12px 9px !important;
+    background: #F8FAFC !important;
+    border-top: 1px solid #E1E8ED !important;
+    min-height: 50px !important;
+  }
+  .mobile-search-row .search-box {
+    border-radius: 10px !important;
+    border: 1.5px solid #E1E8ED !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05) !important;
+  }
+  .mobile-search-row .search-box input {
+    font-size: 16px !important;
+    padding: 9px 4px !important;
+  }
+  .mobile-search-row .search-btn {
+    padding: 9px 14px !important;
+    font-size: .75rem !important;
+    border-radius: 0 9px 9px 0 !important;
+  }
+
+  /* ── 5. Category Nav — horizontal scroll, clean pills ── */
+  .nav-cats {
+    padding: 6px 8px !important;
+    gap: 0 !important;
+    border-top: 1px solid #F1F5F9 !important;
+    background: #FFFFFF !important;
+  }
+  .ncat {
+    padding: 7px 11px !important;
+    font-size: .72rem !important;
+    border-radius: 20px !important;
+    white-space: nowrap !important;
+    border-bottom: none !important;
+    margin: 0 2px !important;
+  }
+  .ncat.active {
+    background: #EBF5FF !important;
+    color: #007AFF !important;
+    border-bottom: none !important;
+    font-weight: 700 !important;
+  }
+
+  /* ── 6. Hero — proper height on mobile ── */
+  .hero {
+    padding: 10px 10px 12px !important;
+    background: #EBF4FF !important;
+  }
+  .hero-slider {
+    height: 190px !important;
+    min-height: 190px !important;
+    border-radius: 12px !important;
+  }
+  .hslide-content {
+    padding: 16px 18px !important;
+    max-width: 68% !important;
+  }
+  .hslide-title {
+    font-size: clamp(.95rem, 4.5vw, 1.3rem) !important;
+    line-height: 1.25 !important;
+  }
+  .hslide-sub {
+    font-size: .7rem !important;
+    line-height: 1.5 !important;
+    margin-bottom: 8px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  .hslide-btns { gap: 6px !important; }
+  .hslide-btn, .hslide-btn-outline {
+    padding: 6px 12px !important;
+    font-size: .68rem !important;
+  }
+  .hslide-stats { margin-top: 8px !important; padding-top: 7px !important; }
+  .hslide-stat .snum { font-size: .82rem !important; }
+  .hslide-stat .slbl { font-size: .52rem !important; }
+
+  /* ── 7. Product Grid — strict 2-column, no overflow ── */
+  .main {
+    flex-direction: column !important;
+  }
+  .product-area {
+    padding: 12px 10px 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  .pgrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 9px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Product card — clean, no overflow */
+  .pcard {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    border-radius: 10px !important;
+  }
+  .pcard-img {
+    height: 155px !important;
+  }
+  .pcard-icon {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 1.35rem !important;
+  }
+  .pcard-body {
+    padding: 9px 9px 10px !important;
+  }
+  .pcat {
+    font-size: .58rem !important;
+    margin-bottom: 3px !important;
+  }
+  .pname {
+    font-size: .78rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 3px !important;
+    -webkit-line-clamp: 2 !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  .pbrand {
+    font-size: .68rem !important;
+    -webkit-line-clamp: 1 !important;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    margin-bottom: 5px !important;
+  }
+  .pstars { font-size: .8rem !important; }
+  .prating span { font-size: .6rem !important; }
+  .prating { margin-bottom: 7px !important; }
+
+  /* Price block — fit within narrow card */
+  .pfooter {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 7px !important;
+  }
+  .price-block .new {
+    font-size: .88rem !important;
+  }
+  .price-block .old {
+    font-size: .62rem !important;
+  }
+  .disc-pct {
+    font-size: .58rem !important;
+  }
+  .card-btns {
+    width: 100% !important;
+    flex-direction: row !important;
+    gap: 5px !important;
+  }
+  .btn-cart {
+    flex: 1 !important;
+    padding: 7px 6px !important;
+    font-size: .62rem !important;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+  .btn-buy {
+    padding: 7px 8px !important;
+    font-size: .62rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── 8. Product area header ── */
+  .parea-header {
+    flex-wrap: nowrap !important;
+    gap: 7px !important;
+    margin-bottom: 10px !important;
+    align-items: center !important;
+  }
+  .parea-header h2 {
+    font-size: .82rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .mobile-filter-btn {
+    padding: 7px 11px !important;
+    font-size: .75rem !important;
+    flex-shrink: 0 !important;
+  }
+  .sort-sel {
+    font-size: .7rem !important;
+    padding: 6px 8px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+    max-width: 140px !important;
+  }
+
+  /* ── 9. Promo banner — compact on mobile ── */
+  .promo-banner {
+    border-bottom: 1px solid #FFE4A0 !important;
+  }
+  .promo-banner-text {
+    padding: 6px 12px !important;
+    gap: 0 !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .promo-banner-text::-webkit-scrollbar { display: none !important; }
+  .promo-item {
+    font-size: .68rem !important;
+    padding: 0 10px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ── 10. Cart panel full-screen on mobile ── */
+  .cart-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* ── 11. Modals — bottom sheet ── */
+  .modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 92vh !important;
+  }
+  .modal-img { display: none !important; }
+
+  /* ── 12. Remove badge clipping in product grid ── */
+  .disc-badge, .new-badge, .hot-badge {
+    font-size: .56rem !important;
+    padding: 2px 6px !important;
+    top: 7px !important;
+    left: 7px !important;
+  }
+
+  /* ── 13. Toast notifications — full width ── */
+  .toast-wrap {
+    bottom: 74px !important;
+    right: 10px !important;
+    left: 10px !important;
+  }
+  .toast {
+    min-width: unset !important;
+    width: 100% !important;
+  }
+
+  /* ── 14. Full-page slides — start below header properly ── */
+  .full-page {
+    top: 0 !important;
+  }
+
+  /* ── 15. Location fields grid — single column on mobile ── */
+  .location-fields-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+} /* end @media (max-width: 768px) */
 </style>
 
 <!-- Font Awesome icon load verifier + fallback activator -->
@@ -8475,6 +8881,94 @@ window.addEventListener('scroll', onScroll, { passive: true });
   }
   // Also init on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', () => setTimeout(initMobileImgSwipe, 400));
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════
+     MOBILE BOTTOM NAVIGATION BAR
+     Visible only on mobile (@media max-width:768px)
+══════════════════════════════════════════════════ -->
+<nav class="mob-bottom-nav" id="mobBottomNav" aria-label="মোবাইল নেভিগেশন">
+
+  <!-- Home -->
+  <button class="mob-nav-item active" id="mobNavHome" onclick="scrollToTop()" aria-label="হোম">
+    <i class="fa-solid fa-house"></i>
+    <span class="bn">হোম</span>
+  </button>
+
+  <!-- Search -->
+  <button class="mob-nav-item" id="mobNavSearch" onclick="focusMobileSearch()" aria-label="খুঁজুন">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="bn">খুঁজুন</span>
+  </button>
+
+  <!-- Cart -->
+  <button class="mob-nav-item" id="mobNavCart" onclick="openCart()" aria-label="কার্ট">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span class="bn">কার্ট</span>
+    <span class="mob-badge" id="mobCartBadge" style="display:none">0</span>
+  </button>
+
+  <!-- Orders / Track -->
+  <button class="mob-nav-item" id="mobNavOrders" onclick="openTrack()" aria-label="অর্ডার">
+    <i class="fa-solid fa-box"></i>
+    <span class="bn">অর্ডার</span>
+  </button>
+
+  <!-- Account -->
+  <button class="mob-nav-item" id="mobNavAccount" onclick="handleAuthClick()" aria-label="অ্যাকাউন্ট">
+    <i class="fa-regular fa-user"></i>
+    <span class="bn">অ্যাকাউন্ট</span>
+  </button>
+
+</nav>
+
+<script>
+// ── Mobile Bottom Nav helpers ──────────────────────────────────────
+(function(){
+  // Scroll to top + reset active state to Home
+  window.scrollToTop = function() {
+    window.scrollTo({top:0,behavior:'smooth'});
+    setMobNavActive('mobNavHome');
+  };
+
+  // Focus the mobile search input
+  window.focusMobileSearch = function() {
+    const inp = document.getElementById('mobileSearchInput');
+    if(inp){ inp.focus(); inp.scrollIntoView({block:'center',behavior:'smooth'}); }
+    setMobNavActive('mobNavSearch');
+  };
+
+  // Set active tab
+  window.setMobNavActive = function(id) {
+    document.querySelectorAll('.mob-nav-item').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById(id);
+    if(el) el.classList.add('active');
+  };
+
+  // Sync cart badge with existing cart badge
+  function syncMobCartBadge() {
+    const srcBadge = document.getElementById('cartBadge');
+    const mobBadge = document.getElementById('mobCartBadge');
+    if(!srcBadge || !mobBadge) return;
+    const count = parseInt(srcBadge.textContent || '0', 10);
+    if(count > 0){
+      mobBadge.textContent = count > 99 ? '99+' : count;
+      mobBadge.style.display = 'flex';
+    } else {
+      mobBadge.style.display = 'none';
+    }
+  }
+
+  // Observe the cart badge for changes
+  document.addEventListener('DOMContentLoaded', function(){
+    const srcBadge = document.getElementById('cartBadge');
+    if(srcBadge){
+      const obs = new MutationObserver(syncMobCartBadge);
+      obs.observe(srcBadge, {childList:true, characterData:true, subtree:true});
+      syncMobCartBadge();
+    }
+  });
 })();
 </script>
 </body>
