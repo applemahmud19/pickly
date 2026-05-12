@@ -2910,11 +2910,11 @@ body {
 }
 
 /* ── PCARD-ICON: centered fallback, never floating ── */
-/* This is the colored icon box shown when no product image exists.
-   It must be: centered inside pcard-img, never absolute, never floating. */
+/* Shown ONLY when no product image exists (icon rendered in JS only when image_url is null).
+   When image exists, this div is not rendered at all — zero risk of floating. */
 .pcard-icon,
 div.pcard-icon {
-  position: static !important;       /* kill any accidental absolute */
+  position: static !important;
   top: unset !important;
   right: unset !important;
   left: unset !important;
@@ -2923,14 +2923,13 @@ div.pcard-icon {
   width: 64px !important;
   height: 64px !important;
   border-radius: 14px !important;
-  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   font-size: 1.65rem !important;
   flex-shrink: 0 !important;
-  /* GPU hint for hover scale */
   will-change: transform;
   box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
+  /* display is NOT forced here — JS controls it via element presence */
 }
 
 /* ── WISH BTN: top-right, small, clean ── */
@@ -4956,9 +4955,11 @@ function buildProductCard(p) {
   const isBook = p.category === 'বই';
   // Show real image; fall back to icon
   const imgHtml = p.image_url
-    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;border-radius:0;background:#fff" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;display:block;background:#fff" onerror="this.style.display='none';var ic=document.createElement('div');ic.className='pcard-icon';ic.style.cssText='background:linear-gradient(135deg,${p.color}CC,${p.color})';ic.innerHTML='<i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white;font-size:2rem\\'></i>';this.parentNode.insertBefore(ic,this.nextSibling)">`
     : '';
-  const iconHtml = `<div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color});${p.image_url?'display:none':''}"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
+  const iconHtml = p.image_url
+    ? '' // image আছে — icon সম্পূর্ণ HTML-এ রাখাই হবে না
+    : `<div class="pcard-icon" style="background:linear-gradient(135deg,${p.color}CC,${p.color})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
   // Books: show author (new column) with brand fallback for legacy data; others: show brand
   const authorDisplay = p.author || (isBook ? p.brand : null);
   const subLabel = isBook
