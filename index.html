@@ -619,7 +619,7 @@ header.scrolled{
 .pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
 .pcard-img{height:230px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
 .pcard:hover .pcard-img{background:#f0f2f5}
-.pcard-icon{width:74px;height:74px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10)}
+.pcard-icon{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.65rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10);position:static;float:none}
 .pcard:hover .pcard-icon{transform:scale(1.08) rotate(-3deg)}
 .disc-badge,.new-badge,.hot-badge{position:absolute;top:9px;left:9px;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:100px;color:white}
 .disc-badge{background:var(--red)}
@@ -2885,6 +2885,7 @@ body {
   flex-direction: column !important;
   height: 100% !important;
   position: relative !important;
+  overflow: hidden !important;
 }
 .pcard-img {
   width: 100% !important;
@@ -2903,7 +2904,66 @@ body {
   object-fit: contain !important;
   padding: 8px !important;
   display: block !important;
+  /* Never float or overflow outside image box */
+  position: static !important;
+  top: unset !important; right: unset !important;
 }
+
+/* ── PCARD-ICON: centered fallback, never floating ── */
+/* This is the colored icon box shown when no product image exists.
+   It must be: centered inside pcard-img, never absolute, never floating. */
+.pcard-icon,
+div.pcard-icon {
+  position: static !important;       /* kill any accidental absolute */
+  top: unset !important;
+  right: unset !important;
+  left: unset !important;
+  bottom: unset !important;
+  float: none !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.65rem !important;
+  flex-shrink: 0 !important;
+  /* GPU hint for hover scale */
+  will-change: transform;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
+}
+
+/* ── WISH BTN: top-right, small, clean ── */
+.wish-btn {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: unset !important;
+  border-radius: 50% !important;
+  background: white !important;
+  border: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: .72rem !important;
+  cursor: pointer !important;
+  z-index: 5 !important;
+  opacity: 0 !important;
+  transition: all var(--t) !important;
+  color: var(--text-light) !important;
+  /* Never exceed bounds */
+  overflow: hidden !important;
+}
+.pcard:hover .wish-btn { opacity: 1 !important; }
+.wish-btn:hover, .wish-btn.liked {
+  background: #FEF2F2 !important;
+  border-color: #FCA5A5 !important;
+  color: var(--red) !important;
+  opacity: 1 !important;
+}
+
 .pcard-body {
   padding: 8px 10px 10px !important;
   display: flex !important;
@@ -3244,15 +3304,16 @@ body {
   }
 }
 
-/* ── 9. PCARD ICON ── */
-.pcard-icon {
-  width: 64px !important; height: 64px !important;
-  border-radius: 14px !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
-  font-size: 1.65rem !important;
-}
+/* ── 9. PCARD ICON — mobile size only (positioning handled above) ── */
 @media (max-width: 480px) {
-  .pcard-icon { width: 52px !important; height: 52px !important; font-size: 1.35rem !important; border-radius: 12px !important; }
+  .pcard-icon, div.pcard-icon {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.2rem !important;
+    border-radius: 11px !important;
+  }
+  /* On very small screens, hide wish-btn entirely so it doesn't overlap */
+  .wish-btn { display: none !important; }
 }
 
 /* ── 10. DISCOUNT BADGE on card ── */
