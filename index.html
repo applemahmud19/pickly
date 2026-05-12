@@ -10103,6 +10103,64 @@ window.addEventListener('popstate', function(e) {
 })();
 
 })(); // end IIFE
+
+/* ══════════════════════════════════════════════════════
+   CMS LIVE UPDATER — listens to Admin Dashboard changes
+   and applies them instantly without page reload
+══════════════════════════════════════════════════════ */
+(function initCmsListener() {
+
+  /* Apply promo bar items from localStorage */
+  function applyPromoBar() {
+    const DEFAULT = [
+      { icon: 'fa-truck-fast',    text: '৳৯৯৯+ অর্ডারে ফ্রি ডেলিভারি' },
+      { icon: 'fa-tag',           text: 'ঈদ স্পেশাল — ৩০% পর্যন্ত ছাড়' },
+      { icon: 'fa-shield-halved', text: '১০০% অরিজিনাল পণ্য গ্যারান্টি' },
+      { icon: 'fa-rotate-left',   text: 'সহজ রিটার্ন পলিসি' }
+    ];
+    const items = JSON.parse(localStorage.getItem('gm_cms_promobar') || JSON.stringify(DEFAULT));
+    const style = JSON.parse(localStorage.getItem('gm_cms_promo_style') || '{"size":"small","weight":"normal"}');
+    const sizeMap = { small: '.68rem', medium: '.78rem', large: '.9rem' };
+    const fs = sizeMap[style.size] || '.68rem';
+    const fw = style.weight === 'bold' ? '700' : '500';
+    const container = document.querySelector('.promo-banner-text');
+    if (!container) return;
+    container.innerHTML = items.map((item, i) => {
+      const sep = i < items.length - 1 ? '<span class="promo-sep">|</span>' : '';
+      return `<div class="promo-item" style="font-size:${fs};font-weight:${fw}">
+        <i class="fa-solid ${item.icon}"></i>
+        <span class="bn">${item.text}</span>
+      </div>${sep}`;
+    }).join('');
+  }
+
+  /* Apply free delivery amount */
+  function applyFreeDelivery() {
+    const amt = localStorage.getItem('gm_cms_freedel') || '999';
+    const els = document.querySelectorAll('[data-cms-freedel]');
+    els.forEach(el => { el.textContent = '৳' + amt + '+'; });
+    // Also update promo bar
+    applyPromoBar();
+  }
+
+  /* Apply on page load */
+  applyPromoBar();
+  applyFreeDelivery();
+
+  /* Listen for live changes from Admin tab */
+  try {
+    const ch = new BroadcastChannel('gm_cms');
+    ch.onmessage = (e) => {
+      const { key, value } = e.data || {};
+      if (key === 'promobar' || key === 'promostyle' || key === 'freedel') {
+        applyPromoBar();
+        applyFreeDelivery();
+      }
+    };
+  } catch(e) {}
+
+})();
+
 </script>
 </body>
 </html>
