@@ -3911,6 +3911,479 @@ html, body {
 } /* end @media (max-width: 768px) */
 </style>
 
+<!-- ══════════════════════════════════════════════════════════════
+     MOBILE FIX v2 — Banner, Header 3-dot, Admin Modal, Item Status
+     ALL rules inside @media (max-width: 768px) — zero desktop impact
+══════════════════════════════════════════════════════════════ -->
+<style>
+
+/* ═══════════════════════════════════════════════════════
+   FIX 1 — HERO BANNER (mobile only)
+   Photo banners: full-width, object-fit:cover, aspect-ratio
+   Text banners: prevent title/subtitle clipping
+═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Slider container: auto height so content is never clipped */
+  .hero-slider {
+    height: auto !important;
+    min-height: 0 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+
+  /* Slides track: stretch to tallest slide */
+  .hero-slides {
+    align-items: stretch !important;
+  }
+
+  /* Each slide: natural height, full-width */
+  .hero-slide {
+    min-width: 100% !important;
+    width: 100% !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 0 !important; /* parent already has radius */
+  }
+
+  /* ── Photo banner slide (image uploaded via admin) ── */
+  .hero-slide > img {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 160px !important;
+    max-height: 220px !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    display: block !important;
+    border-radius: 0 !important;
+  }
+
+  /* ── Text/gradient banner slide ── */
+  /* Give it a fixed aspect-ratio feel: 16:7 */
+  .hero-slide:not(:has(> img)) {
+    min-height: 180px !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Content overlay — full width, all text visible */
+  .hslide-content {
+    max-width: 65% !important;
+    padding: 18px 16px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    position: relative !important;
+    z-index: 2 !important;
+  }
+
+  /* Tag pill */
+  .hslide-tag {
+    font-size: .6rem !important;
+    padding: 2px 8px !important;
+    margin-bottom: 5px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Title — bigger, no clipping */
+  .hslide-title {
+    font-size: clamp(1rem, 4.8vw, 1.35rem) !important;
+    line-height: 1.22 !important;
+    margin-bottom: 4px !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    display: block !important; /* override webkit-box from prev fix */
+    -webkit-line-clamp: unset !important;
+  }
+
+  /* Subtitle — max 2 lines */
+  .hslide-sub {
+    font-size: .7rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 9px !important;
+    opacity: .9 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  /* CTA buttons — smaller, stay in box */
+  .hslide-btn, .hslide-btn-outline {
+    padding: 6px 12px !important;
+    font-size: .67rem !important;
+    gap: 5px !important;
+  }
+
+  /* Stats strip — very compact */
+  .hslide-stats {
+    margin-top: 7px !important;
+    padding-top: 6px !important;
+  }
+  .hslide-stat .snum { font-size: .78rem !important; }
+  .hslide-stat .slbl { font-size: .5rem !important; }
+
+  /* Floating icons — hide on very narrow screens */
+  .hslide-icons {
+    display: none !important;
+  }
+
+  /* Slider dots — above bottom nav */
+  .hslider-dots {
+    margin-top: 8px !important;
+  }
+  .hslider-dot {
+    width: 6px !important;
+    height: 6px !important;
+  }
+  .hslider-dot.active {
+    width: 18px !important;
+  }
+
+} /* end hero banner fix */
+
+
+/* ═══════════════════════════════════════════════════════
+   FIX 2 — HEADER: Clean 3-dot hamburger menu (mobile)
+   Logo | [spacer] | Cart icon | 3-dot
+   The existing auth-btn dropdown becomes the 3-dot menu
+═══════════════════════════════════════════════════════ */
+
+/* 3-dot button styles (desktop: hidden; mobile: visible) */
+.mob-three-dot-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  /* Header top row rearranged: logo | flex-1 | icons */
+  .header-top {
+    grid-template-columns: auto 1fr auto !important;
+    padding: 0 12px !important;
+    min-height: 52px !important;
+    gap: 8px !important;
+  }
+
+  /* Completely hide the desktop search wrap */
+  .search-wrap {
+    display: none !important;
+  }
+
+  /* Right actions — lean: just cart + 3-dot */
+  .hactions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Hide all hbtn labels on mobile */
+  .hbtn span { display: none !important; }
+
+  /* Notification wrap hidden (in bottom nav) */
+  .notif-wrap { display: none !important; }
+
+  /* Track order button hidden (in bottom nav) */
+  .hactions > button[onclick*="openTrack"] { display: none !important; }
+
+  /* Admin button: keep but compact */
+  #adminBtn { padding: 7px 8px !important; }
+
+  /* Cart button: prominent, clean */
+  .hbtn[onclick*="openCart"] {
+    position: relative !important;
+    padding: 8px 9px !important;
+  }
+
+  /* ── 3-dot menu: replace auth-btn with compact icon ── */
+  .account-wrap {
+    position: relative !important;
+  }
+
+  /* Transform auth-btn into a clean 3-dot icon button */
+  .auth-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    border: 1.5px solid #E1E8ED !important;
+    background: white !important;
+    gap: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Hide auth text & icon, show only a 3-dot pseudo element */
+  .auth-btn > i:first-child,
+  .auth-btn > span,
+  #authChevron {
+    display: none !important;
+  }
+
+  /* Inject 3 vertical dots via a dedicated icon we add */
+  .auth-btn::before {
+    content: '\f142'; /* fa-ellipsis-vertical */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: .9rem;
+    color: #475569;
+    display: block;
+    line-height: 1;
+  }
+
+  /* Dropdown positions correctly below the 3-dot */
+  .account-dropdown {
+    right: 0 !important;
+    left: auto !important;
+    top: calc(100% + 8px) !important;
+    min-width: 210px !important;
+    z-index: 10001 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,.15), 0 0 0 1px rgba(0,0,0,.06) !important;
+  }
+
+} /* end header 3-dot fix */
+
+
+/* ═══════════════════════════════════════════════════════
+   FIX 3 — ADMIN ORDER DETAIL MODAL (no horizontal scroll)
+   .tp-oc-detail / order expand panel stays within viewport
+═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Admin panel: full-width, no side overflow */
+  .admin-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  .admin-sidebar {
+    width: 120px !important;
+    padding: 14px 8px !important;
+  }
+
+  .admin-content {
+    overflow-x: hidden !important;
+    min-width: 0 !important;
+  }
+
+  .admin-main {
+    overflow-x: hidden !important;
+    padding: 12px 10px !important;
+  }
+
+  /* Order card wrapper — never overflow */
+  .tp-order-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  /* Order card header — wrap content */
+  .tp-oc-head {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Order card body — wrap */
+  .tp-oc-body {
+    flex-wrap: wrap !important;
+    padding: 9px 12px !important;
+    gap: 7px !important;
+  }
+
+  /* Expand detail panel — contained, scrollable */
+  .tp-oc-detail {
+    overflow: hidden !important;
+    max-height: 0 !important;
+  }
+  .tp-oc-detail.open {
+    max-height: 1200px !important;
+    overflow-y: auto !important;
+  }
+
+  /* Detail inner — prevent any child from overflowing */
+  .tp-oc-detail-inner {
+    padding: 12px 12px 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Detail meta row — wrap */
+  .tp-detail-meta {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Order detail page (full-page for customers) — contained */
+  #page-order-detail > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Hero strip in order detail — no overflow */
+  #odPageHero > div {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 16px 14px !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* Status progress steps — contained horizontal scroll */
+  #odPageBody > div:first-child > div[style*="overflow-x"] {
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Order number display in detail hero */
+  #odPageHero .order-status-badge {
+    font-size: .72rem !important;
+  }
+
+  /* Items table in order detail — no overflow */
+  #odPageBody {
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+} /* end admin/order modal fix */
+
+
+/* ═══════════════════════════════════════════════════════
+   FIX 4 — ITEM-LEVEL STATUS in order detail (no overlap)
+   Each product row: icon | name+qty | status badge — clean
+═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Item row inside order detail — stack cleanly */
+  .od-item-row,
+  #odPageBody div[style*="display:flex"][style*="align-items:center"][style*="gap:8px"][style*="padding:6px 0"] {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    gap: 7px !important;
+    padding: 8px 0 !important;
+  }
+
+  /* Item name+qty info block */
+  .od-item-info,
+  #odPageBody div[style*="flex:1;min-width:0"] {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Item name — single line with ellipsis */
+  #odPageBody .bn[style*="font-size:.76rem"] {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  /* Item qty/price sub-text */
+  #odPageBody .bn[style*="font-size:.66rem"] {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+  }
+
+  /* Item total price — don't overflow, align right */
+  #odPageBody .bn[style*="font-size:.78rem"][style*="flex-shrink:0"] {
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Progress steps in order detail — compact */
+  #odPageBody > div:first-child > div[style*="overflow-x:auto"] > div {
+    min-width: 44px !important;
+  }
+  #odPageBody .bn[style*="font-size:.58rem"] {
+    font-size: .54rem !important;
+  }
+
+  /* History timeline items — no overflow */
+  .hitem-status, .hitem-note, .hitem-time {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Order status badge in admin list */
+  .order-status-badge {
+    font-size: .65rem !important;
+    padding: 3px 9px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+} /* end item status fix */
+
+
+/* ═══════════════════════════════════════════════════════
+   FIX 5 — MISC MOBILE POLISH
+═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Promo banner — single scrollable row */
+  .promo-banner-text {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+  .promo-banner-text::-webkit-scrollbar { display: none !important; }
+  .promo-item { flex-shrink: 0 !important; }
+  .promo-sep { display: none !important; }
+
+  /* Track page input row — stacked on very small screens */
+  .track-inp-row {
+    flex-wrap: wrap !important;
+  }
+  .track-inp {
+    min-width: 0 !important;
+    flex: 1 1 160px !important;
+  }
+
+  /* Admin KPIs — 2 col */
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Product detail page items in admin — contained */
+  .tp-wrapper {
+    padding: 12px 10px 80px !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Order ID text — break long IDs */
+  .olist-order-num, .tp-oc-id {
+    word-break: break-all !important;
+    max-width: 100% !important;
+  }
+
+  /* Checkout location fields — single column */
+  .location-fields-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+} /* end misc fix */
+
+</style>
+
 <!-- Font Awesome icon load verifier + fallback activator -->
 <script>
 (function(){
@@ -7485,9 +7958,9 @@ function renderHeroBanners() {
     // Photo banner (uploaded via admin) — render as full-width image slide
     if (b._isPhoto && b.image_url) {
       return `
-        <div class="hero-slide" style="background:#0a0f1e;cursor:pointer" onclick="${b.link ? `window.open('${b.link}','_self')` : 'void(0)'}">
+        <div class="hero-slide hero-slide--photo" style="background:#0a0f1e;cursor:pointer;min-height:160px;position:relative;overflow:hidden" onclick="${b.link ? `window.open('${b.link}','_self')` : 'void(0)'}">
           <img src="${b.image_url}" alt="${b.title||'Banner'}"
-            style="width:100%;height:100%;object-fit:cover;display:block;border-radius:14px"
+            style="width:100%;height:100%;min-height:160px;max-height:260px;object-fit:cover;object-position:center center;display:block;border-radius:0"
             onerror="this.style.display='none'">
         </div>`;
     }
@@ -7515,7 +7988,7 @@ function renderHeroBanners() {
     const titleHtml = (b.title||'').replace(/\n/g, '<br>');
 
     return `
-      <div class="hero-slide" style="background:${b.gradient||'linear-gradient(120deg,var(--blue),var(--blue-dark))'}">
+      <div class="hero-slide hero-slide--text" style="background:${b.gradient||'linear-gradient(120deg,var(--blue),var(--blue-dark))'}; min-height:185px; position:relative; overflow:hidden">
         <div class="hslide-content">
           <div class="hslide-tag bn"><i class="fa-solid ${b.tag_icon||'fa-star'}"></i> ${b.tag||''}</div>
           <div class="hslide-title bn">${titleHtml}</div>
@@ -8970,6 +9443,369 @@ window.addEventListener('scroll', onScroll, { passive: true });
     }
   });
 })();
+</script>
+<!-- ══════════════════════════════════════════════════════════════════
+     SPA NAVIGATION ROUTER v1 — Single-page routing, no overlaps
+     Handles: clean page transitions, auto-close modals/overlays,
+     state reset between pages, bottom-nav sync, stacking prevention
+══════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+// ── 1. REGISTRY ──────────────────────────────────────────────────
+// All known full-pages (matches id="page-{name}")
+const ALL_PAGES   = ['product','track','order-detail','checkout','category','profile','wishlist'];
+// All overlay modals (matches id)
+const ALL_MODALS  = ['cartOverlay','authModal','adminOverlay'];
+// Notif panel id
+const NOTIF_PANEL = 'notifPanel';
+
+// ── 2. CLOSE-ALL HELPERS ─────────────────────────────────────────
+
+/**
+ * closeAllPages(except?)
+ * Silently closes every full-page panel except the one named in `except`.
+ * Also resets body overflow so the screen never stays locked.
+ */
+function closeAllPages(except) {
+  ALL_PAGES.forEach(name => {
+    if (name === except) return;
+    const el = document.getElementById('page-' + name);
+    if (el && el.classList.contains('open')) {
+      el.classList.remove('open');
+      el.setAttribute('aria-hidden', 'true');
+    }
+  });
+  // Only unlock body if nothing remains open
+  const anyOpen = ALL_PAGES.some(n => {
+    const el = document.getElementById('page-' + n);
+    return el && el.classList.contains('open');
+  });
+  if (!anyOpen) document.body.style.overflow = '';
+}
+
+/**
+ * closeAllModals(except?)
+ * Closes every overlay modal except the one named.
+ */
+function closeAllModals(except) {
+  ALL_MODALS.forEach(id => {
+    if (id === except) return;
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('open')) el.classList.remove('open');
+  });
+}
+
+/**
+ * closeNotifPanel()
+ * Hides the notification panel if visible.
+ */
+function closeNotifPanel() {
+  const p = document.getElementById(NOTIF_PANEL);
+  if (p) p.classList.remove('open');
+}
+
+/**
+ * closeAllUI(except?)
+ * Master cleanup: close all pages, modals, dropdown, notif panel.
+ * Call this before opening any new page/modal.
+ */
+function closeAllUI(except) {
+  closeAllPages(except);
+  closeAllModals(except);
+  closeNotifPanel();
+  if (typeof window.closeDropdown === 'function') window.closeDropdown();
+}
+
+// Expose globally so existing inline onclick can use them
+window.__router = { closeAllPages, closeAllModals, closeAllUI };
+
+// ── 3. PATCH openPage() ──────────────────────────────────────────
+// Wrap the existing openPage to always close siblings first.
+(function patchOpenPage() {
+  const _orig = window.openPage;
+  if (!_orig) return; // safety: called after DOM ready
+
+  window.openPage = function(name) {
+    // Close every other full-page cleanly (no animation glitch)
+    ALL_PAGES.forEach(n => {
+      if (n === name) return;
+      const sib = document.getElementById('page-' + n);
+      if (sib && sib.classList.contains('open')) {
+        sib.classList.remove('open');
+        sib.setAttribute('aria-hidden', 'true');
+      }
+    });
+    // Close all modal overlays so they never sit under a new page
+    closeAllModals();
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+
+    // Now open the requested page
+    _orig.call(this, name);
+  };
+})();
+
+// ── 4. PATCH openModal() ─────────────────────────────────────────
+// Opening a modal should close all full-pages first (prevents layering).
+(function patchOpenModal() {
+  const _orig = window.openModal;
+  if (!_orig) return;
+
+  window.openModal = function(id) {
+    // Close all full-page panels so modals don't sit over them awkwardly
+    closeAllPages();
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this, id);
+  };
+})();
+
+// ── 5. PATCH openCart() ──────────────────────────────────────────
+(function patchOpenCart() {
+  const _orig = window.openCart;
+  if (!_orig) return;
+  window.openCart = function() {
+    closeAllPages();
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this);
+  };
+})();
+
+// ── 6. PATCH openAdmin() ─────────────────────────────────────────
+(function patchOpenAdmin() {
+  const _orig = window.openAdmin;
+  if (!_orig) return;
+  window.openAdmin = function() {
+    closeAllPages();
+    closeAllModals('adminOverlay');
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this);
+  };
+})();
+
+// ── 7. PATCH openTrack() ─────────────────────────────────────────
+(function patchOpenTrack() {
+  const _orig = window.openTrack;
+  if (!_orig) return;
+  window.openTrack = function(pushUrl) {
+    // Clear any leftover search filters when going to track
+    closeAllModals();
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this, pushUrl);
+  };
+})();
+
+// ── 8. PATCH openProduct() ───────────────────────────────────────
+(function patchOpenProduct() {
+  const _orig = window.openProduct;
+  if (!_orig) return;
+  window.openProduct = function(id, pushUrl) {
+    closeAllModals();
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this, id, pushUrl);
+  };
+})();
+
+// ── 9. PATCH openCatPage() ───────────────────────────────────────
+(function patchOpenCatPage() {
+  const _orig = window.openCatPage;
+  if (!_orig) return;
+  window.openCatPage = function(cat, el) {
+    closeAllModals();
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this, cat, el);
+  };
+})();
+
+// ── 10. PATCH openCheckout() ─────────────────────────────────────
+(function patchOpenCheckout() {
+  const _orig = window.openCheckout;
+  if (!_orig) return;
+  window.openCheckout = function() {
+    closeAllModals('checkout'); // close cart overlay before checkout opens
+    closeNotifPanel();
+    if (typeof window.closeDropdown === 'function') window.closeDropdown();
+    _orig.call(this);
+  };
+})();
+
+// ── 11. PATCH closePage() — clear state on close ─────────────────
+(function patchClosePage() {
+  const _orig = window.closePage;
+  if (!_orig) return;
+  window.closePage = function(name) {
+    _orig.call(this, name);
+    // When closing checkout, reset coupon/discount visuals
+    if (name === 'checkout') {
+      const msg = document.getElementById('checkoutPromoMsg');
+      if (msg) msg.style.display = 'none';
+    }
+    // When closing product detail, clear any playing video/media
+    if (name === 'product') {
+      // Reset qty counter
+      const qEl = document.getElementById('modalQty');
+      if (qEl) qEl.textContent = '1';
+    }
+    // When closing category, scroll grid back to top
+    if (name === 'category') {
+      const pg = document.getElementById('page-category');
+      if (pg) pg.scrollTop = 0;
+    }
+  };
+})();
+
+// ── 12. PREVENT DUPLICATE EVENT LISTENERS on <a> tags ────────────
+// Replace all <a href="#"> or <a href=""> that also have onclick with
+// proper event prevention so they don't cause scroll-to-top/navigation.
+(function fixAnchorTags() {
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[href="#"], a[href=""], a[href="javascript:void(0)"]').forEach(a => {
+      if (a.dataset.navFixed) return;
+      a.dataset.navFixed = '1';
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+      });
+    });
+  });
+})();
+
+// ── 13. ESC KEY — close topmost layer ────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+
+  // Priority order: modals → full-pages → dropdown
+  for (const id of ALL_MODALS) {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('open')) {
+      el.classList.remove('open');
+      document.body.style.overflow = '';
+      return;
+    }
+  }
+  for (const name of ALL_PAGES) {
+    const el = document.getElementById('page-' + name);
+    if (el && el.classList.contains('open')) {
+      if (typeof window.closePage === 'function') window.closePage(name);
+      return;
+    }
+  }
+  // Finally close dropdown
+  if (typeof window.closeDropdown === 'function') window.closeDropdown();
+});
+
+// ── 14. BOTTOM NAV — active state sync ───────────────────────────
+// Syncs the bottom nav tab with the currently visible page.
+(function syncBottomNav() {
+  const NAV_MAP = {
+    // page-name → bottom nav item id
+    'track':        'mobNavOrders',
+    'order-detail': 'mobNavOrders',
+    'checkout':     'mobNavCart',
+    'product':      'mobNavHome',
+    'category':     'mobNavHome',
+    'profile':      'mobNavAccount',
+    'wishlist':     'mobNavAccount',
+  };
+
+  function setActiveNav(id) {
+    document.querySelectorAll('.mob-nav-item').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
+  }
+
+  // Patch openPage to also update bottom nav
+  const _prevOpen = window.openPage;
+  window.openPage = function(name) {
+    if (typeof _prevOpen === 'function') _prevOpen.call(this, name);
+    const navId = NAV_MAP[name];
+    if (navId) setActiveNav(navId);
+  };
+
+  // Patch closePage to reset nav to Home when all pages closed
+  const _prevClose = window.closePage;
+  window.closePage = function(name) {
+    if (typeof _prevClose === 'function') _prevClose.call(this, name);
+    // Check if any page still open after close
+    const stillOpen = ALL_PAGES.some(n => {
+      const el = document.getElementById('page-' + n);
+      return el && el.classList.contains('open');
+    });
+    if (!stillOpen) setActiveNav('mobNavHome');
+  };
+
+  // Cart overlay open → highlight cart nav
+  const _prevCartOpen = window.openCart;
+  window.openCart = function() {
+    if (typeof _prevCartOpen === 'function') _prevCartOpen.call(this);
+    setActiveNav('mobNavCart');
+  };
+
+  // Cart overlay close → reset to home
+  const _prevCartClose = window.closeCart;
+  window.closeCart = function() {
+    if (typeof _prevCartClose === 'function') _prevCartClose.call(this);
+    setActiveNav('mobNavHome');
+  };
+})();
+
+// ── 15. BACK BUTTON — unified popstate handler ───────────────────
+// Replace the existing popstate listener with one that calls closeAllUI
+// before opening a page, preventing stacking on back navigation.
+window.addEventListener('popstate', function(e) {
+  // Close everything silently first
+  ALL_PAGES.forEach(n => {
+    const el = document.getElementById('page-' + n);
+    if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+  });
+  ALL_MODALS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+  });
+  document.body.style.overflow = '';
+
+  // Then re-open the target page from history state
+  if (e.state && e.state.page === 'product' && e.state.productId) {
+    if (typeof window.openProduct === 'function') window.openProduct(e.state.productId, false);
+  } else if (e.state && e.state.page === 'track') {
+    if (typeof window.openTrack === 'function') window.openTrack(false);
+  }
+  // Otherwise: home — all closed, nothing to do
+}, { capture: true }); // capture:true so this fires before any other popstate listener
+
+// ── 16. STACKING GUARD — MutationObserver ────────────────────────
+// Watches for more than 1 full-page being open at once and fixes it.
+(function stackGuard() {
+  const observer = new MutationObserver(function() {
+    const openPages = ALL_PAGES.filter(n => {
+      const el = document.getElementById('page-' + n);
+      return el && el.classList.contains('open');
+    });
+    // If 2+ pages are open simultaneously, keep only the LAST one opened
+    if (openPages.length > 1) {
+      const keep = openPages[openPages.length - 1];
+      openPages.slice(0, -1).forEach(n => {
+        const el = document.getElementById('page-' + n);
+        if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+      });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    ALL_PAGES.forEach(n => {
+      const el = document.getElementById('page-' + n);
+      if (el) observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+  });
+})();
+
+})(); // end IIFE
 </script>
 </body>
 </html>
