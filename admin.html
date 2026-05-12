@@ -457,14 +457,14 @@ body {
 /* Status pills */
 .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 0.67rem; font-weight: 700; font-family: var(--mono); white-space: nowrap; }
 .pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.pill-pending    { background: rgba(255,159,10,0.12);  color: var(--amber);  border: 1px solid rgba(255,159,10,0.25); }
-.pill-pending::before    { background: var(--amber); }
+.pill-pending    { background: rgba(255,159,10,0.12);  color: #FF9F0A;  border: 1px solid rgba(255,159,10,0.25); }
+.pill-pending::before    { background: #FF9F0A; }
 .pill-confirmed  { background: rgba(0,122,255,0.10);   color: var(--blue);   border: 1px solid rgba(0,122,255,0.25); }
 .pill-confirmed::before  { background: var(--blue); }
-.pill-processing { background: rgba(175,82,222,0.10);  color: var(--purple); border: 1px solid rgba(175,82,222,0.25); }
-.pill-processing::before { background: var(--purple); }
-.pill-shipped    { background: rgba(50,173,230,0.10);  color: var(--cyan);   border: 1px solid rgba(50,173,230,0.25); }
-.pill-shipped::before    { background: var(--cyan); }
+.pill-processing { background: rgba(50,173,230,0.10);  color: var(--cyan);   border: 1px solid rgba(50,173,230,0.25); }
+.pill-processing::before { background: var(--cyan); }
+.pill-shipped    { background: rgba(175,82,222,0.10);  color: var(--purple); border: 1px solid rgba(175,82,222,0.25); }
+.pill-shipped::before    { background: var(--purple); }
 .pill-delivered  { background: rgba(52,199,89,0.10);   color: var(--green);  border: 1px solid rgba(52,199,89,0.25); }
 .pill-delivered::before  { background: var(--green); }
 .pill-cancelled  { background: rgba(255,59,48,0.10);   color: var(--red);    border: 1px solid rgba(255,59,48,0.25); }
@@ -481,6 +481,25 @@ body {
 .pill-collecting::before { background: #D97706; }
 .pill-collected      { background: rgba(0,122,255,0.13);  color: var(--blue);   border: 1px solid rgba(0,122,255,0.3); }
 .pill-collected::before  { background: var(--blue); }
+
+/* ── PART 2: Item-level status dropdown ── */
+.item-status-select {
+  font-size: 0.72rem; font-family: var(--font-bn); font-weight: 600;
+  padding: 4px 8px; border-radius: 7px; border: 1.5px solid var(--border2);
+  background: var(--bg3); color: var(--text2); cursor: pointer;
+  transition: all var(--t); outline: none; min-width: 140px;
+}
+.item-status-select:focus { box-shadow: var(--glow); }
+.item-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 100px; font-size: 0.68rem;
+  font-weight: 700; font-family: var(--font-bn); white-space: nowrap;
+}
+.item-status-badge.is-pending    { background:rgba(148,163,184,0.15); color:var(--text3); border:1px solid var(--border2); }
+.item-status-badge.is-in_stock   { background:rgba(0,122,255,0.1);   color:var(--blue);  border:1px solid rgba(0,122,255,0.25); }
+.item-status-badge.is-sourcing   { background:rgba(255,159,10,0.1);  color:#D97706;      border:1px solid rgba(255,159,10,0.3); }
+.item-status-badge.is-collected  { background:rgba(50,173,230,0.1);  color:var(--cyan);  border:1px solid rgba(50,173,230,0.3); }
+.item-status-badge.is-dispatched { background:rgba(52,199,89,0.1);   color:var(--green); border:1px solid rgba(52,199,89,0.3); }
 
 /* ── ORDER TIMELINE / PROGRESS ── */
 .order-timeline {
@@ -3535,15 +3554,19 @@ function renderOrders() {
     return;
   }
 
-  const statusOptions = ['pending', 'confirmed', 'in_stock', 'collecting', 'collected', 'processing', 'shipped', 'delivered', 'cancelled'];
-  const statusLabels  = {
-    pending:'Pending', confirmed:'Confirmed',
-    in_stock:'স্টক এ আছে', collecting:'সংগ্রহ চলছে', collected:'সংগ্রহ সম্পন্ন',
-    processing:'Processing', shipped:'পাঠানো হয়েছে', delivered:'Delivered', cancelled:'Cancelled'
+  // Part 1: Standardized 6-status dropdown for global order status
+  const globalStatusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const globalStatusLabels  = {
+    pending:'Pending', confirmed:'Confirmed', processing:'Processing',
+    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled'
   };
   tbody.innerHTML = filtered.map(o => {
     const items = Array.isArray(o.items) ? o.items : [];
     const names = items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
+    // Normalize legacy status values for the 6-status dropdown
+    const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled'].includes(o.status))
+      ? o.status
+      : (['in_stock','collecting','collected'].includes(o.status) ? 'processing' : 'pending');
     return `<tr>
       <td style="font-family:var(--mono);font-size:0.74rem;color:var(--blue);cursor:pointer;font-weight:600" onclick="viewOrder('${o.id}')">${o.order_number || '—'}</td>
       <td style="font-weight:500">${o.customer_name || '—'}</td>
@@ -3551,13 +3574,15 @@ function renderOrders() {
       <td style="font-size:0.76rem">${o.customer_district || '—'}</td>
       <td><div style="font-size:0.74rem;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${names || '—'}</div><div style="font-size:0.62rem;color:var(--text3)">${items.length} item(s)</div></td>
       <td style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</td>
-      <td>${pillHTML(o.status)}</td>
+      <td id="status-pill-${o.id}">${pillHTML(o.status)}</td>
       <td style="font-size:0.72rem;color:var(--text3)">${fmtDate(o.created_at)}</td>
-      <td><select class="status-select" data-status="${o.status||''}" onchange="updateOrderStatus('${o.id}', this.value); this.dataset.status=this.value; applyStatusSelectColor(this)">
-        ${statusOptions.map(s => `<option value="${s}" ${s === o.status ? 'selected' : ''}>${statusLabels[s]||cap(s)}</option>`).join('')}
+      <td><select class="status-select" data-status="${normalizedStatus}" onchange="updateOrderStatus('${o.id}', this.value); this.dataset.status=this.value; applyStatusSelectColor(this); updateStatusPill('${o.id}', this.value);" style="${getStatusSelectStyle(normalizedStatus)}">
+        ${globalStatusOptions.map(s => `<option value="${s}" ${s === normalizedStatus ? 'selected' : ''}>${globalStatusLabels[s]}</option>`).join('')}
       </select></td>
     </tr>`;
   }).join('');
+  // Apply color coding to all selects after render
+  document.querySelectorAll('.status-select').forEach(sel => applyStatusSelectColor(sel));
 }
 
 /* ══════════════════════════════════════
@@ -3584,11 +3609,46 @@ async function updateOrderStatus(id, status, customNote) {
   const o = allOrders.find(x => x.id === id);
   if (o) o.status = status;
   renderOrders(); renderDashboard();
-  toast('Status Updated', `Order → ${STATUS_LABEL_BN[status] || cap(status)}`, 'success');
+  toast('✅ Success', `Status → ${cap(status)} — User tracking synced`, 'success');
   if (currentOrderId === id) refreshOrderModal(id);
   await sb.from('order_status_history').insert({
     order_id: id, status, note, created_at: new Date().toISOString()
   }).catch(() => {});
+}
+
+/* ── Part 2: Item-level status update ── */
+const ITEM_STATUS_COLORS = {
+  pending:    'var(--border2)',
+  in_stock:   'rgba(0,122,255,0.4)',
+  sourcing:   'rgba(255,159,10,0.4)',
+  collected:  'rgba(50,173,230,0.4)',
+  dispatched: 'rgba(52,199,89,0.4)',
+};
+
+async function updateItemStatus(orderId, itemIdx, newStatus, selectEl) {
+  if (!sb) return;
+  const o = allOrders.find(x => x.id === orderId);
+  if (!o || !Array.isArray(o.items) || !o.items[itemIdx]) return;
+
+  // Update local cache
+  o.items[itemIdx].item_status = newStatus;
+
+  // Style the select
+  if (selectEl) selectEl.style.borderColor = ITEM_STATUS_COLORS[newStatus] || 'var(--border2)';
+
+  // Persist to Supabase — store updated items array (item_status lives inside items JSON)
+  const { error } = await sb.from('orders').update({
+    items: o.items,
+    updated_at: new Date().toISOString()
+  }).eq('id', orderId);
+
+  if (error) {
+    toast('Item Status Failed', error.message, 'error');
+    return;
+  }
+
+  const ITEM_STATUS_LABELS = { pending:'Pending', in_stock:'স্টকে আছে', sourcing:'সংগ্রহ করা হচ্ছে', collected:'সংগ্রহ করা হয়েছে', dispatched:'পাঠানো হয়েছে' };
+  toast('✅ Item Updated', `"${o.items[itemIdx].name}" → ${ITEM_STATUS_LABELS[newStatus] || newStatus}`, 'success');
 }
 
 function switchOrderTab(tab) {
@@ -3711,13 +3771,37 @@ function refreshOrderModal(id) {
       ${timelineHTML}
     </div>`;
 
-  // Items block
+  // Items block — with item_status dropdowns (Part 2)
+  const ITEM_STATUS_OPTIONS = [
+    { value: 'pending',    label: 'Pending' },
+    { value: 'in_stock',   label: 'স্টকে আছে' },
+    { value: 'sourcing',   label: 'সংগ্রহ করা হচ্ছে' },
+    { value: 'collected',  label: 'সংগ্রহ করা হয়েছে' },
+    { value: 'dispatched', label: 'পাঠানো হয়েছে' },
+  ];
   document.getElementById('overview-items-block').innerHTML = `
     <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:8px">Items (${items.length})</div>
-    ${items.map(i => `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;margin-bottom:5px;font-size:0.82rem">
-      <div><div style="font-weight:600">${i.name || 'Item'}</div><div style="font-size:0.68rem;color:var(--text3)">৳${Number(i.price||0).toLocaleString()} × ${i.qty||1}</div></div>
-      <span style="font-weight:700;color:var(--text)">৳${(Number(i.price||0)*Number(i.qty||1)).toLocaleString()}</span>
-    </div>`).join('') || '<div style="color:var(--text3);font-size:0.78rem;padding:10px">No items data</div>'}`;
+    ${items.map((item, idx) => {
+      const itemStatus = item.item_status || 'pending';
+      const statusBadgeClass = { pending:'is-pending', in_stock:'is-in_stock', sourcing:'is-sourcing', collected:'is-collected', dispatched:'is-dispatched' }[itemStatus] || 'is-pending';
+      const statusLabel = ITEM_STATUS_OPTIONS.find(s => s.value === itemStatus)?.label || 'Pending';
+      return `<div style="padding:10px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-weight:600;font-size:0.84rem">${item.name || 'Item'}</div>
+            <div style="font-size:0.68rem;color:var(--text3)">৳${Number(item.price||0).toLocaleString()} × ${item.qty||1} = <strong>৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString()}</strong></div>
+          </div>
+          <span style="font-weight:700;color:var(--text);font-size:0.9rem;flex-shrink:0">৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString()}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:0.6rem;font-weight:700;color:var(--text3);font-family:var(--mono)">ITEM STATUS:</span>
+          <select class="item-status-select" onchange="updateItemStatus('${o.id}', ${idx}, this.value, this)"
+            style="border-color:${itemStatus==='dispatched'?'rgba(52,199,89,0.4)':itemStatus==='collected'?'rgba(50,173,230,0.4)':itemStatus==='sourcing'?'rgba(255,159,10,0.4)':itemStatus==='in_stock'?'rgba(0,122,255,0.35)':'var(--border2)'}">
+            ${ITEM_STATUS_OPTIONS.map(s => `<option value="${s.value}" ${s.value===itemStatus?'selected':''}>${s.label}</option>`).join('')}
+          </select>
+        </div>
+      </div>`;
+    }).join('') || '<div style="color:var(--text3);font-size:0.78rem;padding:10px">No items data</div>'}`;
 
   // Price block
   const subtotal = items.reduce((s,i) => s + Number(i.price||0)*Number(i.qty||1), 0);
@@ -4970,26 +5054,46 @@ const STATUS_LABEL_BN = {
 };
 
 function pillHTML(status) {
+  // Part 1: normalized 6-status system for global order status
   const map = {
     pending:'pill-pending', confirmed:'pill-confirmed',
-    in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected',
     processing:'pill-processing', shipped:'pill-shipped',
-    delivered:'pill-delivered', cancelled:'pill-cancelled'
+    delivered:'pill-delivered', cancelled:'pill-cancelled',
+    // legacy aliases
+    in_stock:'pill-confirmed', collecting:'pill-processing', collected:'pill-processing',
   };
-  const label = STATUS_LABEL_BN[status] || cap(status || 'pending');
-  return `<span class="pill ${map[status] || 'pill-pending'}" style="font-family:var(--font-bn)">${label}</span>`;
+  const labelMap = {
+    pending:'Pending', confirmed:'Confirmed', processing:'Processing',
+    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
+    in_stock:'Confirmed', collecting:'Processing', collected:'Processing',
+  };
+  const label = labelMap[status] || cap(status || 'pending');
+  return `<span class="pill ${map[status] || 'pill-pending'}">${label}</span>`;
+}
+
+/* ── Part 1: Standardized global status color system ── */
+const STATUS_COLOR_MAP = {
+  pending:    { color:'#FF9F0A', border:'rgba(255,159,10,0.4)',  bg:'rgba(255,159,10,0.08)'  },
+  confirmed:  { color:'#007AFF', border:'rgba(0,122,255,0.35)', bg:'rgba(0,122,255,0.08)'   },
+  processing: { color:'#32ADE6', border:'rgba(50,173,230,0.35)',bg:'rgba(50,173,230,0.08)'  },
+  shipped:    { color:'#AF52DE', border:'rgba(175,82,222,0.35)',bg:'rgba(175,82,222,0.08)'  },
+  delivered:  { color:'#34C759', border:'rgba(52,199,89,0.35)', bg:'rgba(52,199,89,0.08)'   },
+  cancelled:  { color:'#FF3B30', border:'rgba(255,59,48,0.3)',  bg:'rgba(255,59,48,0.07)'   },
+};
+
+function getStatusSelectStyle(status) {
+  const c = STATUS_COLOR_MAP[status];
+  if (!c) return '';
+  return `color:${c.color};border-color:${c.border};background:${c.bg};font-weight:600;`;
 }
 
 function applyStatusSelectColor(sel) {
-  const colorMap = {
-    in_stock:   'color:#007AFF;border-color:rgba(0,122,255,0.3)',
-    collecting: 'color:#D97706;border-color:rgba(255,159,10,0.3)',
-    collected:  'color:#007AFF;border-color:rgba(0,122,255,0.4)',
-    shipped:    'color:#32ADE6;border-color:rgba(50,173,230,0.35)',
-    delivered:  'color:#34C759;border-color:rgba(52,199,89,0.35)',
-    cancelled:  'color:#FF3B30;border-color:rgba(255,59,48,0.3)',
-  };
-  sel.style.cssText = colorMap[sel.value] || '';
+  sel.style.cssText = getStatusSelectStyle(sel.value);
+}
+
+function updateStatusPill(orderId, status) {
+  const cell = document.getElementById('status-pill-' + orderId);
+  if (cell) cell.innerHTML = pillHTML(status);
 }
 
 /* ── STATUS HISTORY PANEL ── */
