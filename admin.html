@@ -1012,8 +1012,8 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 /* ── Order Edit Modal: two-column → single column on small screens ── */
 .oe-two-col {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;   /* Left (items) wider than right (customer) */
-  gap: 28px;
+  grid-template-columns: 1.1fr 1fr;   /* Left (items) slightly wider than right (customer) */
+  gap: 20px;
   align-items: start;
   min-height: 0;
 }
@@ -1031,31 +1031,18 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 
 /* Items list — taller scroll area so items don't get crushed */
 #oe-items-list {
-  max-height: clamp(220px, 40vh, 500px) !important;
+  max-height: clamp(200px, 35vh, 400px) !important;
   overflow-y: auto;
 }
 
 /* Product search results — keep at reasonable height */
 #oe-product-search-results {
-  max-height: clamp(140px, 22vh, 260px) !important;
+  max-height: clamp(140px, 22vh, 240px) !important;
   overflow-y: auto;
 }
 
 /* Right column customer fields — always full width inside their column */
 #otab-edit .form-inp { min-width: 0; width: 100%; }
-
-/* Right column: prevent inputs from truncating */
-#otab-edit #oe-name,
-#otab-edit #oe-email,
-#otab-edit #oe-phone,
-#otab-edit #oe-address,
-#otab-edit #oe-district {
-  width: 100%;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: unset;
-}
 
 @media (max-width: 900px) {
   .oe-two-col { grid-template-columns: 1fr !important; gap: 14px !important; }
@@ -1074,15 +1061,9 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 #orderModal .modal-body { overflow-x: hidden; }
 #orderModal .modal-box {
   overflow-x: hidden;
-  /* Wide layout for order detail — desktop 88vw, cap at 1400px */
-  max-width: min(1400px, 88vw) !important;
-  width: 88vw !important;
-}
-@media (max-width: 900px) {
-  #orderModal .modal-box {
-    max-width: 100% !important;
-    width: 100% !important;
-  }
+  /* Wide layout for order detail — desktop 90vw, cap at 1200px */
+  max-width: min(1200px, 90vw) !important;
+  width: 90vw !important;
 }
 @media (max-width: 580px) {
   .oe-price-grid { grid-template-columns: 1fr 1fr; }
@@ -2553,11 +2534,11 @@ body {
             </div>
 
             <!-- Items list -->
-            <div id="oe-items-list" style="display:grid;gap:6px;max-height:320px;overflow-y:auto"></div>
+            <div id="oe-items-list" style="display:grid;gap:6px;max-height:240px;overflow-y:auto"></div>
           </div>
 
           <!-- RIGHT: Customer info + Price override -->
-          <div style="display:flex;flex-direction:column;gap:10px;max-height:clamp(400px,65vh,700px);overflow-y:auto;padding-right:4px">
+          <div style="display:flex;flex-direction:column;gap:10px">
             <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">
               <i class="fa-solid fa-user" style="margin-right:4px"></i>Customer Info
             </div>
@@ -3561,24 +3542,43 @@ document.addEventListener('click', e => {
 /* ══════════════════════════════════════
    VISITOR TRACKING (Supabase)
 ══════════════════════════════════════ */
-async function loadVisitorStats() {
+async function loadVisitorStats(retryCount = 0) {
   if (!sb) return;
-  // Try visitor_logs table; gracefully handle if missing
   try {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const weekStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).toISOString();
+    // Use UTC midnight to match Supabase server timestamps (avoids timezone mismatch)
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())).toISOString();
+    const weekUTC  = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 6)).toISOString();
 
-    const { data: todayData } = await sb.from('visitor_logs').select('id', { count: 'exact' })
-      .gte('created_at', todayStart);
-    const { count: todayCount } = await sb.from('visitor_logs').select('*', { count: 'exact', head: true })
-      .gte('created_at', todayStart);
-    const { count: weekCount } = await sb.from('visitor_logs').select('*', { count: 'exact', head: true })
-      .gte('created_at', weekStart);
+    const [todayRes, weekRes] = await Promise.all([
+      sb.from('visitor_logs').select('*', { count: 'exact', head: true }).gte('created_at', todayUTC),
+      sb.from('visitor_logs').select('*', { count: 'exact', head: true }).gte('created_at', weekUTC),
+    ]);
 
-    allVisitors = { today: todayCount || 0, week: weekCount || 0 };
-  } catch {
+    if (todayRes.error || weekRes.error) {
+      const errMsg = todayRes.error?.message || weekRes.error?.message || '';
+      // Table doesn't exist — show 0 gracefully
+      if (errMsg.includes('does not exist') || errMsg.includes('42P01')) {
+        allVisitors = { today: 0, week: 0 };
+        renderVisitorStats();
+        return;
+      }
+      throw new Error(errMsg);
+    }
+
+    allVisitors = {
+      today: todayRes.count || 0,
+      week:  weekRes.count  || 0,
+    };
+  } catch(e) {
     allVisitors = { today: 0, week: 0 };
+    // Auto-retry up to 2 times with backoff
+    if (retryCount < 2) {
+      console.warn(`[loadVisitorStats] Retry ${retryCount + 1}/2:`, e.message);
+      setTimeout(() => loadVisitorStats(retryCount + 1), 3000 * (retryCount + 1));
+      return;
+    }
+    console.error('[loadVisitorStats] Failed after retries:', e.message);
   }
   renderVisitorStats();
 }
@@ -3631,7 +3631,7 @@ function renderVisitorStats() {
     </div>
     <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">
       <i class="fa-solid fa-circle-info" style="margin-right:4px"></i>
-      visitor_logs টেবিল থেকে data আসছে। টেবিল না থাকলে 0 দেখাবে।
+      কাস্টমার পেজ ভিজিট করলে visitor_logs টেবিলে এন্ট্রি হয়। আজকের UTC মধ্যরাত থেকে count।
     </div>`;
 }
 
@@ -5035,7 +5035,7 @@ function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -5043,6 +5043,8 @@ function navTo(sec) {
   if (sec === 'admins')     renderAdminList();
   if (sec === 'categories') { renderCategoryList(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
+  if (sec === 'users')      loadUsers();
+  if (sec === 'analytics')  loadVisitorStats();
 }
 
 function navToOrders(statusFilter) {
@@ -5908,21 +5910,27 @@ let userSortDesc = true; // newest first by default
 let currentViewUserId = null;
 
 /* ── Load users from Supabase ── */
-async function loadUsers() {
+async function loadUsers(retryCount = 0) {
   if (!sb) return;
 
   const tbody = document.getElementById('userTableBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div><div style="margin-top:10px;font-size:0.78rem;color:var(--text3);font-family:var(--font-bn)">ইউজার ডাটা লোড হচ্ছে…</div></td></tr>';
+
+  // Show dashes in KPI cards while loading
+  ['kpi-total-users','kpi-active-users','kpi-blocked-users','kpi-new-today-users'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '—';
+  });
 
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--red)">
-      <i class="fa-solid fa-triangle-exclamation"></i> Connection Timeout —
-      <button class="btn btn-ghost btn-sm" onclick="loadUsers()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+      <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;margin-bottom:8px;display:block"></i>
+      <div style="font-family:var(--font-bn);margin-bottom:8px">সংযোগ বিলম্ব — ডাটা লোড হয়নি।</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadUsers()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
     </td></tr>`;
-    toast('Connection Timeout', 'Users লোড হচ্ছে না। Retry করুন।', 'error');
-  }, 25000);
+    toast('⏳ সংযোগ বিলম্ব', 'Users লোড হচ্ছে না। Retry করুন।', 'warning');
+  }, 12000); // 12s timeout (down from 25s)
 
   try {
     // Try `profiles` table first, fall back to `users`
@@ -5944,12 +5952,14 @@ async function loadUsers() {
     if (timedOut) return;
 
     if (error) {
-      toast('Users Error', error.message, 'error');
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3)">
         <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-database"></i></div>
-        <div class="empty-title">Table not found</div>
-        <div class="empty-sub">Supabase-এ <code>profiles</code> বা <code>users</code> টেবিল নেই</div></div>
+        <div class="empty-title">টেবিল পাওয়া যায়নি</div>
+        <div class="empty-sub">Supabase-এ <code>profiles</code> বা <code>users</code> টেবিল নেই</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadUsers()" style="margin-top:10px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+        </div>
       </td></tr>`;
+      toast('⚠️ টেবিল নেই', error.message, 'error');
       return;
     }
 
@@ -5976,7 +5986,25 @@ async function loadUsers() {
 
   } catch (e) {
     clearTimeout(timeoutId);
-    if (!timedOut) toast('Users Error', e.message || 'Failed to load', 'error');
+    if (timedOut) return;
+
+    console.error('[loadUsers] Error:', e.message);
+    // Auto-retry up to 2 times
+    if (retryCount < 2) {
+      console.warn(`[loadUsers] Auto-retry ${retryCount + 1}/2…`);
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);font-family:var(--font-bn)">
+        <i class="fa-solid fa-spinner fa-spin" style="margin-right:6px"></i> পুনরায় চেষ্টা হচ্ছে (${retryCount + 1}/2)…
+      </td></tr>`;
+      setTimeout(() => loadUsers(retryCount + 1), 2500);
+      return;
+    }
+
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--red)">
+      <i class="fa-solid fa-circle-xmark" style="font-size:1.4rem;margin-bottom:8px;display:block"></i>
+      <div style="font-family:var(--font-bn);margin-bottom:8px">ডাটা লোড ব্যর্থ হয়েছে।</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadUsers()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
+    </td></tr>`;
+    toast('❌ লোড ব্যর্থ', 'ইউজার ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
   }
 }
 
