@@ -988,6 +988,7 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 }
 .order-tab-panel { display: none; }
 .order-tab-panel.active { display: block; animation: secIn 0.2s ease both; }
+/* Edit tab overrides display:block with display:flex — see #otab-edit rule above */
 
 .oe-item-row {
   display: grid; grid-template-columns: 1fr 72px 90px 32px;
@@ -1011,20 +1012,78 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 /* ── Order Edit Modal: two-column → single column on small screens ── */
 .oe-two-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: 1.2fr 1fr;   /* Left (items) wider than right (customer) */
+  gap: 28px;
   align-items: start;
+  min-height: 0;
 }
-@media (max-width: 840px) {
-  .oe-two-col { grid-template-columns: 1fr !important; }
+
+/* Edit tab panel — use flex column so sticky footer always shows */
+#otab-edit {
+  display: none;
+  flex-direction: column;
+  min-height: 0;
+}
+#otab-edit.active {
+  display: flex;
+  animation: secIn 0.2s ease both;
+}
+
+/* Items list — taller scroll area so items don't get crushed */
+#oe-items-list {
+  max-height: clamp(220px, 40vh, 500px) !important;
+  overflow-y: auto;
+}
+
+/* Product search results — keep at reasonable height */
+#oe-product-search-results {
+  max-height: clamp(140px, 22vh, 260px) !important;
+  overflow-y: auto;
+}
+
+/* Right column customer fields — always full width inside their column */
+#otab-edit .form-inp { min-width: 0; width: 100%; }
+
+/* Right column: prevent inputs from truncating */
+#otab-edit #oe-name,
+#otab-edit #oe-email,
+#otab-edit #oe-phone,
+#otab-edit #oe-address,
+#otab-edit #oe-district {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+@media (max-width: 900px) {
+  .oe-two-col { grid-template-columns: 1fr !important; gap: 14px !important; }
   .oe-two-col > div { min-width: 0; }
-  .oe-inner-grid { grid-template-columns: 1fr !important; }
+  .oe-inner-grid { grid-template-columns: 1fr 1fr !important; }
   .oe-price-grid { grid-template-columns: 1fr 1fr !important; }
   #oe-price-override-grid { grid-template-columns: 1fr 1fr !important; }
+  #oe-items-list { max-height: 220px !important; }
 }
+@media (max-width: 600px) {
+  .oe-inner-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 840px) {
+  /* already handled above — keep for legacy compat */ }
 /* Fix: prevent modal body horizontal overflow */
 #orderModal .modal-body { overflow-x: hidden; }
-#orderModal .modal-box { overflow-x: hidden; }
+#orderModal .modal-box {
+  overflow-x: hidden;
+  /* Wide layout for order detail — desktop 88vw, cap at 1400px */
+  max-width: min(1400px, 88vw) !important;
+  width: 88vw !important;
+}
+@media (max-width: 900px) {
+  #orderModal .modal-box {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
 @media (max-width: 580px) {
   .oe-price-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -2397,7 +2456,7 @@ body {
      ORDER DETAIL MODAL (Advanced)
 ══════════════════════════════════════ -->
 <div class="modal-overlay" id="orderModal" onclick="if(event.target===this)closeModal('orderModal')">
-  <div class="modal-box" style="max-width:800px">
+  <div class="modal-box" id="orderModalBox">
     <div class="modal-header">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="modal-title" id="orderModalTitle">Order Details</div>
@@ -2447,7 +2506,7 @@ body {
       <!-- TAB: EDIT INFO — Two-Column Layout -->
       <div class="order-tab-panel" id="otab-edit">
         <!-- Two-column grid: Left = items/products, Right = customer info + price -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start" class="oe-two-col">
+        <div class="oe-two-col" style="flex:1;min-height:0;margin-bottom:0">
 
           <!-- LEFT: Product list + Add items -->
           <div style="display:flex;flex-direction:column;gap:10px">
@@ -2494,11 +2553,11 @@ body {
             </div>
 
             <!-- Items list -->
-            <div id="oe-items-list" style="display:grid;gap:6px;max-height:240px;overflow-y:auto"></div>
+            <div id="oe-items-list" style="display:grid;gap:6px;max-height:320px;overflow-y:auto"></div>
           </div>
 
           <!-- RIGHT: Customer info + Price override -->
-          <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:10px;max-height:clamp(400px,65vh,700px);overflow-y:auto;padding-right:4px">
             <div style="font-size:0.62rem;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em">
               <i class="fa-solid fa-user" style="margin-right:4px"></i>Customer Info
             </div>
@@ -3054,8 +3113,24 @@ window.addEventListener('load', async () => {
 
   if (!initSB()) return;
 
-  // Check existing session
-  const { data: { session } } = await sb.auth.getSession();
+  // Check existing session — with timeout guard so a sleeping DB doesn't hang
+  let session = null;
+  try {
+    const result = await Promise.race([
+      sb.auth.getSession(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('__timeout__')), 25000))
+    ]);
+    session = result?.data?.session ?? null;
+  } catch(e) {
+    console.warn('[load] getSession timed out or failed:', e?.message);
+    // Show a soft retry button on the login card
+    const secEl = document.querySelector('.login-security');
+    if (secEl) {
+      secEl.innerHTML = '<i class="fa-solid fa-rotate-right" style="color:var(--amber)"></i>'
+        + '<div style="font-family:var(--font-bn)">সংযোগ ধীর। পেজ <button onclick="location.reload()" style="border:none;background:transparent;color:var(--blue);cursor:pointer;font-weight:700;font-family:var(--font-bn)">রিফ্রেশ</button> করুন অথবা কিছুক্ষণ অপেক্ষা করুন।</div>';
+    }
+  }
+
   if (session) {
     await verifyAndEnter(session.user);
   }
@@ -3102,29 +3177,109 @@ async function signInGoogle() {
   if (error) showError(error.message);
 }
 
-async function verifyAndEnter(user) {
-  // Primary: check admin_users table (same as main site)
+/* ──────────────────────────────────────────────────────────────
+   sbWithRetry — Supabase query wrapper with timeout + auto-retry
+   • timeout : ms before treating as failure (default 25s)
+   • retries : number of extra attempts after first failure
+   • onWake  : called on first retry so UI can show "waking up" msg
+────────────────────────────────────────────────────────────── */
+async function sbWithRetry(queryFn, { timeout = 25000, retries = 2, onWake } = {}) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt === 1 && onWake) onWake();          // notify UI on first retry
+    try {
+      const result = await Promise.race([
+        queryFn(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('__timeout__')), timeout)
+        )
+      ]);
+      return result;                                // success
+    } catch (err) {
+      const isTimeout = err?.message === '__timeout__';
+      const isLast    = attempt === retries;
+      if (isLast) throw err;                        // give up after all retries
+      // Exponential back-off: 2s, 4s …
+      await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+    }
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   wakeSupabase — sends a cheap ping to force Supabase out of
+   sleep mode before the real auth query runs.
+────────────────────────────────────────────────────────────── */
+async function wakeSupabase() {
   try {
-    const { data, error } = await sb.from('admin_users').select('id,role').eq('id', user.id).single();
-    if (!error && data) {
+    // Lightweight health check — just fetches 1 row from any small table
+    await Promise.race([
+      sb.from('admin_users').select('id').limit(1),
+      new Promise(r => setTimeout(r, 8000))        // don't wait longer than 8s for wake
+    ]);
+  } catch(e) { /* ignore — we just wanted to wake the DB */ }
+}
+
+async function verifyAndEnter(user) {
+  // Show a "connecting…" hint so admin knows something is happening
+  const loginBtn = document.querySelector('.google-btn');
+  const origBtnHTML = loginBtn ? loginBtn.innerHTML : '';
+  if (loginBtn) {
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>সংযোগ হচ্ছে…';
+  }
+  const errEl = document.getElementById('loginError');
+  if (errEl) errEl.style.display = 'none';
+
+  // ── Step 1: Wake Supabase if it might be sleeping ──
+  await wakeSupabase();
+
+  // ── Step 2: Primary check — admin_users table with retry ──
+  try {
+    const result = await sbWithRetry(
+      () => sb.from('admin_users').select('id,role').eq('id', user.id).single(),
+      {
+        timeout: 25000,
+        retries: 2,
+        onWake: () => {
+          if (loginBtn) loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>সার্ভার জাগাচ্ছি… একটু অপেক্ষা করুন';
+        }
+      }
+    );
+    if (!result.error && result.data) {
+      if (loginBtn) { loginBtn.innerHTML = origBtnHTML; loginBtn.disabled = false; }
       currentUser = user;
       enterDashboard();
       return;
     }
-  } catch(e) {}
-  // Fallback: check ALLOWED_EMAIL (legacy single-admin mode)
+  } catch(e) {
+    // Timeout after all retries — fall through to email fallback before giving up
+    console.warn('[verifyAndEnter] admin_users check failed after retries:', e?.message);
+    // If it's a timeout (not an auth error), tell the user and offer retry
+    if (e?.message === '__timeout__' || e?.message?.includes('timeout')) {
+      if (loginBtn) { loginBtn.innerHTML = origBtnHTML; loginBtn.disabled = false; }
+      showError('সংযোগ বিলম্ব — সার্ভার ধীর। পুনরায় চেষ্টা করুন।', true);
+      return;
+    }
+  }
+
+  // ── Step 3: Fallback — ALLOWED_EMAIL (legacy single-admin mode) ──
   if (ALLOWED_EMAIL && user.email === ALLOWED_EMAIL) {
+    if (loginBtn) { loginBtn.innerHTML = origBtnHTML; loginBtn.disabled = false; }
     currentUser = user;
     enterDashboard();
     return;
   }
-  await sb.auth.signOut();
-  showError(`অ্যাক্সেস নেই। আপনার অ্যাকাউন্ট অ্যাডমিন হিসেবে নিবন্ধিত নয়।`);
+
+  // ── Step 4: Access denied ──
+  if (loginBtn) { loginBtn.innerHTML = origBtnHTML; loginBtn.disabled = false; }
+  try { await sb.auth.signOut(); } catch(e) {}
+  showError('অ্যাক্সেস নেই। আপনার অ্যাকাউন্ট অ্যাডমিন হিসেবে নিবন্ধিত নয়।');
 }
 
-function showError(msg) {
+function showError(msg, showRetry = false) {
   const el = document.getElementById('loginError');
-  el.textContent = '⚠ ' + msg;
+  el.innerHTML = '⚠ ' + msg + (showRetry
+    ? ' &nbsp;<button onclick="location.reload()" style="margin-left:6px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,59,48,.35);background:rgba(255,59,48,.08);color:var(--red);cursor:pointer;font-size:0.76rem;font-family:var(--font);font-weight:600"><i class="fa-solid fa-rotate-right" style="font-size:0.65rem;margin-right:4px"></i>পুনরায় চেষ্টা</button>'
+    : '');
   el.style.display = 'block';
 }
 
@@ -3174,8 +3329,10 @@ async function loadProducts() {
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
-    toast('Connection Timeout', 'Products লোড হচ্ছে না। Refresh করুন।', 'error');
-  }, 10000);
+    toast('⏳ সংযোগ ধীর', 'Products লোড হচ্ছে না — স্বয়ংক্রিয় পুনরায় চেষ্টা চলছে…', 'warning');
+    // Auto-retry once after 3s
+    setTimeout(() => { if (timedOut) loadProducts(); }, 3000);
+  }, 25000);
   try {
     const { data, error } = await sb.from('products').select('*').order('created_at', { ascending: false });
     clearTimeout(timeoutId);
@@ -3200,9 +3357,11 @@ async function loadOrders() {
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
-    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--red)"><i class="fa-solid fa-triangle-exclamation"></i> Connection Timeout — <button class="btn btn-ghost btn-sm" onclick="loadOrders()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Retry</button></td></tr>';
-    toast('Connection Timeout', 'Orders লোড হচ্ছে না। Retry করুন।', 'error');
-  }, 10000);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--amber)"><i class="fa-solid fa-rotate" style="animation:spin .8s linear infinite"></i>&nbsp; সংযোগ ধীর — পুনরায় চেষ্টা হচ্ছে… &nbsp;<button class="btn btn-ghost btn-sm" onclick="loadOrders()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Manual Retry</button></td></tr>';
+    toast('⏳ সংযোগ ধীর', 'Orders লোড হচ্ছে না — স্বয়ংক্রিয় পুনরায় চেষ্টা চলছে…', 'warning');
+    // Auto-retry once after 4s
+    setTimeout(() => { if (timedOut) loadOrders(); }, 4000);
+  }, 25000);
   try {
     const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
     clearTimeout(timeoutId);
@@ -3988,7 +4147,7 @@ async function viewOrder(id) {
     const fetchTimeout = setTimeout(() => {
       fetchTimedOut = true;
       document.getElementById('orderModalContent').innerHTML = '<div style="text-align:center;padding:32px;color:var(--red)"><i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;margin-bottom:10px;display:block"></i>Connection Timeout<br><button class="btn btn-ghost btn-sm" onclick="closeModal(\'orderModal\');viewOrder(\''+id+'\')" style="margin-top:12px">Retry</button></div>';
-    }, 10000);
+    }, 25000);
     try {
       if (sb) {
         const { data, error } = await sb.from('orders').select('*').eq('id', id).single();
@@ -4433,8 +4592,8 @@ async function applyDiscount() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     console.error('[applyDiscount] ✗ TIMEOUT — 10 seconds exceeded');
-    toast('Connection Timeout', 'সার্ভার রেসপন্স করছে না। আবার চেষ্টা করুন।', 'error');
-  }, 10000);
+    toast('⏳ সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
+  }, 25000);
 
   try {
     const { error } = await sb.from('orders').update({
@@ -4484,8 +4643,8 @@ async function saveCourierInfo() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     console.error('[saveCourierInfo] ✗ TIMEOUT — 10 seconds exceeded');
-    toast('Connection Timeout', 'সার্ভার রেসপন্স করছে না। আবার চেষ্টা করুন।', 'error');
-  }, 10000);
+    toast('⏳ সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
+  }, 25000);
 
   try {
     const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
@@ -4572,8 +4731,8 @@ async function saveOrderEdits() {
     timedOut = true;
     console.error('[saveOrderEdits] ✗ TIMEOUT — operation exceeded 10 seconds');
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
-    toast('Connection Timeout', 'সার্ভার রেসপন্স করছে না। আবার চেষ্টা করুন।', 'error');
-  }, 10000);
+    toast('⏳ সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
+  }, 25000);
 
   // --- Step 7: Execute Supabase update ---
   console.log('[saveOrderEdits] Step 7 — Calling Supabase update...');
@@ -4702,9 +4861,9 @@ async function uploadImageToSupabase() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     document.getElementById('uploadProgress').style.display = 'none';
-    toast('Connection Timeout!', 'ছবি আপলোড সময়সীমা অতিক্রম করেছে। আবার চেষ্টা করুন।', 'error');
+    toast('⏳ আপলোড বিলম্ব', 'ছবি আপলোড ধীর — আবার চেষ্টা করুন।', 'error');
     console.error('[uploadImageToSupabase] Timeout: Image upload exceeded 10 seconds. Bucket:', bucket, 'File:', fileName);
-  }, 10000);
+  }, 25000);
 
   try {
     const { data, error } = await sb.storage.from(bucket).upload(fileName, selectedImageFile, {
@@ -4759,7 +4918,7 @@ async function saveProduct() {
     btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Product';
     toast('Connection Timeout!', 'পণ্য সেভ করতে সময়সীমা অতিক্রম হয়েছে। আবার চেষ্টা করুন।', 'error');
     console.error('[saveProduct] Timeout: saveProduct exceeded 10 seconds. Product name:', name);
-  }, 10000);
+  }, 25000);
 
   try {
     // ── STEP 1: Upload image first — strictly wait for URL before DB write ──
@@ -5032,7 +5191,7 @@ async function saveBanner() {
     btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
     toast('Connection Timeout!', 'ব্যানার আপলোড সময়সীমা অতিক্রম করেছে। আবার চেষ্টা করুন।', 'error');
     console.error('[saveBanner] Timeout: Banner upload exceeded 10 seconds.');
-  }, 10000);
+  }, 25000);
 
   try {
     let imageUrl = null;
@@ -5227,7 +5386,7 @@ async function savePromo() {
   const timeoutId = setTimeout(() => {
     toast('Connection Timeout!', 'প্রমো কোড সেভ করতে সময়সীমা অতিক্রম হয়েছে। আবার চেষ্টা করুন।', 'error');
     console.error('[savePromo] Timeout: savePromo exceeded 10 seconds. Code:', code);
-  }, 10000);
+  }, 25000);
 
   try {
     if (sb) {
@@ -5763,7 +5922,7 @@ async function loadUsers() {
       <button class="btn btn-ghost btn-sm" onclick="loadUsers()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
     </td></tr>`;
     toast('Connection Timeout', 'Users লোড হচ্ছে না। Retry করুন।', 'error');
-  }, 10000);
+  }, 25000);
 
   try {
     // Try `profiles` table first, fall back to `users`
@@ -6052,7 +6211,7 @@ async function _doToggleBlock(u, newBlocked) {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     toast('Connection Timeout', 'Status update ব্যর্থ হয়েছে', 'error');
-  }, 10000);
+  }, 25000);
 
   try {
     // Try profiles first, then users
