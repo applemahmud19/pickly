@@ -3948,6 +3948,7 @@ div.pcard-icon {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 14px;
   margin-bottom: 14px;
+  overflow: visible; /* FIX: allow district dropdown to overflow grid boundary */
 }
 
 html, body {
@@ -5948,7 +5949,7 @@ html, body {
       </div>
 
       <!-- Delivery Location -->
-      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;overflow:visible">
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
           <span class="step-circle" style="background:var(--blue);color:white">২</span>
           ডেলিভারি ঠিকানা
@@ -10399,6 +10400,74 @@ const BD_LOCATIONS = {
   },
 };
 
+// ── English alt-names for bilingual search (Bangla OR English finds the district) ──
+const DISTRICT_ALT = {
+  'ঢাকা':             ['dhaka','dacca'],
+  'গাজীপুর':          ['gazipur','gazipore'],
+  'নারায়ণগঞ্জ':      ['narayanganj','narayangonj'],
+  'মানিকগঞ্জ':        ['manikganj','manikgonj'],
+  'মুন্সিগঞ্জ':       ['munshiganj','munshigonj'],
+  'রাজবাড়ী':         ['rajbari'],
+  'মাদারীপুর':        ['madaripur'],
+  'শরীয়তপুর':        ['shariatpur','shariyatpur'],
+  'কিশোরগঞ্জ':        ['kishoreganj','kishoregonj'],
+  'টাঙ্গাইল':         ['tangail','tangaile'],
+  'ময়মনসিংহ':        ['mymensingh','mymensing'],
+  'জামালপুর':         ['jamalpur'],
+  'নেত্রকোনা':        ['netrokona','netrakona'],
+  'নরসিংদী':          ['narsingdi'],
+  'চট্টগ্রাম':        ['chittagong','chattogram','chottogram'],
+  'কক্সবাজার':        ['coxs bazar','coxsbazar','cox bazar'],
+  'ব্রাহ্মণবাড়িয়া':  ['brahmanbaria','brahman baria','bramanbariya'],
+  'কুমিল্লা':         ['cumilla','comilla','comila'],
+  'চাঁদপুর':          ['chandpur'],
+  'ফেনী':             ['feni'],
+  'নোয়াখালী':        ['noakhali','noakhaly'],
+  'লক্ষ্মীপুর':       ['lakshmipur','laxmipur','lakhsmipur'],
+  'সিলেট':            ['sylhet'],
+  'মৌলভীবাজার':       ['moulvibazar','moulvibazaar','moulvi bazar'],
+  'হবিগঞ্জ':          ['habiganj','habigonj'],
+  'সুনামগঞ্জ':        ['sunamganj','sunamgonj'],
+  'রাজশাহী':          ['rajshahi','rajsahi'],
+  'চাঁপাইনবাবগঞ্জ':  ['chapainawabganj','chapai nawabganj','nawabganj'],
+  'নওগাঁ':            ['naogaon','naogoan','naoga'],
+  'নাটোর':            ['natore'],
+  'সিরাজগঞ্জ':        ['sirajganj','sirajgonj'],
+  'পাবনা':            ['pabna'],
+  'বগুড়া':           ['bogura','bogra'],
+  'জয়পুরহাট':        ['joypurhat','joy pur hat'],
+  'খুলনা':            ['khulna','kulna'],
+  'বাগেরহাট':         ['bagerhat','bagerhat'],
+  'সাতক্ষীরা':        ['satkhira','satkkhira'],
+  'যশোর':             ['jashore','jessore'],
+  'ঝিনাইদহ':          ['jhenaidah','jhenaidha','jhenidah'],
+  'নড়াইল':           ['narail'],
+  'মাগুরা':           ['magura'],
+  'কুষ্টিয়া':        ['kushtia','kushthia'],
+  'মেহেরপুর':         ['meherpur'],
+  'চুয়াডাঙ্গা':       ['chuadanga','chuyadanga'],
+  'বরিশাল':           ['barishal','barisal'],
+  'পটুয়াখালী':       ['patuakhali','patuakhaly'],
+  'ভোলা':             ['bhola'],
+  'পিরোজপুর':         ['pirojpur','pirozpur'],
+  'ঝালকাঠি':          ['jhalokathi','jhalakathi'],
+  'বরগুনা':           ['barguna'],
+  'রংপুর':            ['rangpur'],
+  'গাইবান্ধা':        ['gaibandha'],
+  'লালমনিরহাট':       ['lalmonirhat'],
+  'কুড়িগ্রাম':        ['kurigram'],
+  'নীলফামারী':        ['nilphamari'],
+  'দিনাজপুর':         ['dinajpur'],
+  'ঠাকুরগাঁও':        ['thakurgaon','thakurgaow'],
+  'পঞ্চগড়':          ['panchagarh','panchagar'],
+  'ফরিদপুর':          ['faridpur'],
+  'গোপালগঞ্জ':        ['gopalganj','gopalgonj'],
+  'খাগড়াছড়ি':       ['khagrachhari','khagrachari','khagra'],
+  'রাঙামাটি':         ['rangamati','rangamaty'],
+  'বান্দরবান':        ['bandarban','bandorban'],
+  'শেরপুর':           ['sherpur'],
+};
+
 // Districts that are considered "Dhaka" for delivery pricing
 const DHAKA_DISTRICTS = ['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'];
 
@@ -10454,6 +10523,8 @@ function populateDistricts() {
 
   // Build searchable district wrapper if not already built
   _buildDistrictSearch();
+  // Build upazila searchable wrapper (initially disabled state)
+  _buildUpazilaSearch();
 }
 
 function _buildDistrictSearch() {
@@ -10468,13 +10539,18 @@ function _buildDistrictSearch() {
     st.id = 'districtSearchStyle';
     st.textContent = `
       /* ── District searchable dropdown ── */
-      .district-search-wrap { position: relative; }
+      .district-search-wrap {
+        position: relative;
+        width: 100%;    /* FIX: full width matching parent form-group */
+        display: block;
+        isolation: isolate;  /* FIX: create own stacking context */
+      }
       .district-search-wrap select { display: none; }
 
       /* Fake input — mirrors .form-inp exactly */
       .district-fake-input {
         display: flex; align-items: center; gap: 8px;
-        padding: 9px 11px;
+        padding: 10px 12px;
         border: 1.5px solid var(--border);
         border-radius: var(--radius-sm);
         font-family: 'Hind Siliguri', sans-serif;
@@ -10484,9 +10560,9 @@ function _buildDistrictSearch() {
         cursor: pointer;
         transition: border-color var(--t), box-shadow var(--t), background var(--t);
         box-sizing: border-box;
-        width: 100%;
-        min-height: 42px;
-        line-height: 1.5;
+        width: 100%;         /* FIX: full width so text doesn't clip */
+        min-height: 44px;    /* FIX: taller for Bengali text comfort */
+        line-height: 1.7;    /* FIX: generous line-height for Bengali ascenders */
         overflow: visible;
       }
       .district-fake-input:hover { border-color: rgba(0,122,255,.4); }
@@ -10497,8 +10573,13 @@ function _buildDistrictSearch() {
         box-shadow: 0 0 0 3px rgba(0,122,255,.12);
       }
       .district-fake-input .dfi-val {
-        flex: 1; overflow: visible; text-overflow: ellipsis; white-space: nowrap;
-        font-size: .9375rem; line-height: 1.5; padding: 2px 0;
+        flex: 1;
+        overflow: hidden;          /* FIX: hide overflow on val, not clip */
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: .9375rem;
+        line-height: 1.7;          /* FIX: matches container */
+        padding: 2px 0;
       }
       .district-fake-input .dfi-placeholder { color: var(--text-light); }
       .district-fake-input .dfi-chevron {
@@ -10507,48 +10588,116 @@ function _buildDistrictSearch() {
       }
       .district-fake-input.open .dfi-chevron { transform: rotate(180deg); }
 
-      /* Dropdown panel */
+      /* Dropdown panel — FIX: z-index raised above textarea & other fields */
       .district-dropdown {
-        display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
-        background: white; border: 1.5px solid var(--blue);
+        display: none;
+        position: absolute;
+        left: 0;
+        right: auto;           /* FIX: let width control sizing */
+        width: max(100%, 220px); /* FIX: at least as wide as trigger, min 220px */
+        top: calc(100% + 4px);
+        background: white;
+        border: 1.5px solid var(--blue);
         border-radius: var(--radius, 12px);
-        box-shadow: 0 8px 32px rgba(0,122,255,.16);
-        z-index: 9999; overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0,122,255,.20), 0 2px 8px rgba(0,0,0,.06);
+        z-index: 999999;       /* FIX: extremely high — above all grid/form siblings */
+        overflow: hidden;
+        min-width: 200px;      /* FIX: never narrower than needed for district names */
       }
       .district-dropdown.open { display: block; }
 
-      /* Search row */
+      /* Search row — FIX: taller, bigger font for clarity */
       .district-search-box {
-        padding: 9px 12px; border-bottom: 1px solid var(--border);
+        padding: 10px 14px;          /* FIX: more breathing room */
+        border-bottom: 1px solid var(--border);
         background: var(--blue-light);
         display: flex; align-items: center; gap: 8px;
       }
-      .district-search-box i { color: var(--blue); font-size: .78rem; flex-shrink: 0; }
+      .district-search-box i { color: var(--blue); font-size: .82rem; flex-shrink: 0; }
       .district-search-box input {
         flex: 1; border: none; background: transparent; outline: none;
-        font-family: 'Hind Siliguri', sans-serif; font-size: .88rem; color: var(--text);
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .92rem;           /* FIX: slightly larger for readability */
+        color: var(--text);
+        line-height: 1.7;            /* FIX: Bengali text line-height */
+        height: 28px;                /* FIX: consistent height */
+        padding: 0;
       }
       .district-search-box input::placeholder { color: var(--text-light); }
 
-      /* Options */
-      .district-list { overflow-y: auto; max-height: 210px; }
-      .district-opt {
-        padding: 9px 14px; font-family: 'Hind Siliguri', sans-serif; font-size: .88rem;
-        cursor: pointer; color: var(--text); transition: background var(--t);
-        display: flex; align-items: center; gap: 8px; line-height: 1.5; overflow: visible;
+      /* Options — FIX: better padding & line-height so names don't overlap */
+      .district-list {
+        overflow-y: auto;
+        overflow-x: hidden;   /* FIX: no horizontal scroll */
+        max-height: 230px;    /* FIX: slightly taller list */
+        overscroll-behavior: contain;
       }
+      .district-list::-webkit-scrollbar { width: 4px; }
+      .district-list::-webkit-scrollbar-track { background: transparent; }
+      .district-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .district-opt {
+        padding: 10px 14px;        /* FIX: generous padding — no more cramping */
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .9rem;          /* FIX: slightly larger */
+        cursor: pointer; color: var(--text);
+        transition: background var(--t), color var(--t);
+        display: flex; align-items: center; gap: 8px;
+        line-height: 1.8;          /* FIX: Bengali ascenders need extra space */
+        overflow: visible;
+        white-space: nowrap;       /* FIX: keep district names on one line */
+        border-bottom: 1px solid rgba(225,232,237,.4);  /* subtle divider */
+      }
+      .district-opt:last-child { border-bottom: none; }
       .district-opt:hover { background: var(--blue-light); color: var(--blue); }
-      .district-opt.selected { background: var(--blue); color: white; }
-      .district-opt.selected .district-opt-icon { opacity: 1; }
-      .district-opt-icon { font-size: .7rem; opacity: .45; flex-shrink: 0; }
+      .district-opt.selected {
+        background: var(--blue); color: white;
+        font-weight: 600;
+      }
+      .district-opt.selected .district-opt-icon { opacity: 1; color: rgba(255,255,255,.7); }
+      .district-opt-icon { font-size: .7rem; opacity: .35; flex-shrink: 0; }
       .district-no-result {
-        padding: 16px; text-align: center; color: var(--text-light);
-        font-family: 'Hind Siliguri', sans-serif; font-size: .82rem;
+        padding: 20px 16px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .85rem; line-height: 1.7;
       }
 
-      /* Mobile: collapse 3-col grid to single column */
+      /* ── Responsive fixes ── */
+
+      /* Mobile: single-column, wider dropdown for thumbs */
       @media (max-width: 540px) {
         .location-fields-grid { grid-template-columns: 1fr !important; }
+        .district-dropdown {
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;  /* FIX: full width on mobile */
+          border-radius: 10px;
+          min-width: unset;
+        }
+        .district-opt {
+          padding: 12px 14px;  /* FIX: bigger tap target on mobile */
+          font-size: .95rem;
+          white-space: normal;     /* FIX: allow wrap on very small screens */
+          line-height: 1.8;
+        }
+        .district-fake-input {
+          min-height: 48px;    /* FIX: easier to tap on mobile */
+          font-size: 1rem;
+        }
+        .district-search-box input {
+          font-size: .95rem;
+        }
+      }
+
+      /* Tablet: two columns */
+      @media (min-width: 541px) and (max-width: 768px) {
+        .district-dropdown {
+          width: max(100%, 240px);
+        }
+      }
+
+      /* Desktop: clean & compact */
+      @media (min-width: 541px) {
+        .district-list { max-height: 250px; }
       }
     `;
     document.head.appendChild(st);
@@ -10582,8 +10731,15 @@ function _buildDistrictSearch() {
 
   function buildList(filter = '') {
     const districts = Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'bn'));
-    const filtered = filter
-      ? districts.filter(d => d.toLowerCase().includes(filter.toLowerCase()) || d.includes(filter))
+    const q = filter.toLowerCase().trim();
+    const filtered = q
+      ? districts.filter(d => {
+          // Bangla match
+          if (d.toLowerCase().includes(q) || d.includes(filter)) return true;
+          // English alt-name match
+          const alts = DISTRICT_ALT[d] || [];
+          return alts.some(alt => alt.includes(q));
+        })
       : districts;
     if (!filtered.length) {
       list.innerHTML = '<div class="district-no-result">কোনো জেলা পাওয়া যায়নি</div>';
@@ -10611,6 +10767,26 @@ function _buildDistrictSearch() {
     dropdown.classList.add('open');
     fakeInput.classList.add('open');
     buildList();
+
+    // FIX: flip dropdown above trigger if it would go below viewport
+    requestAnimationFrame(() => {
+      const rect = dropdown.getBoundingClientRect();
+      const wrapRect = wrapper.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - wrapRect.bottom;
+      const spaceAbove = wrapRect.top;
+      const dropH = dropdown.offsetHeight;
+
+      if (spaceBelow < dropH + 10 && spaceAbove > dropH) {
+        // Not enough space below — show above
+        dropdown.style.top = 'auto';
+        dropdown.style.bottom = 'calc(100% + 4px)';
+        dropdown.style.borderRadius = 'var(--radius, 12px)';
+      } else {
+        dropdown.style.top = 'calc(100% + 4px)';
+        dropdown.style.bottom = 'auto';
+      }
+    });
+
     setTimeout(() => searchInput.focus(), 50);
     document.addEventListener('mousedown', outsideClick);
   }
@@ -10618,6 +10794,9 @@ function _buildDistrictSearch() {
     dropdown.classList.remove('open');
     fakeInput.classList.remove('open');
     searchInput.value = '';
+    // FIX: reset position overrides
+    dropdown.style.top = '';
+    dropdown.style.bottom = '';
     document.removeEventListener('mousedown', outsideClick);
   }
   function outsideClick(e) {
@@ -10638,9 +10817,14 @@ function onDistrictChange() {
   const upazilaEl = document.getElementById('cUpazila');
   upazilaEl.innerHTML = '<option value="">— উপজেলা বেছে নিন —</option>';
   document.getElementById('cThana').value = '';
-  if (!district || !BD_LOCATIONS[district]) { upazilaEl.disabled = true; return; }
+  if (!district || !BD_LOCATIONS[district]) {
+    upazilaEl.disabled = true;
+    _refreshUpazilaSearch([]); // clear upazila dropdown
+    return;
+  }
   upazilaEl.disabled = false;
-  Object.keys(BD_LOCATIONS[district]).sort().forEach(u => {
+  const upazilas = Object.keys(BD_LOCATIONS[district]).sort();
+  upazilas.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u; opt.textContent = u;
     upazilaEl.appendChild(opt);
@@ -10648,6 +10832,8 @@ function onDistrictChange() {
   // Reset delivery display
   document.getElementById('checkoutDelivery').textContent = '— (উপজেলা বেছে নিন)';
   document.getElementById('deliveryNote').textContent = '';
+  // Refresh the searchable upazila UI with new list
+  _refreshUpazilaSearch(upazilas);
 }
 
 function onUpazilaChange() {
@@ -10655,6 +10841,303 @@ function onUpazilaChange() {
   const upazila = document.getElementById('cUpazila').value;
   document.getElementById('cThana').value = '';
   calcDelivery();
+}
+
+// ── Upazila searchable dropdown (mirrors district UI exactly) ──────────────
+let _upazilaSearchItems = [];   // current upazila list shown in UI
+
+function _buildUpazilaSearch() {
+  const sel = document.getElementById('cUpazila');
+  if (!sel) return;
+  // Already wrapped?
+  if (sel.parentElement?.classList.contains('upazila-search-wrap')) return;
+
+  // Inject CSS (mirrors districtSearchStyle but with upazila- prefix)
+  if (!document.getElementById('upazilaSearchStyle')) {
+    const st = document.createElement('style');
+    st.id = 'upazilaSearchStyle';
+    st.textContent = `
+      .upazila-search-wrap {
+        position: relative;
+        width: 100%;
+        display: block;
+        isolation: isolate;
+      }
+      .upazila-search-wrap select { display: none; }
+
+      .upazila-fake-input {
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .9375rem;
+        color: var(--text-light);
+        background: var(--blue-light);
+        cursor: pointer;
+        transition: border-color var(--t), box-shadow var(--t), background var(--t);
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 44px;
+        line-height: 1.7;
+        overflow: visible;
+        user-select: none;
+      }
+      .upazila-fake-input.disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .upazila-fake-input:not(.disabled):hover { border-color: rgba(0,122,255,.4); }
+      .upazila-fake-input.open,
+      .upazila-fake-input:not(.disabled):focus-within {
+        border-color: var(--blue);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(0,122,255,.12);
+      }
+      .upazila-fake-input .ufi-val {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: .9375rem;
+        line-height: 1.7;
+        padding: 2px 0;
+        color: var(--text);
+      }
+      .upazila-fake-input .ufi-placeholder { color: var(--text-light) !important; }
+      .upazila-fake-input .ufi-chevron {
+        color: var(--text-light); font-size: .72rem;
+        transition: transform var(--t); flex-shrink: 0;
+      }
+      .upazila-fake-input.open .ufi-chevron { transform: rotate(180deg); }
+
+      .upazila-dropdown {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: auto;
+        width: max(100%, 220px);
+        top: calc(100% + 4px);
+        background: white;
+        border: 1.5px solid var(--blue);
+        border-radius: var(--radius, 12px);
+        box-shadow: 0 12px 40px rgba(0,122,255,.20), 0 2px 8px rgba(0,0,0,.06);
+        z-index: 999999;
+        overflow: hidden;
+        min-width: 200px;
+      }
+      .upazila-dropdown.open { display: block; }
+
+      .upazila-search-box {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--blue-light);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .upazila-search-box i { color: var(--blue); font-size: .82rem; flex-shrink: 0; }
+      .upazila-search-box input {
+        flex: 1; border: none; background: transparent; outline: none;
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .92rem;
+        color: var(--text);
+        line-height: 1.7;
+        height: 28px;
+        padding: 0;
+      }
+      .upazila-search-box input::placeholder { color: var(--text-light); }
+
+      .upazila-list {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 230px;
+        overscroll-behavior: contain;
+      }
+      .upazila-list::-webkit-scrollbar { width: 4px; }
+      .upazila-list::-webkit-scrollbar-track { background: transparent; }
+      .upazila-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .upazila-opt {
+        padding: 10px 14px;
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .9rem;
+        cursor: pointer; color: var(--text);
+        transition: background var(--t), color var(--t);
+        display: flex; align-items: center; gap: 8px;
+        line-height: 1.8;
+        overflow: visible;
+        white-space: nowrap;
+        border-bottom: 1px solid rgba(225,232,237,.4);
+      }
+      .upazila-opt:last-child { border-bottom: none; }
+      .upazila-opt:hover { background: var(--blue-light); color: var(--blue); }
+      .upazila-opt.selected {
+        background: var(--blue); color: white;
+        font-weight: 600;
+      }
+      .upazila-opt.selected .upazila-opt-icon { opacity: 1; color: rgba(255,255,255,.7); }
+      .upazila-opt-icon { font-size: .7rem; opacity: .35; flex-shrink: 0; }
+      .upazila-no-result {
+        padding: 20px 16px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .85rem; line-height: 1.7;
+      }
+      .upazila-empty-hint {
+        padding: 18px 16px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .84rem; line-height: 1.7;
+      }
+
+      @media (max-width: 540px) {
+        .upazila-dropdown {
+          left: 0 !important; right: 0 !important;
+          width: 100% !important;
+          border-radius: 10px;
+          min-width: unset;
+        }
+        .upazila-opt { padding: 12px 14px; font-size: .95rem; white-space: normal; line-height: 1.8; }
+        .upazila-fake-input { min-height: 48px; font-size: 1rem; }
+        .upazila-search-box input { font-size: .95rem; }
+      }
+      @media (min-width: 541px) {
+        .upazila-list { max-height: 250px; }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // Wrap the select
+  const wrapper = document.createElement('div');
+  wrapper.className = 'upazila-search-wrap';
+  sel.parentNode.insertBefore(wrapper, sel);
+  wrapper.appendChild(sel);
+
+  // Fake input
+  const fakeInput = document.createElement('div');
+  fakeInput.className = 'upazila-fake-input disabled';
+  fakeInput.innerHTML = '<span class="ufi-val ufi-placeholder bn">— আগে জেলা বেছে নিন —</span><i class="fa-solid fa-chevron-down ufi-chevron"></i>';
+  wrapper.appendChild(fakeInput);
+
+  // Dropdown
+  const dropdown = document.createElement('div');
+  dropdown.className = 'upazila-dropdown';
+  dropdown.innerHTML = `
+    <div class="upazila-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" class="upazila-search-input" placeholder="উপজেলা খুঁজুন..." autocomplete="off">
+    </div>
+    <div class="upazila-list"></div>`;
+  wrapper.appendChild(dropdown);
+
+  const searchInput = dropdown.querySelector('.upazila-search-input');
+  const list = dropdown.querySelector('.upazila-list');
+
+  function buildUpazilaList(filter = '') {
+    const items = _upazilaSearchItems;
+    const q = filter.toLowerCase().trim();
+    const filtered = q
+      ? items.filter(u => u.toLowerCase().includes(q) || u.includes(filter))
+      : items;
+    if (!items.length) {
+      list.innerHTML = '<div class="upazila-empty-hint"><i class="fa-solid fa-arrow-left" style="margin-right:5px;color:var(--blue)"></i>আগে জেলা বেছে নিন</div>';
+      return;
+    }
+    if (!filtered.length) {
+      list.innerHTML = '<div class="upazila-no-result">কোনো উপজেলা পাওয়া যায়নি</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(u => `
+      <div class="upazila-opt ${sel.value === u ? 'selected' : ''}" data-val="${u}">
+        <i class="fa-solid fa-map-pin upazila-opt-icon"></i>
+        <span class="bn">${u}</span>
+      </div>`).join('');
+    list.querySelectorAll('.upazila-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        sel.value = opt.dataset.val;
+        const valEl = fakeInput.querySelector('.ufi-val');
+        valEl.textContent = opt.dataset.val;
+        valEl.classList.remove('ufi-placeholder');
+        closeUpazilaDropdown();
+        sel.dispatchEvent(new Event('change'));
+        onUpazilaChange();
+      });
+    });
+  }
+
+  function openUpazilaDropdown() {
+    if (fakeInput.classList.contains('disabled')) return;
+    dropdown.classList.add('open');
+    fakeInput.classList.add('open');
+    buildUpazilaList();
+    requestAnimationFrame(() => {
+      const wrapRect = wrapper.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - wrapRect.bottom;
+      const dropH = dropdown.offsetHeight;
+      if (spaceBelow < dropH + 10 && wrapRect.top > dropH) {
+        dropdown.style.top = 'auto';
+        dropdown.style.bottom = 'calc(100% + 4px)';
+      } else {
+        dropdown.style.top = 'calc(100% + 4px)';
+        dropdown.style.bottom = 'auto';
+      }
+    });
+    setTimeout(() => searchInput.focus(), 50);
+    document.addEventListener('mousedown', outsideClickU);
+  }
+  function closeUpazilaDropdown() {
+    dropdown.classList.remove('open');
+    fakeInput.classList.remove('open');
+    searchInput.value = '';
+    dropdown.style.top = '';
+    dropdown.style.bottom = '';
+    document.removeEventListener('mousedown', outsideClickU);
+  }
+  function outsideClickU(e) {
+    if (!wrapper.contains(e.target)) closeUpazilaDropdown();
+  }
+
+  fakeInput.addEventListener('click', () => {
+    if (fakeInput.classList.contains('disabled')) return;
+    if (dropdown.classList.contains('open')) closeUpazilaDropdown();
+    else openUpazilaDropdown();
+  });
+
+  searchInput.addEventListener('input', () => buildUpazilaList(searchInput.value));
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpazilaDropdown(); });
+
+  // Store rebuild function on wrapper for _refreshUpazilaSearch to call
+  wrapper._upazilaRebuild = buildUpazilaList;
+  wrapper._upazilaClose  = closeUpazilaDropdown;
+  wrapper._fakeInput     = fakeInput;
+  wrapper._list          = list;
+}
+
+function _refreshUpazilaSearch(upazilas) {
+  const sel = document.getElementById('cUpazila');
+  if (!sel) return;
+  const wrapper = sel.closest('.upazila-search-wrap');
+  if (!wrapper) return;
+
+  _upazilaSearchItems = upazilas || [];
+
+  const fakeInput = wrapper._fakeInput;
+  const list      = wrapper._list;
+
+  if (!upazilas || !upazilas.length) {
+    // No district selected — reset to disabled placeholder
+    fakeInput.classList.add('disabled');
+    const valEl = fakeInput.querySelector('.ufi-val');
+    valEl.textContent = '— আগে জেলা বেছে নিন —';
+    valEl.classList.add('ufi-placeholder');
+    if (wrapper._upazilaClose) wrapper._upazilaClose();
+    list.innerHTML = '';
+    return;
+  }
+
+  // District chosen — enable and reset
+  fakeInput.classList.remove('disabled');
+  const valEl = fakeInput.querySelector('.ufi-val');
+  valEl.textContent = '— উপজেলা বেছে নিন —';
+  valEl.classList.add('ufi-placeholder');
+  if (wrapper._upazilaClose) wrapper._upazilaClose();
 }
 
 // ── START ──
