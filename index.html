@@ -753,7 +753,19 @@ header.scrolled{
 .btn-buy:hover{background:#EA6C00}
 
 /* ── MODALS BASE ── */
-.overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.overlay{
+  display:none;
+  position:fixed;inset:0;
+  /* হেডার z-index (9999) এর ওপরে — auth modal যেন সবসময় সামনে থাকে */
+  z-index:10000;
+  background:rgba(15,23,42,.55);
+  backdrop-filter:blur(6px);
+  align-items:center;
+  justify-content:center;
+  /* হেডারের উচ্চতার জন্য padding-top — modal header-এর সাথে লেগে যাবে না */
+  padding-top: var(--header-h, 108px);
+  box-sizing: border-box;
+}
 .overlay.open{display:flex;animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal-box{background:white;border-radius:20px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.22);animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
@@ -1338,7 +1350,7 @@ header.scrolled{
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── AUTH MODAL ── */
-#authModal .modal-box{width:90vw;max-width:400px}
+#authModal .modal-box{width:90vw;max-width:420px;max-height:calc(100vh - var(--header-h, 108px) - 32px);overflow-y:auto;}
 .auth-body{padding:24px}
 .google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:var(--radius);border:1.5px solid var(--border);background:white;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:600;color:var(--text);transition:all var(--t);margin-bottom:14px}
 .google-btn:hover{border-color:var(--blue);background:var(--blue-light);color:var(--blue)}
@@ -5786,21 +5798,101 @@ html, body {
 
 <!-- ── AUTH MODAL ── -->
 <div class="overlay" id="authModal" onclick="if(event.target===this)closeModal('authModal')">
-  <div class="modal-box" style="width:90vw;max-width:400px">
-    <div class="modal-hd"><h3 class="bn">অ্যাকাউন্টে প্রবেশ করুন</h3><button class="close-btn" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="auth-body">
-      <p class="bn" style="font-size:.82rem;color:var(--text-mid);margin-bottom:18px;line-height:1.6">লগইন করলে আপনার অর্ডার ট্র্যাক করা সহজ হবে এবং অর্ডার হিস্টোরি সংরক্ষিত থাকবে।</p>
-      <button class="google-btn" onclick="signInWithGoogle()">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-        <span class="bn">Google দিয়ে লগইন করুন</span>
-      </button>
-      <div class="auth-divider"><span>অথবা</span></div>
-      <div class="form-group"><label class="bn">ইমেইল দিয়ে লগইন</label><input class="form-inp" type="email" id="emailInput" placeholder="your@email.com"></div>
-      <div class="form-group"><label class="bn">পাসওয়ার্ড</label><input class="form-inp" type="password" id="passwordInput" placeholder="••••••••"></div>
-      <button class="btn-primary bn" style="width:100%;justify-content:center;margin-bottom:8px" onclick="signInWithEmail()"><i class="fa-solid fa-envelope"></i>ইমেইল দিয়ে লগইন</button>
-      <button class="btn-outline bn" style="width:100%;justify-content:center" onclick="signUpWithEmail()"><i class="fa-solid fa-user-plus"></i>নতুন অ্যাকাউন্ট তৈরি</button>
-      <p class="auth-note bn">লগইন করে আপনি আমাদের <a href="#" style="color:var(--blue)">শর্তাবলী</a> মেনে নিচ্ছেন।</p>
+  <div class="modal-box" style="width:90vw;max-width:420px;max-height:calc(100vh - var(--header-h,108px) - 32px);overflow-y:auto;">
+
+    <!-- ── LOGIN VIEW ── -->
+    <div id="authViewLogin">
+      <div class="modal-hd">
+        <h3 class="bn">অ্যাকাউন্টে প্রবেশ করুন</h3>
+        <button class="close-btn" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="auth-body">
+        <p class="bn" style="font-size:.82rem;color:var(--text-mid);margin-bottom:16px;line-height:1.6">লগইন করলে আপনার অর্ডার ট্র্যাক করা সহজ হবে এবং অর্ডার হিস্টোরি সংরক্ষিত থাকবে।</p>
+        <button class="google-btn" onclick="signInWithGoogle()">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+          <span class="bn">Google দিয়ে লগইন করুন</span>
+        </button>
+        <div class="auth-divider"><span>অথবা</span></div>
+        <!-- Error banner -->
+        <div id="authLoginError" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:9px 13px;margin-bottom:12px;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:#991B1B;display:none;align-items:center;gap:8px">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="authLoginErrorMsg"></span>
+        </div>
+        <div class="form-group">
+          <label class="bn">ইমেইল</label>
+          <input class="form-inp" type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="form-group" style="position:relative">
+          <label class="bn">পাসওয়ার্ড</label>
+          <input class="form-inp" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px">
+          <button onclick="togglePassVis('loginPassword',this)" tabindex="-1" style="position:absolute;right:11px;bottom:10px;border:none;background:transparent;cursor:pointer;color:var(--text-light);font-size:.85rem">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+        <button class="btn-primary bn" id="loginSubmitBtn" style="width:100%;justify-content:center;margin-bottom:10px" onclick="signInWithEmail()">
+          <i class="fa-solid fa-right-to-bracket"></i>লগইন করুন
+        </button>
+        <button class="btn-outline bn" style="width:100%;justify-content:center" onclick="switchAuthView('signup')">
+          <i class="fa-solid fa-user-plus"></i>নতুন অ্যাকাউন্ট তৈরি করুন
+        </button>
+        <p class="auth-note bn" style="margin-top:14px">লগইন করে আপনি আমাদের <a href="#" style="color:var(--blue)">শর্তাবলী</a> মেনে নিচ্ছেন।</p>
+      </div>
     </div>
+
+    <!-- ── SIGNUP VIEW ── -->
+    <div id="authViewSignup" style="display:none">
+      <div class="modal-hd">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="switchAuthView('login')" style="border:none;background:transparent;cursor:pointer;color:var(--blue);padding:4px;border-radius:6px;display:flex;align-items:center;gap:4px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:700">
+            <i class="fa-solid fa-arrow-left"></i> ফিরে যান
+          </button>
+          <h3 class="bn">নতুন অ্যাকাউন্ট তৈরি</h3>
+        </div>
+        <button class="close-btn" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="auth-body">
+        <!-- Error banner -->
+        <div id="authSignupError" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:8px;padding:9px 13px;margin-bottom:12px;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:#991B1B;align-items:center;gap:8px">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="authSignupErrorMsg"></span>
+        </div>
+        <!-- Success banner -->
+        <div id="authSignupSuccess" style="display:none;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:8px;padding:9px 13px;margin-bottom:12px;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:#065F46;align-items:center;gap:8px">
+          <i class="fa-solid fa-circle-check"></i>
+          <span id="authSignupSuccessMsg"></span>
+        </div>
+        <div class="form-group">
+          <label class="bn">পুরো নাম</label>
+          <input class="form-inp" type="text" id="signupName" placeholder="আপনার নাম" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="bn">ইমেইল</label>
+          <input class="form-inp" type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="form-group" style="position:relative">
+          <label class="bn">পাসওয়ার্ড <span style="font-weight:400;color:var(--text-light)">(কমপক্ষে ৬ অক্ষর)</span></label>
+          <input class="form-inp" type="password" id="signupPassword" placeholder="••••••••" autocomplete="new-password" style="padding-right:42px">
+          <button onclick="togglePassVis('signupPassword',this)" tabindex="-1" style="position:absolute;right:11px;bottom:10px;border:none;background:transparent;cursor:pointer;color:var(--text-light);font-size:.85rem">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+        <div class="form-group" style="position:relative">
+          <label class="bn">পাসওয়ার্ড নিশ্চিত করুন</label>
+          <input class="form-inp" type="password" id="signupConfirmPassword" placeholder="••••••••" autocomplete="new-password" style="padding-right:42px">
+          <button onclick="togglePassVis('signupConfirmPassword',this)" tabindex="-1" style="position:absolute;right:11px;bottom:10px;border:none;background:transparent;cursor:pointer;color:var(--text-light);font-size:.85rem">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+        <button class="btn-primary bn" id="signupSubmitBtn" style="width:100%;justify-content:center;margin-bottom:10px" onclick="signUpWithEmail()">
+          <i class="fa-solid fa-user-plus"></i>অ্যাকাউন্ট তৈরি করুন
+        </button>
+        <button class="btn-outline bn" style="width:100%;justify-content:center" onclick="switchAuthView('login')">
+          <i class="fa-solid fa-right-to-bracket"></i>ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন
+        </button>
+        <p class="auth-note bn" style="margin-top:14px">নিবন্ধন করে আপনি আমাদের <a href="#" style="color:var(--blue)">শর্তাবলী</a> মেনে নিচ্ছেন।</p>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -6207,13 +6299,25 @@ async function init() {
   updateHeaderHeight();
   window.addEventListener('resize', updateHeaderHeight);
 
-  // Handle direct URL access or page reload with query params
+  // ── URL RESTORE: auth + products সব load হওয়ার পরে চলে ──
+  // এটা আলাদা ফাংশনে রাখা হয়েছে যাতে race condition না হয়
+  await _restorePageFromUrl();
+
+  hiddenLoader();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   _restorePageFromUrl — refresh বা direct URL access হলে
+   সঠিক page restore করে। Auth + Products fully loaded হওয়ার
+   পরে call হয়, তাই কোনো race condition নেই।
+────────────────────────────────────────────────────────────── */
+async function _restorePageFromUrl() {
+  // ── ১. Query param: ?page=order-detail&id=GM-XXXX ──
   const urlParams = new URLSearchParams(window.location.search);
   const pageParam = urlParams.get('page');
   const idParam   = urlParams.get('id');
 
   if (pageParam === 'order-detail' && idParam) {
-    // Reload scenario: fetch order by order_number or id
     try {
       let query = sb.from('orders').select('*');
       if (idParam.startsWith('GM-')) {
@@ -6227,19 +6331,32 @@ async function init() {
           .select('*').eq('order_id', data.id).order('created_at', {ascending:false});
         openOrderDetailPage(data, hist || []);
       }
-    } catch(e) { /* ignore */ }
-  } else {
-    const path = window.location.pathname;
-    if (path.startsWith('/product/')) {
-      const slug = path.replace('/product/', '');
-      const p = products.find(x => slugify(x.name) === slug || x.id === slug);
-      if (p) openProduct(p.id, false);
-    } else if (path === '/track-order') {
-      openTrack(false);
-    }
+    } catch(e) { /* ignore — order not found, stay on home */ }
+    return;
   }
 
-  hiddenLoader();
+  // ── ২. Pathname routing ──
+  const path = window.location.pathname;
+
+  if (path === '/track-order') {
+    // Track page সবসময় open করো — login check page নিজেই করবে
+    openTrack(false);
+    return;
+  }
+
+  if (path.startsWith('/product/')) {
+    const slug = path.replace('/product/', '').split('?')[0];
+    const p = products.find(x => slugify(x.name) === slug || x.id === slug);
+    if (p) {
+      openProduct(p.id, false);
+    } else {
+      // Product পাওয়া যায়নি — clean URL রেখে home দেখাও
+      history.replaceState({}, 'গ্যালাক্সি মার্ট BD', '/');
+    }
+    return;
+  }
+
+  // ── ৩. Home বা অন্য সব path — কিছু করার নেই ──
 }
 
 async function handleUser(user) {
@@ -6710,7 +6827,9 @@ function pushProductUrl(p) {
 }
 
 function restoreHomeUrl() {
-  history.pushState({}, 'গ্যালাক্সি মার্ট BD', '/');
+  // pushState দিলে নতুন history entry হয় এবং popstate fire করে —
+  // replaceState ব্যবহার করো যাতে শুধু URL পরিবর্তন হয়, event না ওঠে
+  history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
   document.title = 'গ্যালাক্সি মার্ট BD';
 }
 
@@ -6730,7 +6849,7 @@ function closePage(name) {
   el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   if (name === 'product') restoreHomeUrl();
-  if (name === 'track') history.pushState({}, 'গ্যালাক্সি মার্ট BD', '/');
+  if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
   if (name === 'order-detail') {
     // Re-open track page when going back from order detail
     openPage('track');
@@ -6760,18 +6879,7 @@ function updateHeaderHeight() {
   });
 }
 
-// Handle browser back/forward
-window.addEventListener('popstate', (e) => {
-  if (e.state && e.state.page === 'product' && e.state.productId) {
-    openProduct(e.state.productId, false);
-  } else if (e.state && e.state.page === 'track') {
-    openTrack(false);
-  } else {
-    closePage('product');
-    closePage('track');
-    document.title = 'গ্যালাক্সি মার্ট BD';
-  }
-});
+// popstate — unified handler at bottom of file (capture:true) handles all navigation
 
 // ══════════════════════════════════════════════════
 // PRODUCT FULL PAGE
@@ -7184,6 +7292,15 @@ function refreshCheckoutTotals() {
 // ══════════════════════════════════════════════════
 function openCheckout() {
   if(!cart.length){ toast('কার্ট খালি','কার্টে পণ্য যোগ করুন','w'); return; }
+  // ── AUTH GATE: লগইন ছাড়া চেকআউট নয় ──
+  if (!currentUser) {
+    // কার্ট overlay বন্ধ করে login modal খোলো
+    closeCart();
+    switchAuthView('login');
+    openAuth();
+    toast('লগইন প্রয়োজন', 'অর্ডার করতে আগে লগইন করুন।', 'w');
+    return;
+  }
   if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
   const summary = cart.map(i=>`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--blue-light)">
@@ -7206,7 +7323,6 @@ function openCheckout() {
     document.getElementById('discountRow').style.display = 'none';
   }
   populateDistricts();
-  // Reset promo/coupon input state on fresh checkout open
   const ccInput = document.getElementById('checkoutCouponInput');
   const ccBtn   = document.getElementById('checkoutCouponBtn');
   const ccMsg   = document.getElementById('checkoutPromoMsg');
@@ -7223,6 +7339,14 @@ function closeCheckoutPage() {
 }
 
 async function placeOrder() {
+  // ── AUTH GATE (double-check) — লগইন না থাকলে কোনো DB call নয় ──
+  if (!currentUser) {
+    closePage('checkout');
+    switchAuthView('login');
+    openAuth();
+    toast('লগইন প্রয়োজন', 'অর্ডার করতে আগে লগইন করুন।', 'w');
+    return;
+  }
   const name = document.getElementById('cName').value.trim();
   const phone = document.getElementById('cPhone').value.trim();
   const address = document.getElementById('cAddress').value.trim();
@@ -7324,63 +7448,181 @@ async function trackOrder() {
 // ══════════════════════════════════════════════════
 // AUTH — Google & Email
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// AUTH — Google, Email/Password, Sign Up, Sign Out
+// ══════════════════════════════════════════════════
+
+/* ── Auth modal view switcher ── */
+function switchAuthView(view) {
+  const loginView  = document.getElementById('authViewLogin');
+  const signupView = document.getElementById('authViewSignup');
+  if (!loginView || !signupView) return;
+  if (view === 'signup') {
+    loginView.style.display  = 'none';
+    signupView.style.display = 'block';
+    // Clear previous errors
+    _authShowError('signup', '');
+    _authShowSuccess('signup', '');
+    document.getElementById('signupName')?.focus();
+  } else {
+    loginView.style.display  = 'block';
+    signupView.style.display = 'none';
+    _authShowError('login', '');
+    document.getElementById('loginEmail')?.focus();
+  }
+}
+
+/* ── Password visibility toggle ── */
+function togglePassVis(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  const isPass = inp.type === 'password';
+  inp.type = isPass ? 'text' : 'password';
+  const icon = btn.querySelector('i');
+  if (icon) icon.className = isPass ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+}
+
+/* ── Internal helpers for error/success banners ── */
+function _authShowError(view, msg) {
+  const bannerId = view === 'login' ? 'authLoginError'   : 'authSignupError';
+  const msgId    = view === 'login' ? 'authLoginErrorMsg': 'authSignupErrorMsg';
+  const banner   = document.getElementById(bannerId);
+  const msgEl    = document.getElementById(msgId);
+  if (!banner) return;
+  if (msg) {
+    if (msgEl) msgEl.textContent = msg;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+function _authShowSuccess(view, msg) {
+  const bannerId = 'authSignupSuccess';
+  const msgId    = 'authSignupSuccessMsg';
+  const banner   = document.getElementById(bannerId);
+  const msgEl    = document.getElementById(msgId);
+  if (!banner) return;
+  if (msg) {
+    if (msgEl) msgEl.textContent = msg;
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+/* ── Google OAuth ── */
 async function signInWithGoogle() {
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.href }
   });
-  if(error) toast('ত্রুটি!', error.message, 'e');
+  if (error) _authShowError('login', error.message);
 }
+
+/* ── Email + Password Login ── */
 async function signInWithEmail() {
-  const email = document.getElementById('emailInput').value;
-  const pass = document.getElementById('passwordInput').value;
-  if(!email||!pass){ toast('ত্রুটি','ইমেইল ও পাসওয়ার্ড দিন','w'); return; }
-  const { error } = await sb.auth.signInWithPassword({email,password:pass});
-  if(error) toast('লগইন ব্যর্থ',error.message,'e');
-  else { closeModal('authModal'); toast('সফল!','লগইন হয়েছে','s'); }
+  const email = (document.getElementById('loginEmail')?.value || '').trim();
+  const pass  =  document.getElementById('loginPassword')?.value || '';
+  _authShowError('login', '');
+
+  if (!email || !pass) { _authShowError('login', 'ইমেইল ও পাসওয়ার্ড উভয়ই দিন।'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { _authShowError('login', 'সঠিক ইমেইল ঠিকানা দিন।'); return; }
+
+  const btn = document.getElementById('loginSubmitBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> লগইন হচ্ছে…'; }
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i>লগইন করুন'; }
+
+  if (error) {
+    // Human-readable Bengali error messages
+    const msgMap = {
+      'Invalid login credentials': 'ইমেইল বা পাসওয়ার্ড ভুল। আবার চেষ্টা করুন।',
+      'Email not confirmed':        'ইমেইল ভেরিফাই করা হয়নি। আপনার ইমেইল চেক করুন।',
+      'Too many requests':          'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+    };
+    const msg = Object.entries(msgMap).find(([k]) => error.message.includes(k))?.[1] || error.message;
+    _authShowError('login', msg);
+    return;
+  }
+
+  closeModal('authModal');
+  toast('লগইন সফল! ✅', 'আপনি সফলভাবে লগইন হয়েছেন।', 's');
 }
+
+/* ── Sign Up with Email + Password + Confirm ── */
 async function signUpWithEmail() {
-  const email = document.getElementById('emailInput').value;
-  const pass = document.getElementById('passwordInput').value;
-  if(!email||!pass){ toast('ত্রুটি','ইমেইল ও পাসওয়ার্ড দিন','w'); return; }
-  const { error } = await sb.auth.signUp({email,password:pass});
-  if(error) toast('ত্রুটি',error.message,'e');
-  else toast('সফল!','ইমেইল ভেরিফাই করুন','i');
+  const name    = (document.getElementById('signupName')?.value || '').trim();
+  const email   = (document.getElementById('signupEmail')?.value || '').trim();
+  const pass    =  document.getElementById('signupPassword')?.value || '';
+  const confirm =  document.getElementById('signupConfirmPassword')?.value || '';
+  _authShowError('signup', '');
+  _authShowSuccess('signup', '');
+
+  if (!name)                 { _authShowError('signup', 'আপনার পুরো নাম দিন।'); return; }
+  if (name.length < 2)      { _authShowError('signup', 'নাম কমপক্ষে ২ অক্ষরের হতে হবে।'); return; }
+  if (!email)                { _authShowError('signup', 'ইমেইল ঠিকানা দিন।'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { _authShowError('signup', 'সঠিক ইমেইল ঠিকানা দিন।'); return; }
+  if (pass.length < 6)      { _authShowError('signup', 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।'); return; }
+  if (pass !== confirm)     { _authShowError('signup', 'পাসওয়ার্ড দুটো মিলছে না। আবার দিন।'); return; }
+
+  const btn = document.getElementById('signupSubmitBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> তৈরি হচ্ছে…'; }
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { data: { full_name: name } }
+  });
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>অ্যাকাউন্ট তৈরি করুন'; }
+
+  if (error) {
+    const msgMap = {
+      'User already registered': 'এই ইমেইলে ইতিমধ্যে অ্যাকাউন্ট আছে। লগইন করুন।',
+      'Password should be':      'পাসওয়ার্ড আরও শক্তিশালী করুন।',
+    };
+    const msg = Object.entries(msgMap).find(([k]) => error.message.includes(k))?.[1] || error.message;
+    _authShowError('signup', msg);
+    return;
+  }
+
+  // Supabase auto-confirms in some configs — check if session exists
+  if (data?.session) {
+    // লগইন হয়ে গেছে সরাসরি
+    closeModal('authModal');
+    toast('অ্যাকাউন্ট তৈরি সফল! 🎉', `স্বাগতম, ${name}!`, 's');
+  } else {
+    // Email confirmation প্রয়োজন
+    _authShowSuccess('signup', `${email}-এ একটি ভেরিফিকেশন লিংক পাঠানো হয়েছে। ইমেইল চেক করুন।`);
+    _authShowError('signup', '');
+  }
 }
+
 async function signOut() {
   try {
-    // 1. Supabase session clear
     await sb.auth.signOut();
-    // 2. Clear all local/session storage keys related to Supabase auth
     Object.keys(localStorage).forEach(k => {
-      if (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth')) {
-        localStorage.removeItem(k);
-      }
+      if (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth')) localStorage.removeItem(k);
     });
     Object.keys(sessionStorage).forEach(k => {
-      if (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth')) {
-        sessionStorage.removeItem(k);
-      }
+      if (k.startsWith('sb-') || k.includes('supabase') || k.includes('auth')) sessionStorage.removeItem(k);
     });
-    // 3. Reset UI state immediately
-    currentUser = null;
-    isAdmin = false;
-    // 4. Reset account button to guest state (use updateAuthUI which handles all UI reset)
-    // adminBtn is the correct id (not adminBtnWrap)
+    // Reset session cache
+    _sessionCache.userId = null; _sessionCache.isAdmin = false; _sessionCache.checkedAt = 0;
+    currentUser = null; isAdmin = false;
     const adminBtn2 = document.getElementById('adminBtn');
     if (adminBtn2) adminBtn2.style.display = 'none';
-    // 6. Close any open pages/dropdowns
     closeDropdown();
-    // Close full-page panels if open
     ['checkout','profile','track','product','category','wishlist'].forEach(p => {
       const el = document.getElementById('page-' + p);
       if (el && el.classList.contains('open')) closePage(p);
     });
-    toast('লগআউট সফল','আপনি সফলভাবে লগআউট হয়েছেন','i');
-    // 7. Reload to fully reset app state after toast
+    updateAuthUI();
+    toast('লগআউট সফল ✅', 'আপনি সফলভাবে লগআউট হয়েছেন।', 'i');
     setTimeout(() => window.location.reload(), 1200);
   } catch (err) {
-    console.error('Logout error:', err);
     toast('লগআউট ত্রুটি', err.message || 'আবার চেষ্টা করুন', 'e');
   }
 }
@@ -7613,7 +7855,17 @@ async function removeAdmin(id) {
 
 // ── MODAL HELPERS ──
 function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  // authModal বন্ধ হলে form fields ও errors reset করো
+  if (id === 'authModal') {
+    ['loginEmail','loginPassword','signupName','signupEmail','signupPassword','signupConfirmPassword']
+      .forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+    _authShowError('login', '');
+    _authShowError('signup', '');
+    _authShowSuccess('signup', '');
+  }
+}
 function openCart() { openModal('cartOverlay'); renderCartItems(); }
 function closeCart() { closeModal('cartOverlay'); }
 function openTrack(pushUrl = true) {
@@ -8207,7 +8459,11 @@ function buildOrderDetailPanel(data, history) {
   return `${stepsHtml}${deliveryHtml}${courierHtml}${itemsHtml}${noteHtml}${historyHtml}`;
 }
 
-function openAuth() { openModal('authModal'); }
+function openAuth() {
+  // সবসময় login view থেকে শুরু করো
+  switchAuthView('login');
+  openModal('authModal');
+}
 
 function toast(title, sub, type='s') {
   const el = document.createElement('div');
@@ -10407,10 +10663,10 @@ document.addEventListener('keydown', function(e) {
 })();
 
 // ── 15. BACK BUTTON — unified popstate handler ───────────────────
-// Replace the existing popstate listener with one that calls closeAllUI
-// before opening a page, preventing stacking on back navigation.
+// একমাত্র popstate listener — capture:true মানে এটি সবার আগে চলে।
+// সব state পরিষ্কারভাবে handle করে, কোনো duplicate নেই।
 window.addEventListener('popstate', function(e) {
-  // Close everything silently first
+  // সব open page ও modal বন্ধ করো
   ALL_PAGES.forEach(n => {
     const el = document.getElementById('page-' + n);
     if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
@@ -10421,14 +10677,25 @@ window.addEventListener('popstate', function(e) {
   });
   document.body.style.overflow = '';
 
-  // Then re-open the target page from history state
-  if (e.state && e.state.page === 'product' && e.state.productId) {
-    if (typeof window.openProduct === 'function') window.openProduct(e.state.productId, false);
-  } else if (e.state && e.state.page === 'track') {
+  const state = e.state || {};
+
+  if (state.page === 'product' && state.productId) {
+    // Product page back
+    if (typeof window.openProduct === 'function') window.openProduct(state.productId, false);
+
+  } else if (state.page === 'track') {
+    // Track page back
     if (typeof window.openTrack === 'function') window.openTrack(false);
+
+  } else if (state.page === 'order-detail' && state.id) {
+    // Order detail — track page খোলো (user সেখান থেকে detail দেখবে)
+    if (typeof window.openTrack === 'function') window.openTrack(false);
+
+  } else {
+    // Home (state.page === 'home' বা state === {}) — সব বন্ধ, home দেখাও
+    document.title = 'গ্যালাক্সি মার্ট BD';
   }
-  // Otherwise: home — all closed, nothing to do
-}, { capture: true }); // capture:true so this fires before any other popstate listener
+}, { capture: true });
 
 // ── 16. STACKING GUARD — MutationObserver ────────────────────────
 // Watches for more than 1 full-page being open at once and fixes it.
