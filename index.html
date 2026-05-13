@@ -5604,7 +5604,7 @@ html, body {
 
     <!-- TAB: Details -->
     <div id="pdPanelDetails" class="fp-tab-panel">
-      <div class="bn" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.9;margin-bottom:20px"></div>
+      <div class="bn" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;margin-bottom:20px;white-space:pre-line"></div>
       <table id="pdSpecTable" class="fp-spec-table"></table>
     </div>
 
@@ -7635,7 +7635,7 @@ function openProduct(id, pushUrl = true) {
   if (qtyEl) qtyEl.textContent = 1;
 
   // ── Description ──
-  setText('modalDesc', p.description||'');
+  renderDesc('modalDesc', p.description||'');
 
   // ── Spec table ──
   buildSpecTable(p);
@@ -7658,6 +7658,42 @@ function openProduct(id, pushUrl = true) {
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+/* ── Description Renderer ──
+   Converts admin markup → clean HTML:
+   Lines starting with  *=  or  *<space>  → bullet (•)
+   Blank lines → paragraph break
+   Plain lines → normal text
+*/
+function renderDesc(id, raw) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!raw || !raw.trim()) { el.innerHTML = ''; return; }
+  const lines = raw.split('\n');
+  let html = '';
+  let inPara = false;
+  lines.forEach(line => {
+    const t = line.trim();
+    if (!t) {
+      if (inPara) { html += '</p>'; inPara = false; }
+      return;
+    }
+    if (/^\*=?\s/.test(t)) {
+      if (inPara) { html += '</p>'; inPara = false; }
+      const content = t.replace(/^\*=?\s*/, '');
+      html += `<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0"><span style="color:var(--blue);font-size:1.1em;line-height:1.6;flex-shrink:0">•</span><span>${escFe(content)}</span></div>`;
+    } else {
+      if (!inPara) { html += '<p style="margin:0 0 8px 0">'; inPara = true; }
+      else html += '<br>';
+      html += escFe(t);
+    }
+  });
+  if (inPara) html += '</p>';
+  el.innerHTML = html;
+}
+function escFe(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function openProductAndBuy(id) { openProduct(id); }
@@ -8643,20 +8679,37 @@ function switchTrackTab(tab, el) {
 
 // ── Helpers ──
 const STATUS_LABEL = {
-  pending:   'অপেক্ষায় আছে',
-  confirmed: 'নিশ্চিত হয়েছে',
-  processing:'প্যাক হচ্ছে',
-  shipped:   'ডেলিভারিতে আছে',
-  delivered: 'ডেলিভারি সম্পন্ন',
-  cancelled: 'বাতিল হয়েছে'
+  pending:    'অপেক্ষায় আছে',
+  confirmed:  'নিশ্চিত হয়েছে',
+  in_stock:   'স্টকে পাওয়া গেছে',
+  collecting: 'সংগ্রহ চলছে',
+  collected:  'সংগ্রহ সম্পন্ন',
+  processing: 'প্যাক হচ্ছে',
+  shipped:    'ডেলিভারিতে আছে',
+  delivered:  'ডেলিভারি সম্পন্ন',
+  cancelled:  'বাতিল হয়েছে'
 };
 const STATUS_ICON = {
-  pending:'fa-clock',confirmed:'fa-circle-check',processing:'fa-box',
-  shipped:'fa-truck-fast',delivered:'fa-house-circle-check',cancelled:'fa-ban'
+  pending:    'fa-clock',
+  confirmed:  'fa-circle-check',
+  in_stock:   'fa-boxes-stacked',
+  collecting: 'fa-hand-holding',
+  collected:  'fa-box-open',
+  processing: 'fa-box',
+  shipped:    'fa-truck-fast',
+  delivered:  'fa-house-circle-check',
+  cancelled:  'fa-ban'
 };
 const STATUS_BADGE_CLS = {
-  pending:'osb-pending',confirmed:'osb-confirmed',processing:'osb-processing',
-  shipped:'osb-shipped',delivered:'osb-delivered',cancelled:'osb-cancelled'
+  pending:    'osb-pending',
+  confirmed:  'osb-confirmed',
+  in_stock:   'osb-confirmed',
+  collecting: 'osb-processing',
+  collected:  'osb-processing',
+  processing: 'osb-processing',
+  shipped:    'osb-shipped',
+  delivered:  'osb-delivered',
+  cancelled:  'osb-cancelled'
 };
 
 function fmtDateTime(iso) {
@@ -8701,6 +8754,15 @@ function buildOrderCard(data, history) {
               ${h.note?`<div class="hitem-note">${h.note}</div>`:''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
+        </div>
+      </div>`;
+  } else {
+    historyHtml = `
+      <div class="history-section">
+        <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেটের ইতিহাস</span></div>
+        <div style="text-align:center;padding:18px 0 8px;font-family:'Hind Siliguri',sans-serif;color:var(--text-light);font-size:.82rem">
+          <i class="fa-regular fa-clock" style="font-size:1.5rem;opacity:.4;display:block;margin-bottom:8px"></i>
+          অপেক্ষা করুন — আপডেট শীঘ্রই আসবে
         </div>
       </div>`;
   }
@@ -8979,11 +9041,22 @@ function buildTpOrderDetail(data, history) {
       </div>
     </div>`;
 
-  // Item list
-  const itemsHtml = items.length ? `
+  // Item list — with item_status badge
+  const ITEM_STATUS_LABEL = { pending:'অপেক্ষায়', in_stock:'স্টকে আছে', sourcing:'সংগ্রহ চলছে', collecting:'সংগ্রহ চলছে', collected:'সংগ্রহ সম্পন্ন', dispatched:'পাঠানো হয়েছে' };
+  const ITEM_STATUS_COLOR = { pending:'var(--text-light)', in_stock:'var(--blue)', sourcing:'#D97706', collecting:'#D97706', collected:'var(--blue)', dispatched:'var(--green)' };
+  const itemsHtml = (data.items||[]).length ? `
     <div style="margin-bottom:14px">
-      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">অর্ডারের বিবরণ</div>
-      ${items.map(name => `<div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid);padding:5px 0;border-bottom:1px solid var(--blue-light);display:flex;align-items:center;gap:7px"><i class="fa-solid fa-box" style="color:var(--blue);font-size:.72rem"></i>${name}</div>`).join('')}
+      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">অর্ডারকৃত পণ্য</div>
+      ${(data.items||[]).map(item => {
+        const iSt = item.item_status || 'pending';
+        const iColor = ITEM_STATUS_COLOR[iSt] || 'var(--text-light)';
+        const iLabel = ITEM_STATUS_LABEL[iSt] || iSt;
+        return `<div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);padding:7px 0;border-bottom:1px solid var(--blue-light);display:flex;align-items:center;gap:8px">
+          <i class="fa-solid fa-box" style="color:var(--blue);font-size:.72rem;flex-shrink:0"></i>
+          <span style="flex:1">${item.name||'পণ্য'}${item.qty > 1 ? ` × ${item.qty}` : ''}</span>
+          <span style="font-size:.68rem;font-weight:700;color:${iColor};background:${iColor}18;border:1px solid ${iColor}33;border-radius:20px;padding:2px 8px;white-space:nowrap">${iLabel}</span>
+        </div>`;
+      }).join('')}
     </div>` : '';
 
   // Progress timeline
@@ -9002,7 +9075,7 @@ function buildTpOrderDetail(data, history) {
           </div>`).join('')}
        </div>`;
 
-  // History log
+  // History log — with empty state
   let histHtml = '';
   if (history && history.length) {
     histHtml = `
@@ -9016,6 +9089,15 @@ function buildTpOrderDetail(data, history) {
               ${(h.note||h.tracking_note) ? `<div class="hitem-note">${h.note||h.tracking_note}</div>` : ''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
+        </div>
+      </div>`;
+  } else {
+    histHtml = `
+      <div class="history-section">
+        <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেট লগ</span></div>
+        <div style="text-align:center;padding:16px 0 6px;font-family:'Hind Siliguri',sans-serif;color:var(--text-light);font-size:.82rem">
+          <i class="fa-regular fa-clock" style="font-size:1.4rem;opacity:.4;display:block;margin-bottom:8px"></i>
+          অপেক্ষা করুন — আপডেট শীঘ্রই আসবে
         </div>
       </div>`;
   }
