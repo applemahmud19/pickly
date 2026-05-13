@@ -6788,6 +6788,24 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path === '/profile') {
+    if (currentUser) {
+      openProfilePage();
+    } else {
+      history.replaceState({}, 'গ্যালাক্সি মার্ট BD', '/');
+    }
+    return;
+  }
+
+  if (path === '/wishlist') {
+    if (currentUser) {
+      openWishlistPage();
+    } else {
+      history.replaceState({}, 'গ্যালাক্সি মার্ট BD', '/');
+    }
+    return;
+  }
+
   if (path.startsWith('/product/')) {
     const slug = path.replace('/product/', '').split('?')[0];
     const p = products.find(x => slugify(x.name) === slug || x.id === slug);
@@ -6885,6 +6903,12 @@ function updateAuthUI() {
 
 // ── ACCOUNT DROPDOWN ──
 function handleAuthClick() {
+  // Guest → লগইন মোডাল সরাসরি খোলো (dropdown নয়)
+  if (!currentUser) {
+    openAuth();
+    return;
+  }
+  // Logged-in → dropdown টগল
   const dd = document.getElementById('accountDropdown');
   if (!dd) return;
   const isOpen = dd.style.display === 'block';
@@ -7294,6 +7318,8 @@ function closePage(name) {
   document.body.style.overflow = '';
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
+  if (name === 'profile') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
+  if (name === 'wishlist') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
   if (name === 'order-detail') {
     // Re-open track page when going back from order detail
     openPage('track');
@@ -10277,6 +10303,8 @@ function copyOrderIdToast(id, btn) {
 // ══════════════════════════════════════════════════
 async function openProfilePage() {
   if (!currentUser) { openAuth(); return; }
+  history.pushState({ page: 'profile' }, 'আমার প্রোফাইল — গ্যালাক্সি মার্ট BD', '/profile');
+  document.title = 'আমার প্রোফাইল — গ্যালাক্সি মার্ট BD';
   openPage('profile');
 
   // Fill static info
@@ -10378,6 +10406,8 @@ function updateFpWishBtn() {
 }
 
 function openWishlistPage() {
+  history.pushState({ page: 'wishlist' }, 'উইশলিস্ট — গ্যালাক্সি মার্ট BD', '/wishlist');
+  document.title = 'উইশলিস্ট — গ্যালাক্সি মার্ট BD';
   renderWishlistGrid();
   openPage('wishlist');
 }
@@ -11235,6 +11265,14 @@ window.addEventListener('popstate', function(e) {
   } else if (state.page === 'order-detail' && state.id) {
     // Order detail — track page খোলো (user সেখান থেকে detail দেখবে)
     if (typeof window.openTrack === 'function') window.openTrack(false);
+
+  } else if (state.page === 'profile') {
+    if (currentUser && typeof window.openProfilePage === 'function') openProfilePage();
+    else document.title = 'গ্যালাক্সি মার্ট BD';
+
+  } else if (state.page === 'wishlist') {
+    if (typeof window.openWishlistPage === 'function') openWishlistPage();
+    else document.title = 'গ্যালাক্সি মার্ট BD';
 
   } else {
     // Home (state.page === 'home' বা state === {}) — সব বন্ধ, home দেখাও
