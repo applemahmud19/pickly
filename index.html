@@ -6384,15 +6384,16 @@ function subscribeRealtimeUpdates() {
       if (msg.type === 'item_status_update') {
         const { orderId, itemIdx, newStatus, items } = msg;
 
-        // Update _tpOrderMap cache with new items array
+        // Update _tpOrderMap cache with new items array from broadcast
         if (window._tpOrderMap && window._tpOrderMap[orderId]) {
           window._tpOrderMap[orderId].order.items = items;
         }
 
-        // If order-detail page is open for this order → re-render body
+        // If order-detail page is open for this order → full re-render with fresh DB fetch
         const detailPage = document.getElementById('page-order-detail');
         if (detailPage && detailPage.getAttribute('aria-hidden') === 'false'
             && window._currentOrderDetailId === orderId) {
+          // Full refresh fetches latest items+item_status from DB
           _refreshOrderDetailPage(orderId);
         }
       }
@@ -6431,12 +6432,16 @@ async function _refreshOrderDetailPage(orderId) {
   let order = cached?.order || null;
   let hist  = cached?.hist  || [];
 
-  // If not in cache, fetch fresh from Supabase
-  if (!order) {
-    try {
-      const { data } = await sb.from('orders').select('*').eq('id', orderId).single();
-      if (data) order = data;
-    } catch(e) {}
+  // Always re-fetch order from DB to get latest items/item_status
+  try {
+    const { data: freshOrder } = await sb.from('orders').select('*').eq('id', orderId).single();
+    if (freshOrder) {
+      order = freshOrder;
+      if (window._tpOrderMap?.[orderId]) window._tpOrderMap[orderId].order = order;
+    }
+  } catch(e) {
+    // Fall back to cached if fetch fails
+    if (!order) return;
   }
   if (!order) return;
 
@@ -7974,22 +7979,31 @@ async function tpOpenOrderDetail(orderId) {
     return;
   }
 
-  // Fetch status history if not already in memory
-  if (!hist || !hist.length) {
-    try {
-      const { data: hdata, error: hErr } = await sb.from('order_status_history')
-        .select('*').eq('order_id', order.id).order('created_at', { ascending: false });
-      if (hErr) {
-        console.error('[tpOpenOrderDetail] History fetch error for order:', order.id, hErr.message);
-      }
-      hist = hdata || [];
-      // Cache in _tpOrderMap for BroadcastChannel updates
-      if (window._tpOrderMap?.[orderId]) window._tpOrderMap[orderId].hist = hist;
-    } catch(e) {
-      console.error('[tpOpenOrderDetail] Unexpected error fetching history:', e);
-      hist = [];
+  // Always fetch fresh history & items from DB on every open — ensures latest data
+  try {
+    const { data: hdata, error: hErr } = await sb.from('order_status_history')
+      .select('*').eq('order_id', order.id).order('created_at', { ascending: false });
+    if (hErr) {
+      console.error('[tpOpenOrderDetail] History fetch error for order:', order.id, hErr.message);
     }
+    if (hdata && hdata.length) {
+      hist = hdata;
+    }
+    // Cache in _tpOrderMap for BroadcastChannel updates
+    if (window._tpOrderMap?.[orderId]) window._tpOrderMap[orderId].hist = hist;
+  } catch(e) {
+    console.error('[tpOpenOrderDetail] Unexpected error fetching history:', e);
+    hist = hist || [];
   }
+
+  // Also re-fetch the order itself to get latest items/item_status from DB
+  try {
+    const { data: freshOrder } = await sb.from('orders').select('*').eq('id', order.id).single();
+    if (freshOrder) {
+      order = freshOrder;
+      if (window._tpOrderMap?.[orderId]) window._tpOrderMap[orderId].order = order;
+    }
+  } catch(e) { /* use cached order if fetch fails */ }
 
   openOrderDetailPage(order, hist);
 }
@@ -8044,14 +8058,35 @@ function buildOrderDetailPanel(data, history) {
       <a href="${data.tracking_link}" target="_blank" style="font-size:.72rem;color:var(--blue-dark);word-break:break-all">${data.tracking_link}</a>
     </div>` : '';
 
+  // Item-level status labels & colors for customer view
+  const ITEM_STATUS_LABEL_BN = {
+    pending:    'অপেক্ষায়',
+    in_stock:   'স্টকে আছে',
+    sourcing:   'সংগ্রহ হচ্ছে',
+    collected:  'সংগ্রহ সম্পন্ন',
+    dispatched: 'পাঠানো হয়েছে',
+  };
+  const ITEM_STATUS_COLOR = {
+    pending:    { bg:'rgba(148,163,184,0.12)', color:'#64748B', border:'rgba(148,163,184,0.3)' },
+    in_stock:   { bg:'rgba(0,122,255,0.08)',   color:'#007AFF', border:'rgba(0,122,255,0.25)' },
+    sourcing:   { bg:'rgba(255,159,10,0.10)',  color:'#D97706', border:'rgba(255,159,10,0.3)' },
+    collected:  { bg:'rgba(50,173,230,0.10)',  color:'#32ADE6', border:'rgba(50,173,230,0.3)' },
+    dispatched: { bg:'rgba(52,199,89,0.10)',   color:'#34C759', border:'rgba(52,199,89,0.3)' },
+  };
+
   // Items summary
   const itemsHtml = items.length ? `
     <div style="background:white;border-radius:var(--radius-sm);padding:10px 13px;border:1px solid var(--border)">
       <div style="font-size:.62rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-family:'Hind Siliguri',sans-serif">
         <i class="fa-solid fa-bag-shopping" style="color:var(--blue);margin-right:4px"></i>অর্ডারকৃত পণ্য
       </div>
-      ${items.map(item => `
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--blue-light)">
+      ${items.map(item => {
+        const ist = item.item_status || 'pending';
+        const istLabel = ITEM_STATUS_LABEL_BN[ist] || ist;
+        const istColor = ITEM_STATUS_COLOR[ist] || ITEM_STATUS_COLOR.pending;
+        const showBadge = ist !== 'pending'; // only show if non-default
+        return `
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--blue-light)">
           <div style="width:32px;height:32px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
             ${item.image_url
               ? `<img src="${item.image_url}" style="width:100%;height:100%;object-fit:contain;padding:3px" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-box\\' style=\\'color:var(--blue);font-size:.75rem\\'></i>'">`
@@ -8059,10 +8094,16 @@ function buildOrderDetailPanel(data, history) {
           </div>
           <div style="flex:1;min-width:0">
             <div class="bn" style="font-size:.76rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name||'পণ্য'}</div>
-            <div class="bn" style="font-size:.66rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString()}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap">
+              <span class="bn" style="font-size:.66rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString()}</span>
+              ${showBadge ? `<span class="bn" style="font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;background:${istColor.bg};color:${istColor.color};border:1px solid ${istColor.border}">
+                ${istLabel}
+              </span>` : ''}
+            </div>
           </div>
           <div class="bn" style="font-size:.78rem;font-weight:700;color:var(--blue);flex-shrink:0">৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString()}</div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       <div style="display:flex;justify-content:space-between;padding-top:8px">
         <span class="bn" style="font-size:.8rem;font-weight:700;color:var(--text)">মোট</span>
         <span class="bn" style="font-size:.88rem;font-weight:800;color:var(--blue)">৳${Number(data.total||0).toLocaleString()}</span>
