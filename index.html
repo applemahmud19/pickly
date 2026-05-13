@@ -1653,6 +1653,136 @@ header.scrolled{
   .terms-agree-btn { justify-content: center; }
 }
 
+/* ── INFO MODALS (Return, Contact, FAQ, About, Privacy) ──────── */
+#infoModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99990;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+#infoModal.open { display: flex; }
+
+.info-box {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0,0,0,.18), 0 0 0 1px rgba(0,0,0,.06);
+  animation: slideUpModal .25s cubic-bezier(.34,1.3,.7,1);
+  overflow: hidden;
+}
+.info-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 20px 13px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0; gap: 10px;
+}
+.info-hd-left { display: flex; align-items: center; gap: 10px; }
+.info-hd-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; flex-shrink: 0;
+}
+.info-hd h3 {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .92rem; font-weight: 700; color: var(--text); line-height: 1.3;
+}
+.info-body {
+  padding: 18px 20px; overflow-y: auto; flex: 1;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.info-body::-webkit-scrollbar { width: 4px; }
+.info-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* FAQ accordion */
+.faq-item {
+  border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 8px; overflow: hidden;
+  transition: border-color var(--t);
+}
+.faq-item.open { border-color: rgba(0,122,255,.3); }
+.faq-q {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px; cursor: pointer; gap: 10px;
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .82rem; font-weight: 700; color: var(--text);
+  background: transparent; border: none; width: 100%; text-align: left;
+  transition: background var(--t);
+}
+.faq-q:hover { background: var(--blue-light); }
+.faq-item.open .faq-q { background: var(--blue-light); color: var(--blue); }
+.faq-chevron { font-size: .65rem; color: var(--text-light); transition: transform .2s; flex-shrink: 0; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--blue); }
+.faq-ans {
+  display: none; padding: 0 14px 12px;
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .78rem; color: var(--text-mid); line-height: 1.7;
+  border-top: 1px solid rgba(0,122,255,.1);
+  background: var(--blue-light);
+}
+.faq-item.open .faq-ans { display: block; }
+
+/* Contact card */
+.contact-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 10px;
+  border: 1px solid var(--border); margin-bottom: 10px;
+  text-decoration: none; transition: all var(--t);
+  background: white;
+}
+.contact-card:hover { border-color: var(--blue); background: var(--blue-light); }
+.contact-card-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; flex-shrink: 0;
+}
+.contact-card-body {}
+.contact-card-label {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .75rem; color: var(--text-light); margin-bottom: 2px;
+}
+.contact-card-val {
+  font-family: 'Sora', sans-serif;
+  font-size: .82rem; font-weight: 600; color: var(--text);
+}
+
+/* Info section block */
+.info-section {
+  padding: 13px 14px; border-radius: 10px;
+  border: 1px solid var(--border); margin-bottom: 10px;
+}
+.info-section-title {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .78rem; font-weight: 700; color: var(--text);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 7px;
+}
+.info-section-body {
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .76rem; color: var(--text-mid); line-height: 1.75;
+}
+.info-note {
+  background: var(--gold-light); border: 1px solid rgba(245,166,35,.3);
+  border-radius: 8px; padding: 10px 13px; margin-bottom: 10px;
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .75rem; color: #92400E; line-height: 1.6;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.info-note i { margin-top: 2px; flex-shrink: 0; }
+
+@media (max-width: 480px) {
+  #infoModal { align-items: flex-end; padding: 0; }
+  .info-box { border-radius: 16px 16px 0 0; max-height: 90vh; }
+}
+
 /* ── ADMIN DASHBOARD ── */
 #adminOverlay{align-items:stretch;justify-content:flex-end}
 #adminOverlay.open{display:flex}
@@ -6247,6 +6377,22 @@ html, body {
   </div>
 </div>
 
+<!-- ── INFO MODAL (Return Policy / Contact / FAQ / About / Privacy) ── -->
+<div id="infoModal" onclick="if(event.target===this)closeInfoModal()">
+  <div class="info-box">
+    <div class="info-hd">
+      <div class="info-hd-left">
+        <div class="info-hd-icon" id="infoModalIcon"></div>
+        <h3 class="bn" id="infoModalTitle"></h3>
+      </div>
+      <button class="terms-close-btn" onclick="closeInfoModal()" title="বন্ধ করুন">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="info-body" id="infoModalBody"></div>
+  </div>
+</div>
+
 <!-- ── TERMS & CONDITIONS MODAL ── -->
 <div id="termsModal" onclick="if(event.target===this)closeTermsModal()">
   <div class="terms-box">
@@ -6487,9 +6633,32 @@ html, body {
         <a href="#" class="fs"><i class="fa-brands fa-whatsapp"></i></a>
       </div>
     </div>
-    <div class="foot-col"><h4 class="bn">শপিং</h4><a href="#" class="bn">সব পণ্য</a><a href="#" class="bn">নতুন পণ্য</a><a href="#" class="bn">অফার</a><a href="#" class="bn">বেস্টসেলার</a></div>
-    <div class="foot-col"><h4 class="bn">সহায়তা</h4><a href="#" class="bn" onclick="openTrack()">অর্ডার ট্র্যাক</a><a href="#" class="bn">রিটার্ন পলিসি</a><a href="#" class="bn">যোগাযোগ</a><a href="#" class="bn">FAQ</a></div>
-    <div class="foot-col"><h4 class="bn">আমাদের সম্পর্কে</h4><a href="#" class="bn">আমাদের গল্প</a><a href="#" class="bn">গোপনীয়তা নীতি</a><a href="#" class="bn" onclick="openTermsModal();return false;">শর্তাবলী</a>
+
+    <!-- শপিং -->
+    <div class="foot-col">
+      <h4 class="bn">শপিং</h4>
+      <a href="#" class="bn" onclick="footerFilter('সব');return false;">সব পণ্য</a>
+      <a href="#" class="bn" onclick="footerFilter('new');return false;">নতুন পণ্য</a>
+      <a href="#" class="bn" onclick="footerFilter('offer');return false;">অফার</a>
+      <a href="#" class="bn" onclick="footerFilter('best');return false;">বেস্টসেলার</a>
+    </div>
+
+    <!-- সহায়তা -->
+    <div class="foot-col">
+      <h4 class="bn">সহায়তা</h4>
+      <a href="#" class="bn" onclick="openTrack();return false;">অর্ডার ট্র্যাক</a>
+      <a href="#" class="bn" onclick="openInfoModal('return');return false;">রিটার্ন পলিসি</a>
+      <a href="#" class="bn" onclick="openInfoModal('contact');return false;">যোগাযোগ</a>
+      <a href="#" class="bn" onclick="openInfoModal('faq');return false;">FAQ</a>
+    </div>
+
+    <!-- আমাদের সম্পর্কে -->
+    <div class="foot-col">
+      <h4 class="bn">আমাদের সম্পর্কে</h4>
+      <a href="#" class="bn" onclick="openInfoModal('about');return false;">আমাদের গল্প</a>
+      <a href="#" class="bn" onclick="openInfoModal('privacy');return false;">গোপনীয়তা নীতি</a>
+      <a href="#" class="bn" onclick="openTermsModal();return false;">শর্তাবলী</a>
+    </div>
   </div>
   <div class="foot-bottom">
     <p class="bn">© ২০২৬ গ্যালাক্সি মার্ট BD · সর্বস্বত্ব সংরক্ষিত</p>
@@ -9033,6 +9202,217 @@ function openAuth() {
   // সবসময় login view থেকে শুরু করো
   switchAuthView('login');
   openModal('authModal');
+}
+
+/* ── Footer: Shopping filter shortcuts ── */
+function footerFilter(type) {
+  // পেজের শীর্ষে স্ক্রল করো (product grid দেখানোর জন্য)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // সব open full-page বন্ধ করো
+  ['product','category','checkout','profile','wishlist','track'].forEach(n => {
+    const el = document.getElementById('page-' + n);
+    if (el && el.classList.contains('open')) closePage(n);
+  });
+
+  if (type === 'সব') {
+    // Reset all filters
+    activeFilter = { cat: 'সব', minPrice: 0, maxPrice: 999999, rating: 0, search: '' };
+    document.querySelectorAll('.ncat').forEach(e => e.classList.remove('active'));
+    const allBtn = document.querySelector('.ncat');
+    if (allBtn) allBtn.classList.add('active');
+    renderProducts(getFiltered());
+
+  } else if (type === 'new') {
+    // সর্বশেষ যোগ হওয়া পণ্য (created_at desc — Supabase যেভাবে লোড করে)
+    activeFilter = { cat: 'সব', minPrice: 0, maxPrice: 999999, rating: 0, search: '' };
+    const sorted = [...products].sort((a, b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+    renderProducts(sorted);
+
+  } else if (type === 'offer') {
+    // সর্বোচ্চ ছাড়ের পণ্য (old_price আছে এমন)
+    activeFilter = { cat: 'সব', minPrice: 0, maxPrice: 999999, rating: 0, search: '' };
+    const offers = products
+      .filter(p => p.old_price && p.old_price > p.price)
+      .sort((a, b) => (1 - b.price / b.old_price) - (1 - a.price / a.old_price));
+    renderProducts(offers);
+
+  } else if (type === 'best') {
+    // সর্বোচ্চ rating-এর পণ্য
+    activeFilter = { cat: 'সব', minPrice: 0, maxPrice: 999999, rating: 0, search: '' };
+    const best = [...products].sort((a, b) => (b.rating || 4) - (a.rating || 4));
+    renderProducts(best);
+  }
+}
+
+/* ── Info Modal content map ── */
+const INFO_CONTENT = {
+  return: {
+    title: 'রিটার্ন পলিসি',
+    icon: '<i class="fa-solid fa-rotate-left"></i>',
+    iconBg: '#FFFBEB', iconColor: '#D97706',
+    html: `
+      <div class="info-note bn">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#D97706"></i>
+        <span>পণ্য হাতে পাওয়ার <strong>সাথে সাথে</strong> চেক করে নিন। পরবর্তীতে কোনো অভিযোগ গ্রহণ করা হবে না।</span>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-box-open" style="color:var(--blue)"></i>ডেলিভারির সময় চেক করুন</div>
+        <p class="info-section-body bn">পণ্য হাতে পাওয়ার সময় কোনো সমস্যা থাকলে সাথে সাথে ডেলিভারি ম্যানের কাছে ফেরত দিতে হবে। পরবর্তী কোনো অভিযোগ গ্রহণযোগ্য নয়।</p>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-video" style="color:var(--red)"></i>ভিডিও প্রমাণ বাধ্যতামূলক</div>
+        <p class="info-section-body bn">প্যাকেজ খোলার সময় অবশ্যই ভিডিও রেকর্ড করে রাখুন। ভিডিও প্রমাণ ছাড়া কোনো অভিযোগ গ্রহণ করা হবে না।</p>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-truck" style="color:var(--green)"></i>রিটার্ন প্রক্রিয়া</div>
+        <p class="info-section-body bn">পণ্য রিটার্ন করতে হলে ডেলিভারি ম্যানকে ডেলিভারি চার্জ পরিশোধ করে রিটার্ন করতে হবে। যৌক্তিক সমস্যার ক্ষেত্রে রিপ্লেসমেন্টের জন্য আমাদের সাথে যোগাযোগ করুন।</p>
+      </div>`
+  },
+  contact: {
+    title: 'যোগাযোগ করুন',
+    icon: '<i class="fa-solid fa-headset"></i>',
+    iconBg: '#EFF6FF', iconColor: '#2563EB',
+    html: `
+      <p class="bn" style="font-size:.78rem;color:var(--text-mid);margin-bottom:14px;line-height:1.7">যেকোনো সমস্যা বা জিজ্ঞাসায় আমাদের সাথে যোগাযোগ করুন। আমরা সর্বদা সাহায্য করতে প্রস্তুত।</p>
+      <a class="contact-card" href="mailto:bookgalaxybd@gmail.com">
+        <div class="contact-card-icon" style="background:#FEF2F2;color:#DC2626"><i class="fa-solid fa-envelope"></i></div>
+        <div class="contact-card-body">
+          <div class="contact-card-label bn">ইমেইল</div>
+          <div class="contact-card-val">bookgalaxybd@gmail.com</div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
+      </a>
+      <a class="contact-card" href="https://facebook.com/bookgalaxybd" target="_blank">
+        <div class="contact-card-icon" style="background:#EFF6FF;color:#1877F2"><i class="fa-brands fa-facebook-f"></i></div>
+        <div class="contact-card-body">
+          <div class="contact-card-label bn">ফেসবুক পেজ</div>
+          <div class="contact-card-val">facebook.com/bookgalaxybd</div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
+      </a>
+      <div class="info-note bn" style="margin-top:4px">
+        <i class="fa-solid fa-clock" style="color:#D97706"></i>
+        <span>সাধারণত <strong>সকাল ১০টা — রাত ১০টা</strong>-র মধ্যে সাড়া দেওয়া হয়।</span>
+      </div>`
+  },
+  faq: {
+    title: 'সাধারণ জিজ্ঞাসা (FAQ)',
+    icon: '<i class="fa-solid fa-circle-question"></i>',
+    iconBg: '#F5F3FF', iconColor: '#7C3AED',
+    html: `
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <button class="faq-q bn"><span>ডেলিভারি চার্জ কত?</span><i class="fa-solid fa-chevron-down faq-chevron"></i></button>
+        <div class="faq-ans bn">৬৫ টাকা থেকে শুরু। তবে লোকেশন ও পণ্যের ওপর ভিত্তি করে ডেলিভারি চার্জ নির্ধারিত হয়। চেকআউটের সময় জেলা নির্বাচন করলে সঠিক চার্জ দেখাবে।</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <button class="faq-q bn"><span>পণ্য কখন পাব?</span><i class="fa-solid fa-chevron-down faq-chevron"></i></button>
+        <div class="faq-ans bn">ঢাকা সিটির ভেতরে ২–৩ দিন এবং ঢাকার বাইরে ৩–৫ দিনের মধ্যে ডেলিভারি সম্পন্ন হয়। পণ্য স্টকে না থাকলে সংগ্রহ করে দিতে কিছু অতিরিক্ত সময় লাগতে পারে।</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <button class="faq-q bn"><span>পেমেন্ট কীভাবে করব?</span><i class="fa-solid fa-chevron-down faq-chevron"></i></button>
+        <div class="faq-ans bn">আমরা ক্যাশ অন ডেলিভারি (COD), bKash, Nagad এবং Rocket সাপোর্ট করি। পণ্য হাতে পেয়ে পেমেন্ট করা যায়।</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <button class="faq-q bn"><span>অর্ডার ক্যান্সেল করা যাবে?</span><i class="fa-solid fa-chevron-down faq-chevron"></i></button>
+        <div class="faq-ans bn">অর্ডার নিশ্চিত হওয়ার আগে ক্যান্সেল করা সম্ভব। অর্ডার ট্র্যাক পেজ থেকে আমাদের সাথে যোগাযোগ করুন।</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <button class="faq-q bn"><span>পণ্য নষ্ট বা ভুল আসলে কী করব?</span><i class="fa-solid fa-chevron-down faq-chevron"></i></button>
+        <div class="faq-ans bn">প্যাকেজ খোলার সময় ভিডিও করুন। ভিডিও প্রমাণ থাকলে রিপ্লেসমেন্টের জন্য আমাদের সাথে যোগাযোগ করুন। ভিডিও প্রমাণ ছাড়া অভিযোগ গ্রহণযোগ্য নয়।</div>
+      </div>`
+  },
+  about: {
+    title: 'আমাদের গল্প',
+    icon: '<i class="fa-solid fa-store"></i>',
+    iconBg: '#ECFDF5', iconColor: '#059669',
+    html: `
+      <div style="text-align:center;padding:16px 0 20px">
+        <div style="width:60px;height:60px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(0,122,255,.25)">
+          <i class="fa-solid fa-store" style="font-size:1.5rem;color:white"></i>
+        </div>
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px">গ্যালাক্সি মার্ট BD</div>
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-light)">বিশ্বস্ত অনলাইন শপ — বাংলাদেশ</div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-heart" style="color:var(--red)"></i>আমাদের মিশন</div>
+        <p class="info-section-body bn">গ্যালাক্সি মার্ট বিডি বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপ যেখানে আমরা সেরা মানের পণ্য সাশ্রয়ী দামে পৌঁছে দেই। আমাদের লক্ষ্য — প্রতিটি গ্রাহকের কাছে সেরা শপিং অভিজ্ঞতা নিশ্চিত করা।</p>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-shield-halved" style="color:var(--blue)"></i>কেন আমরা আলাদা</div>
+        <p class="info-section-body bn">১০০% অরিজিনাল পণ্য, সারা বাংলাদেশে দ্রুত ডেলিভারি এবং ক্যাশ অন ডেলিভারি সুবিধা। আমরা বিশ্বাস করি মানসম্পন্ন পণ্য সবার নাগালে থাকা উচিত।</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+        <div style="text-align:center;padding:12px 8px;background:var(--blue-light);border-radius:10px">
+          <div style="font-size:1.2rem;font-weight:700;color:var(--blue);font-family:'Sora',sans-serif">১০০%</div>
+          <div style="font-size:.68rem;color:var(--text-mid);font-family:'Hind Siliguri',sans-serif;margin-top:2px">অরিজিনাল পণ্য</div>
+        </div>
+        <div style="text-align:center;padding:12px 8px;background:#ECFDF5;border-radius:10px">
+          <div style="font-size:1.2rem;font-weight:700;color:var(--green);font-family:'Sora',sans-serif">COD</div>
+          <div style="font-size:.68rem;color:var(--text-mid);font-family:'Hind Siliguri',sans-serif;margin-top:2px">ক্যাশ অন ডেলিভারি</div>
+        </div>
+        <div style="text-align:center;padding:12px 8px;background:#FEF3C7;border-radius:10px">
+          <div style="font-size:1.2rem;font-weight:700;color:var(--gold-dark);font-family:'Sora',sans-serif">২-৫দিন</div>
+          <div style="font-size:.68rem;color:var(--text-mid);font-family:'Hind Siliguri',sans-serif;margin-top:2px">দ্রুত ডেলিভারি</div>
+        </div>
+      </div>`
+  },
+  privacy: {
+    title: 'গোপনীয়তা নীতি',
+    icon: '<i class="fa-solid fa-shield-halved"></i>',
+    iconBg: '#F5F3FF', iconColor: '#7C3AED',
+    html: `
+      <div class="info-note bn" style="background:#ECFDF5;border-color:rgba(5,150,105,.25);color:#065F46">
+        <i class="fa-solid fa-circle-check" style="color:#059669"></i>
+        <span>আপনার সকল তথ্য আমাদের কাছে সম্পূর্ণ নিরাপদ এবং সুরক্ষিত।</span>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-user-shield" style="color:var(--blue)"></i>তথ্য সংগ্রহ</div>
+        <p class="info-section-body bn">আমরা শুধুমাত্র অর্ডার প্রক্রিয়াকরণের জন্য প্রয়োজনীয় তথ্য (নাম, ঠিকানা, ফোন নম্বর, ইমেইল) সংগ্রহ করি।</p>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-lock" style="color:var(--green)"></i>তথ্য সুরক্ষা</div>
+        <p class="info-section-body bn">আপনার ব্যক্তিগত তথ্য তৃতীয় পক্ষের সাথে শেয়ার করা হয় না। আমরা শিল্প-মানের এনক্রিপশন ব্যবহার করি।</p>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-key" style="color:var(--gold)"></i>অ্যাকাউন্ট নিরাপত্তা</div>
+        <p class="info-section-body bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। অনাকাঙ্ক্ষিত লগইনের জন্য গ্যালাক্সি মার্ট বিডি দায়ী থাকবে না। সন্দেহজনক কার্যক্রম দেখলে অবিলম্বে পাসওয়ার্ড পরিবর্তন করুন।</p>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title bn"><i class="fa-solid fa-cookie-bite" style="color:var(--orange)"></i>কুকি ব্যবহার</div>
+        <p class="info-section-body bn">আমরা আপনার শপিং অভিজ্ঞতা উন্নত করতে এবং সেশন বজায় রাখতে কুকি ব্যবহার করি।</p>
+      </div>`
+  }
+};
+
+function openInfoModal(type) {
+  const config = INFO_CONTENT[type];
+  if (!config) return;
+  const modal = document.getElementById('infoModal');
+  const icon  = document.getElementById('infoModalIcon');
+  const title = document.getElementById('infoModalTitle');
+  const body  = document.getElementById('infoModalBody');
+  if (!modal) return;
+  icon.style.background = config.iconBg;
+  icon.style.color = config.iconColor;
+  icon.innerHTML = config.icon;
+  title.textContent = config.title;
+  body.innerHTML = config.html;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeInfoModal() {
+  const modal = document.getElementById('infoModal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  const anyOpen = ['cartOverlay','authModal','adminOverlay'].some(id => {
+    const el = document.getElementById(id);
+    return el && el.classList.contains('open');
+  });
+  if (!anyOpen) document.body.style.overflow = '';
+}
+function toggleFaq(item) {
+  item.classList.toggle('open');
 }
 
 function toast(title, sub, type='s') {
