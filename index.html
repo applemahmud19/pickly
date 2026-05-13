@@ -5965,11 +5965,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ── Session ID for visitor deduplication ──
-if (!sessionStorage.getItem('gm_session_id')) {
-  sessionStorage.setItem('gm_session_id', 'sess_' + Math.random().toString(36).slice(2) + Date.now().toString(36));
-}
-
+// ── STATE ──
 let products = [];
 // Cart — persist in localStorage so it survives page refresh
 let cart = (function() {
@@ -5983,9 +5979,51 @@ let activeFilter = {cat:'সব', minPrice:0, maxPrice:999999, rating:0, search:
 let discount = 0;
 
 // ══════════════════════════════════════════════════
-// TIMEOUT UTILITY — 10s guard for all async ops
+// TIMEOUT UTILITY — 30s guard for all async ops
 // ══════════════════════════════════════════════════
-const TIMEOUT_MS = 10000; // 10 seconds
+const TIMEOUT_MS = 30000; // 30 seconds — স্লো ইন্টারনেটেও কাজ করে
+
+// ── SESSION CACHE: admin check করা হয়ে গেলে session থেকে পড়া হবে ──
+const _sessionCache = { userId: null, isAdmin: false, checkedAt: 0 };
+const SESSION_CACHE_TTL = 10 * 60 * 1000; // 10 মিনিট cache valid
+
+/* ──────────────────────────────────────────────────────────────
+   sbWithRetry — Supabase query wrapper with timeout + auto-retry
+   • timeout : ms before treating as failure (default 20s)
+   • retries : number of extra attempts after first failure (default 3)
+   • onRetry : called on each retry so UI can show progress
+────────────────────────────────────────────────────────────── */
+async function sbWithRetry(queryFn, { timeout = 20000, retries = 3, onRetry } = {}) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0 && onRetry) onRetry(attempt);
+    try {
+      const result = await Promise.race([
+        queryFn(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('__timeout__')), timeout)
+        )
+      ]);
+      return result; // success
+    } catch (err) {
+      const isLast = attempt === retries;
+      if (isLast) throw err;
+      // Exponential back-off: 1.5s, 3s, 6s
+      await new Promise(r => setTimeout(r, 1500 * Math.pow(2, attempt)));
+    }
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   wakeSupabase — cheap ping to wake Supabase from sleep mode
+────────────────────────────────────────────────────────────── */
+async function wakeSupabase() {
+  try {
+    await Promise.race([
+      sb.from('orders').select('id').limit(1),
+      new Promise(r => setTimeout(r, 8000)) // max 8s wait
+    ]);
+  } catch(e) { /* ignore — just wanted to wake the DB */ }
+}
 
 /**
  * withTimeout(promise, label)
@@ -6148,42 +6186,18 @@ function loadRecommendations(product) {
 }
 
 async function init() {
-  // Auth state — with 10s timeout guard
+  // Auth state — with 30s timeout guard
   let session = null;
   try {
     const res = await withTimeout(sb.auth.getSession(), 'অ্যাকাউন্ট চেক');
     session = res?.data?.session ?? null;
-  } catch (e) { /* timeout already toasted */ }
+  } catch (e) { /* timeout already toasted — continue without auth */ }
   if (session) await handleUser(session.user);
 
   sb.auth.onAuthStateChange(async (event, session) => {
     if (session) await handleUser(session.user);
     else { currentUser = null; isAdmin = false; updateAuthUI(); }
   });
-
-  // ── Visitor Tracking — log this page visit to visitor_logs ──
-  // Fires non-blocking so it never delays page load
-  (async () => {
-    try {
-      const now = new Date();
-      // Deduplicate: skip if same session visited in last 30 min
-      const SESSION_KEY = 'gm_last_visit';
-      const lastVisit = sessionStorage.getItem(SESSION_KEY);
-      if (!lastVisit || (now.getTime() - Number(lastVisit)) > 30 * 60 * 1000) {
-        sessionStorage.setItem(SESSION_KEY, now.getTime().toString());
-        await sb.from('visitor_logs').insert({
-          created_at:   now.toISOString(),
-          page:         window.location.pathname || '/',
-          referrer:     document.referrer || null,
-          user_agent:   navigator.userAgent?.slice(0, 200) || null,
-          session_id:   sessionStorage.getItem('gm_session_id') || null,
-        });
-      }
-    } catch(e) {
-      // visitor_logs টেবিল না থাকলে বা insert fail হলে silently ignore
-      console.warn('[visitor_log] Could not log visit:', e.message);
-    }
-  })();
 
   await loadProducts();
   subscribeRealtimeUpdates();
@@ -6230,12 +6244,34 @@ async function init() {
 
 async function handleUser(user) {
   currentUser = user;
-  // Check admin — with timeout
-  const { data } = await sbQuery(
-    () => sb.from('admin_users').select('id').eq('id', user.id).single(),
-    'অ্যাডমিন যাচাই'
-  );
-  isAdmin = !!data;
+
+  // ── SESSION CACHE: যদি একই user-এর জন্য TTL-এর মধ্যে আগেই check করা হয়েছে,
+  //    তাহলে DB-তে আবার যাবে না — session থেকে সরাসরি পড়বে ──
+  const now = Date.now();
+  if (_sessionCache.userId === user.id && (now - _sessionCache.checkedAt) < SESSION_CACHE_TTL) {
+    isAdmin = _sessionCache.isAdmin;
+    updateAuthUI();
+    return;
+  }
+
+  // ── DB VERIFICATION with sbWithRetry (3 retries, 30s timeout each) ──
+  try {
+    const result = await sbWithRetry(
+      () => sb.from('admin_users').select('id').eq('id', user.id).single(),
+      { timeout: 30000, retries: 3 }
+    );
+    isAdmin = !!(result && !result.error && result.data);
+  } catch(e) {
+    // সব retry ব্যর্থ — isAdmin false রাখা হবে (safe fallback)
+    console.warn('[handleUser] Admin check failed after retries:', e?.message);
+    isAdmin = false;
+  }
+
+  // ── Cache করা হলো ──
+  _sessionCache.userId     = user.id;
+  _sessionCache.isAdmin    = isAdmin;
+  _sessionCache.checkedAt  = Date.now();
+
   updateAuthUI();
 }
 
@@ -7737,7 +7773,7 @@ async function trackOrder() {
 }
 
 // ── New 2-column track page: load my orders ──
-async function tpLoadMyOrders() {
+async function tpLoadMyOrders(retryCount = 0) {
   const el = document.getElementById('tpMyOrdersList');
   if (!el) return;
 
@@ -7754,25 +7790,67 @@ async function tpLoadMyOrders() {
     return;
   }
 
+  // Show spinner with a 5s "show refresh button" timer
   el.innerHTML = '<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>অর্ডার লোড হচ্ছে...</div>';
+
+  const slowTimer = setTimeout(() => {
+    // If still showing spinner after 5s, add a refresh button below it
+    const spinDiv = el.querySelector('.fa-spinner');
+    if (spinDiv && el.innerHTML.includes('অর্ডার লোড হচ্ছে')) {
+      el.innerHTML += `<div style="text-align:center;margin-top:4px">
+        <button onclick="tpLoadMyOrders()" style="padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:white;color:var(--blue);font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer">
+          <i class="fa-solid fa-rotate-right" style="margin-right:4px"></i>রিফ্রেশ করুন
+        </button>
+      </div>`;
+    }
+  }, 5000);
+
+  // Hard 10s fallback: অনন্তকাল spinner না দেখিয়ে পরিষ্কার error UI দেখাবে
+  const hardTimer = setTimeout(() => {
+    if (el.innerHTML.includes('অর্ডার লোড হচ্ছে') || el.querySelector('.fa-spinner')) {
+      clearTimeout(slowTimer); clearTimeout(hardTimer);
+      el.innerHTML = `
+        <div style="text-align:center;padding:40px 20px">
+          <i class="fa-solid fa-wifi" style="font-size:2.4rem;color:var(--text-light);opacity:.4;display:block;margin-bottom:12px"></i>
+          <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">অর্ডার লোড হয়নি</div>
+          <div class="bn" style="font-size:.76rem;color:var(--text-light);margin-bottom:16px">ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।</div>
+          <button onclick="tpLoadMyOrders()" style="padding:9px 22px;border-radius:var(--radius-sm);border:none;background:var(--blue);color:white;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px">
+            <i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন
+          </button>
+        </div>`;
+    }
+  }, 10000);
 
   let orders, fetchError;
   try {
-    const result = await sbQuery(
+    // Wake Supabase first if this is a retry (avoids cold-start timeout)
+    if (retryCount > 0) await wakeSupabase();
+
+    const result = await sbWithRetry(
       () => sb.from('orders').select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
         .limit(20),
-      'আমার অর্ডার লোড'
+      {
+        timeout: 20000,
+        retries: 3,
+        onRetry: (attempt) => {
+          el.innerHTML = `<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)">
+            <i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>পুনরায় চেষ্টা করা হচ্ছে (${attempt}/3)…
+          </div>`;
+        }
+      }
     );
+    clearTimeout(slowTimer); clearTimeout(hardTimer);
     orders = result.data;
     fetchError = result.error;
   } catch (e) {
-    console.error('[tpLoadMyOrders] Unexpected fetch error:', e);
+    clearTimeout(slowTimer); clearTimeout(hardTimer);
+    console.error('[tpLoadMyOrders] Fetch failed after retries:', e);
     el.innerHTML = `
       <div style="text-align:center;padding:40px 20px">
         <i class="fa-solid fa-circle-exclamation" style="font-size:2.4rem;color:var(--red);opacity:.6;display:block;margin-bottom:12px"></i>
-        <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--red);margin-bottom:5px">লোড করতে সমস্যা হয়েছে</div>
+        <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--red);margin-bottom:5px">সংযোগ ব্যর্থ হয়েছে</div>
         <div class="bn" style="font-size:.76rem;color:var(--text-light);margin-bottom:14px">ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চেষ্টা করুন</div>
         <button onclick="tpLoadMyOrders()" style="padding:8px 18px;border-radius:var(--radius-sm);border:none;background:var(--blue);color:white;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">
           <i class="fa-solid fa-rotate-right" style="margin-right:5px"></i>আবার চেষ্টা করুন
@@ -7782,12 +7860,13 @@ async function tpLoadMyOrders() {
   }
 
   if (fetchError) {
-    console.error('[tpLoadMyOrders] Supabase query error:', fetchError.message, fetchError, 'user_id:', currentUser.id);
+    clearTimeout(slowTimer); clearTimeout(hardTimer);
+    console.error('[tpLoadMyOrders] Supabase error:', fetchError.message);
     el.innerHTML = `
       <div style="text-align:center;padding:40px 20px">
         <i class="fa-solid fa-circle-exclamation" style="font-size:2.4rem;color:var(--red);opacity:.6;display:block;margin-bottom:12px"></i>
         <div class="bn" style="font-size:.88rem;font-weight:700;color:var(--red);margin-bottom:5px">ডেটা লোড ব্যর্থ হয়েছে</div>
-        <div class="bn" style="font-size:.72rem;color:var(--text-light);margin-bottom:14px">${fetchError.message}</div>
+        <div class="bn" style="font-size:.72rem;color:var(--text-light);margin-bottom:14px">${fetchError.isTimeout ? 'সার্ভার সাড়া দিচ্ছে না — পুনরায় চেষ্টা করুন।' : fetchError.message}</div>
         <button onclick="tpLoadMyOrders()" style="padding:8px 18px;border-radius:var(--radius-sm);border:none;background:var(--blue);color:white;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">
           <i class="fa-solid fa-rotate-right" style="margin-right:5px"></i>আবার চেষ্টা করুন
         </button>
