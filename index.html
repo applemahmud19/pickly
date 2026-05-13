@@ -7158,6 +7158,45 @@ function subscribeRealtimeUpdates() {
         updateCounts();
         renderProducts(getFiltered());
       })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
+        const updated = payload.new;
+        if (!updated) return;
+        // Update in-memory map
+        if (window._tpOrderMap?.[updated.id]) {
+          window._tpOrderMap[updated.id].order = { ...window._tpOrderMap[updated.id].order, ...updated };
+        }
+        // If order detail page is open for this order → re-render
+        const detailPage = document.getElementById('page-order-detail');
+        if (detailPage && detailPage.getAttribute('aria-hidden') === 'false'
+            && window._currentOrderDetailId === updated.id) {
+          _refreshOrderDetailPage(updated.id);
+        }
+        // If track/order-list page is open → update the card badge
+        const trackPage = document.getElementById('page-track');
+        if (trackPage && trackPage.getAttribute('aria-hidden') === 'false') {
+          _syncOrderCardStatus(updated.id, updated.status);
+        }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'order_status_history' }, payload => {
+        // New history entry pushed by admin — update cache + re-render if visible
+        const h = payload.new;
+        if (!h || !h.order_id) return;
+        const orderId = h.order_id;
+        if (window._tpOrderMap?.[orderId]) {
+          window._tpOrderMap[orderId].hist = [h, ...(window._tpOrderMap[orderId].hist || [])];
+          // Also sync order status from history entry
+          if (h.status) window._tpOrderMap[orderId].order.status = h.status;
+        }
+        const detailPage = document.getElementById('page-order-detail');
+        if (detailPage && detailPage.getAttribute('aria-hidden') === 'false'
+            && window._currentOrderDetailId === orderId) {
+          _refreshOrderDetailPage(orderId);
+        }
+        const trackPage = document.getElementById('page-track');
+        if (trackPage && trackPage.getAttribute('aria-hidden') === 'false') {
+          _syncOrderCardStatus(orderId, h.status);
+        }
+      })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
         // Auto-refresh order list if track page is open
         const tp = document.getElementById('page-track');
@@ -9224,13 +9263,19 @@ function buildOrderDetailPanel(data, history) {
       <a href="${data.tracking_link}" target="_blank" style="font-size:.72rem;color:var(--blue-dark);word-break:break-all">${data.tracking_link}</a>
     </div>` : '';
 
-  // Items summary
+  // Items summary — with per-item delivery status badge
+  const ITEM_ST_LABEL = { pending:'অপেক্ষায়', in_stock:'স্টকে আছে', sourcing:'সংগ্রহ চলছে', collecting:'সংগ্রহ চলছে', collected:'সংগ্রহ সম্পন্ন', dispatched:'পাঠানো হয়েছে' };
+  const ITEM_ST_COLOR = { pending:'#94A3B8', in_stock:'var(--blue)', sourcing:'#D97706', collecting:'#D97706', collected:'var(--cyan)', dispatched:'var(--green)' };
   const itemsHtml = items.length ? `
     <div style="background:white;border-radius:var(--radius-sm);padding:10px 13px;border:1px solid var(--border)">
       <div style="font-size:.62rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-family:'Hind Siliguri',sans-serif">
         <i class="fa-solid fa-bag-shopping" style="color:var(--blue);margin-right:4px"></i>অর্ডারকৃত পণ্য
       </div>
-      ${items.map(item => `
+      ${items.map(item => {
+        const iSt    = item.item_status || 'pending';
+        const iColor = ITEM_ST_COLOR[iSt] || '#94A3B8';
+        const iLabel = ITEM_ST_LABEL[iSt] || iSt;
+        return `
         <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--blue-light)">
           <div style="width:32px;height:32px;border-radius:6px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
             ${item.image_url
@@ -9239,33 +9284,42 @@ function buildOrderDetailPanel(data, history) {
           </div>
           <div style="flex:1;min-width:0">
             <div class="bn" style="font-size:.76rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name||'পণ্য'}</div>
-            <div class="bn" style="font-size:.66rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString()}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+              <span class="bn" style="font-size:.66rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString()}</span>
+              <span class="bn" style="font-size:.62rem;font-weight:700;color:${iColor};background:${iColor}18;border:1px solid ${iColor}33;border-radius:20px;padding:1px 7px;white-space:nowrap">${iLabel}</span>
+            </div>
           </div>
           <div class="bn" style="font-size:.78rem;font-weight:700;color:var(--blue);flex-shrink:0">৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString()}</div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       <div style="display:flex;justify-content:space-between;padding-top:8px">
         <span class="bn" style="font-size:.8rem;font-weight:700;color:var(--text)">মোট</span>
         <span class="bn" style="font-size:.88rem;font-weight:800;color:var(--blue)">৳${Number(data.total||0).toLocaleString()}</span>
       </div>
     </div>` : '';
 
-  // History
-  let historyHtml = '';
-  if(history && history.length) {
-    historyHtml = `
-      <div class="history-section" style="margin-top:12px">
-        <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেটের ইতিহাস</span></div>
-        <div class="history-timeline">
-          ${history.map(h=>`
-            <div class="hitem">
-              <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
-              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
-              ${(h.note||h.tracking_note)?`<div class="hitem-note">${h.note||h.tracking_note}</div>`:''}
-              <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.changed_at||h.created_at)}</div>
-            </div>`).join('')}
-        </div>
-      </div>`;
+  // History — with synthetic fallback when DB is empty
+  let histDisplay = (history && history.length) ? history : null;
+  // If no history, synthesize one entry from order's current status + created_at
+  if (!histDisplay) {
+    histDisplay = [{ status: data.status || 'pending', note: 'অর্ডার নিশ্চিত হয়েছে।', created_at: data.created_at }];
+    if (data.updated_at && data.updated_at !== data.created_at && data.status !== 'pending') {
+      histDisplay.unshift({ status: data.status, note: 'স্ট্যাটাস আপডেট হয়েছে।', created_at: data.updated_at });
+    }
   }
+  let historyHtml = `
+    <div class="history-section" style="margin-top:12px">
+      <div class="history-title"><i class="fa-solid fa-clock-rotate-left"></i><span class="bn">স্ট্যাটাস আপডেটের ইতিহাস</span></div>
+      <div class="history-timeline">
+        ${histDisplay.map(h=>`
+          <div class="hitem">
+            <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
+            <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
+            ${(h.note||h.tracking_note)?`<div class="hitem-note">${h.note||h.tracking_note}</div>`:''}
+            <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.changed_at||h.created_at)}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
 
   // Admin/Tracking note (uses tracking_note column)
   const noteVal = data.tracking_note || data.admin_note || '';
@@ -10686,10 +10740,26 @@ function renderCatPageProducts() {
 // ══════════════════════════════════════════════════
 async function openOrderDetailPage(orderData, historyData) {
   const o    = orderData;
-  const hist = historyData || [];
+  let hist   = historyData || [];
 
   // Track which order is currently shown — used by BroadcastChannel listener
   window._currentOrderDetailId = o.id;
+
+  // Always fetch fresh history from DB to ensure we show the latest entries
+  // (historyData may be stale or empty when coming from a cached path)
+  if (sb) {
+    try {
+      const { data: freshHist } = await sb.from('order_status_history')
+        .select('*').eq('order_id', o.id).order('created_at', { ascending: false });
+      if (freshHist && freshHist.length) {
+        hist = freshHist;
+        // Update cache
+        if (!window._tpOrderMap) window._tpOrderMap = {};
+        if (!window._tpOrderMap[o.id]) window._tpOrderMap[o.id] = { order: o, hist };
+        else window._tpOrderMap[o.id].hist = hist;
+      }
+    } catch(e) { /* use whatever historyData was passed */ }
+  }
 
   const badgeCls    = STATUS_BADGE_CLS[o.status] || 'osb-pending';
   const statusLabel = STATUS_LABEL[o.status]      || o.status;
