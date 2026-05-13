@@ -2416,7 +2416,7 @@ body {
             </label>
             <textarea class="form-inp" id="pDescription"
               placeholder="পণ্যের বিবরণ লিখুন...&#10;* এই পণ্যের প্রথম বৈশিষ্ট্য&#10;* দ্বিতীয় বৈশিষ্ট্য&#10;&#10;নতুন প্যারাগ্রাফের জন্য খালি লাইন দিন।"
-              style="min-height:78px;max-height:120px;padding:8px 11px;font-family:var(--font-bn);line-height:1.6;white-space:pre-line;resize:vertical;font-size:0.82rem"></textarea>
+              style="min-height:350px;padding:8px 11px;font-family:var(--font-bn);line-height:1.6;white-space:pre-line;resize:vertical;font-size:0.82rem"></textarea>
           </div>
 
         </div><!-- /right column -->
@@ -4052,19 +4052,37 @@ async function updateOrderStatus(id, status, customNote) {
     delivered:   'পণ্যটি সফলভাবে ডেলিভারি হয়েছে। ধন্যবাদ!',
     cancelled:   'অর্ডারটি বাতিল করা হয়েছে।',
   };
+  // ── DB STATUS MAPPING ──────────────────────────────────────────────────────
+  // orders_status_check constraint only allows:
+  //   pending | confirmed | processing | shipped | delivered | cancelled
+  // Extended statuses (in_stock, collecting, collected) are stored as
+  // 'processing' in the DB with a detailed note, but shown correctly in UI
+  // via the status_name field in order_status_history.
+  // PERMANENT FIX: Run this SQL in Supabase once to allow all statuses:
+  //   ALTER TABLE orders DROP CONSTRAINT orders_status_check;
+  //   ALTER TABLE orders ADD CONSTRAINT orders_status_check
+  //     CHECK (status IN ('pending','confirmed','in_stock','collecting','collected',
+  //                       'processing','shipped','delivered','cancelled'));
+  // ──────────────────────────────────────────────────────────────────────────
+  const DB_STATUS_MAP = {
+    in_stock:   'processing',  // maps to processing until constraint is fixed
+    collecting: 'processing',
+    collected:  'processing',
+  };
+  const dbStatus = DB_STATUS_MAP[status] || status;  // actual value saved to orders.status
   const note = customNote || BN_STATUS_NOTE[status] || `Status updated to ${status} by admin`;
   const now = new Date().toISOString();
-  const { error } = await sb.from('orders').update({ status, updated_at: now }).eq('id', id);
+  const { error } = await sb.from('orders').update({ status: dbStatus, updated_at: now }).eq('id', id);
   if (error) { toast('Update Failed', error.message, 'error'); return; }
   // Push to local cache IMMEDIATELY — so history panel updates without waiting for DB round-trip
   if (!localStatusHistoryCache[id]) localStatusHistoryCache[id] = [];
   localStatusHistoryCache[id].unshift({ status, note, created_at: now, _local: true });
-  // Also insert to DB (fire-and-forget)
+  // Also insert to DB history with REAL status (not the mapped one) for full granularity
   await sb.from('order_status_history').insert({
     order_id: id, status, note, created_at: now
   }).catch(e => console.warn('[updateOrderStatus] history insert failed:', e.message));
   const o = allOrders.find(x => x.id === id);
-  if (o) o.status = status;
+  if (o) o.status = status;  // keep UI showing real status
   renderOrders(); renderDashboard();
   toast('✅ Success', `Status → ${cap(status)} — User tracking synced`, 'success');
   if (currentOrderId === id) refreshOrderModal(id);
