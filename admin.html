@@ -3164,7 +3164,7 @@ async function signInGoogle() {
    • retries : number of extra attempts after first failure
    • onWake  : called on first retry so UI can show "waking up" msg
 ────────────────────────────────────────────────────────────── */
-async function sbWithRetry(queryFn, { timeout = 25000, retries = 2, onWake } = {}) {
+async function sbWithRetry(queryFn, { timeout = 30000, retries = 3, onWake } = {}) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt === 1 && onWake) onWake();          // notify UI on first retry
     try {
@@ -3179,7 +3179,7 @@ async function sbWithRetry(queryFn, { timeout = 25000, retries = 2, onWake } = {
       const isTimeout = err?.message === '__timeout__';
       const isLast    = attempt === retries;
       if (isLast) throw err;                        // give up after all retries
-      // Exponential back-off: 2s, 4s …
+      // Exponential back-off: 2s, 4s, 8s …
       await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
     }
   }
@@ -3218,8 +3218,8 @@ async function verifyAndEnter(user) {
     const result = await sbWithRetry(
       () => sb.from('admin_users').select('id,role').eq('id', user.id).single(),
       {
-        timeout: 25000,
-        retries: 2,
+        timeout: 30000,
+        retries: 3,
         onWake: () => {
           if (loginBtn) loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>সার্ভার জাগাচ্ছি… একটু অপেক্ষা করুন';
         }
@@ -4090,27 +4090,53 @@ async function updateItemStatus(orderId, itemIdx, newStatus, selectEl) {
   const o = allOrders.find(x => x.id === orderId);
   if (!o || !Array.isArray(o.items) || !o.items[itemIdx]) return;
 
-  // Update local cache
+  // ── Optimistic UI: সাথে সাথে local cache আপডেট ──
+  const prevStatus = o.items[itemIdx].item_status;
   o.items[itemIdx].item_status = newStatus;
 
-  // Style the select
-  if (selectEl) selectEl.style.borderColor = ITEM_STATUS_COLORS[newStatus] || 'var(--border2)';
+  // Style the select immediately
+  if (selectEl) {
+    selectEl.disabled = true;
+    selectEl.style.opacity = '0.6';
+    selectEl.style.borderColor = ITEM_STATUS_COLORS[newStatus] || 'var(--border2)';
+  }
 
-  // Persist to Supabase — store updated items array (item_status lives inside items JSON)
-  const { error } = await sb.from('orders').update({
-    items: o.items,
-    updated_at: new Date().toISOString()
-  }).eq('id', orderId);
+  // ── Persist to Supabase with sbWithRetry (3 retries, 30s each) ──
+  let saveError = null;
+  try {
+    const result = await sbWithRetry(
+      () => sb.from('orders').update({
+        items: o.items,
+        updated_at: new Date().toISOString()
+      }).eq('id', orderId),
+      { timeout: 30000, retries: 3 }
+    );
+    saveError = result?.error || null;
+  } catch(e) {
+    saveError = { message: e?.message || 'Unknown error' };
+  }
 
-  if (error) {
-    toast('Item Status Failed', error.message, 'error');
+  // Re-enable select
+  if (selectEl) { selectEl.disabled = false; selectEl.style.opacity = '1'; }
+
+  if (saveError) {
+    // ── Rollback local cache on failure ──
+    o.items[itemIdx].item_status = prevStatus;
+    if (selectEl) {
+      selectEl.value = prevStatus;
+      selectEl.style.borderColor = ITEM_STATUS_COLORS[prevStatus] || 'var(--border2)';
+    }
+    toast('❌ Save Failed', `ডেটাবেসে সেভ হয়নি: ${saveError.message}`, 'error');
     return;
   }
 
+  // ── Success: confirmation + UI sync ──
   const ITEM_STATUS_LABELS = { pending:'Pending', in_stock:'স্টকে আছে', sourcing:'সংগ্রহ করা হচ্ছে', collected:'সংগ্রহ করা হয়েছে', dispatched:'পাঠানো হয়েছে' };
-  toast('✅ Item Updated', `"${o.items[itemIdx].name}" → ${ITEM_STATUS_LABELS[newStatus] || newStatus}`, 'success');
+  toast('✅ সেভ হয়েছে', `"${o.items[itemIdx].name}" → ${ITEM_STATUS_LABELS[newStatus] || newStatus} — ডেটাবেসে সংরক্ষিত`, 'success');
+
   // Re-render the items block in the modal so item status is immediately reflected
   if (currentOrderId === orderId) refreshOrderModal(orderId);
+
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
     const trackCh = new BroadcastChannel('gm_order_sync');
