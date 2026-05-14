@@ -2313,17 +2313,22 @@ body {
 
         <!-- LEFT: Image upload (sticky) -->
         <div style="display:flex;flex-direction:column;gap:6px;position:sticky;top:0">
-          <label class="form-label" style="margin-bottom:2px">Product Image</label>
-          <!-- Preview — fixed 155px height, no scrolling -->
-          <div class="upload-preview empty" id="imagePreview" style="height:155px;max-height:155px;aspect-ratio:unset;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <label class="form-label" style="margin-bottom:2px">Product Images <span style="color:var(--text3);font-weight:400;font-size:.6rem">(সর্বোচ্চ ৫টি)</span></label>
+
+          <!-- Main preview -->
+          <div class="upload-preview empty" id="imagePreview" style="height:155px;max-height:155px;aspect-ratio:unset;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative">
             <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
           </div>
-          <!-- Upload zone — compact -->
+
+          <!-- Thumbnail strip (shows after selection) -->
+          <div id="adminThumbStrip" style="display:none;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:2px"></div>
+
+          <!-- Upload zone -->
           <div class="upload-zone" id="uploadZone" style="padding:8px 6px;gap:2px;min-height:unset">
-            <input type="file" id="imageFile" accept="image/*" onchange="handleImageSelect(this)">
+            <input type="file" id="imageFile" accept="image/*" multiple onchange="handleImageSelect(this)">
             <i class="fa-solid fa-cloud-arrow-up uz-icon" style="font-size:1rem"></i>
             <div class="uz-title" style="font-size:0.68rem;font-weight:600">ক্লিক বা ড্র্যাগ করুন</div>
-            <div class="uz-sub" style="font-size:0.58rem">PNG · JPG · WEBP · Max 5MB</div>
+            <div class="uz-sub" style="font-size:0.58rem">PNG · JPG · WEBP · Max 5MB · ৫টি পর্যন্ত</div>
           </div>
           <div class="upload-progress" id="uploadProgress" style="display:none">
             <div class="upload-progress-bar" id="uploadProgressBar"></div>
@@ -3061,7 +3066,8 @@ let sb = null;
 let currentUser = null;
 let allProducts = [];
 let allOrders = [];
-let selectedImageFile = null;
+let selectedImageFiles = []; // multi-image: up to 5 files
+let selectedImageFile  = null; // legacy alias — points to files[0]
 
 /* ══════════════════════════════════════
    INIT
@@ -4835,15 +4841,36 @@ function openProductModal(product = null) {
   // Fill author field (books) — fall back to brand for legacy products where author was saved in brand
   const authorInput = document.getElementById('pAuthor');
   if (authorInput) authorInput.value = product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
-  selectedImageFile = null;
+  selectedImageFiles = [];
+  selectedImageFile  = null;
   document.getElementById('imageFile').value = '';
   document.getElementById('uploadFileName').textContent = '';
 
-  // Reset image preview
+  // Reset thumbnail strip
+  const strip = document.getElementById('adminThumbStrip');
+  if (strip) { strip.innerHTML = ''; strip.style.display = 'none'; }
+
+  // Reset / populate image preview
   const prev = document.getElementById('imagePreview');
-  if (product?.image_url) {
+  const existingImages = product?.images || (product?.image_url ? [product.image_url] : []);
+  if (existingImages.length) {
     prev.classList.remove('empty');
-    prev.innerHTML = `<img src="${product.image_url}" alt="preview">`;
+    prev.innerHTML = `<img src="${existingImages[0]}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+    // Show existing image thumbnails if more than one
+    if (existingImages.length > 1 && strip) {
+      strip.style.display = 'flex';
+      existingImages.forEach((src, idx) => {
+        const chip = document.createElement('div');
+        chip.style.cssText = `width:42px;height:42px;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid ${idx===0?'var(--blue)':'var(--border)'};flex-shrink:0;background:var(--bg3)`;
+        chip.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">`;
+        chip.onclick = () => {
+          prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+          strip.querySelectorAll('div').forEach(c => c.style.borderColor = 'var(--border)');
+          chip.style.borderColor = 'var(--blue)';
+        };
+        strip.appendChild(chip);
+      });
+    }
   } else {
     prev.classList.add('empty');
     prev.innerHTML = `<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>`;
@@ -4874,71 +4901,140 @@ function handleCategoryChange(cat) {
 }
 
 function handleImageSelect(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { toast('File too large', 'Max 5MB allowed', 'error'); return; }
-  selectedImageFile = file;
-  document.getElementById('uploadFileName').textContent = file.name;
+  const files = Array.from(input.files || []).slice(0, 5);
+  if (!files.length) return;
 
-  // Preview
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const prev = document.getElementById('imagePreview');
-    prev.classList.remove('empty');
-    prev.innerHTML = `<img src="${e.target.result}" alt="preview">`;
-  };
-  reader.readAsDataURL(file);
+  const oversized = files.find(f => f.size > 5 * 1024 * 1024);
+  if (oversized) { toast('File too large', `${oversized.name} — Max 5MB allowed`, 'error'); return; }
+
+  selectedImageFiles = files;
+  selectedImageFile  = files[0]; // legacy alias
+  document.getElementById('uploadFileName').textContent =
+    files.length === 1 ? files[0].name : `${files.length}টি ছবি নির্বাচিত`;
+
+  // ── Render thumbnails + main preview ──
+  const strip = document.getElementById('adminThumbStrip');
+  const prev  = document.getElementById('imagePreview');
+  strip.innerHTML = '';
+  strip.style.display = 'flex';
+
+  files.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const src = e.target.result;
+
+      // First image → main preview
+      if (idx === 0) {
+        prev.classList.remove('empty');
+        prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+      }
+
+      // Thumbnail chip
+      const chip = document.createElement('div');
+      chip.style.cssText = `
+        width:42px;height:42px;border-radius:7px;overflow:hidden;cursor:pointer;
+        border:2px solid ${idx===0?'var(--blue)':'var(--border)'};
+        flex-shrink:0;background:var(--bg3);transition:border-color .15s
+      `;
+      chip.dataset.src = src;
+      chip.dataset.idx = idx;
+      chip.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">`;
+      chip.onclick = () => {
+        // Switch main preview
+        prev.classList.remove('empty');
+        prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+        // Active border
+        strip.querySelectorAll('div').forEach(c => c.style.borderColor = 'var(--border)');
+        chip.style.borderColor = 'var(--blue)';
+      };
+      chip.onmouseover = () => { if (chip.style.borderColor !== 'var(--blue)') chip.style.borderColor = 'var(--text3)'; };
+      chip.onmouseout  = () => { if (chip.dataset.idx !== strip.querySelector('[style*="var(--blue)"]')?.dataset.idx) chip.style.borderColor = 'var(--border)'; };
+      strip.appendChild(chip);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Upload a single file — returns public URL or null
+async function uploadOneImage(file) {
+  const bucket   = getConfig().bucket;
+  const ext      = file.name.split('.').pop();
+  const fileName = `product_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  try {
+    const { data, error } = await sb.storage.from(bucket).upload(fileName, file, {
+      cacheControl: '3600', upsert: false
+    });
+    if (error) { console.error('[uploadOneImage] Failed:', error.message); return null; }
+    const { data: urlData } = sb.storage.from(bucket).getPublicUrl(fileName);
+    return urlData.publicUrl;
+  } catch(err) {
+    console.error('[uploadOneImage] Unexpected error:', err);
+    return null;
+  }
 }
 
 async function uploadImageToSupabase() {
-  if (!selectedImageFile) return null;
+  // Legacy single-file path (used internally — now wraps multi)
+  if (!selectedImageFiles.length && !selectedImageFile) return null;
+  const file = selectedImageFiles[0] || selectedImageFile;
+  if (!file) return null;
+
   const bucket = getConfig().bucket;
-  const ext = selectedImageFile.name.split('.').pop();
+  const ext = file.name.split('.').pop();
   const fileName = `product_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
-  // Show progress
   document.getElementById('uploadProgress').style.display = 'block';
   document.getElementById('uploadProgressBar').style.width = '30%';
 
-  // ── 10-second timeout guard ──
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
     document.getElementById('uploadProgress').style.display = 'none';
     toast('⏳ আপলোড বিলম্ব', 'ছবি আপলোড ধীর — আবার চেষ্টা করুন।', 'error');
-    console.error('[uploadImageToSupabase] Timeout: Image upload exceeded 10 seconds. Bucket:', bucket, 'File:', fileName);
+    console.error('[uploadImageToSupabase] Timeout. Bucket:', bucket, 'File:', fileName);
   }, 25000);
 
   try {
-    const { data, error } = await sb.storage.from(bucket).upload(fileName, selectedImageFile, {
+    const { data, error } = await sb.storage.from(bucket).upload(fileName, file, {
       cacheControl: '3600', upsert: false
     });
-
     clearTimeout(timeoutId);
     if (timedOut) return null;
-
     document.getElementById('uploadProgressBar').style.width = '90%';
-
     if (error) {
       document.getElementById('uploadProgress').style.display = 'none';
-      console.error('[uploadImageToSupabase] Supabase Storage upload failed:', error.message, error);
+      console.error('[uploadImageToSupabase] Upload failed:', error.message, error);
       toast('Upload Failed', error.message, 'error');
       return null;
     }
-
-    // Get public URL
     const { data: urlData } = sb.storage.from(bucket).getPublicUrl(fileName);
     document.getElementById('uploadProgressBar').style.width = '100%';
     setTimeout(() => document.getElementById('uploadProgress').style.display = 'none', 800);
-
     return urlData.publicUrl;
   } catch (err) {
     clearTimeout(timeoutId);
     document.getElementById('uploadProgress').style.display = 'none';
-    console.error('[uploadImageToSupabase] Unexpected error during upload:', err);
+    console.error('[uploadImageToSupabase] Unexpected error:', err);
     toast('Upload Error', err.message || 'অপ্রত্যাশিত আপলোড সমস্যা', 'error');
     return null;
   }
+}
+
+// Upload all selected files and return array of URLs
+async function uploadAllImages() {
+  const files = selectedImageFiles.length ? selectedImageFiles : (selectedImageFile ? [selectedImageFile] : []);
+  if (!files.length) return [];
+
+  document.getElementById('uploadProgress').style.display = 'block';
+  const urls = [];
+  for (let i = 0; i < files.length; i++) {
+    document.getElementById('uploadProgressBar').style.width = `${Math.round((i / files.length) * 90)}%`;
+    const url = await uploadOneImage(files[i]);
+    if (url) urls.push(url);
+  }
+  document.getElementById('uploadProgressBar').style.width = '100%';
+  setTimeout(() => document.getElementById('uploadProgress').style.display = 'none', 800);
+  return urls;
 }
 
 async function saveProduct() {
@@ -4965,18 +5061,21 @@ async function saveProduct() {
   }, 25000);
 
   try {
-    // ── STEP 1: Upload image first — strictly wait for URL before DB write ──
-    let imageUrl = null;
-    if (selectedImageFile) {
-      imageUrl = await uploadImageToSupabase();
-      if (!imageUrl) {
-        // uploadImageToSupabase already showed a toast and logged; abort save
+    // ── STEP 1: Upload all images — wait for URLs before DB write ──
+    let imageUrl  = null;
+    let imageUrls = [];
+    const hasNewFiles = selectedImageFiles.length > 0 || selectedImageFile;
+
+    if (hasNewFiles) {
+      imageUrls = await uploadAllImages();
+      if (!imageUrls.length) {
         clearTimeout(timeoutId);
-        console.error('[saveProduct] Aborting save: image upload returned null for product:', name);
+        console.error('[saveProduct] Aborting save: all image uploads failed for product:', name);
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Product';
         return;
       }
+      imageUrl = imageUrls[0]; // primary image
     }
 
     // Check publisher & book_type
@@ -5001,7 +5100,8 @@ async function saveProduct() {
       publisher,
       book_type,
       is_active:   true,
-      ...(imageUrl ? { image_url: imageUrl } : {}),
+      ...(imageUrl    ? { image_url: imageUrl }     : {}),
+      ...(imageUrls.length ? { images: imageUrls } : {}),
     };
 
     // ── STEP 2: Write to DB only after upload confirmed ──
@@ -5024,7 +5124,8 @@ async function saveProduct() {
 
     toast('Success!', id ? 'পণ্য আপডেট হয়েছে' : 'নতুন পণ্য যোগ হয়েছে', 'success');
     closeModal('productModal');
-    selectedImageFile = null;
+    selectedImageFiles = [];
+    selectedImageFile  = null;
     await loadProducts();
     renderDashboard();
 
