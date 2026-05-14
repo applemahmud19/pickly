@@ -423,6 +423,23 @@ header.scrolled{
 /* ── NAV CATS ── */
 .nav-cats{display:flex;padding:0 22px;border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
 .nav-cats::-webkit-scrollbar{display:none}
+
+/* ── CATEGORY BAR HIDE on Product / Checkout / Track / Profile pages ──
+   When body has .page-product-open, collapse .nav-cats with zero layout shift.
+   max-height + overflow keeps it in flow but invisible — no gap left behind. */
+body.page-product-open   .nav-cats,
+body.page-checkout-open  .nav-cats,
+body.page-track-open     .nav-cats,
+body.page-profile-open   .nav-cats,
+body.page-wishlist-open  .nav-cats,
+body.page-order-detail-open .nav-cats {
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-top-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none;
+}
 .ncat{display:flex;align-items:center;gap:6px;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:500;color:var(--text-mid);white-space:nowrap;border-bottom:2px solid transparent;transition:all var(--t)}
 /* ICON FIX: Explicitly set icon color + size — never let it inherit 'transparent'
    or get lost in a stacking context. Force-render with display:inline-flex. */
@@ -2195,26 +2212,24 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   position: relative;
   border-radius: 20px;
   overflow: hidden;
-  background: #fff;
+  background: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1 / 1;   /* square, no empty vertical space */
   width: 100%;
   border: 1.5px solid var(--border);
-  box-shadow: 0 2px 16px rgba(0,122,255,.06);
 }
-/* Main gallery image — fills the card perfectly */
+/* Main gallery image — fills the card */
 #fpIcon[id] {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
   object-fit: contain !important;
-  padding: 16px !important;
+  padding: 12px !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   display: block !important;
-  transition: opacity .25s ease, transform .25s ease;
 }
 @media(max-width:860px){ .fp-img-card { aspect-ratio: 1 / 1; } }
 .fp-icon {
@@ -2229,39 +2244,24 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   display: flex; flex-direction: column; gap: 5px;
 }
 .fp-thumb-row {
-  display: flex; gap: 8px; margin-top: 12px;
+  display: flex; gap: 8px; margin-top: 10px;
   justify-content: center; flex-wrap: wrap;
 }
 /* Gallery thumbnail chips */
 .fp-thumb-chip {
-  width: 64px; height: 64px;
-  border-radius: 10px; overflow: hidden;
+  width: 58px; height: 58px;
+  border-radius: 9px; overflow: hidden;
   border: 2px solid var(--border);
   cursor: pointer; flex-shrink: 0;
   background: #fff;
   transition: border-color .2s, box-shadow .2s, transform .15s;
-  position: relative;
 }
-.fp-thumb-chip::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  transition: border-color .2s;
-  pointer-events: none;
-}
-.fp-thumb-chip:hover { border-color: var(--blue); box-shadow: 0 4px 14px rgba(0,122,255,.20); transform: translateY(-2px); }
-.fp-thumb-chip.active {
-  border-color: var(--blue);
-  box-shadow: 0 4px 18px rgba(0,122,255,.30);
-  transform: translateY(-2px);
-}
-.fp-thumb-chip.active::after { border-color: rgba(0,122,255,.25); }
-.fp-thumb-chip img { width:100%; height:100%; object-fit:contain; padding:4px; display:block; pointer-events:none; }
+.fp-thumb-chip:hover { border-color: var(--blue); box-shadow: 0 3px 12px rgba(0,122,255,.18); transform: translateY(-1px); }
+.fp-thumb-chip.active { border-color: var(--blue); box-shadow: 0 4px 16px rgba(0,122,255,.22); }
+.fp-thumb-chip img { width:100%; height:100%; object-fit:contain; padding:3px; display:block; }
 /* Fade-in on main image swap */
-@keyframes fpImgFade { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
-.fp-img-fade { animation: fpImgFade .28s cubic-bezier(.4,0,.2,1); }
+@keyframes fpImgFade { from { opacity:.3; transform:scale(.98); } to { opacity:1; transform:scale(1); } }
+.fp-img-fade { animation: fpImgFade .25s ease; }
 
 /* Right: info */
 .fp-right { display: flex; flex-direction: column; gap: 0; }
@@ -7629,6 +7629,8 @@ function openPage(name) {
   el.setAttribute('aria-hidden', 'false');
   el.scrollTop = 0;
   document.body.style.overflow = 'hidden'; // prevent body scroll while page open
+  // Hide category bar on non-home pages
+  document.body.classList.add('page-' + name + '-open');
 }
 function closePage(name) {
   const el = document.getElementById('page-' + name);
@@ -7636,6 +7638,8 @@ function closePage(name) {
   el.classList.remove('open');
   el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
+  // Restore category bar
+  document.body.classList.remove('page-' + name + '-open');
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
@@ -7723,14 +7727,14 @@ function openProduct(id, pushUrl = true) {
   // Gallery images sorted by sort_order if present
   const rawImgs = Array.isArray(p.images) && p.images.length
     ? [...p.images].sort((a, b) => (a.sort_order||0) - (b.sort_order||0))
-    : (p.image_url ? [{ url: p.image_url, sort_order: 0 }] : []);
+    : (p.image_url ? [{ url: p.image_url }] : []);
   // Normalise: each entry may be a string URL or {url, sort_order}
   const galleryImgs = rawImgs.map(x => (typeof x === 'string' ? x : (x.url || x)));
   const primaryImg  = galleryImgs[0] || p.image_url || '';
 
   if (iconEl) {
     if (primaryImg) {
-      iconEl.outerHTML = `<img id="fpIcon" src="${primaryImg}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:16px;display:block" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
+      iconEl.outerHTML = `<img id="fpIcon" src="${primaryImg}" alt="${p.name}" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
     } else {
       iconEl.style.cssText = `width:140px;height:140px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 12px 40px rgba(0,0,0,.14);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
       iconEl.innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
@@ -7744,7 +7748,7 @@ function openProduct(id, pushUrl = true) {
     if (galleryImgs.length > 1) {
       thumbRow.style.display = 'flex';
       thumbRow.innerHTML = galleryImgs.map((src, idx) => `
-        <div class="fp-thumb-chip ${idx===0?'active':''}" data-idx="${idx}" onclick="fpSwitchGallery('${encodeURIComponent(src)}', this)" title="ছবি ${idx+1}">
+        <div class="fp-thumb-chip ${idx===0?'active':''}" data-idx="${idx}" onclick="fpSwitchGallery('${encodeURIComponent(src)}', this)">
           <img src="${src}" alt="Product image ${idx+1}" loading="lazy" onerror="this.parentElement.style.display='none'">
         </div>`).join('');
     } else {
@@ -7829,11 +7833,11 @@ function fpSwitchGallery(encodedSrc, chip) {
 
   if (mainImg && mainImg.tagName !== 'IMG') {
     // Was icon div — replace with img (CSS handles sizing)
-    mainImg.outerHTML = `<img id="fpIcon" src="${src}" alt="" style="width:100%;height:100%;object-fit:contain;padding:16px;display:block">`;
+    mainImg.outerHTML = `<img id="fpIcon" src="${src}" alt="">`;
     mainImg = document.getElementById('fpIcon');
   } else if (mainImg) {
     mainImg.classList.remove('fp-img-fade');
-    void mainImg.offsetWidth; // reflow to restart animation
+    void mainImg.offsetWidth;
     mainImg.src = src;
     mainImg.classList.add('fp-img-fade');
   }
@@ -13180,6 +13184,7 @@ window.addEventListener('popstate', function(e) {
   ALL_PAGES.forEach(n => {
     const el = document.getElementById('page-' + n);
     if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+    document.body.classList.remove('page-' + n + '-open');
   });
   ALL_MODALS.forEach(id => {
     const el = document.getElementById(id);
@@ -13229,6 +13234,7 @@ window.addEventListener('popstate', function(e) {
       openPages.slice(0, -1).forEach(n => {
         const el = document.getElementById('page-' + n);
         if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+        document.body.classList.remove('page-' + n + '-open');
       });
     }
   });
