@@ -3950,6 +3950,9 @@ div.pcard-icon {
   margin-bottom: 14px;
   overflow: visible; /* FIX: allow district dropdown to overflow grid boundary */
 }
+.location-fields-grid .form-group {
+  position: relative; /* FIX: enable z-index stacking for searchable wrappers */
+}
 
 html, body {
   overflow-x: hidden;
@@ -5954,7 +5957,7 @@ html, body {
           <span class="step-circle" style="background:var(--blue);color:white">২</span>
           ডেলিভারি ঠিকানা
         </div>
-        <div class="location-fields-grid" style="display:grid;gap:14px;margin-bottom:14px">
+        <div class="location-fields-grid" style="display:grid;gap:14px;margin-bottom:14px;overflow:visible">
           <div class="form-group" style="margin-bottom:0">
             <label class="bn">জেলা *</label>
             <select class="form-sel bn" id="cDistrict" onchange="onDistrictChange()">
@@ -5968,8 +5971,9 @@ html, body {
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label class="bn">থানা / ইউনিয়ন / পৌরসভা *</label>
-            <input class="form-inp bn" type="text" id="cThana" placeholder="থানা / ইউনিয়ন / পৌরসভার নাম লিখুন" oninput="calcDelivery()">
+            <label class="bn">ইউনিয়ন / পৌরসভা / থানা *</label>
+            <!-- Hidden real input used by form submission -->
+            <input type="hidden" id="cThana">
           </div>
         </div>
         <div class="form-group" style="margin-bottom:0">
@@ -10468,6 +10472,65 @@ const DISTRICT_ALT = {
   'শেরপুর':           ['sherpur'],
 };
 
+// ── English transliterations for upazila search ──────────────────────────────
+const UPAZILA_EN = {
+  // Dhaka
+  'ধামরাই':['dhamrai'],'দোহার':['dohar'],'কেরানীগঞ্জ':['keraniganj','keranigonj'],
+  'নবাবগঞ্জ':['nawabganj','nabobganj'],'সাভার':['savar'],
+  // Gazipur
+  'গাজীপুর সদর':['gazipur sadar','gazipur saddar'],'কালিয়াকৈর':['kaliakair','kaliakoir'],
+  'কাপাসিয়া':['kapasia'],'শ্রীপুর':['sreepur','sripur'],'টঙ্গী':['tongi'],
+  // Chittagong
+  'চন্দনাইশ':['chandanaish'],'আনোয়ারা':['anwara','anwara'],'বাঁশখালী':['banshkhali','banshkhali'],
+  'বোয়ালখালী':['boalkhali'],'চট্টগ্রাম সদর':['chattogram sadar'],'ফটিকছড়ি':['fatikchhari','fatikchari'],
+  'হাটহাজারী':['hathazari'],'লোহাগাড়া':['lohagara'],'মিরসরাই':['mirsharai'],
+  'পটিয়া':['patiya'],'রাউজান':['raozan'],'রাঙ্গুনিয়া':['rangunia'],
+  'সন্দ্বীপ':['sandwip'],'সাতকানিয়া':['satkania'],'সীতাকুণ্ড':['sitakunda'],
+  // Cumilla
+  'কুমিল্লা সদর':['comilla sadar','cumilla sadar'],'বরুড়া':['barura'],
+  'ব্রাহ্মণপাড়া':['brahmanpara'],'বুড়িচং':['burichang'],'চান্দিনা':['chandina'],
+  'চৌদ্দগ্রাম':['chauddagram'],'দাউদকান্দি':['daudkandi'],'দেবিদ্বার':['debidwar'],
+  'হোমনা':['homna'],'লাকসাম':['laksam'],'লালমাই':['lalmai'],
+  'মেঘনা':['meghna'],'মুরাদনগর':['muradnagar'],'নাঙ্গলকোট':['nangalkot'],
+  'তিতাস':['titas'],
+  // Cox's Bazar
+  'কক্সবাজার সদর':['coxs bazar sadar','cox bazar sadar'],'চকরিয়া':['chakaria','chokoria'],
+  'কুতুবদিয়া':['kutubdia'],'মহেশখালী':['maheshkhali'],'পেকুয়া':['pekua'],
+  'রামু':['ramu'],'টেকনাফ':['teknaf'],'উখিয়া':['ukhia'],
+  // Sylhet
+  'সিলেট সদর':['sylhet sadar'],'বালাগঞ্জ':['balaganj'],'বিয়ানীবাজার':['beanibazar'],
+  'বিশ্বনাথ':['bishwanath'],'কোম্পানীগঞ্জ':['companiganj'],'ফেঞ্চুগঞ্জ':['fenchuganj'],
+  'গোলাপগঞ্জ':['golapganj'],'গোয়াইনঘাট':['gowainghat'],'জকিগঞ্জ':['jakiganj'],
+  'কানাইঘাট':['kanaighat'],'ওসমানীনগর':['osmaninagar'],'দক্ষিণ সুরমা':['dakshin surma'],
+  // Rajshahi
+  'রাজশাহী সদর':['rajshahi sadar'],'বাঘা':['bagha'],'বাগমারা':['bagmara'],
+  'চারঘাট':['charghat'],'দুর্গাপুর':['durgapur'],'গোদাগাড়ী':['godagari'],
+  'মোহনপুর':['mohanpur'],'পবা':['paba'],'পুঠিয়া':['puthia'],
+  'তানোর':['tanore'],
+  // Khulna
+  'খুলনা সদর':['khulna sadar'],'বটিয়াঘাটা':['batiaghata'],'দাকোপ':['dakop'],
+  'ডুমুরিয়া':['dumuria'],'দিঘলিয়া':['dighalia'],'কয়রা':['koyra'],
+  'পাইকগাছা':['paikgacha'],'রূপসা':['rupsa'],'তেরখাদা':['terkhada'],
+  // Barishal
+  'বরিশাল সদর':['barishal sadar','barisal sadar'],'আগৈলঝাড়া':['agailjhara'],
+  'বাবুগঞ্জ':['babuganj'],'বাকেরগঞ্জ':['bakerganj'],'বানারীপাড়া':['banaripara'],
+  'গৌরনদী':['gournadi'],'হিজলা':['hijla'],'মেহেন্দিগঞ্জ':['mehendiganj'],
+  'মুলাদী':['muladi'],'উজিরপুর':['uzirpur'],
+  // Rangpur
+  'রংপুর সদর':['rangpur sadar'],'বদরগঞ্জ':['badarganj'],'গঙ্গাচড়া':['gangachara'],
+  'কাউনিয়া':['kaunia'],'মিঠাপুকুর':['mithapukur'],'পীরগঞ্জ':['pirganj'],
+  'পীরগাছা':['pirgacha'],'তারাগঞ্জ':['taraganj'],
+  // Mymensingh
+  'ময়মনসিংহ সদর':['mymensingh sadar'],'ভালুকা':['bhaluka'],'ধোবাউড়া':['dhobaura'],
+  'ফুলবাড়ীয়া':['fulbaria'],'গফরগাঁও':['gafargaon'],'গৌরীপুর':['gauripur'],
+  'হালুয়াঘাট':['haluaghat'],'ঈশ্বরগঞ্জ':['ishwarganj'],'মুক্তাগাছা':['muktagacha'],
+  'নান্দাইল':['nandail'],'ফুলপুর':['phulpur'],'তারাকান্দা':['trishal','tarakanda'],
+  // Jessore/Jashore
+  'যশোর সদর':['jashore sadar','jessore sadar'],'অভয়নগর':['abhaynagar'],
+  'বাঘারপাড়া':['bagharpara'],'চৌগাছা':['chougacha'],'ঝিকরগাছা':['jhikargacha'],
+  'কেশবপুর':['keshabpur'],'মণিরামপুর':['manirampur'],'শার্শা':['sharsha'],
+};
+
 // Districts that are considered "Dhaka" for delivery pricing
 const DHAKA_DISTRICTS = ['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'];
 
@@ -10519,12 +10582,14 @@ function populateDistricts() {
   document.getElementById('cUpazila').innerHTML = '<option value="">— আগে জেলা বেছে নিন —</option>';
   document.getElementById('cUpazila').disabled = true;
   document.getElementById('cThana').value = '';
-  document.getElementById('cThana').placeholder = 'থানা / ইউনিয়ন / পৌরসভার নাম লিখুন';
+  // (union dropdown built by _buildUnionSearch below)
 
   // Build searchable district wrapper if not already built
   _buildDistrictSearch();
   // Build upazila searchable wrapper (initially disabled state)
   _buildUpazilaSearch();
+  // Build union/thana searchable wrapper (initially disabled state)
+  _buildUnionSearch();
 }
 
 function _buildDistrictSearch() {
@@ -10766,6 +10831,7 @@ function _buildDistrictSearch() {
   function openDropdown() {
     dropdown.classList.add('open');
     fakeInput.classList.add('open');
+    wrapper.style.zIndex = '9999'; // raise above sibling form-groups
     buildList();
 
     // FIX: flip dropdown above trigger if it would go below viewport
@@ -10793,6 +10859,7 @@ function _buildDistrictSearch() {
   function closeDropdown() {
     dropdown.classList.remove('open');
     fakeInput.classList.remove('open');
+    wrapper.style.zIndex = '';
     searchInput.value = '';
     // FIX: reset position overrides
     dropdown.style.top = '';
@@ -10820,6 +10887,7 @@ function onDistrictChange() {
   if (!district || !BD_LOCATIONS[district]) {
     upazilaEl.disabled = true;
     _refreshUpazilaSearch([]); // clear upazila dropdown
+    _refreshUnionSearch([]);   // clear union dropdown
     return;
   }
   upazilaEl.disabled = false;
@@ -10834,12 +10902,19 @@ function onDistrictChange() {
   document.getElementById('deliveryNote').textContent = '';
   // Refresh the searchable upazila UI with new list
   _refreshUpazilaSearch(upazilas);
+  // Reset union dropdown
+  _refreshUnionSearch([]);
 }
 
 function onUpazilaChange() {
   const district = document.getElementById('cDistrict').value;
-  const upazila = document.getElementById('cUpazila').value;
+  const upazila  = document.getElementById('cUpazila').value;
   document.getElementById('cThana').value = '';
+  // Populate union dropdown for this upazila
+  const unions = (district && upazila && BD_LOCATIONS[district] && BD_LOCATIONS[district][upazila])
+    ? BD_LOCATIONS[district][upazila]
+    : [];
+  _refreshUnionSearch(unions);
   calcDelivery();
 }
 
@@ -10872,7 +10947,7 @@ function _buildUpazilaSearch() {
         border-radius: var(--radius-sm);
         font-family: 'Hind Siliguri', sans-serif;
         font-size: .9375rem;
-        color: var(--text-light);
+        color: var(--text);
         background: var(--blue-light);
         cursor: pointer;
         transition: border-color var(--t), box-shadow var(--t), background var(--t);
@@ -11034,7 +11109,14 @@ function _buildUpazilaSearch() {
     const items = _upazilaSearchItems;
     const q = filter.toLowerCase().trim();
     const filtered = q
-      ? items.filter(u => u.toLowerCase().includes(q) || u.includes(filter))
+      ? items.filter(u => {
+          // Bangla match
+          if (u.toLowerCase().includes(q) || u.includes(filter)) return true;
+          // English transliteration match via UPAZILA_EN map
+          const eng = UPAZILA_EN[u];
+          if (eng && eng.some(e => e.includes(q))) return true;
+          return false;
+        })
       : items;
     if (!items.length) {
       list.innerHTML = '<div class="upazila-empty-hint"><i class="fa-solid fa-arrow-left" style="margin-right:5px;color:var(--blue)"></i>আগে জেলা বেছে নিন</div>';
@@ -11066,6 +11148,7 @@ function _buildUpazilaSearch() {
     if (fakeInput.classList.contains('disabled')) return;
     dropdown.classList.add('open');
     fakeInput.classList.add('open');
+    wrapper.style.zIndex = '9999'; // raise above sibling form-groups
     buildUpazilaList();
     requestAnimationFrame(() => {
       const wrapRect = wrapper.getBoundingClientRect();
@@ -11085,6 +11168,7 @@ function _buildUpazilaSearch() {
   function closeUpazilaDropdown() {
     dropdown.classList.remove('open');
     fakeInput.classList.remove('open');
+    wrapper.style.zIndex = '';
     searchInput.value = '';
     dropdown.style.top = '';
     dropdown.style.bottom = '';
@@ -11138,6 +11222,367 @@ function _refreshUpazilaSearch(upazilas) {
   valEl.textContent = '— উপজেলা বেছে নিন —';
   valEl.classList.add('ufi-placeholder');
   if (wrapper._upazilaClose) wrapper._upazilaClose();
+}
+
+// ══════════════════════════════════════════════════
+// UNION / THANA SEARCHABLE DROPDOWN + CUSTOM INPUT
+// ══════════════════════════════════════════════════
+let _unionSearchItems = [];
+
+function _buildUnionSearch() {
+  const hiddenInput = document.getElementById('cThana');
+  if (!hiddenInput) return;
+  // Already built?
+  if (document.getElementById('unionSearchWrap')) return;
+
+  // Inject CSS
+  if (!document.getElementById('unionSearchStyle')) {
+    const st = document.createElement('style');
+    st.id = 'unionSearchStyle';
+    st.textContent = `
+      #unionSearchWrap {
+        position: relative;
+        width: 100%;
+        display: block;
+        isolation: isolate;
+      }
+
+      /* Fake input — identical look to district/upazila */
+      #unionFakeInput {
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .9375rem;
+        color: var(--text);
+        background: var(--blue-light);
+        cursor: pointer;
+        transition: border-color var(--t), box-shadow var(--t), background var(--t);
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 44px;
+        line-height: 1.7;
+        overflow: visible;
+        user-select: none;
+      }
+      #unionFakeInput.disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      #unionFakeInput:not(.disabled):hover { border-color: rgba(0,122,255,.4); }
+      #unionFakeInput.open {
+        border-color: var(--blue);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(0,122,255,.12);
+      }
+      #unionFakeInput .uniValSpan {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: .9375rem;
+        line-height: 1.7;
+        padding: 2px 0;
+        color: var(--text);
+      }
+      #unionFakeInput .uniValSpan.uniPlaceholder { color: var(--text-light) !important; }
+      #unionFakeInput .uniChevron {
+        color: var(--text-light); font-size: .72rem;
+        transition: transform var(--t); flex-shrink: 0;
+      }
+      #unionFakeInput.open .uniChevron { transform: rotate(180deg); }
+
+      /* Dropdown panel */
+      #unionDropdown {
+        display: none;
+        position: absolute;
+        left: 0;
+        width: max(100%, 220px);
+        top: calc(100% + 4px);
+        background: white;
+        border: 1.5px solid var(--blue);
+        border-radius: var(--radius, 12px);
+        box-shadow: 0 12px 40px rgba(0,122,255,.20), 0 2px 8px rgba(0,0,0,.06);
+        z-index: 999999;
+        overflow: hidden;
+        min-width: 200px;
+      }
+      #unionDropdown.open { display: block; }
+
+      /* Search + custom-input row */
+      .union-search-box {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--blue-light);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .union-search-box i { color: var(--blue); font-size: .82rem; flex-shrink: 0; }
+      .union-search-box input {
+        flex: 1; border: none; background: transparent; outline: none;
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .92rem;
+        color: var(--text);
+        line-height: 1.7;
+        height: 28px;
+        padding: 0;
+      }
+      .union-search-box input::placeholder { color: var(--text-light); }
+
+      /* "Use custom" hint banner */
+      #unionCustomHint {
+        display: none;
+        padding: 8px 14px 4px;
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .78rem;
+        color: var(--blue);
+        background: #EFF6FF;
+        border-bottom: 1px dashed rgba(0,122,255,.25);
+      }
+      #unionCustomHint.visible { display: block; }
+
+      /* Custom input (shown when user types something not in list) */
+      #unionCustomRow {
+        display: none;
+        padding: 8px 14px;
+        background: #F0F9FF;
+        border-bottom: 1px solid var(--border);
+      }
+      #unionCustomRow.visible { display: flex; align-items: center; gap: 8px; }
+      #unionCustomRow button {
+        display: flex; align-items: center; gap: 6px;
+        padding: 7px 12px;
+        background: var(--blue); color: white;
+        border: none; border-radius: 7px;
+        font-family: 'Hind Siliguri', sans-serif; font-size: .8rem; font-weight: 700;
+        cursor: pointer; white-space: nowrap; flex-shrink: 0;
+        transition: background var(--t);
+      }
+      #unionCustomRow button:hover { background: var(--blue-dark); }
+      #unionCustomRow span {
+        font-family: 'Hind Siliguri', sans-serif; font-size: .8rem;
+        color: var(--text-mid); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+
+      .union-list {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 210px;
+        overscroll-behavior: contain;
+      }
+      .union-list::-webkit-scrollbar { width: 4px; }
+      .union-list::-webkit-scrollbar-track { background: transparent; }
+      .union-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .union-opt {
+        padding: 10px 14px;
+        font-family: 'Hind Siliguri', sans-serif;
+        font-size: .9rem;
+        cursor: pointer; color: var(--text);
+        transition: background var(--t), color var(--t);
+        display: flex; align-items: center; gap: 8px;
+        line-height: 1.8;
+        overflow: visible;
+        white-space: nowrap;
+        border-bottom: 1px solid rgba(225,232,237,.4);
+      }
+      .union-opt:last-child { border-bottom: none; }
+      .union-opt:hover { background: var(--blue-light); color: var(--blue); }
+      .union-opt.selected { background: var(--blue); color: white; font-weight: 600; }
+      .union-opt.selected .union-opt-icon { opacity: 1; color: rgba(255,255,255,.7); }
+      .union-opt-icon { font-size: .68rem; opacity: .35; flex-shrink: 0; }
+      .union-no-result {
+        padding: 14px 16px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .85rem; line-height: 1.7;
+      }
+      .union-empty-hint {
+        padding: 18px 16px; text-align: center; color: var(--text-light);
+        font-family: 'Hind Siliguri', sans-serif; font-size: .84rem; line-height: 1.7;
+      }
+
+      @media (max-width: 540px) {
+        #unionDropdown { left: 0 !important; width: 100% !important; border-radius: 10px; min-width: unset; }
+        .union-opt { padding: 12px 14px; font-size: .95rem; white-space: normal; line-height: 1.8; }
+        #unionFakeInput { min-height: 48px; font-size: 1rem; }
+        .union-search-box input { font-size: .95rem; }
+      }
+      @media (min-width: 541px) {
+        .union-list { max-height: 230px; }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // Build wrapper around the hidden input
+  const wrapper = document.createElement('div');
+  wrapper.id = 'unionSearchWrap';
+  hiddenInput.parentNode.insertBefore(wrapper, hiddenInput);
+  wrapper.appendChild(hiddenInput);
+
+  // Fake input button
+  const fakeInput = document.createElement('div');
+  fakeInput.id = 'unionFakeInput';
+  fakeInput.className = 'disabled';
+  fakeInput.innerHTML = `
+    <span class="uniValSpan uniPlaceholder bn">— আগে উপজেলা বেছে নিন —</span>
+    <i class="fa-solid fa-chevron-down uniChevron"></i>`;
+  wrapper.appendChild(fakeInput);
+
+  // Dropdown
+  const dropdown = document.createElement('div');
+  dropdown.id = 'unionDropdown';
+  dropdown.innerHTML = `
+    <div class="union-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="unionSearchInput" placeholder="ইউনিয়ন / পৌরসভা খুঁজুন বা লিখুন..." autocomplete="off">
+    </div>
+    <div id="unionCustomHint" class="bn">লিস্টে নেই? নিচে আপনার এলাকার নাম ব্যবহার করুন ↓</div>
+    <div id="unionCustomRow">
+      <span id="unionCustomLabel" class="bn"></span>
+      <button onclick="selectUnionCustom()"><i class="fa-solid fa-pen-to-square"></i> এটি ব্যবহার করুন</button>
+    </div>
+    <div class="union-list" id="unionList"></div>`;
+  wrapper.appendChild(dropdown);
+
+  const searchInput = document.getElementById('unionSearchInput');
+  const list = document.getElementById('unionList');
+
+  function buildUnionList(filter) {
+    const q = (filter || '').toLowerCase().trim();
+    const items = _unionSearchItems;
+
+    if (!items.length) {
+      list.innerHTML = '<div class="union-empty-hint"><i class="fa-solid fa-arrow-left" style="margin-right:5px;color:var(--blue)"></i>আগে উপজেলা বেছে নিন</div>';
+      document.getElementById('unionCustomHint').classList.remove('visible');
+      document.getElementById('unionCustomRow').classList.remove('visible');
+      return;
+    }
+
+    const filtered = q
+      ? items.filter(u => u.toLowerCase().includes(q) || u.includes(filter))
+      : items;
+
+    // Show/hide custom input row
+    const customRow  = document.getElementById('unionCustomRow');
+    const customHint = document.getElementById('unionCustomHint');
+    const customLbl  = document.getElementById('unionCustomLabel');
+
+    if (q && q.length >= 2 && filtered.length < items.length) {
+      customLbl.textContent = '"' + filter + '"';
+      customRow.classList.add('visible');
+      customHint.classList.add('visible');
+      customRow.dataset.val = filter;
+    } else {
+      customRow.classList.remove('visible');
+      customHint.classList.remove('visible');
+    }
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="union-no-result">পাওয়া যায়নি — উপরে আপনার এলাকার নাম লিখে "এটি ব্যবহার করুন" চাপুন</div>';
+      return;
+    }
+
+    const currentVal = document.getElementById('cThana').value;
+    list.innerHTML = filtered.map(u => `
+      <div class="union-opt ${currentVal === u ? 'selected' : ''}" data-val="${u.replace(/"/g,'&quot;')}">
+        <i class="fa-solid fa-circle-dot union-opt-icon"></i>
+        <span class="bn">${u}</span>
+      </div>`).join('');
+
+    list.querySelectorAll('.union-opt').forEach(opt => {
+      opt.addEventListener('click', () => selectUnion(opt.dataset.val));
+    });
+  }
+
+  // Expose build function for refresh
+  window._buildUnionList = buildUnionList;
+
+  function openUnionDropdown() {
+    if (fakeInput.classList.contains('disabled')) return;
+    dropdown.classList.add('open');
+    fakeInput.classList.add('open');
+    wrapper.style.zIndex = '9999';
+    buildUnionList(searchInput.value);
+    requestAnimationFrame(() => {
+      const wrapRect = wrapper.getBoundingClientRect();
+      const dropH = dropdown.offsetHeight;
+      const spaceBelow = window.innerHeight - wrapRect.bottom;
+      if (spaceBelow < dropH + 10 && wrapRect.top > dropH) {
+        dropdown.style.top = 'auto';
+        dropdown.style.bottom = 'calc(100% + 4px)';
+      } else {
+        dropdown.style.top = 'calc(100% + 4px)';
+        dropdown.style.bottom = 'auto';
+      }
+    });
+    setTimeout(() => searchInput.focus(), 50);
+    document.addEventListener('mousedown', outsideClickUnion);
+  }
+
+  function closeUnionDropdown() {
+    dropdown.classList.remove('open');
+    fakeInput.classList.remove('open');
+    wrapper.style.zIndex = '';
+    searchInput.value = '';
+    dropdown.style.top = '';
+    dropdown.style.bottom = '';
+    document.getElementById('unionCustomRow').classList.remove('visible');
+    document.getElementById('unionCustomHint').classList.remove('visible');
+    document.removeEventListener('mousedown', outsideClickUnion);
+  }
+  window._closeUnionDropdown = closeUnionDropdown;
+
+  function outsideClickUnion(e) {
+    if (!wrapper.contains(e.target)) closeUnionDropdown();
+  }
+
+  fakeInput.addEventListener('click', () => {
+    if (fakeInput.classList.contains('disabled')) return;
+    if (dropdown.classList.contains('open')) closeUnionDropdown();
+    else openUnionDropdown();
+  });
+
+  searchInput.addEventListener('input', () => buildUnionList(searchInput.value));
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') closeUnionDropdown(); });
+}
+
+function selectUnion(val) {
+  document.getElementById('cThana').value = val;
+  const valEl = document.querySelector('#unionFakeInput .uniValSpan');
+  if (valEl) { valEl.textContent = val; valEl.classList.remove('uniPlaceholder'); }
+  if (window._closeUnionDropdown) window._closeUnionDropdown();
+  calcDelivery();
+}
+
+function selectUnionCustom() {
+  const customRow = document.getElementById('unionCustomRow');
+  const val = customRow.dataset.val || document.getElementById('unionSearchInput').value.trim();
+  if (!val) return;
+  selectUnion(val);
+}
+
+function _refreshUnionSearch(unions) {
+  _unionSearchItems = unions || [];
+  const fakeInput = document.getElementById('unionFakeInput');
+  if (!fakeInput) return; // not built yet — _buildUnionSearch not called
+
+  if (!_unionSearchItems.length) {
+    fakeInput.classList.add('disabled');
+    const valEl = fakeInput.querySelector('.uniValSpan');
+    valEl.textContent = '— আগে উপজেলা বেছে নিন —';
+    valEl.classList.add('uniPlaceholder');
+    if (window._closeUnionDropdown) window._closeUnionDropdown();
+    return;
+  }
+
+  fakeInput.classList.remove('disabled');
+  const valEl = fakeInput.querySelector('.uniValSpan');
+  valEl.textContent = '— ইউনিয়ন / পৌরসভা বেছে নিন —';
+  valEl.classList.add('uniPlaceholder');
+  document.getElementById('cThana').value = '';
+  if (window._closeUnionDropdown) window._closeUnionDropdown();
+  if (window._buildUnionList) window._buildUnionList('');
 }
 
 // ── START ──
