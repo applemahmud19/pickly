@@ -110,7 +110,7 @@ span[style*="border-radius: 50%"] {
   --t:.2s cubic-bezier(.4,0,.2,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;font-size:16px}
+html{scroll-behavior:smooth;font-size:16px;overflow-x:hidden}
 /* CRITICAL: body padding-top must start at 0 on mobile.
    JS measures the actual header height and sets it via --header-h.
    The old fallback values (96-120px) caused the white gap. */
@@ -121,6 +121,9 @@ body{
   background:#F8FAFC;
   color:var(--text);
   overflow-x:hidden;
+  /* Single scrollbar fix: only body scrolls, no duplicate */
+  overflow-y:auto;
+  height:auto;
   /* Desktop: use JS-set var with safe fallback */
   padding-top: var(--header-h, 108px);
 }
@@ -210,7 +213,26 @@ body.loading{overflow:hidden!important}
   100%{width:100%}
 }
 
-/* ── SOCIAL BAR ── */
+/* ── PAGE-CONTEXT UI HIDE: social bar + category nav hidden on product/checkout pages ── */
+body.page-product-open .social-bar,
+body.page-product-open .nav-cats,
+body.page-product-open .mobile-search-row,
+body.page-checkout-open .social-bar,
+body.page-checkout-open .nav-cats,
+body.page-checkout-open .mobile-search-row {
+  display: none !important;
+}
+
+/* ── SINGLE SCROLLBAR GLOBAL RULE ── */
+/* Prevent any container from creating a second scrollbar alongside body */
+.full-page, #pdPage {
+  /* position:fixed panels manage their own scroll — body is locked */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.full-page::-webkit-scrollbar, #pdPage::-webkit-scrollbar { width: 5px; }
+.full-page::-webkit-scrollbar-thumb, #pdPage::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
 /*
   SHAKE FIX: The old approach used position:absolute on .social-bar when
   hidden, which removed it from flow → header height changed → page content
@@ -782,7 +804,9 @@ header.scrolled{
   display:none;
   position:fixed;inset:0;z-index:500;
   background:#F8FAFC;
+  /* Single scrollbar: only this panel scrolls, body is locked when open */
   overflow-y:auto;
+  overflow-x:hidden;
   animation:pdFadeIn .25s ease;
 }
 #pdPage.open{display:block}
@@ -5252,7 +5276,22 @@ html, body {
 
 <!-- SOCIAL BAR -->
 <div class="social-bar">
-  <span class="bn"><svg class="svg-icon" width="13" height="13" viewBox="0 0 24 24" style="margin-right:5px;stroke:rgba(255,255,255,.85)"><path d="M5 12h14M5 12l4-4M5 12l4 4"/></svg>সারা বাংলাদেশে ডেলিভারি · ক্যাশ অন ডেলিভারি · বিশ্বস্ত অনলাইন শপ</span>
+  <span class="bn" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="display:inline-flex;align-items:center;gap:5px">
+      <i class="fa-solid fa-truck-fast" style="color:rgba(255,255,255,.92);font-size:.75rem"></i>
+      <span>সারা বাংলাদেশে ডেলিভারি</span>
+    </span>
+    <span style="color:rgba(255,255,255,.35)">·</span>
+    <span style="display:inline-flex;align-items:center;gap:5px">
+      <i class="fa-solid fa-hand-holding-dollar" style="color:rgba(255,255,255,.92);font-size:.75rem"></i>
+      <span>ক্যাশ অন ডেলিভারি</span>
+    </span>
+    <span style="color:rgba(255,255,255,.35)">·</span>
+    <span style="display:inline-flex;align-items:center;gap:5px">
+      <i class="fa-solid fa-shield-halved" style="color:rgba(255,255,255,.92);font-size:.75rem"></i>
+      <span>বিশ্বস্ত অনলাইন শপ</span>
+    </span>
+  </span>
   <div class="social-links">
     <span class="bn" style="font-size:.7rem;color:rgba(255,255,255,.7);margin-right:6px">ফলো করুন:</span>
     <a href="https://facebook.com/bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
@@ -7682,6 +7721,18 @@ function restoreHomeUrl() {
   document.title = 'গ্যালাক্সি মার্ট BD';
 }
 
+// ── Global UI visibility manager ──
+// Hides social-bar + category-nav on product/checkout pages per design spec
+const _PAGES_HIDE_TOPBARS = ['product', 'checkout'];
+function updatePageUIVisibility(name) {
+  if (_PAGES_HIDE_TOPBARS.includes(name)) {
+    document.body.classList.add('page-' + name + '-open');
+  }
+}
+function clearPageUIVisibility(name) {
+  document.body.classList.remove('page-' + name + '-open');
+}
+
 // ── Page open/close ──
 function openPage(name) {
   const el = document.getElementById('page-' + name);
@@ -7690,6 +7741,7 @@ function openPage(name) {
   el.setAttribute('aria-hidden', 'false');
   el.scrollTop = 0;
   document.body.style.overflow = 'hidden'; // prevent body scroll while page open
+  updatePageUIVisibility(name);
 }
 function closePage(name) {
   const el = document.getElementById('page-' + name);
@@ -7697,6 +7749,7 @@ function closePage(name) {
   el.classList.remove('open');
   el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
+  clearPageUIVisibility(name);
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
@@ -13241,6 +13294,8 @@ window.addEventListener('popstate', function(e) {
   ALL_PAGES.forEach(n => {
     const el = document.getElementById('page-' + n);
     if (el) { el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+    // Clear any page-visibility body classes
+    if (typeof clearPageUIVisibility === 'function') clearPageUIVisibility(n);
   });
   ALL_MODALS.forEach(id => {
     const el = document.getElementById(id);
