@@ -5360,7 +5360,7 @@ html, body {
     <span class="promo-sep">|</span>
     <div class="promo-item">
       <i class="fa-solid fa-shield-halved"></i>
-      <span class="bn">১০০% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
+      <span class="bn">100% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
     </div>
     <span class="promo-sep">|</span>
     <div class="promo-item">
@@ -5603,7 +5603,7 @@ html, body {
       <!-- Trust badges -->
       <div class="fp-trust">
         <div class="fp-trust-item bn"><i class="fa-solid fa-truck-fast"></i> ক্যাশ অন ডেলিভারি</div>
-        <div class="fp-trust-item bn"><i class="fa-solid fa-shield-halved"></i> ১০০% অরিজিনাল</div>
+        <div class="fp-trust-item bn"><i class="fa-solid fa-shield-halved"></i> 100% অরিজিনাল</div>
         <div class="fp-trust-item bn"><i class="fa-solid fa-rotate-left"></i> সহজ রিটার্ন</div>
       </div>
     </div><!-- /fp-right -->
@@ -6130,7 +6130,7 @@ html, body {
         </div>
         <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center">
           <i class="fa-solid fa-shield-halved" style="color:var(--green);font-size:1.1rem;display:block;margin-bottom:5px"></i>
-          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)">১০০% অরিজিনাল</div>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)">100% অরিজিনাল</div>
         </div>
       </div>
     </div><!-- /right column -->
@@ -8060,6 +8060,21 @@ function openCheckout() {
       ? (i.author || i.brand || '')
       : (i.brand || '');
 
+    // ── Discount calculation ──
+    const hasDisc  = i.old_price && Number(i.old_price) > Number(i.price);
+    const discPct  = hasDisc ? Math.round((1 - i.price / i.old_price) * 100) : 0;
+    const savedAmt = hasDisc ? Math.round((Number(i.old_price) - Number(i.price)) * i.qty) : 0;
+
+    // Unit price line: old strikethrough (if discount) + current price (no @ sign)
+    const unitPriceLine = hasDisc
+      ? `<span style="font-size:.68rem;color:var(--text-light);text-decoration:line-through;margin-right:2px">৳${Number(i.old_price).toLocaleString()}</span><span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString()}</span>`
+      : `<span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString()}</span>`;
+
+    // Discount badge (green savings pill)
+    const discBadge = hasDisc
+      ? `<span style="font-size:.65rem;font-weight:700;color:white;background:var(--green);padding:1px 6px;border-radius:100px;white-space:nowrap;line-height:1.6"><i class="fa-solid fa-tag" style="font-size:.58rem;margin-right:2px"></i>${discPct}% ছাড়</span>`
+      : '';
+
     return `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--blue-light)">
       <!-- Thumbnail -->
@@ -8076,11 +8091,13 @@ function openCheckout() {
       <!-- Info -->
       <div style="flex:1;min-width:0">
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35">${i.name}</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap">
           ${subLabel ? `<span style="font-size:.72rem;color:var(--text-light)">${subLabel}</span><span style="color:var(--border);font-size:.7rem">·</span>` : ''}
           <span style="font-size:.72rem;font-weight:700;color:var(--blue);background:var(--blue-light);padding:1px 7px;border-radius:100px">×${i.qty}</span>
-          <span style="font-size:.72rem;color:var(--text-light)">@৳${i.price.toLocaleString()}</span>
+          ${unitPriceLine}
+          ${discBadge}
         </div>
+        ${hasDisc ? `<div style="font-size:.68rem;color:var(--green);margin-top:2px;font-family:'Hind Siliguri',sans-serif"><i class="fa-solid fa-circle-check" style="font-size:.6rem;margin-right:3px"></i>৳${savedAmt.toLocaleString()} সেভ করছেন</div>` : ''}
       </div>
 
       <!-- Price -->
@@ -9534,11 +9551,11 @@ const INFO_CONTENT = {
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-shield-halved" style="color:var(--blue)"></i>কেন আমরা আলাদা</div>
-        <p class="info-section-body bn">১০০% অরিজিনাল পণ্য, সারা বাংলাদেশে দ্রুত ডেলিভারি এবং ক্যাশ অন ডেলিভারি সুবিধা। আমরা বিশ্বাস করি মানসম্পন্ন পণ্য সবার নাগালে থাকা উচিত।</p>
+        <p class="info-section-body bn">100% অরিজিনাল পণ্য, সারা বাংলাদেশে দ্রুত ডেলিভারি এবং ক্যাশ অন ডেলিভারি সুবিধা। আমরা বিশ্বাস করি মানসম্পন্ন পণ্য সবার নাগালে থাকা উচিত।</p>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
         <div style="text-align:center;padding:12px 8px;background:var(--blue-light);border-radius:10px">
-          <div style="font-size:1.2rem;font-weight:700;color:var(--blue);font-family:'Sora',sans-serif">১০০%</div>
+          <div style="font-size:1.2rem;font-weight:700;color:var(--blue);font-family:'Sora',sans-serif">100%</div>
           <div style="font-size:.68rem;color:var(--text-mid);font-family:'Hind Siliguri',sans-serif;margin-top:2px">অরিজিনাল পণ্য</div>
         </div>
         <div style="text-align:center;padding:12px 8px;background:#ECFDF5;border-radius:10px">
@@ -12994,7 +13011,7 @@ window.addEventListener('popstate', function(e) {
     const DEFAULT = [
       { icon: 'fa-truck-fast',    text: '৳৯৯৯+ অর্ডারে ফ্রি ডেলিভারি' },
       { icon: 'fa-tag',           text: 'ঈদ স্পেশাল — ৩০% পর্যন্ত ছাড়' },
-      { icon: 'fa-shield-halved', text: '১০০% অরিজিনাল পণ্য গ্যারান্টি' },
+      { icon: 'fa-shield-halved', text: '100% অরিজিনাল পণ্য গ্যারান্টি' },
       { icon: 'fa-rotate-left',   text: 'সহজ রিটার্ন পলিসি' }
     ];
     const items = JSON.parse(localStorage.getItem('gm_cms_promobar') || JSON.stringify(DEFAULT));
