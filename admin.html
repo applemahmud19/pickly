@@ -652,27 +652,28 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 /* ── Admin sortable image strip ── */
 #adminThumbStrip {
   display: none; gap: 6px; flex-wrap: wrap;
-  margin-top: 6px; padding: 8px;
+  margin-top: 6px; padding: 6px;
   border: 1.5px dashed var(--border);
   border-radius: 9px; background: var(--bg3);
 }
 .admin-thumb-chip {
-  width: 58px; height: 58px; border-radius: 8px; overflow: hidden;
+  width: 52px; height: 52px; border-radius: 7px; overflow: hidden;
   border: 2px solid var(--border); cursor: grab; flex-shrink: 0;
   position: relative; background: #fff;
-  transition: border-color .15s, box-shadow .15s, transform .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
 .admin-thumb-chip:active { cursor: grabbing; }
-.admin-thumb-chip:first-of-type { border-color: var(--blue); box-shadow: 0 2px 10px rgba(0,122,255,.20); }
-.admin-thumb-chip.sortable-chosen { border-color: var(--blue); box-shadow: 0 4px 14px rgba(0,122,255,.25); transform: scale(1.05); }
+.admin-thumb-chip.sortable-chosen { border-color: var(--blue); box-shadow: 0 4px 14px rgba(0,122,255,.25); }
 .admin-thumb-chip.sortable-drag   { opacity: .55; }
 .admin-thumb-chip img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
 .admin-thumb-badge {
   position: absolute; top: 2px; left: 2px;
-  font-size: .52rem; font-weight: 800; color: white;
-  background: var(--blue); border-radius: 4px;
+  font-weight: 800; color: white;
+  border-radius: 4px;
   padding: 1px 4px; line-height: 1.4;
   pointer-events: none;
+  font-size: .52rem;
+  background: var(--blue);
 }
 .admin-thumb-remove {
   position: absolute; top: 2px; right: 2px;
@@ -4883,6 +4884,7 @@ function openProductModal(product = null) {
   if (authorInput) authorInput.value = product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
   selectedImageFiles = [];
   selectedImageFile  = null;
+  _existingImageUrls = [];
   document.getElementById('imageFile').value = '';
   document.getElementById('uploadFileName').textContent = '';
 
@@ -4890,27 +4892,25 @@ function openProductModal(product = null) {
   const strip = document.getElementById('adminThumbStrip');
   if (strip) { strip.innerHTML = ''; strip.style.display = 'none'; }
 
-  // Reset / populate image preview
+  // Reset / populate image preview from existing DB images
   const prev = document.getElementById('imagePreview');
-  const existingImages = product?.images || (product?.image_url ? [product.image_url] : []);
-  if (existingImages.length) {
+
+  // Normalize: images may be [{url, sort_order}] or [url_string]
+  const rawExisting = product?.images || (product?.image_url ? [product.image_url] : []);
+  const sortedExisting = Array.isArray(rawExisting)
+    ? [...rawExisting]
+        .sort((a, b) => ((a.sort_order ?? 0) - (b.sort_order ?? 0)))
+        .map(x => (typeof x === 'string' ? x : (x.url || '')))
+        .filter(Boolean)
+    : [];
+
+  _existingImageUrls = sortedExisting; // track current order
+
+  if (sortedExisting.length) {
     prev.classList.remove('empty');
-    prev.innerHTML = `<img src="${existingImages[0]}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-    // Show existing image thumbnails if more than one
-    if (existingImages.length > 1 && strip) {
-      strip.style.display = 'flex';
-      existingImages.forEach((src, idx) => {
-        const chip = document.createElement('div');
-        chip.style.cssText = `width:42px;height:42px;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid ${idx===0?'var(--blue)':'var(--border)'};flex-shrink:0;background:var(--bg3)`;
-        chip.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">`;
-        chip.onclick = () => {
-          prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-          strip.querySelectorAll('div').forEach(c => c.style.borderColor = 'var(--border)');
-          chip.style.borderColor = 'var(--blue)';
-        };
-        strip.appendChild(chip);
-      });
-    }
+    prev.innerHTML = `<img src="${sortedExisting[0]}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+    // Build draggable strip for ALL existing images (even single)
+    _rebuildExistingStrip();
   } else {
     prev.classList.add('empty');
     prev.innerHTML = `<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>`;
@@ -4942,6 +4942,97 @@ function handleCategoryChange(cat) {
 
 // ── Admin gallery sortable state ──
 let _adminSortable = null;
+// Tracks existing DB image URLs (in current sorted order) for the product being edited
+let _existingImageUrls = [];
+
+/* ── Rebuild strip from _existingImageUrls (DB images, no new uploads) ── */
+function _rebuildExistingStrip() {
+  const strip = document.getElementById('adminThumbStrip');
+  const prev  = document.getElementById('imagePreview');
+  if (!strip) return;
+
+  if (_adminSortable) { try { _adminSortable.destroy(); } catch(e){} _adminSortable = null; }
+
+  const hintHTML = `<div class="admin-thumb-strip-hint"><i class="fa-solid fa-arrows-up-down-left-right" style="margin-right:3px"></i>ড্র্যাগ করে সাজান — প্রথমটি Main Cover হবে</div>`;
+
+  if (!_existingImageUrls.length) {
+    strip.style.display = 'none';
+    strip.innerHTML = hintHTML;
+    return;
+  }
+
+  strip.style.display = 'flex';
+  strip.innerHTML = hintHTML;
+
+  _existingImageUrls.forEach((src, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'admin-thumb-chip';
+    chip.dataset.idx = String(idx);
+    chip.dataset.src = src;
+
+    const isCover = idx === 0;
+    chip.innerHTML = `
+      <img src="${src}" alt="image ${idx+1}" onerror="this.parentElement.style.display='none'">
+      <span class="admin-thumb-badge" style="${isCover ? 'background:var(--blue);font-size:.44rem' : 'background:var(--text3,#94A3B8);font-size:.52rem'}">${isCover ? 'Cover' : idx + 1}</span>
+      <div class="admin-thumb-remove" title="সরান" onclick="event.stopPropagation();_existingRemoveImg(${idx})">×</div>`;
+
+    chip.addEventListener('click', () => {
+      prev.classList.remove('empty');
+      prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+    });
+
+    const hint = strip.querySelector('.admin-thumb-strip-hint');
+    strip.insertBefore(chip, hint);
+  });
+
+  // Init SortableJS
+  setTimeout(() => {
+    if (typeof Sortable === 'undefined') return;
+    _adminSortable = Sortable.create(strip, {
+      animation: 180,
+      filter: '.admin-thumb-strip-hint,.admin-thumb-remove',
+      draggable: '.admin-thumb-chip',
+      ghostClass: 'sortable-drag',
+      chosenClass: 'sortable-chosen',
+      onEnd: () => {
+        const chips = strip.querySelectorAll('.admin-thumb-chip');
+        // Rebuild _existingImageUrls from new DOM order
+        _existingImageUrls = Array.from(chips).map(c => c.dataset.src).filter(Boolean);
+        // Update badges + indices
+        chips.forEach((c, i) => {
+          c.dataset.idx = String(i);
+          const badge = c.querySelector('.admin-thumb-badge');
+          if (badge) {
+            badge.textContent = i === 0 ? 'Cover' : String(i + 1);
+            badge.style.background = i === 0 ? 'var(--blue)' : 'var(--text3,#94A3B8)';
+            badge.style.fontSize   = i === 0 ? '.44rem' : '.52rem';
+          }
+          const rm = c.querySelector('.admin-thumb-remove');
+          if (rm) rm.setAttribute('onclick', `event.stopPropagation();_existingRemoveImg(${i})`);
+        });
+        // Update main preview to new cover
+        if (_existingImageUrls[0]) {
+          prev.classList.remove('empty');
+          prev.innerHTML = `<img src="${_existingImageUrls[0]}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+        }
+      }
+    });
+  }, 60);
+}
+
+function _existingRemoveImg(idx) {
+  _existingImageUrls.splice(idx, 1);
+  _rebuildExistingStrip();
+  // Update main preview
+  const prev = document.getElementById('imagePreview');
+  if (_existingImageUrls[0]) {
+    prev.classList.remove('empty');
+    prev.innerHTML = `<img src="${_existingImageUrls[0]}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+  } else {
+    prev.classList.add('empty');
+    prev.innerHTML = `<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>`;
+  }
+}
 
 function _rebuildAdminStrip() {
   const strip = document.getElementById('adminThumbStrip');
@@ -4949,6 +5040,10 @@ function _rebuildAdminStrip() {
   if (!strip) return;
 
   if (_adminSortable) { try { _adminSortable.destroy(); } catch(e){} _adminSortable = null; }
+
+  // When new files are selected, clear existing DB images from strip
+  // (new uploads will fully replace images in DB)
+  _existingImageUrls = [];
 
   // Always show hint line
   const hintHTML = `<div class="admin-thumb-strip-hint"><i class="fa-solid fa-arrows-up-down-left-right" style="margin-right:3px"></i>ড্র্যাগ করে সাজান — প্রথমটি Main Cover হবে</div>`;
@@ -4980,14 +5075,10 @@ function _rebuildAdminStrip() {
       const chip = document.createElement('div');
       chip.className = 'admin-thumb-chip';
       chip.dataset.idx = String(idx);
-      // First image gets a "Cover" badge, others get a number
-      const badgeLabel = idx === 0 ? 'Cover' : String(idx + 1);
-      const badgeStyle = idx === 0
-        ? 'background:var(--blue);color:white;font-size:.44rem;padding:1px 4px;border-radius:4px;font-weight:800;line-height:1.4;pointer-events:none;position:absolute;top:2px;left:2px'
-        : 'background:var(--text3,#94A3B8);color:white;font-size:.52rem;font-weight:800;padding:1px 4px;border-radius:4px;line-height:1.4;pointer-events:none;position:absolute;top:2px;left:2px';
+      const isCover = idx === 0;
       chip.innerHTML = `
         <img src="${src}" alt="image ${idx+1}">
-        <span style="${badgeStyle}">${badgeLabel}</span>
+        <span class="admin-thumb-badge" style="${isCover ? 'background:var(--blue);font-size:.44rem' : 'background:var(--text3,#94A3B8);font-size:.52rem'}">${isCover ? 'Cover' : idx + 1}</span>
         <div class="admin-thumb-remove" title="সরান" onclick="event.stopPropagation();_adminRemoveImg(${idx})">×</div>`;
       chip.addEventListener('click', () => {
         prev.classList.remove('empty');
@@ -5017,11 +5108,11 @@ function _rebuildAdminStrip() {
               // Update badges + onclick indices — first becomes Cover
               chips.forEach((c, i) => {
                 c.dataset.idx = String(i);
-                const badge = c.querySelector('span');
+                const badge = c.querySelector('.admin-thumb-badge');
                 if (badge) {
                   badge.textContent = i === 0 ? 'Cover' : String(i + 1);
                   badge.style.background = i === 0 ? 'var(--blue)' : 'var(--text3,#94A3B8)';
-                  badge.style.fontSize = i === 0 ? '.44rem' : '.52rem';
+                  badge.style.fontSize   = i === 0 ? '.44rem' : '.52rem';
                 }
                 const rm = c.querySelector('.admin-thumb-remove');
                 if (rm) rm.setAttribute('onclick', `event.stopPropagation();_adminRemoveImg(${i})`);
@@ -5172,22 +5263,31 @@ async function saveProduct() {
   }, 25000);
 
   try {
-    // ── STEP 1: Upload all images — wait for URLs before DB write ──
-    let imageUrl  = null;
-    let imageUrls = [];
+    // ── STEP 1: Determine final image list ──
+    // Case A: New files selected → upload them (replaces existing images)
+    // Case B: No new files → use _existingImageUrls (reordered DB images)
+    let finalImageUrls = []; // final ordered URL list
     const hasNewFiles = selectedImageFiles.length > 0 || selectedImageFile;
 
     if (hasNewFiles) {
-      imageUrls = await uploadAllImages();
-      if (!imageUrls.length) {
+      // Upload new files and use those as the full image set
+      const uploaded = await uploadAllImages();
+      if (!uploaded.length) {
         clearTimeout(timeoutId);
         console.error('[saveProduct] Aborting save: all image uploads failed for product:', name);
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Product';
         return;
       }
-      imageUrl = imageUrls[0]; // primary image
+      finalImageUrls = uploaded;
+    } else if (_existingImageUrls.length) {
+      // No new files — use the (potentially reordered) existing DB images
+      finalImageUrls = [..._existingImageUrls];
     }
+
+    const imageUrl    = finalImageUrls[0] || null; // primary/cover image
+    // Always save as [{url, sort_order}] objects so frontend sorts correctly
+    const imagesPayload = finalImageUrls.map((url, i) => ({ url, sort_order: i }));
 
     // Check publisher & book_type
     const publisher = category === 'বই' ? document.getElementById('pPublisher').value.trim() || null : null;
@@ -5211,9 +5311,9 @@ async function saveProduct() {
       publisher,
       book_type,
       is_active:   true,
-      ...(imageUrl    ? { image_url: imageUrl }     : {}),
-      // Save images as [{url, sort_order}] objects so front-end can sort by sort_order
-      ...(imageUrls.length ? { images: imageUrls.map((url, i) => ({ url, sort_order: i })) } : {}),
+      ...(imageUrl         ? { image_url: imageUrl }         : {}),
+      // Save as [{url, sort_order}] so frontend sort is always correct
+      ...(imagesPayload.length ? { images: imagesPayload }  : {}),
     };
 
     // ── STEP 2: Write to DB only after upload confirmed ──
@@ -5238,6 +5338,7 @@ async function saveProduct() {
     closeModal('productModal');
     selectedImageFiles = [];
     selectedImageFile  = null;
+    _existingImageUrls = [];
     await loadProducts();
     renderDashboard();
 
