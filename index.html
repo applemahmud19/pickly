@@ -6710,6 +6710,21 @@ let products = [];
 let cart = (function() {
   try { return JSON.parse(localStorage.getItem('gm_cart') || '[]'); } catch(e) { return []; }
 })();
+
+// ── CART BADGE SYNC ON LOAD ──────────────────────────────────────
+// DOM তৈরি হওয়ার সাথে সাথেই localStorage থেকে cart পড়ে badge আপডেট।
+// এটি না থাকলে initial render-এ badge সবসময় "0" দেখায়।
+document.addEventListener('DOMContentLoaded', function _initCartBadge() {
+  const total    = cart.reduce((s, x) => s + x.qty, 0);
+  const badge    = document.getElementById('cartBadge');
+  const mobBadge = document.getElementById('mobCartBadge');
+  if (badge)    badge.textContent = total;
+  if (mobBadge) {
+    mobBadge.style.display  = total > 0 ? 'flex' : 'none';
+    mobBadge.textContent    = total > 9 ? '9+' : total;
+  }
+  document.removeEventListener('DOMContentLoaded', _initCartBadge);
+});
 let currentProduct = null;
 let modalQty = 1;
 let currentUser = null;
@@ -7021,7 +7036,26 @@ async function _restorePageFromUrl() {
     return;
   }
 
-  // ── ৩. Home বা অন্য সব path — কিছু করার নেই ──
+  // ── ৩. Checkout restore — refresh হলেও চেকআউট পেজ ফিরে আসবে ──
+  // শর্ত: (a) sessionStorage-এ pending flag আছে,
+  //        (b) cart খালি নয়,
+  //        (c) user লগইন করা আছে (checkout-এর auth gate পাস করতে হবে)
+  const checkoutPending = (() => {
+    try { return sessionStorage.getItem('gm_checkout_pending') === '1'; } catch(e) { return false; }
+  })();
+
+  if (checkoutPending) {
+    if (cart.length > 0 && currentUser) {
+      // Auth ও cart উভয়ই ঠিক আছে — চেকআউট পুনরায় খোলো
+      openCheckout();
+      return;
+    } else {
+      // Cart খালি বা user লগআউট — flag সাফ করো, home-এ থাকো
+      try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
+    }
+  }
+
+  // ── ৪. Home বা অন্য সব path — কিছু করার নেই ──
 }
 
 async function handleUser(user) {
@@ -8148,10 +8182,14 @@ function openCheckout() {
   if (ccMsg)   { ccMsg.style.display = 'none'; }
   updateHeaderHeight();
   closeCart();
+  // ── চেকআউট পেজ open আছে — sessionStorage-এ মার্ক করো ──
+  // রিফ্রেশ হলে _restorePageFromUrl এটি পড়ে চেকআউট পুনরায় খুলবে।
+  try { sessionStorage.setItem('gm_checkout_pending', '1'); } catch(e) {}
   openPage('checkout');
 }
 
 function closeCheckoutPage() {
+  try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
   closePage('checkout');
 }
 
@@ -8205,6 +8243,7 @@ async function placeOrder() {
     if(he) console.warn('[order_history] insert failed (non-critical):', he.message);
   });
   cart = []; discount = 0; updateCartBadge(); renderCartItems();
+  try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
   closePage('checkout');
   toast('অর্ডার সফল!', `অর্ডার নম্বর: ${orderNum}`, 's');
   setTimeout(()=>{
