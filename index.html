@@ -2216,8 +2216,23 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 .fp-thumb-row {
   display: flex; gap: 8px; margin-top: 10px;
-  justify-content: center;
+  justify-content: center; flex-wrap: wrap;
 }
+/* Gallery thumbnail chips */
+.fp-thumb-chip {
+  width: 58px; height: 58px;
+  border-radius: 9px; overflow: hidden;
+  border: 2px solid var(--border);
+  cursor: pointer; flex-shrink: 0;
+  background: #fff;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+}
+.fp-thumb-chip:hover { border-color: var(--blue); box-shadow: 0 3px 12px rgba(0,122,255,.18); transform: translateY(-1px); }
+.fp-thumb-chip.active { border-color: var(--blue); box-shadow: 0 4px 16px rgba(0,122,255,.22); }
+.fp-thumb-chip img { width:100%; height:100%; object-fit:contain; padding:3px; display:block; }
+/* Fade-in on main image swap */
+@keyframes fpImgFade { from { opacity:.3; transform:scale(.98); } to { opacity:1; transform:scale(1); } }
+.fp-img-fade { animation: fpImgFade .25s ease; }
 
 /* Right: info */
 .fp-right { display: flex; flex-direction: column; gap: 0; }
@@ -7688,6 +7703,26 @@ function openProduct(id, pushUrl = true) {
   const imgCard = document.getElementById('fpImgCard');
   if (imgCard) imgCard.style.background = p.image_url ? '#fff' : p.color + '18';
 
+  // ── Gallery thumbnails ──
+  const thumbRow = document.getElementById('fpThumbRow');
+  if (thumbRow) {
+    // Collect all images: images[] array (multi) or single image_url
+    const galleryImgs = (Array.isArray(p.images) && p.images.length > 1)
+      ? p.images
+      : (p.image_url ? [p.image_url] : []);
+
+    if (galleryImgs.length > 1) {
+      thumbRow.style.display = 'flex';
+      thumbRow.innerHTML = galleryImgs.map((src, idx) => `
+        <div class="fp-thumb-chip ${idx===0?'active':''}" data-idx="${idx}" onclick="fpSwitchGallery('${encodeURIComponent(src)}', this)">
+          <img src="${src}" alt="Product image ${idx+1}" onerror="this.parentElement.style.display='none'">
+        </div>`).join('');
+    } else {
+      thumbRow.innerHTML = '';
+      thumbRow.style.display = 'none';
+    }
+  }
+
   // ── Badge ──
   const badgeWrap = document.getElementById('fpBadgeWrap');
   const validBadge = p.badge && p.badge !== 'null' && p.badge !== 'undefined';
@@ -7755,6 +7790,31 @@ function openProduct(id, pushUrl = true) {
   if (badge) badge.textContent = '';
 
   openPage('product');
+}
+
+// ── Gallery thumbnail click: swap main image with fade ──
+function fpSwitchGallery(encodedSrc, chip) {
+  const src = decodeURIComponent(encodedSrc);
+  // Find or create the main <img> inside fpImgCard
+  let mainImg = document.getElementById('fpIcon');
+
+  // If fpIcon is a div (icon fallback), replace with img
+  if (mainImg && mainImg.tagName !== 'IMG') {
+    mainImg.outerHTML = `<img id="fpIcon" src="${src}" alt="" style="width:240px;height:240px;border-radius:16px;object-fit:contain;background:#f8f9fa;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.10)">`;
+    mainImg = document.getElementById('fpIcon');
+  } else if (mainImg) {
+    mainImg.classList.remove('fp-img-fade');
+    void mainImg.offsetWidth; // reflow to restart animation
+    mainImg.src = src;
+    mainImg.classList.add('fp-img-fade');
+  }
+
+  // Update active chip highlight
+  const thumbRow = document.getElementById('fpThumbRow');
+  if (thumbRow) {
+    thumbRow.querySelectorAll('.fp-thumb-chip').forEach(c => c.classList.remove('active'));
+    if (chip) chip.classList.add('active');
+  }
 }
 
 function setText(id, val) {
