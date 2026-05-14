@@ -9439,7 +9439,7 @@ function buildOrderDetailPanel(data, history) {
         const iColor = ITEM_ST_COLOR[iSt] || '#94A3B8';
         const iLabel = ITEM_ST_LABEL[iSt] || iSt;
         const iIcon  = ITEM_ST_ICON[iSt]  || 'fa-clock';
-        const imgSrc = item.image_url || '';
+        const imgSrc = item.image_url || item.product_image || '';
         // dispatched badge gets special van icon styling
         const isDispatched = iSt === 'dispatched';
         const badgeBg = isDispatched
@@ -9471,31 +9471,31 @@ function buildOrderDetailPanel(data, history) {
         </div>`;
       }).join('')}
       <!-- Price breakdown -->
-      <div style="background:#F8FAFC;border-top:1.5px dashed var(--border);padding:12px 13px">
+      <div style="background:#F8FAFC;border-top:1.5px dashed var(--border);padding:14px 16px">
         <!-- Subtotal -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span class="bn" style="font-size:.75rem;color:var(--text-mid)">পণ্য মোট</span>
-          <span class="bn" style="font-size:.75rem;color:var(--text)">৳${subtotal.toLocaleString()}</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+          <span class="bn" style="font-size:.76rem;color:var(--text-mid)">পণ্য মোট</span>
+          <span class="bn" style="font-size:.76rem;color:var(--text)">৳${subtotal.toLocaleString()}</span>
         </div>
-        <!-- Delivery -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span class="bn" style="font-size:.75rem;color:var(--text-mid)"><i class="fa-solid fa-motorcycle" style="color:var(--blue);font-size:.65rem;margin-right:4px"></i>ডেলিভারি চার্জ</span>
-          <span class="bn" style="font-size:.75rem;color:${shippingFee===0?'var(--green)':'var(--text)'}">
-            ${shippingFee===0 ? '<i class="fa-solid fa-check" style="font-size:.6rem;margin-right:2px"></i>ফ্রি' : '৳'+shippingFee.toLocaleString()}
+        <!-- Delivery — icon removed per design spec -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+          <span class="bn" style="font-size:.76rem;color:var(--text-mid)">ডেলিভারি চার্জ</span>
+          <span class="bn" style="font-size:.76rem;color:${shippingFee===0?'var(--green)':'var(--text)'}">
+            ${shippingFee===0 ? 'ফ্রি' : '৳'+shippingFee.toLocaleString()}
           </span>
         </div>
         <!-- Discount (only if > 0) -->
         ${discAmt > 0 ? `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span class="bn" style="font-size:.75rem;color:var(--text-mid)"><i class="fa-solid fa-tag" style="color:var(--green);font-size:.65rem;margin-right:4px"></i>ডিসকাউন্ট</span>
-          <span class="bn" style="font-size:.75rem;color:var(--green);font-weight:700">−৳${discAmt.toLocaleString()}</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+          <span class="bn" style="font-size:.76rem;color:var(--text-mid)">ডিসকাউন্ট</span>
+          <span class="bn" style="font-size:.76rem;color:var(--green);font-weight:700">−৳${discAmt.toLocaleString()}</span>
         </div>` : ''}
         <!-- Divider -->
-        <div style="border-top:1px solid var(--border);margin:8px 0"></div>
+        <div style="border-top:1.5px solid var(--border);margin:10px 0"></div>
         <!-- Grand total -->
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="bn" style="font-size:.85rem;font-weight:800;color:var(--text)">সর্বমোট</span>
-          <span class="bn" style="font-size:.95rem;font-weight:800;color:var(--blue)">৳${totalAmt.toLocaleString()}</span>
+          <span class="bn" style="font-size:.88rem;font-weight:800;color:var(--text)">সর্বমোট</span>
+          <span class="bn" style="font-size:1rem;font-weight:800;color:var(--blue)">৳${totalAmt.toLocaleString()}</span>
         </div>
       </div>
     </div>` : '';
