@@ -409,7 +409,9 @@ header.scrolled{
 .promo-banner-text{
   display:flex;align-items:center;justify-content:center;
   gap:0;padding:8px 24px;width:100%;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
+  overflow:hidden;
+  white-space:nowrap;
 }
 .promo-item{
   display:flex;align-items:center;gap:8px;
@@ -430,10 +432,11 @@ header.scrolled{
 }
 /* Desktop: track is a transparent flex wrapper — items render normally */
 .promo-marquee-track {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 /* Desktop: only show first track; second is hidden (it's the loop duplicate) */
 .promo-marquee-track + .promo-marquee-track {
@@ -2449,17 +2452,32 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 .fp-trust-item i { color: var(--blue); }
 
 /* ── DESCRIPTION SEE MORE/LESS ── */
-.desc-clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.desc-wrapper {
+  position: relative;
 }
+.desc-clamped {
+  max-height: 108px; /* ~4 lines at 1.6 line-height × 0.9rem × 16px ≈ 92px; give a bit extra */
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
+}
+.desc-clamped.expanded {
+  max-height: 4000px; /* effectively unlimited */
+}
+/* Fade-out gradient mask — only when clamped */
+.desc-gradient {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, white);
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.desc-gradient.hidden { opacity: 0; pointer-events: none; }
 .desc-toggle-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 8px;
+  margin-top: 10px;
   background: none;
   border: none;
   color: var(--blue);
@@ -2469,6 +2487,10 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   cursor: pointer;
   padding: 4px 0;
   transition: opacity .2s;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  text-align: left;
 }
 .desc-toggle-btn:hover { opacity: .7; }
 .desc-toggle-btn i { font-size: .75rem; }
@@ -4616,64 +4638,59 @@ html, body {
     max-width: 140px !important;
   }
 
-  /* ── 9. Promo banner — slim infinite marquee on mobile (overlap-free) ── */
+  /* ── 9. Promo banner — static single-line layout on mobile ── */
   .promo-banner {
     border-bottom: 1px solid #FFE4A0 !important;
     min-height: 0 !important;
-    height: 28px !important;
+    height: auto !important;
     overflow: hidden !important;
   }
-  /* Outer container: single-line clip — NO wrap, NO static padding */
+  /* Outer container: show only first track, static space-around */
   .promo-banner-text {
     display: flex !important;
-    flex-wrap: nowrap !important;         /* CRITICAL: prevents overlap/wrap */
+    flex-wrap: nowrap !important;
     overflow: hidden !important;
-    padding: 0 !important;               /* no side padding — tracks own it */
+    padding: 0 4px !important;
     gap: 0 !important;
     width: 100% !important;
-    height: 28px !important;
+    height: 26px !important;
     align-items: center !important;
-    scrollbar-width: none !important;
-    justify-content: flex-start !important;
+    justify-content: space-around !important;
     white-space: nowrap !important;
   }
-  .promo-banner-text::-webkit-scrollbar { display: none !important; }
 
-  /* Both tracks: each is a full-width flex row of items */
-  .promo-marquee-track,
-  .promo-marquee-track + .promo-marquee-track {
-    display: inline-flex !important;     /* inline-flex: items stay on one line */
+  /* Show only the first track; hide the duplicate */
+  .promo-marquee-track {
+    display: flex !important;
     align-items: center !important;
+    justify-content: space-around !important;
     gap: 0 !important;
+    flex: 1 !important;
     flex-shrink: 0 !important;
-    flex-wrap: nowrap !important;        /* belt-and-suspenders: no wrap inside track */
-    animation: promoMarquee 24s linear infinite !important;
-    will-change: transform !important;
+    flex-wrap: nowrap !important;
+    animation: none !important;          /* NO animation — static layout */
+    transform: none !important;
+    width: 100% !important;
   }
-  /* Second track perfectly interleaved (half duration offset) */
   .promo-marquee-track + .promo-marquee-track {
-    animation-delay: -12s !important;
-  }
-  /* Pause on touch for readability */
-  .promo-banner-text:active .promo-marquee-track {
-    animation-play-state: paused !important;
+    display: none !important;            /* hide duplicate track */
   }
 
-  /* Each promo item: 11px, generous padding, icon gap, never wraps */
+  /* Each promo item: 9px, minimal padding, tight icon gap */
   .promo-item {
-    font-size: 11px !important;
-    padding: 0 15px !important;          /* gap between items */
+    font-size: 9px !important;
+    padding: 0 2px !important;
     white-space: nowrap !important;
-    flex-shrink: 0 !important;
+    flex-shrink: 1 !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 5px !important;                 /* space between icon and text */
+    gap: 2px !important;
     line-height: 1 !important;
   }
   .promo-item i {
-    font-size: 11px !important;
+    font-size: 9px !important;
     flex-shrink: 0 !important;
-    margin-right: 2px !important;        /* extra breathing between icon & text */
+    margin-right: 1px !important;
   }
   .promo-item .bn,
   .promo-item span {
@@ -5926,7 +5943,10 @@ html, body {
 
     <!-- TAB: Details -->
     <div id="pdPanelDetails" class="fp-tab-panel">
-      <div class="bn" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;white-space:pre-line"></div>
+      <div class="desc-wrapper">
+        <div class="bn desc-clamped" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;white-space:pre-line"></div>
+        <div class="desc-gradient" id="descGradient"></div>
+      </div>
       <button class="desc-toggle-btn bn" id="descToggleBtn" onclick="toggleDesc()" style="display:none">
         <i class="fa-solid fa-chevron-down" id="descToggleIcon"></i>
         <span id="descToggleLabel">আরও দেখুন</span>
@@ -8156,16 +8176,22 @@ function renderDesc(id, raw) {
     const btn = document.getElementById('descToggleBtn');
     const icon = document.getElementById('descToggleIcon');
     const label = document.getElementById('descToggleLabel');
+    const gradient = document.getElementById('descGradient');
     if (!btn) return;
-    // Reset state
+    // Reset state — collapsed
     el.classList.add('desc-clamped');
+    el.classList.remove('expanded');
     btn.style.display = 'none';
+    if (gradient) { gradient.classList.remove('hidden'); }
     if (icon) { icon.className = 'fa-solid fa-chevron-down'; }
     if (label) label.textContent = 'আরও দেখুন';
-    // Show toggle only if content overflows
+    // Show toggle only if content actually overflows the clamped height
     requestAnimationFrame(() => {
-      if (el.scrollHeight > el.clientHeight + 2) {
-        btn.style.display = 'inline-flex';
+      if (el.scrollHeight > el.clientHeight + 4) {
+        btn.style.display = 'flex';
+      } else {
+        // Content fits — no need for gradient either
+        if (gradient) gradient.classList.add('hidden');
       }
     });
   }
@@ -8173,19 +8199,23 @@ function renderDesc(id, raw) {
 
 function toggleDesc() {
   const el = document.getElementById('modalDesc');
-  const btn = document.getElementById('descToggleBtn');
   const icon = document.getElementById('descToggleIcon');
   const label = document.getElementById('descToggleLabel');
+  const gradient = document.getElementById('descGradient');
   if (!el) return;
-  const isClamped = el.classList.contains('desc-clamped');
-  if (isClamped) {
-    el.classList.remove('desc-clamped');
-    if (icon) icon.className = 'fa-solid fa-chevron-up';
-    if (label) label.textContent = 'সংক্ষেপে দেখুন';
-  } else {
-    el.classList.add('desc-clamped');
+  const isExpanded = el.classList.contains('expanded');
+  if (isExpanded) {
+    // Collapse
+    el.classList.remove('expanded');
+    if (gradient) gradient.classList.remove('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-down';
     if (label) label.textContent = 'আরও দেখুন';
+  } else {
+    // Expand
+    el.classList.add('expanded');
+    if (gradient) gradient.classList.add('hidden');
+    if (icon) icon.className = 'fa-solid fa-chevron-up';
+    if (label) label.textContent = 'সংক্ষেপে দেখুন';
   }
 }
 function escFe(s) {
@@ -13583,26 +13613,12 @@ window.addEventListener('popstate', function(e) {
     const container = document.querySelector('.promo-banner-text');
     if (!container) return;
 
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      // ── MOBILE: 11px font, inline-flex items, seamless infinite marquee ──
-      const mobileFs = '11px';
-      const itemsHtml = buildPromoItems(items, mobileFs, fw);
-      // Duplicate twice so the loop is seamless (track width = 2× content)
-      container.innerHTML =
-        `<div class="promo-marquee-track" id="promoTrack1">${itemsHtml}</div>` +
-        `<div class="promo-marquee-track" id="promoTrack2" aria-hidden="true">${itemsHtml}</div>`;
-    } else {
-      // ── DESKTOP: static row with | separators ──
-      container.innerHTML = items.map((item, i) => {
-        const sep = i < items.length - 1 ? '<span class="promo-sep">|</span>' : '';
-        return `<div class="promo-item" style="font-size:${fs};font-weight:${fw}">
-          <i class="fa-solid ${item.icon}"></i>
-          <span class="bn">${item.text}</span>
-        </div>${sep}`;
-      }).join('');
-    }
+    // ── Always render TWO tracks — CSS handles desktop (static) vs mobile (marquee) ──
+    // Avoids JS viewport-detection timing bugs on Android browsers.
+    const itemsHtml = buildPromoItems(items, fs, fw);
+    container.innerHTML =
+      `<div class="promo-marquee-track" id="promoTrack1">${itemsHtml}</div>` +
+      `<div class="promo-marquee-track" id="promoTrack2" aria-hidden="true">${itemsHtml}</div>`;
   }
 
   /* Apply free delivery amount */
