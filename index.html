@@ -2448,6 +2448,31 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 .fp-trust-item i { color: var(--blue); }
 
+/* ── DESCRIPTION SEE MORE/LESS ── */
+.desc-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.desc-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-family: 'Hind Siliguri', sans-serif;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: opacity .2s;
+}
+.desc-toggle-btn:hover { opacity: .7; }
+.desc-toggle-btn i { font-size: .75rem; }
+
 /* Tabs area */
 .fp-tabs-wrap {
   max-width: 1100px; margin: 36px auto 0; padding: 0 24px 40px;
@@ -2639,10 +2664,9 @@ footer, footer *:not(i):not([class*="fa-"]) {
 
 /* Search result area */
 .tp-search-result {
-  min-height: 80px;
 }
 .tp-search-hint {
-  text-align: center; padding: 28px 16px;
+  text-align: center; padding: 16px 16px;
   font-family: 'Hind Siliguri', sans-serif;
   font-size: .82rem; color: var(--text-light);
 }
@@ -5894,7 +5918,12 @@ html, body {
 
     <!-- TAB: Details -->
     <div id="pdPanelDetails" class="fp-tab-panel">
-      <div class="bn" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;margin-bottom:20px;white-space:pre-line"></div>
+      <div class="bn" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;white-space:pre-line"></div>
+      <button class="desc-toggle-btn bn" id="descToggleBtn" onclick="toggleDesc()" style="display:none">
+        <i class="fa-solid fa-chevron-down" id="descToggleIcon"></i>
+        <span id="descToggleLabel">আরও দেখুন</span>
+      </button>
+      <div style="margin-bottom:20px"></div>
       <table id="pdSpecTable" class="fp-spec-table"></table>
     </div>
 
@@ -8113,6 +8142,43 @@ function renderDesc(id, raw) {
   });
   if (inPara) html += '</p>';
   el.innerHTML = html;
+
+  // See more / see less toggle — only for modalDesc
+  if (id === 'modalDesc') {
+    const btn = document.getElementById('descToggleBtn');
+    const icon = document.getElementById('descToggleIcon');
+    const label = document.getElementById('descToggleLabel');
+    if (!btn) return;
+    // Reset state
+    el.classList.add('desc-clamped');
+    btn.style.display = 'none';
+    if (icon) { icon.className = 'fa-solid fa-chevron-down'; }
+    if (label) label.textContent = 'আরও দেখুন';
+    // Show toggle only if content overflows
+    requestAnimationFrame(() => {
+      if (el.scrollHeight > el.clientHeight + 2) {
+        btn.style.display = 'inline-flex';
+      }
+    });
+  }
+}
+
+function toggleDesc() {
+  const el = document.getElementById('modalDesc');
+  const btn = document.getElementById('descToggleBtn');
+  const icon = document.getElementById('descToggleIcon');
+  const label = document.getElementById('descToggleLabel');
+  if (!el) return;
+  const isClamped = el.classList.contains('desc-clamped');
+  if (isClamped) {
+    el.classList.remove('desc-clamped');
+    if (icon) icon.className = 'fa-solid fa-chevron-up';
+    if (label) label.textContent = 'সংক্ষেপে দেখুন';
+  } else {
+    el.classList.add('desc-clamped');
+    if (icon) icon.className = 'fa-solid fa-chevron-down';
+    if (label) label.textContent = 'আরও দেখুন';
+  }
 }
 function escFe(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
