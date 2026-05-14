@@ -2919,9 +2919,20 @@ footer, footer *:not(i):not([class*="fa-"]) {
   .rec-card-price{font-size:.78rem}
   .rec-card-old{font-size:.62rem}
   .rec-card-btn{margin-top:auto;flex-shrink:0;padding:6px;font-size:.66rem}
-  .rec-arrow{opacity:1;width:24px;height:24px}
-  .rec-arrow-left{left:-12px}
-  .rec-arrow-right{right:-12px}
+  /* Mobile: hide arrow buttons — finger swipe handles navigation */
+  .rec-arrow{display:none!important}
+  /* Mobile: native horizontal scroll + snap for smooth swipe */
+  .rec-slider-viewport{
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .rec-slider-viewport::-webkit-scrollbar{display:none}
+  /* Disable JS transform on mobile — native scroll takes over */
+  .rec-slider-track{transform:none!important}
+  .rec-card{scroll-snap-align:start}
 }
 
 
@@ -5455,7 +5466,7 @@ html, body {
   <div class="header-top">
 
     <!-- Logo -->
-    <a class="logo" href="#">
+    <a class="logo" href="/" onclick="event.preventDefault();ALL_PAGES.forEach(n=>{const el=document.getElementById('page-'+n);if(el)el.classList.remove('open')});document.body.style.overflow='';window.scrollTo({top:0,behavior:'smooth'})">
       <div class="logo-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8C42);border-radius:10px">
         <i class="fa-solid fa-bag-shopping" style="color:white;font-size:1rem"></i>
       </div>
@@ -7212,6 +7223,12 @@ function slideRec(key, dir) {
   const track      = document.getElementById(trackId);
   const viewport   = document.getElementById(viewportId);
   if (!track || !viewport) return;
+
+  // On mobile (<=600px) the viewport is natively scrollable — use scrollLeft
+  if (window.innerWidth <= 600) {
+    viewport.scrollBy({ left: dir * REC_CARD_W, behavior: 'smooth' });
+    return;
+  }
 
   const visible   = Math.max(1, Math.floor(viewport.offsetWidth / REC_CARD_W));
   const maxOffset = Math.max(0, recState[key].total - visible);
