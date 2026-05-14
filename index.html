@@ -213,13 +213,16 @@ body.loading{overflow:hidden!important}
   100%{width:100%}
 }
 
-/* ── PAGE-CONTEXT UI HIDE: social bar + category nav hidden on product/checkout pages ── */
+/* ── PAGE-CONTEXT UI HIDE: social bar + category nav hidden on product/checkout/track pages ── */
 body.page-product-open .social-bar,
 body.page-product-open .nav-cats,
 body.page-product-open .mobile-search-row,
 body.page-checkout-open .social-bar,
 body.page-checkout-open .nav-cats,
-body.page-checkout-open .mobile-search-row {
+body.page-checkout-open .mobile-search-row,
+body.page-track-open .social-bar,
+body.page-track-open .nav-cats,
+body.page-track-open .mobile-search-row {
   display: none !important;
 }
 
@@ -419,6 +422,23 @@ header.scrolled{
 .promo-item span{font-family:'Hind Siliguri',sans-serif;font-weight:600}
 .promo-item i{color:var(--orange);font-size:.86rem;flex-shrink:0}
 .promo-sep{color:#c8980f;font-size:.75rem;opacity:.6;flex-shrink:0;font-weight:300}
+
+/* ── PROMO MARQUEE: keyframe for mobile infinite scroll ── */
+@keyframes promoMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+/* Desktop: track is a transparent flex wrapper — items render normally */
+.promo-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+/* Desktop: only show first track; second is hidden (it's the loop duplicate) */
+.promo-marquee-track + .promo-marquee-track {
+  display: none;
+}
 
 /* Mobile search row (hidden on desktop) */
 .mobile-search-row{
@@ -653,14 +673,14 @@ header.scrolled{
 .main{
   display:flex;
   min-height:80vh;
-  /* Contain layout so card animations don't cause full-page repaints */
-  contain: layout style;
+  /* NOTE: contain:layout was removed — it creates a containing block that clips
+     position:fixed children (the mobile filter drawer) in some browsers */
 }
 
 /* ── SIDEBAR ── */
 /* BANNER STABILITY FIX: Use var(--header-h) instead of hardcoded 108px.
    JS keeps --header-h accurate. Fallback 120px covers first paint. */
-.sidebar{width:260px;flex-shrink:0;background:white;border-right:1px solid var(--border);padding:18px 16px 18px 16px;position:sticky;top:var(--header-h,120px);height:calc(100vh - var(--header-h,120px));overflow-y:auto;overflow-x:hidden}
+.sidebar{width:260px;flex-shrink:0;background:white;border-right:1px solid var(--border);padding:18px 16px 18px 16px;position:sticky;top:var(--header-h,120px);height:fit-content;max-height:calc(100vh - var(--header-h,120px));overflow-y:auto;overflow-x:hidden}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .fhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -1924,7 +1944,9 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
    MOBILE FILTER DRAWER SYSTEM
 ══════════════════════════════════════════════════ */
 .sidebar-overlay{
-  display:none;position:fixed;inset:0;z-index:490;
+  display:none;position:fixed;inset:0;
+  /* z-index 8500: above full-pages (150), cart (400), header (1000), bottom-nav (9000-1) */
+  z-index:8500;
   background:rgba(15,23,42,.5);backdrop-filter:blur(4px);
   animation:fadeIn .2s ease;
 }
@@ -1959,7 +1981,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   /* Slide-out drawer */
   .sidebar{
     position:fixed;top:0;left:-290px;width:280px;
-    height:100dvh;z-index:500;
+    height:100dvh;z-index:9000;
     border-right:1px solid var(--border);
     box-shadow:4px 0 32px rgba(0,0,0,.18);
     transition:left .32s cubic-bezier(.4,0,.2,1);
@@ -2013,8 +2035,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .logo-text{font-size:.85rem}
   .logo-icon{width:32px;height:32px;font-size:.9rem}
   .account-dropdown{right:auto;left:0}
-  .promo-item{font-size:.72rem}
-  .promo-sep{display:none}
+  /* promo-item font-size handled by dedicated mobile marquee block */
 
   /* Cart full-width */
   .cart-panel{width:100%;max-width:100%}
@@ -2029,8 +2050,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 
 @media(max-width:480px){
-  .promo-banner-text{gap:12px;padding:8px 14px}
-  .promo-item:nth-child(n+4){display:none}
+  /* promo-banner handled by dedicated mobile marquee block */
   .header-top{padding:8px 12px}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:8px}
   .pcard-img{height:168px}
@@ -2045,9 +2065,42 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   .track-tabs{overflow-x:auto;scrollbar-width:none}
   .track-tab{padding:8px 10px;font-size:.72rem;white-space:nowrap}
 
-  /* Footer compact */
-  .foot-top{grid-template-columns:1fr}
-  .foot-bottom{flex-direction:column;text-align:center;gap:10px}
+  /* Footer — 2-column compact layout on mobile */
+  footer { padding: 20px 14px 16px !important; }
+
+  /* Brand row: centered, compact */
+  .foot-brand {
+    grid-column: 1 / -1;            /* spans full width above the 2 cols */
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .foot-brand .fsocials {
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .foot-brand .flabel {
+    font-size: .7rem !important;
+    max-width: 280px;
+    margin: 0 auto 8px !important;
+  }
+
+  /* 3 link columns → 2-column grid, brand spans top */
+  .foot-top {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px 20px !important;
+  }
+
+  /* Column headings & links — compact sizes */
+  .foot-col h4 {
+    font-size: 15px !important;
+    margin-bottom: 7px !important;
+  }
+  .foot-col a {
+    font-size: 13px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .foot-bottom { flex-direction: column; text-align: center; gap: 8px; }
 }
 /* ══════════════════════════════════════════════════
    Z-INDEX MASTER SCALE
@@ -3385,11 +3438,16 @@ body {
 ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
-  footer { padding: 20px 14px; }
-  .foot-top { grid-template-columns: 1fr; gap: 16px; }
+  footer { padding: 20px 14px 16px; }
+  /* 2-column grid: brand spans top row, 3 link cols fill 2 cols beneath */
+  .foot-top { grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+  .foot-brand { grid-column: 1 / -1; text-align: center; }
+  .foot-brand .fsocials { justify-content: center; flex-wrap: wrap; }
+  .foot-brand .flabel { font-size: .7rem; max-width: 280px; margin: 0 auto 8px; }
+  .foot-col h4 { font-size: 15px; }
+  .foot-col a { font-size: 13px; margin-bottom: 4px; }
   .foot-bottom { flex-direction: column; text-align: center; gap: 8px; }
   .pay-methods { justify-content: center; flex-wrap: wrap; }
-  .fsocials { flex-wrap: wrap; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3476,9 +3534,7 @@ body {
 ══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 480px) {
-  .promo-banner-text { padding: 7px 12px; gap: 0; }
-  .promo-item { padding: 0 10px; font-size: .7rem; }
-  .promo-item i { font-size: .75rem; }
+  /* promo-banner handled by dedicated mobile marquee block in @media(max-width:768px) */
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -4031,8 +4087,7 @@ div.pcard-icon {
 @media (max-width: 880px) {
   .main { padding: 0 !important; }
   .promo-banner { overflow: hidden !important; }
-  .promo-banner-text { padding: 7px 12px !important; gap: 0 !important; }
-  .promo-item { padding: 0 10px !important; font-size: .7rem !important; }
+  /* promo-banner-text & promo-item sizing handled by dedicated mobile marquee block */
   .pgn { margin-top: 16px !important; flex-wrap: wrap !important; gap: 4px !important; }
   .parea-header { margin-bottom: 10px !important; gap: 7px !important; }
   .parea-header h2 { font-size: .82rem !important; }
@@ -4529,24 +4584,78 @@ html, body {
     max-width: 140px !important;
   }
 
-  /* ── 9. Promo banner — compact on mobile ── */
+  /* ── 9. Promo banner — slim infinite marquee on mobile (overlap-free) ── */
   .promo-banner {
     border-bottom: 1px solid #FFE4A0 !important;
+    min-height: 0 !important;
+    height: 28px !important;
+    overflow: hidden !important;
   }
+  /* Outer container: single-line clip — NO wrap, NO static padding */
   .promo-banner-text {
-    padding: 6px 12px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;         /* CRITICAL: prevents overlap/wrap */
+    overflow: hidden !important;
+    padding: 0 !important;               /* no side padding — tracks own it */
     gap: 0 !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
+    width: 100% !important;
+    height: 28px !important;
+    align-items: center !important;
     scrollbar-width: none !important;
-    -webkit-overflow-scrolling: touch !important;
+    justify-content: flex-start !important;
+    white-space: nowrap !important;
   }
   .promo-banner-text::-webkit-scrollbar { display: none !important; }
+
+  /* Both tracks: each is a full-width flex row of items */
+  .promo-marquee-track,
+  .promo-marquee-track + .promo-marquee-track {
+    display: inline-flex !important;     /* inline-flex: items stay on one line */
+    align-items: center !important;
+    gap: 0 !important;
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;        /* belt-and-suspenders: no wrap inside track */
+    animation: promoMarquee 24s linear infinite !important;
+    will-change: transform !important;
+  }
+  /* Second track perfectly interleaved (half duration offset) */
+  .promo-marquee-track + .promo-marquee-track {
+    animation-delay: -12s !important;
+  }
+  /* Pause on touch for readability */
+  .promo-banner-text:active .promo-marquee-track {
+    animation-play-state: paused !important;
+  }
+
+  /* Each promo item: 11px, generous padding, icon gap, never wraps */
   .promo-item {
-    font-size: .68rem !important;
-    padding: 0 10px !important;
+    font-size: 11px !important;
+    padding: 0 15px !important;          /* gap between items */
     white-space: nowrap !important;
     flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;                 /* space between icon and text */
+    line-height: 1 !important;
+  }
+  .promo-item i {
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+    margin-right: 2px !important;        /* extra breathing between icon & text */
+  }
+  .promo-item .bn,
+  .promo-item span {
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+  }
+  /* Dot separators */
+  .promo-sep {
+    font-size: 9px !important;
+    opacity: .5 !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
+    padding: 0 3px !important;
   }
 
   /* ── 10. Cart panel full-screen on mobile ── */
@@ -5024,15 +5133,7 @@ html, body {
 ═══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
 
-  /* Promo banner — single scrollable row */
-  .promo-banner-text {
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important;
-  }
-  .promo-banner-text::-webkit-scrollbar { display: none !important; }
-  .promo-item { flex-shrink: 0 !important; }
-  .promo-sep { display: none !important; }
+  /* Promo banner — handled by dedicated marquee media query below */
 
   /* Track page input row — stacked on very small screens */
   .track-inp-row {
@@ -5492,24 +5593,49 @@ html, body {
 <!-- ── PROMO BANNER (below search, above hero) ── -->
 <div class="promo-banner" id="promoBanner">
   <div class="promo-banner-text">
-    <div class="promo-item">
-      <i class="fa-solid fa-truck-fast"></i>
-      <span class="bn">৳৯৯৯+ অর্ডারে <strong>ফ্রি ডেলিভারি</strong></span>
+    <!-- JS (initCmsListener → applyPromoBar) replaces this on load.
+         Static fallback shown briefly on first paint: -->
+    <div class="promo-marquee-track" id="promoTrack1">
+      <div class="promo-item">
+        <i class="fa-solid fa-truck-fast"></i>
+        <span class="bn">৳৯৯৯+ অর্ডারে <strong>ফ্রি ডেলিভারি</strong></span>
+      </div>
+      <span class="promo-sep">·</span>
+      <div class="promo-item">
+        <i class="fa-solid fa-tag"></i>
+        <span class="bn">ঈদ স্পেশাল — <strong>৩০% পর্যন্ত ছাড়</strong></span>
+      </div>
+      <span class="promo-sep">·</span>
+      <div class="promo-item">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span class="bn">100% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
+      </div>
+      <span class="promo-sep">·</span>
+      <div class="promo-item">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
+      </div>
     </div>
-    <span class="promo-sep">|</span>
-    <div class="promo-item">
-      <i class="fa-solid fa-tag"></i>
-      <span class="bn">ঈদ স্পেশাল — <strong>৩০% পর্যন্ত ছাড়</strong></span>
-    </div>
-    <span class="promo-sep">|</span>
-    <div class="promo-item">
-      <i class="fa-solid fa-shield-halved"></i>
-      <span class="bn">100% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
-    </div>
-    <span class="promo-sep">|</span>
-    <div class="promo-item">
-      <i class="fa-solid fa-rotate-left"></i>
-      <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
+    <div class="promo-marquee-track" id="promoTrack2" aria-hidden="true">
+      <div class="promo-item">
+        <i class="fa-solid fa-truck-fast"></i>
+        <span class="bn">৳৯৯৯+ অর্ডারে <strong>ফ্রি ডেলিভারি</strong></span>
+      </div>
+      <span class="promo-sep">·</span>
+      <div class="promo-item">
+        <i class="fa-solid fa-tag"></i>
+        <span class="bn">ঈদ স্পেশাল — <strong>৩০% পর্যন্ত ছাড়</strong></span>
+      </div>
+      <span class="promo-sep">·</span>
+      <div class="promo-item">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span class="bn">100% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
+      </div>
+      <span class="promo-sep">·</span>
+      <div class="promo-item">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
+      </div>
     </div>
   </div>
 </div>
@@ -6384,16 +6510,7 @@ html, body {
               <i class="fa-solid fa-magnifying-glass"></i> ট্র্যাক করুন
             </button>
           </div>
-          <!-- Quick example chips -->
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
-            <span style="font-family:'Hind Siliguri',sans-serif;font-size:.68rem;color:var(--text-light);align-self:center">উদাহরণ:</span>
-            <button onclick="document.getElementById('tpTrackInput').value='GM-2026-04812';tpTrackOrder()" style="font-size:.68rem;padding:3px 10px;border-radius:100px;border:1px solid var(--border);background:var(--blue-light);color:var(--blue);cursor:pointer;font-family:'Sora',sans-serif;transition:all var(--t)">GM-2026-04812</button>
-          </div>
           <div class="tp-search-result" id="tpSearchResult">
-            <div class="tp-search-hint">
-              <i class="fa-solid fa-search-location"></i>
-              <span class="bn">Order ID লিখে ট্র্যাক বাটনে চাপুন</span>
-            </div>
           </div>
         </div>
       </div>
@@ -7722,8 +7839,8 @@ function restoreHomeUrl() {
 }
 
 // ── Global UI visibility manager ──
-// Hides social-bar + category-nav on product/checkout pages per design spec
-const _PAGES_HIDE_TOPBARS = ['product', 'checkout'];
+// Hides social-bar + category-nav on product/checkout/track pages per design spec
+const _PAGES_HIDE_TOPBARS = ['product', 'checkout', 'track'];
 function updatePageUIVisibility(name) {
   if (_PAGES_HIDE_TOPBARS.includes(name)) {
     document.body.classList.add('page-' + name + '-open');
@@ -13365,6 +13482,17 @@ window.addEventListener('popstate', function(e) {
 ══════════════════════════════════════════════════════ */
 (function initCmsListener() {
 
+  /* Build a single set of promo item HTML strings */
+  function buildPromoItems(items, fs, fw) {
+    return items.map((item, i) => {
+      const sep = i < items.length - 1 ? '<span class="promo-sep">·</span>' : '';
+      return `<div class="promo-item" style="font-size:${fs};font-weight:${fw};display:inline-flex;align-items:center;white-space:nowrap;flex-shrink:0">
+        <i class="fa-solid ${item.icon}"></i>
+        <span class="bn" style="white-space:nowrap;font-size:${fs}">${item.text}</span>
+      </div>${sep}`;
+    }).join('');
+  }
+
   /* Apply promo bar items from localStorage */
   function applyPromoBar() {
     const DEFAULT = [
@@ -13380,13 +13508,27 @@ window.addEventListener('popstate', function(e) {
     const fw = style.weight === 'bold' ? '700' : '500';
     const container = document.querySelector('.promo-banner-text');
     if (!container) return;
-    container.innerHTML = items.map((item, i) => {
-      const sep = i < items.length - 1 ? '<span class="promo-sep">|</span>' : '';
-      return `<div class="promo-item" style="font-size:${fs};font-weight:${fw}">
-        <i class="fa-solid ${item.icon}"></i>
-        <span class="bn">${item.text}</span>
-      </div>${sep}`;
-    }).join('');
+
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // ── MOBILE: 11px font, inline-flex items, seamless infinite marquee ──
+      const mobileFs = '11px';
+      const itemsHtml = buildPromoItems(items, mobileFs, fw);
+      // Duplicate twice so the loop is seamless (track width = 2× content)
+      container.innerHTML =
+        `<div class="promo-marquee-track" id="promoTrack1">${itemsHtml}</div>` +
+        `<div class="promo-marquee-track" id="promoTrack2" aria-hidden="true">${itemsHtml}</div>`;
+    } else {
+      // ── DESKTOP: static row with | separators ──
+      container.innerHTML = items.map((item, i) => {
+        const sep = i < items.length - 1 ? '<span class="promo-sep">|</span>' : '';
+        return `<div class="promo-item" style="font-size:${fs};font-weight:${fw}">
+          <i class="fa-solid ${item.icon}"></i>
+          <span class="bn">${item.text}</span>
+        </div>${sep}`;
+      }).join('');
+    }
   }
 
   /* Apply free delivery amount */
