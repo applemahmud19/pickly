@@ -3374,6 +3374,69 @@ async function loadProducts() {
   }
 }
 
+/* ── STATUS HISTORY TABLE HEALTH CHECK ──────────────────────────
+   Runs once after orders load. Tests if order_status_history is
+   accessible & shows a setup banner if the table is missing/blocked.
+   ─────────────────────────────────────────────────────────────── */
+let _histTableChecked = false;
+async function checkStatusHistoryTable() {
+  if (_histTableChecked || !sb) return;
+  _histTableChecked = true;
+  try {
+    const { error } = await sb.from('order_status_history').select('id').limit(1);
+    if (error) {
+      console.warn('[checkStatusHistoryTable] Table issue:', error.message);
+      showDbSetupBanner(error.message);
+    }
+  } catch(e) {
+    console.warn('[checkStatusHistoryTable] Unexpected error:', e.message);
+  }
+}
+
+function showDbSetupBanner(errMsg) {
+  // Don't show twice
+  if (document.getElementById('dbSetupBanner')) return;
+  const sql = `-- Run this SQL once in Supabase → SQL Editor:
+
+-- 1) Create order_status_history table (if missing)
+CREATE TABLE IF NOT EXISTS order_status_history (
+  id            uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id      uuid REFERENCES orders(id) ON DELETE CASCADE,
+  status        text NOT NULL,
+  status_name   text,
+  note          text,
+  created_at    timestamptz DEFAULT now()
+);
+
+-- 2) Enable Row Level Security (RLS) + allow all operations
+ALTER TABLE order_status_history ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "allow_all" ON order_status_history;
+CREATE POLICY "allow_all" ON order_status_history FOR ALL USING (true) WITH CHECK (true);
+
+-- 3) Fix orders table status constraint (allow extended statuses)
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check
+  CHECK (status IN ('pending','confirmed','in_stock','collecting','collected',
+                    'processing','shipped','delivered','cancelled'));`;
+
+  const banner = document.createElement('div');
+  banner.id = 'dbSetupBanner';
+  banner.style.cssText = 'position:fixed;bottom:16px;right:16px;max-width:480px;background:#1E293B;color:white;border-radius:12px;padding:16px 18px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.35);font-family:monospace;font-size:.78rem';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+      <i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;font-size:1.1rem;flex-shrink:0;margin-top:2px"></i>
+      <div>
+        <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:.82rem;margin-bottom:3px">স্ট্যাটাস হিস্টোরি টেবিল সমস্যা</div>
+        <div style="color:#94A3B8;font-size:.72rem;font-family:'Inter',sans-serif">Supabase-এ SQL run করুন — নিচের কোড copy করে SQL Editor-এ paste করুন</div>
+        ${errMsg ? `<div style="color:#F87171;font-size:.68rem;margin-top:4px;font-family:monospace">${errMsg}</div>` : ''}
+      </div>
+      <button onclick="document.getElementById('dbSetupBanner').remove()" style="background:none;border:none;color:#64748B;cursor:pointer;font-size:.9rem;padding:2px;margin-left:auto;flex-shrink:0">✕</button>
+    </div>
+    <textarea id="dbSetupSql" readonly style="width:100%;height:140px;background:#0F172A;color:#7DD3FC;border:1px solid #334155;border-radius:7px;padding:9px;font-size:.68rem;resize:none;line-height:1.6">${sql}</textarea>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('dbSetupSql').value).then(()=>this.textContent='✓ Copied!')" style="margin-top:8px;background:#3B82F6;color:white;border:none;border-radius:7px;padding:7px 14px;font-size:.75rem;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;width:100%">📋 SQL Copy করুন</button>`;
+  document.body.appendChild(banner);
+}
+
 async function loadOrders() {
   if (!sb) return;
   // Show loading state
@@ -3396,6 +3459,8 @@ async function loadOrders() {
     allOrders = data || [];
     document.getElementById('nb-orders').textContent = allOrders.length;
     renderOrders();
+    // ── Auto-check: verify order_status_history table is accessible ──
+    checkStatusHistoryTable();
   } catch(e) {
     clearTimeout(timeoutId);
     if (!timedOut) toast('Orders Error', e.message || 'Failed to load', 'error');
@@ -4122,10 +4187,20 @@ async function updateOrderStatus(id, status, customNote) {
   // Push to local cache IMMEDIATELY — so history panel updates without waiting for DB round-trip
   if (!localStatusHistoryCache[id]) localStatusHistoryCache[id] = [];
   localStatusHistoryCache[id].unshift({ status, note, created_at: now, _local: true });
-  // Also insert to DB history with REAL status (not the mapped one) for full granularity
-  await sb.from('order_status_history').insert({
-    order_id: id, status, note, created_at: now
-  }).catch(e => console.warn('[updateOrderStatus] history insert failed:', e.message));
+  // Insert to DB history — use dbStatus for the status column (passes DB constraint),
+  // store the real display status in status_name for UI rendering
+  const historyPayload = { order_id: id, status: dbStatus, note };
+  // If extended status (in_stock/collecting/collected), store real name in status_name field
+  if (dbStatus !== status) historyPayload.status_name = status;
+  const { error: histErr } = await sb.from('order_status_history').insert(historyPayload);
+  if (histErr) {
+    console.warn('[updateOrderStatus] history insert failed:', histErr.message, histErr.code);
+    // Retry without status_name in case that column doesn't exist in the table
+    if (histErr.message && histErr.message.includes('status_name')) {
+      await sb.from('order_status_history').insert({ order_id: id, status: dbStatus, note })
+        .catch(e2 => console.warn('[updateOrderStatus] history retry failed:', e2.message));
+    }
+  }
   const o = allOrders.find(x => x.id === id);
   if (o) o.status = status;  // keep UI showing real status
   renderOrders(); renderDashboard();
@@ -4134,7 +4209,8 @@ async function updateOrderStatus(id, status, customNote) {
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
     const trackCh = new BroadcastChannel('gm_order_sync');
-    trackCh.postMessage({ type: 'order_status_update', orderId: id, status, note, timestamp: now });
+    // Broadcast real status (including extended ones like in_stock/collecting/collected)
+    trackCh.postMessage({ type: 'order_status_update', orderId: id, status, note, timestamp: now, status_name: dbStatus !== status ? status : undefined });
     trackCh.close();
   } catch(e) { /* BroadcastChannel not available */ }
 }
@@ -5860,7 +5936,7 @@ async function loadStatusHistory(orderId) {
 
   try {
     const { data: dbData, error } = await sb.from('order_status_history')
-      .select('id,status,note,created_at')
+      .select('id,status,status_name,note,created_at')
       .eq('order_id', orderId)
       .order('created_at', { ascending: false })
       .limit(15);
@@ -5908,7 +5984,7 @@ function _renderHistoryHTML(el, data, o) {
           <div style="display:flex;align-items:flex-start;gap:7px">
             <div style="flex:1;min-width:0">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-                <span class="pill ${pmap[h.status]||'pill-pending'}" style="font-size:0.55rem;padding:2px 7px;font-family:var(--font-bn)">${STATUS_LABEL_BN[h.status]||cap(h.status)}</span>
+                <span class="pill ${pmap[h.status_name||h.status]||pmap[h.status]||'pill-pending'}" style="font-size:0.55rem;padding:2px 7px;font-family:var(--font-bn)">${STATUS_LABEL_BN[h.status_name||h.status]||cap(h.status_name||h.status)}</span>
                 <span style="font-size:0.62rem;color:var(--text3);font-family:var(--mono)">${fmtDateTime(h.created_at)}</span>
                 ${h._local ? '<span style="font-size:0.55rem;color:var(--amber);font-family:var(--mono);font-weight:700">●</span>' : ''}
               </div>
