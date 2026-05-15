@@ -4026,7 +4026,7 @@ div.pcard-icon {
 }
 
 /* ── 6. PRODUCT DETAIL — Mobile Stack & Sticky Bottom Bar ── */
-.fp-mobile-cta-bar { display: none; }
+.fp-mobile-cta-bar { display: none; } /* JS controls show/hide via inline style */
 
 @media (max-width: 860px) {
   .fp-mobile-cta-bar {
@@ -6108,26 +6108,6 @@ html, body {
     </div>
   </div>
 
-  <!-- ── STICKY MOBILE BOTTOM CTA BAR ── -->
-  <div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
-    <!-- Row 1: Buy Now + Add to Cart side-by-side -->
-    <div class="fp-mobile-cta-row">
-      <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
-        <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
-      </button>
-      <button class="fp-mobile-cart-btn" onclick="addToCartModal()">
-        <i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ করুন</span>
-      </button>
-    </div>
-    <!-- Row 2: Wishlist full-width below -->
-    <div class="fp-mobile-wish-row">
-      <button class="fp-wish-btn bn" id="fpWishBtnMobile" onclick="toggleWishlist()">
-        <i class="fa-regular fa-heart" id="fpWishIconMobile"></i>
-        <span id="fpWishTextMobile">উইশলিস্টে সেভ করুন</span>
-      </button>
-    </div>
-  </div>
-
   <!-- ── RELATED & SUGGESTED ── -->
   <div class="fp-rec-wrap">
 
@@ -7996,6 +7976,9 @@ function openPage(name) {
   el.scrollTop = 0;
   document.body.style.overflow = 'hidden'; // prevent body scroll while page open
   updatePageUIVisibility(name);
+  // Show mobile CTA bar only on product page (mobile only)
+  const ctaBar = document.getElementById('fpMobileCtaBar');
+  if (ctaBar) ctaBar.style.display = (name === 'product') ? '' : 'none';
 }
 function closePage(name) {
   const el = document.getElementById('page-' + name);
@@ -8004,6 +7987,11 @@ function closePage(name) {
   el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   clearPageUIVisibility(name);
+  // Hide mobile CTA bar when leaving product page
+  if (name === 'product') {
+    const ctaBar = document.getElementById('fpMobileCtaBar');
+    if (ctaBar) ctaBar.style.display = 'none';
+  }
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
@@ -13194,6 +13182,25 @@ window.addEventListener('scroll', onScroll, { passive: true });
      MOBILE BOTTOM NAVIGATION BAR
      Visible only on mobile (@media max-width:768px)
 ══════════════════════════════════════════════════ -->
+
+<!-- ── STICKY MOBILE BOTTOM CTA BAR (outside page-product to bypass isolation:isolate) ── -->
+<div class="fp-mobile-cta-bar" id="fpMobileCtaBar" style="display:none">
+  <div class="fp-mobile-cta-row">
+    <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
+      <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
+    </button>
+    <button class="fp-mobile-cart-btn" onclick="addToCartModal()">
+      <i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ করুন</span>
+    </button>
+  </div>
+  <div class="fp-mobile-wish-row">
+    <button class="fp-wish-btn bn" id="fpWishBtnMobile" onclick="toggleWishlist()">
+      <i class="fa-regular fa-heart" id="fpWishIconMobile"></i>
+      <span id="fpWishTextMobile">উইশলিস্টে সেভ করুন</span>
+    </button>
+  </div>
+</div>
+
 <nav class="mob-bottom-nav" id="mobBottomNav" aria-label="মোবাইল নেভিগেশন">
 
   <!-- Home -->
