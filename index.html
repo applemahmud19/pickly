@@ -5480,7 +5480,7 @@ html, body {
   <div class="header-top">
 
     <!-- Logo -->
-    <a class="logo" href="/" onclick="event.preventDefault();ALL_PAGES.forEach(n=>{const el=document.getElementById('page-'+n);if(el)el.classList.remove('open')});document.body.style.overflow='';window.scrollTo({top:0,behavior:'smooth'})">
+    <a class="logo" href="/" onclick="event.preventDefault();document.querySelectorAll('.full-page').forEach(function(el){el.classList.remove('open');el.setAttribute('aria-hidden','true');});document.body.style.overflow='';document.body.className=document.body.className.replace(/\bpage-\S+/g,'').trim();window.scrollTo({top:0,behavior:'smooth'});">
       <div class="logo-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8C42);border-radius:10px">
         <i class="fa-solid fa-bag-shopping" style="color:white;font-size:1rem"></i>
       </div>
