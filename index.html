@@ -112,6 +112,30 @@ td.bn, .price-block .new, .price-block .old {
   font-family: 'Inter', Arial, sans-serif !important;
   font-variant-numeric: lining-nums !important;
 }
+
+/* ── GLOBAL ENGLISH NUMERAL ENFORCEMENT ─────────────────────────────
+   Ensures ALL numeric content (prices, dates, times, quantities)
+   always renders in English (Latin) numerals — never Bengali digits.
+   Covers any element that may display ৳, numbers, or timestamps.
+   Works alongside toLocaleString('en-US') / 'en-GB' in JS code.
+──────────────────────────────────────────────────────────────────── */
+/* Any element containing only numeric content via JS */
+[data-num], .price, .amount, .qty-val,
+.fp-new-price, .fp-old-price, .fp-savings,
+.ci-price, .cart-total-row .amt, .cartTotal,
+.checkoutSubtotal, .checkoutTotal, .checkoutDelivery,
+.checkoutDiscountAmt, .tp-oc-total,
+.olist-total, .olist-order-num,
+.kpi-val, #kpi-revenue,
+.ttime, .rec-card-price,
+.disc-badge, .fp-disc-badge, .disc-pct {
+  font-family: 'Inter', Arial, sans-serif !important;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+  font-variant-numeric: lining-nums tabular-nums !important;
+  -webkit-font-feature-settings: "lnum" 1;
+}
+/* Suppress any potential Bengali digit conversion at CSS level */
+* { unicode-bidi: plaintext; }
 </style>
 <style>
 :root{
@@ -2482,7 +2506,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   position: relative;
 }
 .desc-clamped {
-  max-height: 108px; /* ~4 lines at 1.6 line-height × 0.9rem × 16px ≈ 92px; give a bit extra */
+  /* Desktop: show full description by default */
   overflow: hidden;
   transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
 }
@@ -2494,11 +2518,23 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 48px;
-  background: linear-gradient(to bottom, transparent, white);
+  background: linear-gradient(to bottom, transparent, #F8FAFC);
   pointer-events: none;
   transition: opacity 0.25s ease;
 }
 .desc-gradient.hidden { opacity: 0; pointer-events: none; }
+
+/* ── MOBILE: Clamp description to exactly 3 lines ── */
+@media (max-width: 880px) {
+  .desc-clamped {
+    max-height: 4.5em;   /* 3 lines × 1.5em line-height */
+    line-height: 1.5em;
+  }
+  /* Override inline style line-height on mobile */
+  #modalDesc.desc-clamped {
+    line-height: 1.5em !important;
+  }
+}
 .desc-toggle-btn {
   display: flex;
   align-items: center;
@@ -4102,38 +4138,7 @@ div.pcard-icon {
     gap: 7px !important;
   }
 
-  /* Row 3: Stock + Qty inside mobile CTA bar */
-  .fp-mobile-stock-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    padding: 2px 0 !important;
-  }
-  /* Row 4: Trust badges inside mobile CTA bar */
-  .fp-mobile-trust-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    width: 100% !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important;
-  }
-  .fp-mobile-trust-row::-webkit-scrollbar { display: none !important; }
-  .fp-mobile-trust-row .fp-trust-item {
-    flex-shrink: 0 !important;
-    font-size: .6rem !important;
-    padding: 3px 7px !important;
-    gap: 4px !important;
-  }
-  .fp-mobile-trust-row .fp-trust-item i {
-    font-size: .58rem !important;
-  }
-
-  /* page-product needs enough bottom padding for: 62px nav + ~200px CTA bar */
-  #page-product { padding-bottom: 230px !important; }
+  #page-product { padding-bottom: 172px !important; /* 62px nav + 110px CTA bar + 0px buffer */ }
 
   .fp-body {
     grid-template-columns: 1fr !important;
@@ -4154,12 +4159,10 @@ div.pcard-icon {
   .fp-rating-row { margin: 8px 0 12px !important; gap: 6px !important; }
   .fp-price-box { padding: 14px 15px !important; border-radius: 12px !important; margin-bottom: 14px !important; }
   .fp-new-price { font-size: 2rem !important; line-height: 1.4 !important; overflow: visible !important; }
-  /* Hide inline stock/qty, CTA & wishlist on mobile — sticky bar handles all */
-  .fp-stock-qty { display: none !important; }
+  .fp-stock-qty { flex-direction: row !important; align-items: center !important; gap: 12px !important; margin-bottom: 14px !important; }
+  /* Hide inline CTA & inline wishlist btn on mobile — sticky bar handles all 3 */
   .fp-cta { display: none !important; }
   #fpWishBtn { display: none !important; }
-  /* Also hide inline trust badges on mobile — sticky bar shows them */
-  .fp-right .fp-trust { display: none !important; }
   .fp-wish-btn {
     width: 100% !important;
     justify-content: center !important;
@@ -6152,24 +6155,6 @@ html, body {
         <i class="fa-regular fa-heart" id="fpWishIconMobile"></i>
         <span id="fpWishTextMobile">উইশলিস্টে সেভ করুন</span>
       </button>
-    </div>
-    <!-- Row 3: Stock + Quantity -->
-    <div class="fp-mobile-stock-row">
-      <div id="fpStockMobile" class="fp-stock bn"><i class="fa-solid fa-circle-check"></i> স্টকে আছে</div>
-      <div class="fp-qty-row">
-        <span class="bn" style="font-size:.78rem;color:var(--text-mid);font-weight:600">পরিমাণ:</span>
-        <div class="qty-ctrl">
-          <button class="qbtn" onclick="changeQty(-1)">−</button>
-          <span id="modalQtyMobile" style="font-weight:700;min-width:24px;text-align:center">1</span>
-          <button class="qbtn" onclick="changeQty(1)">+</button>
-        </div>
-      </div>
-    </div>
-    <!-- Row 4: Trust badges -->
-    <div class="fp-mobile-trust-row">
-      <div class="fp-trust-item bn"><i class="fa-solid fa-truck-fast"></i> ক্যাশ অন ডেলিভারি</div>
-      <div class="fp-trust-item bn"><i class="fa-solid fa-shield-halved"></i> 100% অরিজিনাল</div>
-      <div class="fp-trust-item bn"><i class="fa-solid fa-rotate-left"></i> সহজ রিটার্ন</div>
     </div>
   </div>
 
@@ -8206,13 +8191,6 @@ function openProduct(id, pushUrl = true) {
       ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
       : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
   }
-  // Sync mobile CTA bar stock display
-  const stockElMobile = document.getElementById('fpStockMobile');
-  if (stockElMobile) {
-    stockElMobile.innerHTML = p.stock > 0
-      ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
-      : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
-  }
   // Keep legacy stockTxt if needed elsewhere
   const legacyStock = document.getElementById('stockTxt');
   if (legacyStock) legacyStock.textContent = p.stock > 0 ? `স্টকে আছে (${p.stock} টি)` : 'স্টক নেই';
@@ -8220,8 +8198,6 @@ function openProduct(id, pushUrl = true) {
   // ── Qty reset ──
   const qtyEl = document.getElementById('modalQty');
   if (qtyEl) qtyEl.textContent = 1;
-  const qtyElMobile = document.getElementById('modalQtyMobile');
-  if (qtyElMobile) qtyElMobile.textContent = 1;
 
   // ── Description ──
   renderDesc('modalDesc', p.description||'');
@@ -8320,14 +8296,15 @@ function renderDesc(id, raw) {
     if (icon) { icon.className = 'fa-solid fa-chevron-down'; }
     if (label) label.textContent = 'আরও দেখুন';
     // Show toggle only if content actually overflows the clamped height
-    requestAnimationFrame(() => {
+    // Double-rAF ensures layout is complete (important on mobile with 4.5em clamp)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (el.scrollHeight > el.clientHeight + 4) {
         btn.style.display = 'flex';
       } else {
         // Content fits — no need for gradient either
         if (gradient) gradient.classList.add('hidden');
       }
-    });
+    }));
   }
 }
 
@@ -8357,7 +8334,7 @@ function escFe(s) {
 }
 
 function openProductAndBuy(id) { openProduct(id); }
-function changeQty(d) { modalQty = Math.max(1, modalQty+d); const el = document.getElementById('modalQty'); if(el) el.textContent = modalQty; const elM = document.getElementById('modalQtyMobile'); if(elM) elM.textContent = modalQty; }
+function changeQty(d) { modalQty = Math.max(1, modalQty+d); const el = document.getElementById('modalQty'); if(el) el.textContent = modalQty; }
 function addToCartModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closePage('product'); } }
 function buyNowModal() {
   if (!currentProduct) return;
