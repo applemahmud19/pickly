@@ -2468,30 +2468,35 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 /* ── DESCRIPTION SEE MORE/LESS ── */
 .desc-wrapper {
   position: relative;
+  overflow: hidden;        /* gradient absolute-এর জন্য clipping container */
+  margin-bottom: 4px;      /* toggle বাটনের জন্য গ্যাপ */
 }
 .desc-clamped {
-  max-height: 108px; /* ~4 lines at 1.6 line-height × 0.9rem × 16px ≈ 92px; give a bit extra */
+  max-height: 120px;       /* ~5 lines at 1.6 line-height × 0.9rem × 16px */
   overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
+  transition: max-height 0.38s cubic-bezier(.4,0,.2,1);
+  line-height: 1.7;
 }
 .desc-clamped.expanded {
-  max-height: 4000px; /* effectively unlimited */
+  max-height: 4000px;      /* effectively unlimited */
 }
-/* Fade-out gradient mask — only when clamped */
+/* Fade-out gradient mask — sits inside desc-clamped, not outside */
 .desc-gradient {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 48px;
-  background: linear-gradient(to bottom, transparent, white);
+  height: 52px;
+  background: linear-gradient(to bottom, transparent, #fff);
   pointer-events: none;
   transition: opacity 0.25s ease;
+  z-index: 2;
 }
 .desc-gradient.hidden { opacity: 0; pointer-events: none; }
 .desc-toggle-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 10px;
+  margin-top: 8px;
+  margin-bottom: 14px;
   background: none;
   border: none;
   color: var(--blue);
@@ -2499,12 +2504,13 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   font-size: .82rem;
   font-weight: 700;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 6px 0;
   transition: opacity .2s;
   position: relative;
-  z-index: 10;
+  z-index: 3;               /* above gradient, never overlapping text */
   width: 100%;
   text-align: left;
+  clear: both;
 }
 .desc-toggle-btn:hover { opacity: .7; }
 .desc-toggle-btn i { font-size: .75rem; }
@@ -4020,7 +4026,7 @@ div.pcard-icon {
     bottom: 62px !important; /* height of .mob-bottom-nav */
     left: 0 !important;
     right: 0 !important;
-    /* z-index MUST be less than bottom nav (9999) so the nav overlaps the CTA bar,
+    /* z-index MUST be less than bottom nav (9000) so the nav overlaps the CTA bar,
        but greater than page content so the bar floats above it. */
     z-index: 8999 !important;
     background: #fff !important;
@@ -4348,7 +4354,7 @@ html, body {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 9999;
+    z-index: 9000;
     background: #FFFFFF;
     border-top: 1px solid #E1E8ED;
     box-shadow: 0 -4px 20px rgba(0,0,0,.09);
@@ -4356,7 +4362,6 @@ html, body {
     padding: 0 4px;
     padding-bottom: env(safe-area-inset-bottom, 0);
     align-items: stretch;
-    pointer-events: auto;
   }
   .mob-nav-item {
     flex: 1;
@@ -4377,11 +4382,6 @@ html, body {
     transition: all .18s cubic-bezier(.4,0,.2,1);
     position: relative;
     text-decoration: none;
-    pointer-events: auto;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(0,122,255,.12);
-    user-select: none;
-    -webkit-user-select: none;
   }
   .mob-nav-item i {
     font-size: 1.1rem;
@@ -5486,7 +5486,7 @@ html, body {
   <div class="header-top">
 
     <!-- Logo -->
-    <a class="logo" href="/" onclick="event.preventDefault();document.querySelectorAll('.full-page').forEach(function(el){el.classList.remove('open');el.setAttribute('aria-hidden','true');});document.querySelectorAll('#cartOverlay,#authModal,#adminOverlay').forEach(function(el){el.classList.remove('open');});document.body.style.overflow='';document.body.className=document.body.className.replace(/\bpage-\S+/g,'').trim();window.scrollTo({top:0,behavior:'smooth'});">
+    <a class="logo" href="/" onclick="event.preventDefault();ALL_PAGES.forEach(n=>{const el=document.getElementById('page-'+n);if(el)el.classList.remove('open')});document.body.style.overflow='';window.scrollTo({top:0,behavior:'smooth'})">
       <div class="logo-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8C42);border-radius:10px">
         <i class="fa-solid fa-bag-shopping" style="color:white;font-size:1rem"></i>
       </div>
@@ -5975,8 +5975,9 @@ html, body {
     <!-- TAB: Details -->
     <div id="pdPanelDetails" class="fp-tab-panel">
       <div class="desc-wrapper">
-        <div class="bn desc-clamped" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;white-space:pre-line"></div>
-        <div class="desc-gradient" id="descGradient"></div>
+        <div class="bn desc-clamped" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.7;white-space:pre-line;position:relative">
+          <div class="desc-gradient" id="descGradient"></div>
+        </div>
       </div>
       <button class="desc-toggle-btn bn" id="descToggleBtn" onclick="toggleDesc()" style="display:none">
         <i class="fa-solid fa-chevron-down" id="descToggleIcon"></i>
@@ -7495,16 +7496,12 @@ function updateAuthUI() {
 
 // ── ACCOUNT DROPDOWN ──
 function handleAuthClick() {
+  // Guest → লগইন মোডাল সরাসরি খোলো (dropdown নয়)
   if (!currentUser) {
     openAuth();
     return;
   }
-  // Mobile → সরাসরি profile পেজ
-  if (window.innerWidth <= 768) {
-    if (typeof window.openProfilePage === 'function') openProfilePage();
-    return;
-  }
-  // Desktop → dropdown টগল
+  // Logged-in → dropdown টগল
   const dd = document.getElementById('accountDropdown');
   if (!dd) return;
   const isOpen = dd.style.display === 'block';
@@ -8189,7 +8186,15 @@ function setText(id, val) {
 function renderDesc(id, raw) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (!raw || !raw.trim()) { el.innerHTML = ''; return; }
+  // Detach gradient before innerHTML overwrite so it isn't destroyed
+  const gradient = document.getElementById('descGradient');
+  if (gradient && gradient.parentNode === el) el.removeChild(gradient);
+
+  if (!raw || !raw.trim()) {
+    el.innerHTML = '';
+    if (gradient) el.appendChild(gradient);
+    return;
+  }
   const lines = raw.split('\n');
   let html = '';
   let inPara = false;
@@ -8202,22 +8207,23 @@ function renderDesc(id, raw) {
     if (/^\*=?\s/.test(t)) {
       if (inPara) { html += '</p>'; inPara = false; }
       const content = t.replace(/^\*=?\s*/, '');
-      html += `<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0"><span style="color:var(--blue);font-size:1.1em;line-height:1.6;flex-shrink:0">•</span><span>${escFe(content)}</span></div>`;
+      html += `<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0 8px 0"><span style="color:var(--blue);font-size:1.1em;line-height:1.7;flex-shrink:0">•</span><span>${escFe(content)}</span></div>`;
     } else {
-      if (!inPara) { html += '<p style="margin:0 0 8px 0">'; inPara = true; }
+      if (!inPara) { html += '<p style="margin:0 0 10px 0;line-height:1.7">'; inPara = true; }
       else html += '<br>';
       html += escFe(t);
     }
   });
   if (inPara) html += '</p>';
   el.innerHTML = html;
+  // Re-attach gradient inside desc-clamped
+  if (gradient) el.appendChild(gradient);
 
   // See more / see less toggle — only for modalDesc
   if (id === 'modalDesc') {
     const btn = document.getElementById('descToggleBtn');
     const icon = document.getElementById('descToggleIcon');
     const label = document.getElementById('descToggleLabel');
-    const gradient = document.getElementById('descGradient');
     if (!btn) return;
     // Reset state — collapsed
     el.classList.add('desc-clamped');
@@ -8231,7 +8237,6 @@ function renderDesc(id, raw) {
       if (el.scrollHeight > el.clientHeight + 4) {
         btn.style.display = 'flex';
       } else {
-        // Content fits — no need for gradient either
         if (gradient) gradient.classList.add('hidden');
       }
     });
@@ -8246,13 +8251,13 @@ function toggleDesc() {
   if (!el) return;
   const isExpanded = el.classList.contains('expanded');
   if (isExpanded) {
-    // Collapse
     el.classList.remove('expanded');
     if (gradient) gradient.classList.remove('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-down';
     if (label) label.textContent = 'আরও দেখুন';
+    // Scroll into view smoothly after collapse
+    setTimeout(() => el.scrollIntoView({behavior:'smooth', block:'nearest'}), 100);
   } else {
-    // Expand
     el.classList.add('expanded');
     if (gradient) gradient.classList.add('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-up';
@@ -13186,18 +13191,9 @@ window.addEventListener('scroll', onScroll, { passive: true });
 <script>
 // ── Mobile Bottom Nav helpers ──────────────────────────────────────
 (function(){
-  // Scroll to top + close all open pages + reset active state to Home
+  // Scroll to top + reset active state to Home
   window.scrollToTop = function() {
-    document.querySelectorAll('.full-page').forEach(function(el) {
-      el.classList.remove('open');
-      el.setAttribute('aria-hidden', 'true');
-    });
-    document.querySelectorAll('#cartOverlay,#authModal,#adminOverlay').forEach(function(el) {
-      el.classList.remove('open');
-    });
-    document.body.style.overflow = '';
-    document.body.className = document.body.className.replace(/\bpage-\S+/g, '').trim();
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    window.scrollTo({top:0,behavior:'smooth'});
     setMobNavActive('mobNavHome');
   };
 
