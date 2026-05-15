@@ -4026,10 +4026,11 @@ div.pcard-icon {
 }
 
 /* ── 6. PRODUCT DETAIL — Mobile Stack & Sticky Bottom Bar ── */
-.fp-mobile-cta-bar { display: none; } /* JS controls show/hide via inline style */
+/* CTA bar always hidden by default; .active class + media query shows it */
+.fp-mobile-cta-bar { display: none; }
 
 @media (max-width: 860px) {
-  .fp-mobile-cta-bar {
+  .fp-mobile-cta-bar.active {
     display: flex !important;
     flex-direction: column !important;
     position: fixed !important;
@@ -7833,20 +7834,27 @@ function buildProductCard(p) {
     <div class="pcard-img">
       ${imgHtml}${iconHtml}
       ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'&&disc?`<div class="disc-badge">-${disc}% ছাড়</div>`:''}
-      <button class="wish-btn" onclick="event.stopPropagation();this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'<i class=\'fa-solid fa-heart\'></i>':'<i class=\'fa-regular fa-heart\'></i>'"><i class="fa-regular fa-heart"></i></button>
+      <button class="wish-btn${isWishlisted(p.id)?' liked':''}" onclick="event.stopPropagation();toggleCardWish(this,'${p.id}')">${isWishlisted(p.id)?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>'}</button>
     </div>
     <div class="pcard-body">
       <div class="pcat bn">${p.category}</div>
       <div class="pname bn">${p.name}</div>
       <div class="pbrand bn">${subLabel}</div>
       <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
+      <div class="pstock-row bn" style="font-size:.68rem;font-weight:600;margin-bottom:4px;${p.stock>10?'color:var(--green)':p.stock>0?'color:#F59E0B':'color:var(--red)'}">
+        ${p.stock>10?`<i class="fa-solid fa-circle-check" style="font-size:.6rem"></i> স্টকে আছে (${p.stock} টি)`:p.stock>0?`<i class="fa-solid fa-triangle-exclamation" style="font-size:.6rem"></i> সীমিত স্টক (${p.stock} টি)`:`<i class="fa-solid fa-circle-xmark" style="font-size:.6rem"></i> স্টক নেই`}
+      </div>
       <div class="pfooter">
         <div class="price-block">
           ${p.old_price?`<div class="old bn">৳${fmtPrice(p.old_price)}</div>`:''}
           <div><span class="new bn">৳${fmtPrice(p.price)}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
         </div>
         <div class="card-btns">
-          <button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
+          ${p.stock>0
+            ? `<button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
+               <button class="btn-buy bn" style="width:100%" onclick="event.stopPropagation();openProduct('${p.id}')"><i class="fa-solid fa-bolt"></i>এখনই কিনুন</button>`
+            : `<button class="btn-cart bn" style="width:100%;opacity:.45;cursor:not-allowed;pointer-events:none" disabled><i class="fa-solid fa-ban"></i>স্টক নেই</button>`
+          }
         </div>
       </div>
     </div>
@@ -7978,7 +7986,10 @@ function openPage(name) {
   updatePageUIVisibility(name);
   // Show mobile CTA bar only on product page (mobile only)
   const ctaBar = document.getElementById('fpMobileCtaBar');
-  if (ctaBar) ctaBar.style.display = (name === 'product') ? '' : 'none';
+  if (ctaBar) {
+    if (name === 'product') ctaBar.classList.add('active');
+    else ctaBar.classList.remove('active');
+  }
 }
 function closePage(name) {
   const el = document.getElementById('page-' + name);
@@ -7990,7 +8001,7 @@ function closePage(name) {
   // Hide mobile CTA bar when leaving product page
   if (name === 'product') {
     const ctaBar = document.getElementById('fpMobileCtaBar');
-    if (ctaBar) ctaBar.style.display = 'none';
+    if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
@@ -12732,6 +12743,24 @@ function toggleWishlist() {
   updateFpWishBtn();
 }
 
+function toggleCardWish(btn, id) {
+  const ids = getWishlistIds();
+  const idx = ids.indexOf(String(id));
+  const p   = products.find(x => String(x.id) === String(id));
+  if (idx === -1) {
+    ids.push(String(id));
+    btn.classList.add('liked');
+    btn.innerHTML = '<i class="fa-solid fa-heart"></i>';
+    if (p) toast('উইশলিস্টে যোগ হয়েছে', `"${(p.name||'').slice(0,24)}..." সেভ করা হয়েছে`, 's');
+  } else {
+    ids.splice(idx, 1);
+    btn.classList.remove('liked');
+    btn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+    if (p) toast('সরানো হয়েছে', 'উইশলিস্ট থেকে বাদ দেওয়া হয়েছে', 'i');
+  }
+  saveWishlistIds(ids);
+}
+
 function updateFpWishBtn() {
   if (!currentProduct) return;
   const btn  = document.getElementById('fpWishBtn');
@@ -13184,7 +13213,7 @@ window.addEventListener('scroll', onScroll, { passive: true });
 ══════════════════════════════════════════════════ -->
 
 <!-- ── STICKY MOBILE BOTTOM CTA BAR (outside page-product to bypass isolation:isolate) ── -->
-<div class="fp-mobile-cta-bar" id="fpMobileCtaBar" style="display:none">
+<div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
   <div class="fp-mobile-cta-row">
     <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
       <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
