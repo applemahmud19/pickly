@@ -4083,6 +4083,44 @@ div.pcard-icon {
     transition: all .18s !important;
   }
   .fp-mobile-cart-btn:active { opacity: .88; transform: scale(.98); }
+  /* Row 0: Price + Stock */
+  .fp-mobile-price-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding-bottom: 5px !important;
+    border-bottom: 1px solid var(--border) !important;
+    margin-bottom: 2px !important;
+  }
+  .fp-mobile-price-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+  }
+  .fp-mobile-old-price {
+    font-size: .75rem !important;
+    color: var(--text-light) !important;
+    text-decoration: line-through !important;
+    font-family: 'Hind Siliguri', sans-serif !important;
+  }
+  .fp-mobile-new-price {
+    font-size: 1.25rem !important;
+    font-weight: 900 !important;
+    color: var(--text) !important;
+    line-height: 1.4 !important;
+    font-family: 'Hind Siliguri', sans-serif !important;
+  }
+  .fp-mobile-stock {
+    font-size: .75rem !important;
+    color: var(--green) !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+  }
   /* Row 2: Wishlist button full-width below */
   .fp-mobile-wish-row {
     display: flex !important;
@@ -4102,7 +4140,7 @@ div.pcard-icon {
     gap: 7px !important;
   }
 
-  #page-product { padding-bottom: 172px !important; /* 62px nav + 110px CTA bar + 0px buffer */ }
+  #page-product { padding-bottom: 210px !important; /* 62px nav + 148px CTA bar (price row added) */ }
 
   .fp-body {
     grid-template-columns: 1fr !important;
@@ -6104,6 +6142,15 @@ html, body {
 
   <!-- ── STICKY MOBILE BOTTOM CTA BAR ── -->
   <div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
+    <!-- Row 0: Price + Stock -->
+    <div class="fp-mobile-price-row">
+      <div class="fp-mobile-price-left">
+        <span id="fpMobileOldPrice" class="fp-mobile-old-price"></span>
+        <span id="fpMobileNewPrice" class="fp-mobile-new-price bn"></span>
+        <span id="fpMobileDiscBadge" class="fp-disc-badge" style="font-size:.72rem;padding:3px 10px"></span>
+      </div>
+      <div id="fpMobileStock" class="fp-mobile-stock bn"><i class="fa-solid fa-circle-check"></i> স্টকে আছে</div>
+    </div>
     <!-- Row 1: Buy Now + Add to Cart side-by-side -->
     <div class="fp-mobile-cta-row">
       <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
@@ -8148,12 +8195,28 @@ function openProduct(id, pushUrl = true) {
     savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
+  // ── Mobile sticky bar price sync ──
+  const mOldEl = document.getElementById('fpMobileOldPrice');
+  if (mOldEl) mOldEl.textContent = p.old_price ? `৳${fmtPrice(p.old_price)}` : '';
+  const mNewEl = document.getElementById('fpMobileNewPrice');
+  if (mNewEl) mNewEl.textContent = `৳${fmtPrice(p.price)}`;
+  const mDiscEl = document.getElementById('fpMobileDiscBadge');
+  if (mDiscEl) { mDiscEl.textContent = disc ? `${disc}% ছাড়` : ''; mDiscEl.style.display = disc ? 'inline-block' : 'none'; }
+
   // ── Stock ──
   const stockEl = document.getElementById('fpStock');
   if (stockEl) {
     stockEl.innerHTML = p.stock > 0
       ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
       : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
+  }
+  // ── Mobile sticky bar stock sync ──
+  const mStockEl = document.getElementById('fpMobileStock');
+  if (mStockEl) {
+    mStockEl.innerHTML = p.stock > 0
+      ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
+      : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
+    if (p.stock > 0) { mStockEl.style.color = 'var(--green)'; } else { mStockEl.style.color = 'var(--red)'; }
   }
   // Keep legacy stockTxt if needed elsewhere
   const legacyStock = document.getElementById('stockTxt');
