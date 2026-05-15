@@ -112,30 +112,6 @@ td.bn, .price-block .new, .price-block .old {
   font-family: 'Inter', Arial, sans-serif !important;
   font-variant-numeric: lining-nums !important;
 }
-
-/* ── GLOBAL ENGLISH NUMERAL ENFORCEMENT ─────────────────────────────
-   Ensures ALL numeric content (prices, dates, times, quantities)
-   always renders in English (Latin) numerals — never Bengali digits.
-   Covers any element that may display ৳, numbers, or timestamps.
-   Works alongside toLocaleString('en-US') / 'en-GB' in JS code.
-──────────────────────────────────────────────────────────────────── */
-/* Any element containing only numeric content via JS */
-[data-num], .price, .amount, .qty-val,
-.fp-new-price, .fp-old-price, .fp-savings,
-.ci-price, .cart-total-row .amt, .cartTotal,
-.checkoutSubtotal, .checkoutTotal, .checkoutDelivery,
-.checkoutDiscountAmt, .tp-oc-total,
-.olist-total, .olist-order-num,
-.kpi-val, #kpi-revenue,
-.ttime, .rec-card-price,
-.disc-badge, .fp-disc-badge, .disc-pct {
-  font-family: 'Inter', Arial, sans-serif !important;
-  font-feature-settings: "lnum" 1, "tnum" 1;
-  font-variant-numeric: lining-nums tabular-nums !important;
-  -webkit-font-feature-settings: "lnum" 1;
-}
-/* Suppress any potential Bengali digit conversion at CSS level */
-* { unicode-bidi: plaintext; }
 </style>
 <style>
 :root{
@@ -2504,42 +2480,39 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 /* ── DESCRIPTION SEE MORE/LESS ── */
 .desc-wrapper {
   position: relative;
+  /* Ensure gradient fade is contained within wrapper */
+  isolation: isolate;
 }
 .desc-clamped {
-  /* Desktop: show full description by default */
+  /* Bengali Hind Siliguri: 0.9rem × 16px × 1.9 line-height ≈ 27.4px/line → 4 lines ≈ 110px
+     Extra padding added so button never overlaps last line of text */
+  max-height: 130px;
   overflow: hidden;
   transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
+  /* Padding-bottom ensures the fade gradient doesn't sit on text */
+  padding-bottom: 0;
 }
 .desc-clamped.expanded {
   max-height: 4000px; /* effectively unlimited */
+  padding-bottom: 0;
 }
 /* Fade-out gradient mask — only when clamped */
 .desc-gradient {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 48px;
-  background: linear-gradient(to bottom, transparent, #F8FAFC);
+  height: 56px;
+  /* Use var(--bg-surface,#fff) so it matches whatever surface the panel sits on */
+  background: linear-gradient(to bottom, transparent, var(--bg-surface, #F8FAFC));
   pointer-events: none;
   transition: opacity 0.25s ease;
 }
 .desc-gradient.hidden { opacity: 0; pointer-events: none; }
-
-/* ── MOBILE: Clamp description to exactly 3 lines ── */
-@media (max-width: 880px) {
-  .desc-clamped {
-    max-height: 4.5em;   /* 3 lines × 1.5em line-height */
-    line-height: 1.5em;
-  }
-  /* Override inline style line-height on mobile */
-  #modalDesc.desc-clamped {
-    line-height: 1.5em !important;
-  }
-}
 .desc-toggle-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 10px;
+  /* Increased top margin so button sits clearly below the gradient */
+  margin-top: 14px;
   background: none;
   border: none;
   color: var(--blue);
@@ -2547,12 +2520,14 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   font-size: .82rem;
   font-weight: 700;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 6px 0;
   transition: opacity .2s;
   position: relative;
   z-index: 10;
   width: 100%;
   text-align: left;
+  /* Prevent button from being obscured by gradient */
+  clear: both;
 }
 .desc-toggle-btn:hover { opacity: .7; }
 .desc-toggle-btn i { font-size: .75rem; }
@@ -8296,15 +8271,17 @@ function renderDesc(id, raw) {
     if (icon) { icon.className = 'fa-solid fa-chevron-down'; }
     if (label) label.textContent = 'আরও দেখুন';
     // Show toggle only if content actually overflows the clamped height
-    // Double-rAF ensures layout is complete (important on mobile with 4.5em clamp)
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (el.scrollHeight > el.clientHeight + 4) {
-        btn.style.display = 'flex';
-      } else {
-        // Content fits — no need for gradient either
-        if (gradient) gradient.classList.add('hidden');
-      }
-    }));
+    // Use double rAF — first frame applies layout, second reads accurate measurements
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (el.scrollHeight > el.clientHeight + 4) {
+          btn.style.display = 'flex';
+        } else {
+          // Content fits — no need for gradient either
+          if (gradient) gradient.classList.add('hidden');
+        }
+      });
+    });
   }
 }
 
@@ -8313,10 +8290,13 @@ function toggleDesc() {
   const icon = document.getElementById('descToggleIcon');
   const label = document.getElementById('descToggleLabel');
   const gradient = document.getElementById('descGradient');
+  const btn = document.getElementById('descToggleBtn');
   if (!el) return;
   const isExpanded = el.classList.contains('expanded');
   if (isExpanded) {
-    // Collapse
+    // Collapse — scroll back to top of description before collapsing
+    const wrapper = el.closest('.desc-wrapper') || el;
+    wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     el.classList.remove('expanded');
     if (gradient) gradient.classList.remove('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-down';
