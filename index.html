@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>গ্যালাক্সি মার্ট BD</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- Primary Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <!-- Backup CDN — loads if primary fails -->
@@ -97,6 +97,20 @@ span[style*="border-radius: 50%"] {
   letter-spacing: 0;
   line-height: 1;
   padding-top: 2px;
+}
+
+/* ── ENGLISH NUMERAL FONT OVERRIDE ─────────────────────────
+   Force Inter/Arial for all numeric content so digits always
+   render as English (Latin) numerals, never Bengali.
+────────────────────────────────────────────────────────── */
+.fp-new-price, .old, .new, .rec-card-price, .cart-total-row .amt,
+.fp-disc-badge, .disc-pct, .disc-badge,
+.ci-price, .olist-total, .olist-order-num, .tp-oc-total,
+.kpi-val, .checkoutSubtotal, .checkoutTotal, .checkoutDelivery,
+.hbadge, .step-circle, .ttime,
+td.bn, .price-block .new, .price-block .old {
+  font-family: 'Inter', Arial, sans-serif !important;
+  font-variant-numeric: lining-nums !important;
 }
 </style>
 <style>
@@ -7528,7 +7542,7 @@ setTimeout(() => {
 function fmtPrice(val) {
   const n = Number(val);
   if (isNaN(n) || val === null || val === undefined) return '—';
-  return n.toLocaleString('bn-BD');
+  return n.toLocaleString('en-US');
 }
 function safeStr(val, fallback = '—') {
   return (val !== null && val !== undefined && val !== '' && val !== 'null') ? String(val) : fallback;
@@ -7868,7 +7882,7 @@ function sortProducts(v) {
 }
 function updateSlider(v) {
   document.getElementById('priceMax').value = v;
-  document.getElementById('sliderLbl').textContent = `সর্বোচ্চ ৳${Number(v).toLocaleString()}`;
+  document.getElementById('sliderLbl').textContent = `সর্বোচ্চ ৳${Number(v).toLocaleString('en-US')}`;
   filterProducts();
 }
 function clearFilters() {
@@ -8088,7 +8102,7 @@ function openProduct(id, pushUrl = true) {
   const savingsEl = document.getElementById('fpSavings');
   if (savingsEl && p.old_price && p.old_price > p.price) {
     const saved = Number(p.old_price) - Number(p.price);
-    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString()} (${disc}% ছাড়)`;
+    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
   // ── Stock ──
@@ -8305,12 +8319,12 @@ function renderCartItems() {
         <button class="ci-del" onclick="removeCart('${item.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
-    <div class="ci-price bn">৳${(item.price*item.qty).toLocaleString()}</div>
+    <div class="ci-price bn">৳${(item.price*item.qty).toLocaleString('en-US')}</div>
   </div>`;
   }).join('');
   // Cart shows ONLY book subtotal (no delivery)
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString()}`;
+  document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString('en-US')}`;
 }
 function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); updateCartBadge();renderCartItems(); }
 function removeCart(id){ cart=cart.filter(x=>x.id!==id); updateCartBadge();renderCartItems(); }
@@ -8360,7 +8374,7 @@ async function applyCoupon() {
     const sub = cart.reduce((s, x) => s + x.price * x.qty, 0);
 
     if (sub < (data.min_order || 0)) {
-      toast('প্রযোজ্য নয়', `ন্যূনতম ৳${Number(data.min_order).toLocaleString()} অর্ডার করুন`, 'w');
+      toast('প্রযোজ্য নয়', `ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করুন`, 'w');
       return;
     }
 
@@ -8448,7 +8462,7 @@ async function applyCheckoutCoupon() {
     const sub = cart.reduce((s,x) => s + x.price * x.qty, 0);
 
     if (sub < (data.min_order || 0)) {
-      showCheckoutPromoMsg(`ন্যূনতম ৳${Number(data.min_order).toLocaleString()} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, 'w');
+      showCheckoutPromoMsg(`ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, 'w');
       btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
       btn.disabled = false;
       return;
@@ -8467,8 +8481,8 @@ async function applyCheckoutCoupon() {
     btn.disabled = false;
 
     const discLabel = data.discount_type === 'percent'
-      ? `${data.discount_value}% (৳${discount.toLocaleString()})`
-      : `৳${discount.toLocaleString()}`;
+      ? `${data.discount_value}% (৳${discount.toLocaleString('en-US')})`
+      : `৳${discount.toLocaleString('en-US')}`;
 
     showCheckoutPromoMsg(`"${data.code}" কুপন প্রয়োগ হয়েছে! ${discLabel} ছাড় পেয়েছেন।`, 's');
     refreshCheckoutTotals();
@@ -8500,11 +8514,11 @@ function refreshCheckoutTotals() {
   const discEl = document.getElementById('checkoutDiscountAmt');
   const discRow= document.getElementById('discountRow');
 
-  if (subEl) subEl.textContent = `৳${sub.toLocaleString()}`;
-  if (totEl) totEl.textContent = `৳${total.toLocaleString()}`;
+  if (subEl) subEl.textContent = `৳${sub.toLocaleString('en-US')}`;
+  if (totEl) totEl.textContent = `৳${total.toLocaleString('en-US')}`;
   if (discount > 0 && discRow && discEl) {
     discRow.style.display = 'flex';
-    discEl.textContent    = `-৳${discount.toLocaleString()}`;
+    discEl.textContent    = `-৳${discount.toLocaleString('en-US')}`;
   } else if (discRow) {
     discRow.style.display = 'none';
   }
@@ -8556,8 +8570,8 @@ function openCheckout() {
 
     // Unit price line: old strikethrough (if discount) + current price
     const unitPriceLine = hasDisc
-      ? `<span style="font-size:.68rem;color:var(--text-light);text-decoration:line-through;margin-right:2px">৳${Number(i.old_price).toLocaleString()}</span><span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString()}</span>`
-      : `<span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString()}</span>`;
+      ? `<span style="font-size:.68rem;color:var(--text-light);text-decoration:line-through;margin-right:2px">৳${Number(i.old_price).toLocaleString('en-US')}</span><span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString('en-US')}</span>`
+      : `<span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString('en-US')}</span>`;
 
     // Discount badge (green pill) — shown inline, no per-item savings text
     const discBadge = hasDisc
@@ -8589,18 +8603,18 @@ function openCheckout() {
       </div>
 
       <!-- Price -->
-      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:800;color:var(--text);flex-shrink:0;margin-left:4px;white-space:nowrap">৳${(i.price*i.qty).toLocaleString()}</div>
+      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:800;color:var(--text);flex-shrink:0;margin-left:4px;white-space:nowrap">৳${(i.price*i.qty).toLocaleString('en-US')}</div>
     </div>`;
   }).join('');
   document.getElementById('checkoutSummary').innerHTML = summary;
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  document.getElementById('checkoutSubtotal').textContent = `৳${sub.toLocaleString()}`;
+  document.getElementById('checkoutSubtotal').textContent = `৳${sub.toLocaleString('en-US')}`;
   document.getElementById('checkoutDelivery').textContent = '— জেলা বেছে নিন';
   document.getElementById('deliveryNote').textContent = '';
-  document.getElementById('checkoutTotal').textContent = `৳${(sub - discount).toLocaleString()}`;
+  document.getElementById('checkoutTotal').textContent = `৳${(sub - discount).toLocaleString('en-US')}`;
   if(discount > 0){
     document.getElementById('discountRow').style.display = 'flex';
-    document.getElementById('checkoutDiscountAmt').textContent = `-৳${discount.toLocaleString()}`;
+    document.getElementById('checkoutDiscountAmt').textContent = `-৳${discount.toLocaleString('en-US')}`;
   } else {
     document.getElementById('discountRow').style.display = 'none';
   }
@@ -8609,7 +8623,7 @@ function openCheckout() {
   if (savingsRow) {
     if (totalSaved > 0) {
       savingsRow.style.display = 'flex';
-      document.getElementById('productSavingsAmt').textContent = `৳${totalSaved.toLocaleString()}`;
+      document.getElementById('productSavingsAmt').textContent = `৳${totalSaved.toLocaleString('en-US')}`;
     } else {
       savingsRow.style.display = 'none';
     }
@@ -8728,7 +8742,7 @@ async function trackOrder() {
         </button>
       </div>
       <div class="oname bn">${items.slice(0,50)}${items.length>50?'...':''}</div>
-      <div class="oeta bn">জেলা: <strong>${data.customer_district||'—'}</strong> · মোট: <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString()}</strong></div>
+      <div class="oeta bn">জেলা: <strong>${data.customer_district||'—'}</strong> · মোট: <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString('en-US')}</strong></div>
     </div>
     <div class="timeline">
       ${steps.map((s,i)=>`
@@ -8736,7 +8750,7 @@ async function trackOrder() {
           <div class="tdot"></div>
           <div class="ttitle bn">${statusMap[s]?.label||s}</div>
           <div class="tdesc bn">${i===0?'অর্ডার গ্রহণ করা হয়েছে':i===1?'অর্ডার নিশ্চিত':i===2?'প্যাক করা হচ্ছে':i===3?'রাইডার ডেলিভারিতে আছেন':'পণ্য পৌঁছে দেওয়া হয়েছে'}</div>
-          ${i<=curIdx?`<div class="ttime">${new Date(data.updated_at).toLocaleDateString('bn-BD')}</div>`:''}
+          ${i<=curIdx?`<div class="ttime">${new Date(data.updated_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>`:''}
         </div>
       `).join('')}
     </div>`;
@@ -9032,7 +9046,7 @@ async function loadDashboardKPIs() {
   const { data: prods }  = await sbQuery(() => sb.from('products').select('id,stock'), 'পণ্য পরিসংখ্যান');
   const revenue = (orders||[]).filter(o=>o.status!=='cancelled').reduce((s,o)=>s+Number(o.total),0);
   const lowStock = (prods||[]).filter(p=>p.stock<=10).length;
-  document.getElementById('kpi-revenue').textContent = `৳${revenue.toLocaleString()}`;
+  document.getElementById('kpi-revenue').textContent = `৳${revenue.toLocaleString('en-US')}`;
   document.getElementById('kpi-revenue-sub').textContent = `মোট ডেলিভারড অর্ডার থেকে`;
   document.getElementById('kpi-orders').textContent = (orders||[]).length;
   document.getElementById('kpi-orders-sub').innerHTML = `<i class="fa-solid fa-arrow-up"></i> আজকের অর্ডার দেখুন`;
@@ -9084,9 +9098,9 @@ async function loadAdminOrders() {
     <td style="font-weight:700;color:var(--blue);font-size:.75rem">${o.order_number}</td>
     <td class="bn">${o.customer_name}</td>
     <td>${o.customer_phone}</td>
-    <td class="bn" style="font-weight:700">৳${Number(o.total).toLocaleString()}</td>
+    <td class="bn" style="font-weight:700">৳${Number(o.total).toLocaleString('en-US')}</td>
     <td><span class="spill ${statusCls[o.status]||'s-info'} bn">${statusLbl[o.status]||o.status}</span></td>
-    <td class="bn">${new Date(o.created_at).toLocaleDateString('bn-BD')}</td>
+    <td class="bn">${new Date(o.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
     <td><select onchange="updateOrderStatus('${o.id}',this.value)" style="font-size:.68rem;padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-family:'Hind Siliguri',sans-serif">
       ${['pending','confirmed','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${statusLbl[s]}</option>`).join('')}
     </select></td>
@@ -9210,7 +9224,7 @@ async function loadAdminList() {
     return;
   }
   tbody.innerHTML = data.map(a => {
-    const date = a.created_at ? new Date(a.created_at).toLocaleDateString('bn-BD',{year:'numeric',month:'short',day:'numeric'}) : '—';
+    const date = a.created_at ? new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
     const isMe = a.id === currentUser?.id;
     return `<tr>
       <td style="font-size:.75rem;font-family:monospace;color:var(--text-mid)">${a.id?.slice(0,20)}...</td>
@@ -9332,8 +9346,8 @@ const STATUS_BADGE_CLS = {
 function fmtDateTime(iso) {
   if(!iso) return '';
   const d = new Date(iso);
-  const date = d.toLocaleDateString('bn-BD', {year:'numeric',month:'long',day:'numeric'});
-  const time = d.toLocaleTimeString('bn-BD', {hour:'2-digit',minute:'2-digit'});
+  const date = d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const time = d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
   return `${date} · ${time}`;
 }
 
@@ -9392,7 +9406,7 @@ function buildOrderCard(data, history) {
       <div class="oeta bn" style="margin-top:4px">
         <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:3px"></i>${data.customer_district||'—'}
         &nbsp;·&nbsp;
-        <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString()}</strong>
+        <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString('en-US')}</strong>
         &nbsp;·&nbsp;
         <span class="order-status-badge ${STATUS_BADGE_CLS[data.status]||'osb-pending'}">
           <i class="fa-solid ${STATUS_ICON[data.status]||'fa-clock'}"></i>
@@ -9601,7 +9615,7 @@ async function tpLoadMyOrders(retryCount = 0) {
           <span class="order-status-badge ${badgeCls}" style="margin-bottom:0">
             <i class="fa-solid ${statusIcon}"></i>${statusLabel}
           </span>
-          <div class="tp-oc-total">৳${Number(o.total || 0).toLocaleString('en-IN')}</div>
+          <div class="tp-oc-total">৳${Number(o.total || 0).toLocaleString('en-US')}</div>
         </div>
       </div>
       <div class="tp-oc-body">
@@ -9650,7 +9664,7 @@ function buildTpOrderDetail(data, history) {
       </div>
       <div class="tp-detail-meta-item">
         <div class="tp-detail-meta-lbl">মোট মূল্য</div>
-        <div class="tp-detail-meta-val">৳${Number(data.total || 0).toLocaleString('en-IN')}</div>
+        <div class="tp-detail-meta-val">৳${Number(data.total || 0).toLocaleString('en-US')}</div>
       </div>
       <div class="tp-detail-meta-item">
         <div class="tp-detail-meta-lbl">পণ্য</div>
@@ -9915,7 +9929,7 @@ function buildOrderDetailPanel(data, history) {
           <div style="flex:1;min-width:0">
             <div class="bn" style="font-size:.78rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.45">${item.name||'পণ্য'}</div>
             <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
-              <span class="bn" style="font-size:.64rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString()}</span>
+              <span class="bn" style="font-size:.64rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString('en-US')}</span>
               <!-- Status badge -->
               <span style="display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:700;color:${badgeTxt};background:${badgeBg};border:${badgeBorder};border-radius:20px;padding:2px 8px;white-space:nowrap;font-family:'Hind Siliguri',sans-serif">
                 <i class="fa-solid ${isDispatched?'fa-truck-fast':iIcon}" style="font-size:.55rem"></i>${iLabel}
@@ -9923,7 +9937,7 @@ function buildOrderDetailPanel(data, history) {
             </div>
           </div>
           <!-- Line total -->
-          <div class="bn" style="font-size:.8rem;font-weight:800;color:var(--blue);flex-shrink:0;padding-top:2px">৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString()}</div>
+          <div class="bn" style="font-size:.8rem;font-weight:800;color:var(--blue);flex-shrink:0;padding-top:2px">৳${(Number(item.price||0)*Number(item.qty||1)).toLocaleString('en-US')}</div>
         </div>`;
       }).join('')}
       <!-- Price breakdown -->
@@ -9931,27 +9945,27 @@ function buildOrderDetailPanel(data, history) {
         <!-- Subtotal -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
           <span class="bn" style="font-size:.76rem;color:var(--text-mid)">পণ্য মোট</span>
-          <span class="bn" style="font-size:.76rem;color:var(--text)">৳${subtotal.toLocaleString()}</span>
+          <span class="bn" style="font-size:.76rem;color:var(--text)">৳${subtotal.toLocaleString('en-US')}</span>
         </div>
         <!-- Delivery — icon removed per design spec -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
           <span class="bn" style="font-size:.76rem;color:var(--text-mid)">ডেলিভারি চার্জ</span>
           <span class="bn" style="font-size:.76rem;color:${shippingFee===0?'var(--green)':'var(--text)'}">
-            ${shippingFee===0 ? 'ফ্রি' : '৳'+shippingFee.toLocaleString()}
+            ${shippingFee===0 ? 'ফ্রি' : '৳'+shippingFee.toLocaleString('en-US')}
           </span>
         </div>
         <!-- Discount (only if > 0) -->
         ${discAmt > 0 ? `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
           <span class="bn" style="font-size:.76rem;color:var(--text-mid)">ডিসকাউন্ট</span>
-          <span class="bn" style="font-size:.76rem;color:var(--green);font-weight:700">−৳${discAmt.toLocaleString()}</span>
+          <span class="bn" style="font-size:.76rem;color:var(--green);font-weight:700">−৳${discAmt.toLocaleString('en-US')}</span>
         </div>` : ''}
         <!-- Divider -->
         <div style="border-top:1.5px solid var(--border);margin:10px 0"></div>
         <!-- Grand total -->
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span class="bn" style="font-size:.88rem;font-weight:800;color:var(--text)">সর্বমোট</span>
-          <span class="bn" style="font-size:1rem;font-weight:800;color:var(--blue)">৳${totalAmt.toLocaleString()}</span>
+          <span class="bn" style="font-size:1rem;font-weight:800;color:var(--blue)">৳${totalAmt.toLocaleString('en-US')}</span>
         </div>
       </div>
     </div>` : '';
@@ -10325,7 +10339,7 @@ function renderReviews(reviews) {
   }
   listEl.innerHTML = reviews.map(r => {
     const initials = (r.reviewer_name||'U').charAt(0).toUpperCase();
-    const dateStr  = r.created_at ? new Date(r.created_at).toLocaleDateString('bn-BD',{year:'numeric',month:'short',day:'numeric'}) : '';
+    const dateStr  = r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
     return `<div class="pd-rev-item">
       <div class="pd-rev-head">
         <div class="pd-rev-avatar">${initials}</div>
@@ -11327,13 +11341,13 @@ function calcDelivery() {
   document.getElementById('checkoutDelivery').textContent = `৳${charge}`;
   document.getElementById('deliveryNote').textContent = '';
   const total = sub + charge - discount;
-  document.getElementById('checkoutTotal').textContent = `৳${total.toLocaleString()}`;
+  document.getElementById('checkoutTotal').textContent = `৳${total.toLocaleString('en-US')}`;
 }
 
 function populateDistricts() {
   const sel = document.getElementById('cDistrict');
   sel.innerHTML = '<option value="">— জেলা বেছে নিন —</option>';
-  Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'bn')).forEach(d => {
+  Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'en')).forEach(d => {
     const opt = document.createElement('option');
     opt.value = d; opt.textContent = d;
     sel.appendChild(opt);
@@ -11554,7 +11568,7 @@ function _buildDistrictSearch() {
   const list = dropdown.querySelector('.district-list');
 
   function buildList(filter = '') {
-    const districts = Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'bn'));
+    const districts = Object.keys(BD_LOCATIONS).sort((a,b) => a.localeCompare(b, 'en'));
     const q = filter.toLowerCase().trim();
     const filtered = q
       ? districts.filter(d => {
@@ -12626,7 +12640,7 @@ async function openProfilePage() {
 
   document.getElementById('profileStatOrders').textContent   = totalOrders;
   document.getElementById('profileStatWishlist').textContent = wishCount;
-  document.getElementById('profileStatSpend').textContent    = `৳${totalSpend.toLocaleString()}`;
+  document.getElementById('profileStatSpend').textContent    = `৳${totalSpend.toLocaleString('en-US')}`;
 }
 
 async function saveProfile() {
