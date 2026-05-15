@@ -4025,39 +4025,41 @@ div.pcard-icon {
 @media (max-width: 860px) {
   .fp-mobile-cta-bar {
     display: flex !important;
-    /* FIXED (not sticky) — stays at viewport bottom regardless of scroll position.
-       sticky caused the bar to render mid-content when its natural position was
-       reached, making buttons appear duplicated over the product description. */
+    flex-direction: column !important;
     position: fixed !important;
-    bottom: 62px !important; /* height of .mob-bottom-nav */
+    bottom: 62px !important;
     left: 0 !important;
     right: 0 !important;
-    /* z-index MUST be less than bottom nav (9000) so the nav overlaps the CTA bar,
-       but greater than page content so the bar floats above it. */
     z-index: 8999 !important;
     background: #fff !important;
     border-top: 1px solid var(--border) !important;
-    padding: 10px 14px !important;
-    padding-bottom: 10px !important;
-    gap: 10px !important;
+    padding: 8px 14px 6px !important;
+    gap: 7px !important;
     box-shadow: 0 -4px 20px rgba(0,0,0,.10) !important;
+  }
+  /* Row 1: Buy Now + Add to Cart side-by-side */
+  .fp-mobile-cta-row {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
   .fp-mobile-buy-btn {
     flex: 1 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 7px !important;
-    padding: 14px 12px !important;
+    gap: 6px !important;
+    height: 42px !important;
+    padding: 0 10px !important;
     background: linear-gradient(135deg, var(--orange), #EA580C) !important;
     color: white !important;
     border: none !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     font-family: 'Hind Siliguri', sans-serif !important;
-    font-size: .9rem !important;
+    font-size: .85rem !important;
     font-weight: 700 !important;
     cursor: pointer !important;
-    box-shadow: 0 3px 12px rgba(249,115,22,.3) !important;
+    box-shadow: 0 3px 10px rgba(249,115,22,.28) !important;
     transition: all .18s !important;
   }
   .fp-mobile-buy-btn:active { opacity: .88; transform: scale(.98); }
@@ -4066,22 +4068,41 @@ div.pcard-icon {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 7px !important;
-    padding: 14px 12px !important;
+    gap: 6px !important;
+    height: 42px !important;
+    padding: 0 10px !important;
     background: var(--blue) !important;
     color: white !important;
     border: none !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     font-family: 'Hind Siliguri', sans-serif !important;
-    font-size: .9rem !important;
+    font-size: .85rem !important;
     font-weight: 700 !important;
     cursor: pointer !important;
-    box-shadow: 0 3px 12px rgba(0,122,255,.28) !important;
+    box-shadow: 0 3px 10px rgba(0,122,255,.25) !important;
     transition: all .18s !important;
   }
   .fp-mobile-cart-btn:active { opacity: .88; transform: scale(.98); }
+  /* Row 2: Wishlist button full-width below */
+  .fp-mobile-wish-row {
+    display: flex !important;
+    width: 100% !important;
+  }
+  /* When fp-wish-btn is inside cta bar (mobile row 2), style it inline */
+  .fp-mobile-cta-bar .fp-wish-btn {
+    width: 100% !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    font-size: .8rem !important;
+    margin-bottom: 0 !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+  }
 
-  #page-product { padding-bottom: 148px !important; /* 64px nav + 74px CTA bar + 10px buffer */ }
+  #page-product { padding-bottom: 172px !important; /* 62px nav + 110px CTA bar + 0px buffer */ }
 
   .fp-body {
     grid-template-columns: 1fr !important;
@@ -4360,7 +4381,7 @@ html, body {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 9000;
+    z-index: 10000;
     background: #FFFFFF;
     border-top: 1px solid #E1E8ED;
     box-shadow: 0 -4px 20px rgba(0,0,0,.09);
@@ -4682,66 +4703,64 @@ html, body {
     height: auto !important;
     overflow: hidden !important;
   }
-  /* Outer container: show only first track, static space-around */
+  /* Outer container: marquee wrapper */
   .promo-banner-text {
     display: flex !important;
     flex-wrap: nowrap !important;
     overflow: hidden !important;
-    padding: 0 4px !important;
+    padding: 0 !important;
     gap: 0 !important;
     width: 100% !important;
-    height: 26px !important;
+    height: 28px !important;
     align-items: center !important;
-    justify-content: space-around !important;
     white-space: nowrap !important;
+    position: relative !important;
   }
 
-  /* Show only the first track; hide the duplicate */
+  /* Both tracks visible for seamless loop */
   .promo-marquee-track {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-around !important;
-    gap: 0 !important;
-    flex: 1 !important;
-    flex-shrink: 0 !important;
-    flex-wrap: nowrap !important;
-    animation: none !important;          /* NO animation — static layout */
-    transform: none !important;
-    width: 100% !important;
-  }
-  .promo-marquee-track + .promo-marquee-track {
-    display: none !important;            /* hide duplicate track */
-  }
-
-  /* Each promo item: 9px, minimal padding, tight icon gap */
-  .promo-item {
-    font-size: 9px !important;
-    padding: 0 2px !important;
-    white-space: nowrap !important;
-    flex-shrink: 1 !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 2px !important;
+    gap: 0 !important;
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    animation: promoMarquee 22s linear infinite !important;
+    will-change: transform !important;
+  }
+  .promo-marquee-track + .promo-marquee-track {
+    display: inline-flex !important; /* show duplicate for seamless loop */
+    animation-delay: 0s !important;
+  }
+
+  /* Each promo item: 12px font, clean */
+  .promo-item {
+    font-size: 12px !important;
+    padding: 0 10px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
     line-height: 1 !important;
   }
   .promo-item i {
-    font-size: 9px !important;
+    font-size: 11px !important;
     flex-shrink: 0 !important;
-    margin-right: 1px !important;
   }
   .promo-item .bn,
   .promo-item span {
-    font-size: 11px !important;
+    font-size: 12px !important;
     white-space: nowrap !important;
     line-height: 1 !important;
   }
   /* Dot separators */
   .promo-sep {
-    font-size: 9px !important;
-    opacity: .5 !important;
+    font-size: 12px !important;
+    opacity: .55 !important;
     flex-shrink: 0 !important;
     display: inline-block !important;
-    padding: 0 3px !important;
+    padding: 0 4px !important;
   }
 
   /* ── 10. Cart panel full-screen on mobile ── */
@@ -5684,43 +5703,43 @@ html, body {
     <div class="promo-marquee-track" id="promoTrack1">
       <div class="promo-item">
         <i class="fa-solid fa-truck-fast"></i>
-        <span class="bn">৳৯৯৯+ অর্ডারে <strong>ফ্রি ডেলিভারি</strong></span>
+        <span class="bn">৳999+ অর্ডারে ফ্রি ডেলিভারি</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-tag"></i>
-        <span class="bn">ঈদ স্পেশাল — <strong>৩০% পর্যন্ত ছাড়</strong></span>
+        <span class="bn">ঈদ স্পেশাল 30% পর্যন্ত ছাড়</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-shield-halved"></i>
-        <span class="bn">100% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
+        <span class="bn">100% অরিজিনাল পণ্য</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-rotate-left"></i>
-        <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
+        <span class="bn">সহজ রিটার্ন পলিসি</span>
       </div>
     </div>
     <div class="promo-marquee-track" id="promoTrack2" aria-hidden="true">
       <div class="promo-item">
         <i class="fa-solid fa-truck-fast"></i>
-        <span class="bn">৳৯৯৯+ অর্ডারে <strong>ফ্রি ডেলিভারি</strong></span>
+        <span class="bn">৳999+ অর্ডারে ফ্রি ডেলিভারি</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-tag"></i>
-        <span class="bn">ঈদ স্পেশাল — <strong>৩০% পর্যন্ত ছাড়</strong></span>
+        <span class="bn">ঈদ স্পেশাল 30% পর্যন্ত ছাড়</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-shield-halved"></i>
-        <span class="bn">100% <strong>অরিজিনাল পণ্য</strong> গ্যারান্টি</span>
+        <span class="bn">100% অরিজিনাল পণ্য</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-rotate-left"></i>
-        <span class="bn">সহজ <strong>রিটার্ন পলিসি</strong></span>
+        <span class="bn">সহজ রিটার্ন পলিসি</span>
       </div>
     </div>
   </div>
@@ -6084,12 +6103,22 @@ html, body {
 
   <!-- ── STICKY MOBILE BOTTOM CTA BAR ── -->
   <div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
-    <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
-      <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
-    </button>
-    <button class="fp-mobile-cart-btn" onclick="addToCartModal()">
-      <i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ করুন</span>
-    </button>
+    <!-- Row 1: Buy Now + Add to Cart side-by-side -->
+    <div class="fp-mobile-cta-row">
+      <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
+        <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
+      </button>
+      <button class="fp-mobile-cart-btn" onclick="addToCartModal()">
+        <i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ করুন</span>
+      </button>
+    </div>
+    <!-- Row 2: Wishlist full-width below -->
+    <div class="fp-mobile-wish-row">
+      <button class="fp-wish-btn bn" id="fpWishBtnMobile" onclick="toggleWishlist()">
+        <i class="fa-regular fa-heart" id="fpWishIconMobile"></i>
+        <span id="fpWishTextMobile">উইশলিস্টে সেভ করুন</span>
+      </button>
+    </div>
   </div>
 
   <!-- ── RELATED & SUGGESTED ── -->
@@ -12711,11 +12740,17 @@ function updateFpWishBtn() {
   const btn  = document.getElementById('fpWishBtn');
   const icon = document.getElementById('fpWishIcon');
   const txt  = document.getElementById('fpWishText');
-  if (!btn) return;
+  // Mobile CTA bar wishlist button
+  const btnM  = document.getElementById('fpWishBtnMobile');
+  const iconM = document.getElementById('fpWishIconMobile');
+  const txtM  = document.getElementById('fpWishTextMobile');
   const on = isWishlisted(currentProduct.id);
-  btn.classList.toggle('wishlisted', on);
-  icon.className = on ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-  txt.textContent = on ? 'উইশলিস্টে আছে' : 'উইশলিস্টে সেভ করুন';
+  if (btn)  { btn.classList.toggle('wishlisted', on); }
+  if (icon) { icon.className = on ? 'fa-solid fa-heart' : 'fa-regular fa-heart'; }
+  if (txt)  { txt.textContent = on ? 'উইশলিস্টে আছে' : 'উইশলিস্টে সেভ করুন'; }
+  if (btnM)  { btnM.classList.toggle('wishlisted', on); }
+  if (iconM) { iconM.className = on ? 'fa-solid fa-heart' : 'fa-regular fa-heart'; }
+  if (txtM)  { txtM.textContent = on ? 'উইশলিস্টে আছে' : 'উইশলিস্টে সেভ করুন'; }
 }
 
 function openWishlistPage() {
@@ -13665,21 +13700,21 @@ window.addEventListener('popstate', function(e) {
   /* Apply promo bar items from localStorage */
   function applyPromoBar() {
     const DEFAULT = [
-      { icon: 'fa-truck-fast',    text: '৳৯৯৯+ অর্ডারে ফ্রি ডেলিভারি' },
-      { icon: 'fa-tag',           text: 'ঈদ স্পেশাল — ৩০% পর্যন্ত ছাড়' },
-      { icon: 'fa-shield-halved', text: '100% অরিজিনাল পণ্য গ্যারান্টি' },
+      { icon: 'fa-truck-fast',    text: '৳999+ অর্ডারে ফ্রি ডেলিভারি' },
+      { icon: 'fa-tag',           text: 'ঈদ স্পেশাল 30% পর্যন্ত ছাড়' },
+      { icon: 'fa-shield-halved', text: '100% অরিজিনাল পণ্য' },
       { icon: 'fa-rotate-left',   text: 'সহজ রিটার্ন পলিসি' }
     ];
     const items = JSON.parse(localStorage.getItem('gm_cms_promobar') || JSON.stringify(DEFAULT));
     const style = JSON.parse(localStorage.getItem('gm_cms_promo_style') || '{"size":"small","weight":"normal"}');
-    const sizeMap = { small: '.68rem', medium: '.78rem', large: '.9rem' };
+    const sizeMap = { small: '12px', medium: '13px', large: '14px' };
     const fs = sizeMap[style.size] || '.68rem';
     const fw = style.weight === 'bold' ? '700' : '500';
     const container = document.querySelector('.promo-banner-text');
     if (!container) return;
 
     // ── Always render TWO tracks — CSS handles desktop (static) vs mobile (marquee) ──
-    // Avoids JS viewport-detection timing bugs on Android browsers.
+    // Both tracks visible on mobile for seamless infinite scroll loop.
     const itemsHtml = buildPromoItems(items, fs, fw);
     container.innerHTML =
       `<div class="promo-marquee-track" id="promoTrack1">${itemsHtml}</div>` +
