@@ -7841,20 +7841,14 @@ function buildProductCard(p) {
       <div class="pname bn">${p.name}</div>
       <div class="pbrand bn">${subLabel}</div>
       <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
-      <div class="pstock-row bn" style="font-size:.68rem;font-weight:600;margin-bottom:4px;${p.stock>10?'color:var(--green)':p.stock>0?'color:#F59E0B':'color:var(--red)'}">
-        ${p.stock>10?`<i class="fa-solid fa-circle-check" style="font-size:.6rem"></i> স্টকে আছে (${p.stock} টি)`:p.stock>0?`<i class="fa-solid fa-triangle-exclamation" style="font-size:.6rem"></i> সীমিত স্টক (${p.stock} টি)`:`<i class="fa-solid fa-circle-xmark" style="font-size:.6rem"></i> স্টক নেই`}
-      </div>
       <div class="pfooter">
         <div class="price-block">
           ${p.old_price?`<div class="old bn">৳${fmtPrice(p.old_price)}</div>`:''}
           <div><span class="new bn">৳${fmtPrice(p.price)}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
         </div>
         <div class="card-btns">
-          ${p.stock>0
-            ? `<button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
-               <button class="btn-buy bn" style="width:100%" onclick="event.stopPropagation();openProduct('${p.id}')"><i class="fa-solid fa-bolt"></i>এখনই কিনুন</button>`
-            : `<button class="btn-cart bn" style="width:100%;opacity:.45;cursor:not-allowed;pointer-events:none" disabled><i class="fa-solid fa-ban"></i>স্টক নেই</button>`
-          }
+          <button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
+          <button class="btn-buy bn" style="width:100%" onclick="event.stopPropagation();openProduct('${p.id}')"><i class="fa-solid fa-bolt"></i>এখনই কিনুন</button>
         </div>
       </div>
     </div>
