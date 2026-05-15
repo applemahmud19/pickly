@@ -7676,8 +7676,9 @@ function subscribeRealtimeUpdates() {
         // Update _tpOrderMap cache
         if (window._tpOrderMap && window._tpOrderMap[orderId]) {
           window._tpOrderMap[orderId].order.status = status;
-          // Prepend new history entry into local cache
+          // Prepend new history entry into local cache (include status_name for extended statuses)
           const newEntry = { status, note, created_at: timestamp, order_id: orderId };
+          if (msg.status_name) newEntry.status_name = msg.status_name;
           window._tpOrderMap[orderId].hist = [newEntry, ...(window._tpOrderMap[orderId].hist || [])];
         }
 
@@ -9422,7 +9423,7 @@ function buildOrderCard(data, history) {
           ${history.map(h=>`
             <div class="hitem">
               <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
-              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
+              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status_name||h.status]||STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status_name||h.status]||h.status_name||h.status}</div>
               ${h.note?`<div class="hitem-note">${h.note}</div>`:''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
@@ -9481,7 +9482,7 @@ async function tpTrackOrder() {
     return;
   }
   const { data: hist } = await sbQuery(
-    () => sb.from('order_status_history').select('*').eq('order_id', data.id).order('created_at', { ascending: false }),
+    () => sb.from('order_status_history').select('id,status,status_name,note,created_at').eq('order_id', data.id).order('created_at', { ascending: false }),
     'অর্ডার ইতিহাস'
   );
   res.innerHTML = buildTpOrderDetail(data, hist || []);
@@ -9762,7 +9763,7 @@ function buildTpOrderDetail(data, history) {
           ${history.map(h => `
             <div class="hitem">
               <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
-              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status] || 'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status] || h.status}</div>
+              <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status_name||h.status] || STATUS_ICON[h.status] || 'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status_name||h.status] || h.status_name||h.status}</div>
               ${(h.note||h.tracking_note) ? `<div class="hitem-note">${h.note||h.tracking_note}</div>` : ''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
@@ -10027,7 +10028,7 @@ function buildOrderDetailPanel(data, history) {
         ${histDisplay.map(h=>`
           <div class="hitem">
             <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
-            <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status]||h.status}</div>
+            <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status_name||h.status]||STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status_name||h.status]||h.status_name||h.status}</div>
             ${(h.note||h.tracking_note)?`<div class="hitem-note">${h.note||h.tracking_note}</div>`:''}
             <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.changed_at||h.created_at)}</div>
           </div>`).join('')}
