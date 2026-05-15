@@ -236,7 +236,19 @@ body.page-checkout-open .nav-cats,
 body.page-checkout-open .mobile-search-row,
 body.page-track-open .social-bar,
 body.page-track-open .nav-cats,
-body.page-track-open .mobile-search-row {
+body.page-track-open .mobile-search-row,
+body.page-profile-open .social-bar,
+body.page-profile-open .nav-cats,
+body.page-profile-open .mobile-search-row,
+body.page-wishlist-open .social-bar,
+body.page-wishlist-open .nav-cats,
+body.page-wishlist-open .mobile-search-row,
+body.page-order-detail-open .social-bar,
+body.page-order-detail-open .nav-cats,
+body.page-order-detail-open .mobile-search-row,
+body.page-category-open .social-bar,
+body.page-category-open .nav-cats,
+body.page-category-open .mobile-search-row {
   display: none !important;
 }
 
@@ -2468,35 +2480,30 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 /* ── DESCRIPTION SEE MORE/LESS ── */
 .desc-wrapper {
   position: relative;
-  overflow: hidden;        /* gradient absolute-এর জন্য clipping container */
-  margin-bottom: 4px;      /* toggle বাটনের জন্য গ্যাপ */
 }
 .desc-clamped {
-  max-height: 120px;       /* ~5 lines at 1.6 line-height × 0.9rem × 16px */
+  max-height: 108px; /* ~4 lines at 1.6 line-height × 0.9rem × 16px ≈ 92px; give a bit extra */
   overflow: hidden;
-  transition: max-height 0.38s cubic-bezier(.4,0,.2,1);
-  line-height: 1.7;
+  transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
 }
 .desc-clamped.expanded {
-  max-height: 4000px;      /* effectively unlimited */
+  max-height: 4000px; /* effectively unlimited */
 }
-/* Fade-out gradient mask — sits inside desc-clamped, not outside */
+/* Fade-out gradient mask — only when clamped */
 .desc-gradient {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 52px;
-  background: linear-gradient(to bottom, transparent, #fff);
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, white);
   pointer-events: none;
   transition: opacity 0.25s ease;
-  z-index: 2;
 }
 .desc-gradient.hidden { opacity: 0; pointer-events: none; }
 .desc-toggle-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 8px;
-  margin-bottom: 14px;
+  margin-top: 10px;
   background: none;
   border: none;
   color: var(--blue);
@@ -2504,13 +2511,12 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   font-size: .82rem;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 4px 0;
   transition: opacity .2s;
   position: relative;
-  z-index: 3;               /* above gradient, never overlapping text */
+  z-index: 10;
   width: 100%;
   text-align: left;
-  clear: both;
 }
 .desc-toggle-btn:hover { opacity: .7; }
 .desc-toggle-btn i { font-size: .75rem; }
@@ -5975,9 +5981,8 @@ html, body {
     <!-- TAB: Details -->
     <div id="pdPanelDetails" class="fp-tab-panel">
       <div class="desc-wrapper">
-        <div class="bn desc-clamped" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.7;white-space:pre-line;position:relative">
-          <div class="desc-gradient" id="descGradient"></div>
-        </div>
+        <div class="bn desc-clamped" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;white-space:pre-line"></div>
+        <div class="desc-gradient" id="descGradient"></div>
       </div>
       <button class="desc-toggle-btn bn" id="descToggleBtn" onclick="toggleDesc()" style="display:none">
         <i class="fa-solid fa-chevron-down" id="descToggleIcon"></i>
@@ -7935,7 +7940,7 @@ function restoreHomeUrl() {
 
 // ── Global UI visibility manager ──
 // Hides social-bar + category-nav on product/checkout/track pages per design spec
-const _PAGES_HIDE_TOPBARS = ['product', 'checkout', 'track'];
+const _PAGES_HIDE_TOPBARS = ['product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category'];
 function updatePageUIVisibility(name) {
   if (_PAGES_HIDE_TOPBARS.includes(name)) {
     document.body.classList.add('page-' + name + '-open');
@@ -8186,15 +8191,7 @@ function setText(id, val) {
 function renderDesc(id, raw) {
   const el = document.getElementById(id);
   if (!el) return;
-  // Detach gradient before innerHTML overwrite so it isn't destroyed
-  const gradient = document.getElementById('descGradient');
-  if (gradient && gradient.parentNode === el) el.removeChild(gradient);
-
-  if (!raw || !raw.trim()) {
-    el.innerHTML = '';
-    if (gradient) el.appendChild(gradient);
-    return;
-  }
+  if (!raw || !raw.trim()) { el.innerHTML = ''; return; }
   const lines = raw.split('\n');
   let html = '';
   let inPara = false;
@@ -8207,23 +8204,22 @@ function renderDesc(id, raw) {
     if (/^\*=?\s/.test(t)) {
       if (inPara) { html += '</p>'; inPara = false; }
       const content = t.replace(/^\*=?\s*/, '');
-      html += `<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0 8px 0"><span style="color:var(--blue);font-size:1.1em;line-height:1.7;flex-shrink:0">•</span><span>${escFe(content)}</span></div>`;
+      html += `<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0"><span style="color:var(--blue);font-size:1.1em;line-height:1.6;flex-shrink:0">•</span><span>${escFe(content)}</span></div>`;
     } else {
-      if (!inPara) { html += '<p style="margin:0 0 10px 0;line-height:1.7">'; inPara = true; }
+      if (!inPara) { html += '<p style="margin:0 0 8px 0">'; inPara = true; }
       else html += '<br>';
       html += escFe(t);
     }
   });
   if (inPara) html += '</p>';
   el.innerHTML = html;
-  // Re-attach gradient inside desc-clamped
-  if (gradient) el.appendChild(gradient);
 
   // See more / see less toggle — only for modalDesc
   if (id === 'modalDesc') {
     const btn = document.getElementById('descToggleBtn');
     const icon = document.getElementById('descToggleIcon');
     const label = document.getElementById('descToggleLabel');
+    const gradient = document.getElementById('descGradient');
     if (!btn) return;
     // Reset state — collapsed
     el.classList.add('desc-clamped');
@@ -8237,6 +8233,7 @@ function renderDesc(id, raw) {
       if (el.scrollHeight > el.clientHeight + 4) {
         btn.style.display = 'flex';
       } else {
+        // Content fits — no need for gradient either
         if (gradient) gradient.classList.add('hidden');
       }
     });
@@ -8251,13 +8248,13 @@ function toggleDesc() {
   if (!el) return;
   const isExpanded = el.classList.contains('expanded');
   if (isExpanded) {
+    // Collapse
     el.classList.remove('expanded');
     if (gradient) gradient.classList.remove('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-down';
     if (label) label.textContent = 'আরও দেখুন';
-    // Scroll into view smoothly after collapse
-    setTimeout(() => el.scrollIntoView({behavior:'smooth', block:'nearest'}), 100);
   } else {
+    // Expand
     el.classList.add('expanded');
     if (gradient) gradient.classList.add('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-up';
@@ -13168,20 +13165,20 @@ window.addEventListener('scroll', onScroll, { passive: true });
   </button>
 
   <!-- Cart -->
-  <button class="mob-nav-item" id="mobNavCart" onclick="openCart()" aria-label="কার্ট">
+  <button class="mob-nav-item" id="mobNavCart" onclick="closeAllPagesAndModals();openCart();setMobNavActive('mobNavCart')" aria-label="কার্ট">
     <i class="fa-solid fa-cart-shopping"></i>
     <span class="bn">কার্ট</span>
     <span class="mob-badge" id="mobCartBadge" style="display:none">0</span>
   </button>
 
   <!-- Orders / Track -->
-  <button class="mob-nav-item" id="mobNavOrders" onclick="openTrack()" aria-label="অর্ডার">
+  <button class="mob-nav-item" id="mobNavOrders" onclick="closeAllPagesAndModals();openTrack();setMobNavActive('mobNavOrders')" aria-label="অর্ডার">
     <i class="fa-solid fa-box"></i>
     <span class="bn">অর্ডার</span>
   </button>
 
   <!-- Account -->
-  <button class="mob-nav-item" id="mobNavAccount" onclick="handleAuthClick()" aria-label="অ্যাকাউন্ট">
+  <button class="mob-nav-item" id="mobNavAccount" onclick="closeAllPagesAndModals();handleAuthClick();setMobNavActive('mobNavAccount')" aria-label="অ্যাকাউন্ট">
     <i class="fa-regular fa-user"></i>
     <span class="bn">অ্যাকাউন্ট</span>
   </button>
@@ -13191,16 +13188,38 @@ window.addEventListener('scroll', onScroll, { passive: true });
 <script>
 // ── Mobile Bottom Nav helpers ──────────────────────────────────────
 (function(){
-  // Scroll to top + reset active state to Home
+
+  // ── Global helper: সব open page, modal ও overlay বন্ধ করো ──
+  window.closeAllPagesAndModals = function() {
+    // সব full-page বন্ধ
+    document.querySelectorAll('.full-page').forEach(function(el) {
+      el.classList.remove('open');
+      el.setAttribute('aria-hidden', 'true');
+    });
+    // সব overlay modal বন্ধ
+    document.querySelectorAll('#cartOverlay, #authModal, #adminOverlay').forEach(function(el) {
+      el.classList.remove('open');
+    });
+    // body-এর page-context class সরাও
+    document.body.className = document.body.className.replace(/\bpage-\S+/g, '').trim();
+    document.body.style.overflow = '';
+  };
+
+  // Home: সব বন্ধ → top-এ scroll
   window.scrollToTop = function() {
-    window.scrollTo({top:0,behavior:'smooth'});
+    closeAllPagesAndModals();
+    window.scrollTo({top: 0, behavior: 'smooth'});
     setMobNavActive('mobNavHome');
   };
 
-  // Focus the mobile search input
+  // Search: সব বন্ধ → search focus
   window.focusMobileSearch = function() {
-    const inp = document.getElementById('mobileSearchInput');
-    if(inp){ inp.focus(); inp.scrollIntoView({block:'center',behavior:'smooth'}); }
+    closeAllPagesAndModals();
+    const inp = document.getElementById('mobileSearchInput') || document.getElementById('searchInput');
+    if (inp) {
+      inp.focus();
+      inp.scrollIntoView({block: 'center', behavior: 'smooth'});
+    }
     setMobNavActive('mobNavSearch');
   };
 
@@ -13208,7 +13227,7 @@ window.addEventListener('scroll', onScroll, { passive: true });
   window.setMobNavActive = function(id) {
     document.querySelectorAll('.mob-nav-item').forEach(el => el.classList.remove('active'));
     const el = document.getElementById(id);
-    if(el) el.classList.add('active');
+    if (el) el.classList.add('active');
   };
 
   // Sync cart badge with existing cart badge
