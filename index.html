@@ -2479,14 +2479,19 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
 /* ── DESCRIPTION SEE MORE/LESS ── */
 .desc-wrapper {
-  position: relative;
-  isolation: isolate;
+  /* No position:relative needed — gradient is now handled differently */
 }
 
+/* The text container itself handles its own clamping */
 .desc-clamped {
+  /* Bengali Hind Siliguri at 0.9rem × 16px × 1.9 line-height = ~27px/line.
+     4 lines = ~108px. We keep 4 lines visible but DON'T use overflow:hidden
+     on the wrapper — instead we clip only the text div itself so the button
+     is always in normal flow below it, never overlapped. */
   max-height: 112px;
   overflow: hidden;
   transition: max-height 0.4s cubic-bezier(.4,0,.2,1);
+  /* Fade bottom via mask-image — no absolutely-positioned overlay needed */
   -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
@@ -2495,7 +2500,11 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   -webkit-mask-image: none;
   mask-image: none;
 }
+
+/* The old absolutely-positioned gradient div — hide it, mask-image replaces it */
 .desc-gradient { display: none !important; }
+
+/* Toggle button — always in normal document flow, never overlaps text */
 .desc-toggle-btn {
   display: flex;
   align-items: center;
@@ -2510,7 +2519,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   cursor: pointer;
   padding: 6px 0;
   transition: opacity .2s;
-  position: static;
+  position: static; /* normal flow — will never overlap text */
   width: 100%;
   text-align: left;
   line-height: 1.4;
@@ -4023,26 +4032,16 @@ div.pcard-icon {
   .fp-mobile-cta-bar {
     display: flex !important;
     flex-direction: column !important;
-    /* KEY FIX: position:sticky inside full-page scroll container.
-       position:fixed doesn't work correctly inside isolation:isolate parents —
-       it becomes fixed relative to the stacking context, not the viewport,
-       causing it to overlap the price box mid-page.
-       sticky + bottom:0 sticks to the BOTTOM of the scroll viewport correctly. */
-    position: sticky !important;
-    bottom: 0 !important;
+    position: fixed !important;
+    bottom: 62px !important;
     left: 0 !important;
     right: 0 !important;
-    /* Sit above all page content but below modals */
-    z-index: 120 !important;
+    z-index: 8999 !important;
     background: #fff !important;
     border-top: 1px solid var(--border) !important;
-    padding: 8px 14px 10px !important;
+    padding: 8px 14px 6px !important;
     gap: 7px !important;
     box-shadow: 0 -4px 20px rgba(0,0,0,.10) !important;
-    /* Margin-top auto pushes it to bottom when content is short */
-    margin-top: auto !important;
-    /* Account for bottom nav bar height so buttons aren't behind nav */
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
   }
   /* Row 1: Buy Now + Add to Cart side-by-side */
   .fp-mobile-cta-row {
@@ -4109,13 +4108,7 @@ div.pcard-icon {
     gap: 7px !important;
   }
 
-  /* page-product must be a flex column so sticky CTA bar sits at bottom */
-  #page-product {
-    display: flex !important;
-    flex-direction: column !important;
-    /* No extra padding-bottom needed — sticky bar is in flow now */
-    padding-bottom: 0 !important;
-  }
+  #page-product { padding-bottom: 172px !important; /* 62px nav + 110px CTA bar + 0px buffer */ }
 
   .fp-body {
     grid-template-columns: 1fr !important;
@@ -6115,9 +6108,7 @@ html, body {
     </div>
   </div>
 
-  </div><!-- /fp-rec-wrap -->
-
-  <!-- ── STICKY MOBILE BOTTOM CTA BAR — moved to end of page so sticky:bottom:0 works correctly ── -->
+  <!-- ── STICKY MOBILE BOTTOM CTA BAR ── -->
   <div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
     <!-- Row 1: Buy Now + Add to Cart side-by-side -->
     <div class="fp-mobile-cta-row">
@@ -6137,7 +6128,8 @@ html, body {
     </div>
   </div>
 
-</div><!-- /#page-product -->
+  <!-- ── RELATED & SUGGESTED ── -->
+  <div class="fp-rec-wrap">
 
     <div id="pdRelatedSection" style="display:none">
       <div class="rec-section-hd">
@@ -8274,13 +8266,16 @@ function renderDesc(id, raw) {
     if (icon) { icon.className = 'fa-solid fa-chevron-down'; }
     if (label) label.textContent = 'আরও দেখুন';
     // Show toggle only if content actually overflows the clamped height
+    // Double rAF: first frame applies layout, second reads accurate measurements
     requestAnimationFrame(() => {
-      if (el.scrollHeight > el.clientHeight + 4) {
-        btn.style.display = 'flex';
-      } else {
-        // Content fits — no need for gradient either
-        if (gradient) gradient.classList.add('hidden');
-      }
+      requestAnimationFrame(() => {
+        if (el.scrollHeight > el.clientHeight + 4) {
+          btn.style.display = 'flex';
+        } else {
+          btn.style.display = 'none';
+          if (gradient) gradient.classList.add('hidden');
+        }
+      });
     });
   }
 }
@@ -8289,19 +8284,17 @@ function toggleDesc() {
   const el = document.getElementById('modalDesc');
   const icon = document.getElementById('descToggleIcon');
   const label = document.getElementById('descToggleLabel');
-  const gradient = document.getElementById('descGradient');
   if (!el) return;
   const isExpanded = el.classList.contains('expanded');
   if (isExpanded) {
-    // Collapse
+    // Collapse — scroll to top of description first
+    const wrapper = el.closest('#pdPanelDetails') || el;
+    wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     el.classList.remove('expanded');
-    if (gradient) gradient.classList.remove('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-down';
     if (label) label.textContent = 'আরও দেখুন';
   } else {
-    // Expand
     el.classList.add('expanded');
-    if (gradient) gradient.classList.add('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-up';
     if (label) label.textContent = 'সংক্ষেপে দেখুন';
   }
