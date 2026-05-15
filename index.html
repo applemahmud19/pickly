@@ -2479,58 +2479,53 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 
 /* ── DESCRIPTION SEE MORE/LESS ── */
 .desc-wrapper {
-  position: relative;
-  /* Ensure gradient fade is contained within wrapper */
-  isolation: isolate;
+  /* No position:relative needed — gradient is now handled differently */
 }
+
+/* The text container itself handles its own clamping */
 .desc-clamped {
-  /* Bengali Hind Siliguri: 0.9rem × 16px × 1.9 line-height ≈ 27.4px/line → 4 lines ≈ 110px
-     Extra padding added so button never overlaps last line of text */
-  max-height: 130px;
+  /* Bengali Hind Siliguri at 0.9rem × 16px × 1.9 line-height = ~27px/line.
+     4 lines = ~108px. We keep 4 lines visible but DON'T use overflow:hidden
+     on the wrapper — instead we clip only the text div itself so the button
+     is always in normal flow below it, never overlapped. */
+  max-height: 112px;
   overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(.4,0,.2,1);
-  /* Padding-bottom ensures the fade gradient doesn't sit on text */
-  padding-bottom: 0;
+  transition: max-height 0.4s cubic-bezier(.4,0,.2,1);
+  /* Fade bottom via mask-image — no absolutely-positioned overlay needed */
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
 }
 .desc-clamped.expanded {
-  max-height: 4000px; /* effectively unlimited */
-  padding-bottom: 0;
+  max-height: 9999px;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
-/* Fade-out gradient mask — only when clamped */
-.desc-gradient {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 56px;
-  /* Use var(--bg-surface,#fff) so it matches whatever surface the panel sits on */
-  background: linear-gradient(to bottom, transparent, var(--bg-surface, #F8FAFC));
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-.desc-gradient.hidden { opacity: 0; pointer-events: none; }
+
+/* The old absolutely-positioned gradient div — hide it, mask-image replaces it */
+.desc-gradient { display: none !important; }
+
+/* Toggle button — always in normal document flow, never overlaps text */
 .desc-toggle-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  /* Increased top margin so button sits clearly below the gradient */
-  margin-top: 14px;
+  gap: 6px;
+  margin-top: 8px;
   background: none;
   border: none;
   color: var(--blue);
   font-family: 'Hind Siliguri', sans-serif;
-  font-size: .82rem;
+  font-size: .84rem;
   font-weight: 700;
   cursor: pointer;
   padding: 6px 0;
   transition: opacity .2s;
-  position: relative;
-  z-index: 10;
+  position: static; /* normal flow — will never overlap text */
   width: 100%;
   text-align: left;
-  /* Prevent button from being obscured by gradient */
-  clear: both;
+  line-height: 1.4;
 }
 .desc-toggle-btn:hover { opacity: .7; }
-.desc-toggle-btn i { font-size: .75rem; }
+.desc-toggle-btn i { font-size: .75rem; vertical-align: middle; }
 
 /* Tabs area */
 .fp-tabs-wrap {
@@ -8271,13 +8266,13 @@ function renderDesc(id, raw) {
     if (icon) { icon.className = 'fa-solid fa-chevron-down'; }
     if (label) label.textContent = 'আরও দেখুন';
     // Show toggle only if content actually overflows the clamped height
-    // Use double rAF — first frame applies layout, second reads accurate measurements
+    // Double rAF: first frame applies layout, second reads accurate measurements
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (el.scrollHeight > el.clientHeight + 4) {
           btn.style.display = 'flex';
         } else {
-          // Content fits — no need for gradient either
+          btn.style.display = 'none';
           if (gradient) gradient.classList.add('hidden');
         }
       });
@@ -8289,22 +8284,17 @@ function toggleDesc() {
   const el = document.getElementById('modalDesc');
   const icon = document.getElementById('descToggleIcon');
   const label = document.getElementById('descToggleLabel');
-  const gradient = document.getElementById('descGradient');
-  const btn = document.getElementById('descToggleBtn');
   if (!el) return;
   const isExpanded = el.classList.contains('expanded');
   if (isExpanded) {
-    // Collapse — scroll back to top of description before collapsing
-    const wrapper = el.closest('.desc-wrapper') || el;
+    // Collapse — scroll to top of description first
+    const wrapper = el.closest('#pdPanelDetails') || el;
     wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     el.classList.remove('expanded');
-    if (gradient) gradient.classList.remove('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-down';
     if (label) label.textContent = 'আরও দেখুন';
   } else {
-    // Expand
     el.classList.add('expanded');
-    if (gradient) gradient.classList.add('hidden');
     if (icon) icon.className = 'fa-solid fa-chevron-up';
     if (label) label.textContent = 'সংক্ষেপে দেখুন';
   }
