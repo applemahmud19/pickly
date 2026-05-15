@@ -4083,44 +4083,6 @@ div.pcard-icon {
     transition: all .18s !important;
   }
   .fp-mobile-cart-btn:active { opacity: .88; transform: scale(.98); }
-  /* Row 0: Price + Stock */
-  .fp-mobile-price-row {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100% !important;
-    padding-bottom: 5px !important;
-    border-bottom: 1px solid var(--border) !important;
-    margin-bottom: 2px !important;
-  }
-  .fp-mobile-price-left {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    flex-wrap: wrap !important;
-  }
-  .fp-mobile-old-price {
-    font-size: .75rem !important;
-    color: var(--text-light) !important;
-    text-decoration: line-through !important;
-    font-family: 'Hind Siliguri', sans-serif !important;
-  }
-  .fp-mobile-new-price {
-    font-size: 1.25rem !important;
-    font-weight: 900 !important;
-    color: var(--text) !important;
-    line-height: 1.4 !important;
-    font-family: 'Hind Siliguri', sans-serif !important;
-  }
-  .fp-mobile-stock {
-    font-size: .75rem !important;
-    color: var(--green) !important;
-    font-weight: 600 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    white-space: nowrap !important;
-  }
   /* Row 2: Wishlist button full-width below */
   .fp-mobile-wish-row {
     display: flex !important;
@@ -4140,7 +4102,38 @@ div.pcard-icon {
     gap: 7px !important;
   }
 
-  #page-product { padding-bottom: 210px !important; /* 62px nav + 148px CTA bar (price row added) */ }
+  /* Row 3: Stock + Qty inside mobile CTA bar */
+  .fp-mobile-stock-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 2px 0 !important;
+  }
+  /* Row 4: Trust badges inside mobile CTA bar */
+  .fp-mobile-trust-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+  .fp-mobile-trust-row::-webkit-scrollbar { display: none !important; }
+  .fp-mobile-trust-row .fp-trust-item {
+    flex-shrink: 0 !important;
+    font-size: .6rem !important;
+    padding: 3px 7px !important;
+    gap: 4px !important;
+  }
+  .fp-mobile-trust-row .fp-trust-item i {
+    font-size: .58rem !important;
+  }
+
+  /* page-product needs enough bottom padding for: 62px nav + ~200px CTA bar */
+  #page-product { padding-bottom: 230px !important; }
 
   .fp-body {
     grid-template-columns: 1fr !important;
@@ -4161,10 +4154,12 @@ div.pcard-icon {
   .fp-rating-row { margin: 8px 0 12px !important; gap: 6px !important; }
   .fp-price-box { padding: 14px 15px !important; border-radius: 12px !important; margin-bottom: 14px !important; }
   .fp-new-price { font-size: 2rem !important; line-height: 1.4 !important; overflow: visible !important; }
-  .fp-stock-qty { flex-direction: row !important; align-items: center !important; gap: 12px !important; margin-bottom: 14px !important; }
-  /* Hide inline CTA & inline wishlist btn on mobile — sticky bar handles all 3 */
+  /* Hide inline stock/qty, CTA & wishlist on mobile — sticky bar handles all */
+  .fp-stock-qty { display: none !important; }
   .fp-cta { display: none !important; }
   #fpWishBtn { display: none !important; }
+  /* Also hide inline trust badges on mobile — sticky bar shows them */
+  .fp-right .fp-trust { display: none !important; }
   .fp-wish-btn {
     width: 100% !important;
     justify-content: center !important;
@@ -6142,15 +6137,6 @@ html, body {
 
   <!-- ── STICKY MOBILE BOTTOM CTA BAR ── -->
   <div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
-    <!-- Row 0: Price + Stock -->
-    <div class="fp-mobile-price-row">
-      <div class="fp-mobile-price-left">
-        <span id="fpMobileOldPrice" class="fp-mobile-old-price"></span>
-        <span id="fpMobileNewPrice" class="fp-mobile-new-price bn"></span>
-        <span id="fpMobileDiscBadge" class="fp-disc-badge" style="font-size:.72rem;padding:3px 10px"></span>
-      </div>
-      <div id="fpMobileStock" class="fp-mobile-stock bn"><i class="fa-solid fa-circle-check"></i> স্টকে আছে</div>
-    </div>
     <!-- Row 1: Buy Now + Add to Cart side-by-side -->
     <div class="fp-mobile-cta-row">
       <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
@@ -6166,6 +6152,24 @@ html, body {
         <i class="fa-regular fa-heart" id="fpWishIconMobile"></i>
         <span id="fpWishTextMobile">উইশলিস্টে সেভ করুন</span>
       </button>
+    </div>
+    <!-- Row 3: Stock + Quantity -->
+    <div class="fp-mobile-stock-row">
+      <div id="fpStockMobile" class="fp-stock bn"><i class="fa-solid fa-circle-check"></i> স্টকে আছে</div>
+      <div class="fp-qty-row">
+        <span class="bn" style="font-size:.78rem;color:var(--text-mid);font-weight:600">পরিমাণ:</span>
+        <div class="qty-ctrl">
+          <button class="qbtn" onclick="changeQty(-1)">−</button>
+          <span id="modalQtyMobile" style="font-weight:700;min-width:24px;text-align:center">1</span>
+          <button class="qbtn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+    </div>
+    <!-- Row 4: Trust badges -->
+    <div class="fp-mobile-trust-row">
+      <div class="fp-trust-item bn"><i class="fa-solid fa-truck-fast"></i> ক্যাশ অন ডেলিভারি</div>
+      <div class="fp-trust-item bn"><i class="fa-solid fa-shield-halved"></i> 100% অরিজিনাল</div>
+      <div class="fp-trust-item bn"><i class="fa-solid fa-rotate-left"></i> সহজ রিটার্ন</div>
     </div>
   </div>
 
@@ -8195,14 +8199,6 @@ function openProduct(id, pushUrl = true) {
     savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
-  // ── Mobile sticky bar price sync ──
-  const mOldEl = document.getElementById('fpMobileOldPrice');
-  if (mOldEl) mOldEl.textContent = p.old_price ? `৳${fmtPrice(p.old_price)}` : '';
-  const mNewEl = document.getElementById('fpMobileNewPrice');
-  if (mNewEl) mNewEl.textContent = `৳${fmtPrice(p.price)}`;
-  const mDiscEl = document.getElementById('fpMobileDiscBadge');
-  if (mDiscEl) { mDiscEl.textContent = disc ? `${disc}% ছাড়` : ''; mDiscEl.style.display = disc ? 'inline-block' : 'none'; }
-
   // ── Stock ──
   const stockEl = document.getElementById('fpStock');
   if (stockEl) {
@@ -8210,13 +8206,12 @@ function openProduct(id, pushUrl = true) {
       ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
       : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
   }
-  // ── Mobile sticky bar stock sync ──
-  const mStockEl = document.getElementById('fpMobileStock');
-  if (mStockEl) {
-    mStockEl.innerHTML = p.stock > 0
+  // Sync mobile CTA bar stock display
+  const stockElMobile = document.getElementById('fpStockMobile');
+  if (stockElMobile) {
+    stockElMobile.innerHTML = p.stock > 0
       ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
       : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
-    if (p.stock > 0) { mStockEl.style.color = 'var(--green)'; } else { mStockEl.style.color = 'var(--red)'; }
   }
   // Keep legacy stockTxt if needed elsewhere
   const legacyStock = document.getElementById('stockTxt');
@@ -8225,6 +8220,8 @@ function openProduct(id, pushUrl = true) {
   // ── Qty reset ──
   const qtyEl = document.getElementById('modalQty');
   if (qtyEl) qtyEl.textContent = 1;
+  const qtyElMobile = document.getElementById('modalQtyMobile');
+  if (qtyElMobile) qtyElMobile.textContent = 1;
 
   // ── Description ──
   renderDesc('modalDesc', p.description||'');
@@ -8360,7 +8357,7 @@ function escFe(s) {
 }
 
 function openProductAndBuy(id) { openProduct(id); }
-function changeQty(d) { modalQty = Math.max(1, modalQty+d); const el = document.getElementById('modalQty'); if(el) el.textContent = modalQty; }
+function changeQty(d) { modalQty = Math.max(1, modalQty+d); const el = document.getElementById('modalQty'); if(el) el.textContent = modalQty; const elM = document.getElementById('modalQtyMobile'); if(elM) elM.textContent = modalQty; }
 function addToCartModal() { if(currentProduct) { addToCart(currentProduct, modalQty); closePage('product'); } }
 function buyNowModal() {
   if (!currentProduct) return;
