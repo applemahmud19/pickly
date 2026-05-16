@@ -4133,9 +4133,9 @@ div.pcard-icon {
   .fp-price-box { padding: 14px 15px !important; border-radius: 12px !important; margin-bottom: 14px !important; }
   .fp-new-price { font-size: 2rem !important; line-height: 1.4 !important; overflow: visible !important; }
   .fp-stock-qty { flex-direction: row !important; align-items: center !important; gap: 12px !important; margin-bottom: 14px !important; }
-  /* Hide inline CTA & inline wishlist btn on mobile — sticky bar handles all 3 */
-  .fp-cta { display: none !important; }
-  #fpWishBtn { display: none !important; }
+  /* Inline CTA & wishlist — show on mobile (sticky bar disabled) */
+  .fp-cta { display: flex !important; gap: 10px !important; margin-bottom: 10px !important; }
+  #fpWishBtn { display: flex !important; }
   .fp-wish-btn {
     width: 100% !important;
     justify-content: center !important;
