@@ -828,7 +828,7 @@ header.scrolled{
   display:none;
   position:fixed;inset:0;
   /* হেডার z-index (9999) এর ওপরে — auth modal যেন সবসময় সামনে থাকে */
-  z-index:10000;
+  z-index:10002;
   background:rgba(15,23,42,.55);
   backdrop-filter:blur(6px);
   align-items:center;
@@ -1262,6 +1262,19 @@ header.scrolled{
    viewport-relative on desktop, regardless of scroll position or
    any transformed ancestor. height:100vh ensures full-height drawer. */
 .cart-panel{position:fixed;right:0;top:0;height:100vh;width:380px;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 48px rgba(0,0,0,.18);animation:slideRight .3s cubic-bezier(.4,0,.2,1);overflow:hidden}
+@media(max-width:768px){
+  .cart-panel{
+    width:100% !important;
+    max-width:100% !important;
+    height:calc(100vh - 62px) !important;
+    height:calc(100dvh - 62px) !important;
+    top:0 !important;
+    bottom:62px !important;
+    overflow:hidden !important;
+  }
+  .cart-items{flex:1 !important;overflow-y:auto !important;-webkit-overflow-scrolling:touch !important;overscroll-behavior:contain !important;min-height:0 !important;}
+  .cart-foot{flex-shrink:0 !important;}
+}
 @keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .cart-hd{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .cart-hd h3{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700}
@@ -9343,8 +9356,26 @@ function openCart() {
     panel.style.top = '0';
     panel.style.overflow = 'hidden';
   }
+  // Prevent background scroll on touch
+  const overlay = document.getElementById('cartOverlay');
+  const cartItems = document.getElementById('cartItems');
+  function blockTouch(e) {
+    // Allow scroll only inside cart-items
+    if (cartItems && cartItems.contains(e.target)) return;
+    e.preventDefault();
+  }
+  overlay._blockTouch = blockTouch;
+  overlay.addEventListener('touchmove', blockTouch, { passive: false });
 }
-function closeCart() { closeModal('cartOverlay'); document.body.style.overflow = ''; }
+function closeCart() {
+  const overlay = document.getElementById('cartOverlay');
+  if (overlay && overlay._blockTouch) {
+    overlay.removeEventListener('touchmove', overlay._blockTouch);
+    delete overlay._blockTouch;
+  }
+  closeModal('cartOverlay');
+  document.body.style.overflow = '';
+}
 function openTrack(pushUrl = true) {
   if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD', '/track-order');
   document.title = 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD';
