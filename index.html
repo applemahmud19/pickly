@@ -4027,8 +4027,8 @@ div.pcard-icon {
 }
 
 /* ── 6. PRODUCT DETAIL — Mobile Stack & Sticky Bottom Bar ── */
-/* CTA bar removed — buttons already visible in product page */
-.fp-mobile-cta-bar { display: none !important; }
+/* CTA bar always hidden by default; .active class + media query shows it */
+.fp-mobile-cta-bar { display: none; }
 
 @media (max-width: 860px) {
   .fp-mobile-cta-bar.active {
@@ -13207,16 +13207,8 @@ window.addEventListener('scroll', onScroll, { passive: true });
      Visible only on mobile (@media max-width:768px)
 ══════════════════════════════════════════════════ -->
 
-<!-- ── STICKY MOBILE BOTTOM CTA BAR (outside page-product to bypass isolation:isolate) ── -->
-<div class="fp-mobile-cta-bar" id="fpMobileCtaBar">
-  <div class="fp-mobile-cta-row">
-    <button class="fp-mobile-buy-btn" onclick="buyNowModal()">
-      <i class="fa-solid fa-bolt"></i><span class="bn">এখনই কিনুন</span>
-    </button>
-    <button class="fp-mobile-cart-btn" onclick="addToCartModal()">
-      <i class="fa-solid fa-cart-plus"></i><span class="bn">কার্টে যোগ করুন</span>
-    </button>
-  </div>
+<!-- ── STICKY MOBILE BOTTOM CTA BAR — hidden, buttons are inline on product page ── -->
+<div class="fp-mobile-cta-bar" id="fpMobileCtaBar" style="display:none!important">
   <div class="fp-mobile-wish-row">
     <button class="fp-wish-btn bn" id="fpWishBtnMobile" onclick="toggleWishlist()">
       <i class="fa-regular fa-heart" id="fpWishIconMobile"></i>
