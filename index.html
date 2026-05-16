@@ -1261,7 +1261,7 @@ header.scrolled{
 /* CRITICAL FIX: position:fixed (not absolute) so cart is always
    viewport-relative on desktop, regardless of scroll position or
    any transformed ancestor. height:100vh ensures full-height drawer. */
-.cart-panel{position:fixed;right:0;top:0;height:100vh;width:380px;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 48px rgba(0,0,0,.18);animation:slideRight .3s cubic-bezier(.4,0,.2,1)}
+.cart-panel{position:fixed;right:0;top:0;height:100vh;width:380px;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 48px rgba(0,0,0,.18);animation:slideRight .3s cubic-bezier(.4,0,.2,1);overflow:hidden}
 @keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .cart-hd{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .cart-hd h3{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700}
@@ -4778,8 +4778,19 @@ html, body {
     width: 100% !important;
     max-width: 100% !important;
     height: calc(100vh - 62px) !important;
+    max-height: calc(100vh - 62px) !important;
     top: 0 !important;
     bottom: 62px !important;
+    overflow: hidden !important;
+  }
+  .cart-items {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+  .cart-foot {
+    flex-shrink: 0 !important;
+    overflow: visible !important;
   }
 
   /* ── 11. Modals — bottom sheet ── */
