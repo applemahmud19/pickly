@@ -9330,7 +9330,19 @@ function closeModal(id) {
     if (forgotBanner) forgotBanner.style.display = 'none';
   }
 }
-function openCart() { openModal('cartOverlay'); renderCartItems(); }
+function openCart() {
+  openModal('cartOverlay');
+  renderCartItems();
+  // Fix cart panel height on mobile to stay above bottom nav
+  const panel = document.querySelector('.cart-panel');
+  if (panel && window.innerWidth <= 880) {
+    panel.style.height = 'calc(100vh - 62px)';
+    panel.style.maxHeight = 'calc(100vh - 62px)';
+    panel.style.bottom = '62px';
+    panel.style.top = '0';
+    panel.style.overflow = 'hidden';
+  }
+}
 function closeCart() { closeModal('cartOverlay'); }
 function openTrack(pushUrl = true) {
   if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD', '/track-order');
