@@ -7552,7 +7552,12 @@ function handleAuthClick() {
     openAuth();
     return;
   }
-  // Logged-in → dropdown টগল
+  // Mobile → সরাসরি profile page খোলো
+  if (window.innerWidth <= 768) {
+    if (typeof openProfilePage === 'function') openProfilePage();
+    return;
+  }
+  // Desktop → dropdown টগল
   const dd = document.getElementById('accountDropdown');
   if (!dd) return;
   const isOpen = dd.style.display === 'block';
