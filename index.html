@@ -2909,7 +2909,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
 .rec-card-body{padding:9px 10px 11px;flex:1;display:flex;flex-direction:column;gap:4px;justify-content:flex-start}
 .rec-card-cat{font-family:'Hind Siliguri',sans-serif;font-size:.6rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
 /* Clamp name to 2 lines */
-.rec-card-name{font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rec-card-name{font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.3em * 2);word-break:break-word}
 /* Clamp brand/author to 1 line */
 .rec-card-brand{font-size:.64rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rec-card-price-row{display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap}
@@ -2946,11 +2946,11 @@ footer, footer *:not(i):not([class*="fa-"]) {
   .rec-card{flex:0 0 158px;min-height:0;height:auto;display:flex;flex-direction:column}
   .rec-card-img{height:110px;flex-shrink:0;background:#f5f7fa;}
   .rec-card-img img{width:100%;height:100%;object-fit:contain;padding:6px;display:block;}
-  .rec-card-body{flex:1;display:flex;flex-direction:column;gap:3px;padding:8px 9px 10px;overflow:visible}
+  .rec-card-body{flex:1;display:flex;flex-direction:column;gap:3px;padding:8px 9px 10px;overflow:hidden;min-height:0}
   .rec-card-cat{font-size:.58rem;margin-bottom:1px}
-  .rec-card-name{font-size:.73rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.3em * 2);margin-bottom:1px}
-  .rec-card-brand{display:block;font-size:.62rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
-  .rec-card-price-row{margin-top:3px;flex-wrap:nowrap;gap:4px;align-items:center}
+  .rec-card-name{font-size:.73rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:calc(1.3em * 2);word-break:break-word;flex-shrink:0}
+  .rec-card-brand{display:block;font-size:.62rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;flex-shrink:0}
+  .rec-card-price-row{margin-top:3px;flex-wrap:nowrap;gap:4px;align-items:center;flex-shrink:0}
   .rec-card-price{font-size:.79rem}
   .rec-card-old{font-size:.61rem}
   .rec-card-disc{font-size:.58rem;padding:1px 4px}
@@ -7232,7 +7232,7 @@ function buildRecCard(p) {
       <div class="rec-card-body">
         <div class="rec-card-cat">${p.category}</div>
         <div class="rec-card-name bn">${p.name}</div>
-        ${p.category === 'বই' ? (p.author || p.brand ? `<div class="rec-card-brand"><i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.55rem;margin-right:2px"></i>${p.author || p.brand}</div>` : '') : (p.brand ? `<div class="rec-card-brand">${p.brand}</div>` : '')}
+        ${p.category === 'বই' ? (p.author || p.brand ? `<div class="rec-card-brand">${p.author || p.brand}</div>` : '') : (p.brand ? `<div class="rec-card-brand">${p.brand}</div>` : '')}
         <div class="rec-card-price-row">
           <span class="rec-card-price bn">৳${fmtPrice(p.price)}</span>
           ${p.old_price ? `<span class="rec-card-old bn">৳${fmtPrice(p.old_price)}</span>` : ''}
