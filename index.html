@@ -7231,7 +7231,7 @@ function buildRecCard(p) {
       </div>
       <div class="rec-card-body">
         <div class="rec-card-cat">${p.category}</div>
-        <div class="rec-card-name bn">${p.name}</div>
+        <div class="rec-card-name bn">${p.name.length > 40 ? p.name.slice(0,40)+'…' : p.name}</div>
         ${p.category === 'বই' ? (p.author || p.brand ? `<div class="rec-card-brand">${p.author || p.brand}</div>` : '') : (p.brand ? `<div class="rec-card-brand">${p.brand}</div>` : '')}
         <div class="rec-card-price-row">
           <span class="rec-card-price bn">৳${fmtPrice(p.price)}</span>
