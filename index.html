@@ -8712,11 +8712,15 @@ function openCheckout() {
   // রিফ্রেশ হলে _restorePageFromUrl এটি পড়ে চেকআউট পুনরায় খুলবে।
   try { sessionStorage.setItem('gm_checkout_pending', '1'); } catch(e) {}
   openPage('checkout');
+  const nav = document.getElementById('mobBottomNav');
+  if (nav) nav.style.display = 'none';
 }
 
 function closeCheckoutPage() {
   try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
   closePage('checkout');
+  const nav = document.getElementById('mobBottomNav');
+  if (nav) nav.style.display = '';
 }
 
 async function placeOrder() {
