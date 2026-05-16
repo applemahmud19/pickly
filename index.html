@@ -13578,6 +13578,9 @@ window.__router = { closeAllPages, closeAllModals, closeAllUI };
     closeNotifPanel();
     if (typeof window.closeDropdown === 'function') window.closeDropdown();
     _orig.call(this);
+    // Hide bottom nav on mobile when checkout opens
+    const nav = document.getElementById('mobBottomNav');
+    if (nav) nav.style.display = 'none';
   };
 })();
 
@@ -13591,6 +13594,9 @@ window.__router = { closeAllPages, closeAllModals, closeAllUI };
     if (name === 'checkout') {
       const msg = document.getElementById('checkoutPromoMsg');
       if (msg) msg.style.display = 'none';
+      // Restore bottom nav
+      const nav = document.getElementById('mobBottomNav');
+      if (nav) nav.style.display = '';
     }
     // When closing product detail, clear any playing video/media
     if (name === 'product') {
