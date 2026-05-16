@@ -2279,7 +2279,11 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
     margin: 12px auto 0;
     gap: 14px;
   }
-  /* No extra padding needed — CTA scrolls with content, not fixed */
+  /* Give space for sticky bottom CTA (64px nav + 72px CTA bar) */
+  #page-product .fp-tabs-wrap,
+  #page-product .fp-rec-wrap {
+    padding-bottom: 80px;
+  }
 }
 
 /* ── MOBILE STICKY CTA — REMOVED (duplicate of fp-mobile-cta-bar) ── */
@@ -4022,12 +4026,90 @@ div.pcard-icon {
 
 /* ── 6. PRODUCT DETAIL — Mobile Stack & Sticky Bottom Bar ── */
 /* CTA bar always hidden by default; .active class + media query shows it */
-/* fp-mobile-cta-bar is fully disabled — inline buttons handle mobile CTA */
-.fp-mobile-cta-bar { display: none !important; }
+.fp-mobile-cta-bar { display: none; }
 
 @media (max-width: 860px) {
-  /* Mobile CTA bar is DISABLED — buttons scroll with content inline */
-  #page-product { padding-bottom: 0 !important; }
+  .fp-mobile-cta-bar.active {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    bottom: 62px !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 10001 !important;
+    background: #fff !important;
+    border-top: 1px solid var(--border) !important;
+    padding: 8px 14px 6px !important;
+    gap: 7px !important;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.10) !important;
+  }
+  /* Row 1: Buy Now + Add to Cart side-by-side */
+  .fp-mobile-cta-row {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .fp-mobile-buy-btn {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    height: 42px !important;
+    padding: 0 10px !important;
+    background: linear-gradient(135deg, var(--orange), #EA580C) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'Hind Siliguri', sans-serif !important;
+    font-size: .85rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 3px 10px rgba(249,115,22,.28) !important;
+    transition: all .18s !important;
+  }
+  .fp-mobile-buy-btn:active { opacity: .88; transform: scale(.98); }
+  .fp-mobile-cart-btn {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    height: 42px !important;
+    padding: 0 10px !important;
+    background: var(--blue) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'Hind Siliguri', sans-serif !important;
+    font-size: .85rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 3px 10px rgba(0,122,255,.25) !important;
+    transition: all .18s !important;
+  }
+  .fp-mobile-cart-btn:active { opacity: .88; transform: scale(.98); }
+  /* Row 2: Wishlist button full-width below */
+  .fp-mobile-wish-row {
+    display: flex !important;
+    width: 100% !important;
+  }
+  /* When fp-wish-btn is inside cta bar (mobile row 2), style it inline */
+  .fp-mobile-cta-bar .fp-wish-btn {
+    width: 100% !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    font-size: .8rem !important;
+    margin-bottom: 0 !important;
+    justify-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+  }
+
+  .fp-mobile-cta-bar { display: none !important; }
+  #page-product { padding-bottom: 80px !important; }
 
   .fp-body {
     grid-template-columns: 1fr !important;
@@ -4049,9 +4131,9 @@ div.pcard-icon {
   .fp-price-box { padding: 14px 15px !important; border-radius: 12px !important; margin-bottom: 14px !important; }
   .fp-new-price { font-size: 2rem !important; line-height: 1.4 !important; overflow: visible !important; }
   .fp-stock-qty { flex-direction: row !important; align-items: center !important; gap: 12px !important; margin-bottom: 14px !important; }
-  /* Mobile: show inline CTA and wishlist — buttons scroll with content */
-  .fp-cta { display: flex !important; }
-  #fpWishBtn { display: flex !important; }
+  /* Hide inline CTA & inline wishlist btn on mobile — sticky bar handles all 3 */
+  .fp-cta { display: none !important; }
+  #fpWishBtn { display: none !important; }
   .fp-wish-btn {
     width: 100% !important;
     justify-content: center !important;
@@ -7766,7 +7848,6 @@ function buildProductCard(p) {
         </div>
         <div class="card-btns">
           <button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
-          <button class="btn-buy bn" style="width:100%" onclick="event.stopPropagation();openProduct('${p.id}')"><i class="fa-solid fa-bolt"></i>এখনই কিনুন</button>
         </div>
       </div>
     </div>
@@ -7896,7 +7977,12 @@ function openPage(name) {
   el.scrollTop = 0;
   document.body.style.overflow = 'hidden'; // prevent body scroll while page open
   updatePageUIVisibility(name);
-  // fp-mobile-cta-bar disabled — inline buttons handle mobile CTA
+  // Show mobile CTA bar only on product page (mobile only)
+  const ctaBar = document.getElementById('fpMobileCtaBar');
+  if (ctaBar) {
+    if (name === 'product') ctaBar.classList.add('active');
+    else ctaBar.classList.remove('active');
+  }
 }
 function closePage(name) {
   const el = document.getElementById('page-' + name);
@@ -7905,7 +7991,11 @@ function closePage(name) {
   el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   clearPageUIVisibility(name);
-  // fp-mobile-cta-bar disabled — no action needed
+  // Hide mobile CTA bar when leaving product page
+  if (name === 'product') {
+    const ctaBar = document.getElementById('fpMobileCtaBar');
+    if (ctaBar) ctaBar.classList.remove('active');
+  }
   if (name === 'product') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
