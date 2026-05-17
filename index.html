@@ -7993,7 +7993,7 @@ function buildProductCard(p) {
       <div>
         <span class="new bn">৳${fmtPrice(displayPrice)}</span>
         ${disc ? `<span class="disc-pct">${disc}%</span>` : ''}
-        ${hasBulk ? `<span style="font-size:.6rem;color:var(--orange,#FF9500);font-weight:700;margin-left:3px" title="বাল্ক ডিসকাউন্ট সক্রিয়">+${bulkPct}%বাল্ক</span>` : ''}
+
       </div>
     </div>`;
 
@@ -8310,9 +8310,7 @@ function openProduct(id, pushUrl = true) {
   const discBadge = document.getElementById('fpDiscBadge');
   if (discBadge) {
     if (disc) {
-      discBadge.textContent = hasBulk
-        ? `${disc}% ছাড় (${Math.round(p.old_price?(1-normalSalePrice/Number(p.old_price))*100:0)}% + ${bulkPct}% বাল্ক)`
-        : `${disc}% ছাড়`;
+      discBadge.textContent = `${disc}% ছাড়`;  // সবসময় শুধু মোট % দেখাবে
       discBadge.style.display = 'inline-block';
     } else {
       discBadge.textContent = '';
@@ -8322,7 +8320,7 @@ function openProduct(id, pushUrl = true) {
   const savingsEl = document.getElementById('fpSavings');
   if (savingsEl && p.old_price && originalPrice > displayPrice) {
     const saved = originalPrice - displayPrice;
-    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)${hasBulk ? ` — বাল্ক ডিসকাউন্ট সহ` : ''}`;
+    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
   // ── Stock ──
