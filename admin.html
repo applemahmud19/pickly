@@ -3840,54 +3840,53 @@ async function loadVisitorStats(retryCount = 0) {
   try {
     const now = new Date();
 
-    // ── Time boundaries (UTC) ──
+    // ── Time boundaries (UTC-based to match Supabase server) ──
     const D = (y, m, d) => new Date(Date.UTC(y, m, d)).toISOString();
     const y = now.getUTCFullYear(), mo = now.getUTCMonth(), d = now.getUTCDate();
 
     const todayStart     = D(y, mo, d);
     const yesterdayStart = D(y, mo, d - 1);
-    const weekStart      = D(y, mo, d - 6);   // ← ঠিক: rolling শেষ ৭ দিন (আজসহ)
-    const monthStart     = D(y, mo, d - 29);  // ← ঠিক: rolling শেষ ৩০ দিন
+    const weekStart      = D(y, mo, d - now.getUTCDay()); // Sunday of this week
+    const monthStart     = D(y, mo, 1);
+    // Live = last_seen within the past 3 minutes
     const liveThreshold  = new Date(Date.now() - 3 * 60 * 1000).toISOString();
 
     const [todayRes, yestRes, weekRes, monthRes, liveRes] = await Promise.all([
+      // Today: unique sessions with created_at >= today midnight
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', todayStart),
+      // Yesterday: created_at between yesterday midnight and today midnight
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', yesterdayStart)
         .lt('created_at', todayStart),
+      // This week: from Sunday of current week
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', weekStart),
+      // This month
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', monthStart),
+      // Live: last_seen within 3 minutes AND is_active = true
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('last_seen', liveThreshold)
         .eq('is_active', true),
     ]);
 
-    // ── Error handling ──
-    const results = [todayRes, yestRes, weekRes, monthRes, liveRes];
-    const anyError = results.find(r => r.error);
+    // ── Graceful table-not-found handling ──
+    const anyError = [todayRes, yestRes, weekRes, monthRes, liveRes].find(r => r.error);
     if (anyError) {
       const msg = anyError.error.message || '';
-      const code = anyError.error.code   || '';
-      // Table বা column নেই → Supabase-এ SQL চালাও (Settings panel-এ দেখো)
-      if (code === '42P01' || msg.includes('does not exist')) {
-        console.warn('[Visitor] visitor_logs table নেই — Settings > SQL দিয়ে তৈরি করো');
+      if (msg.includes('does not exist') || msg.includes('42P01') || msg.includes('column') || msg.includes('does not exist')) {
+        // Table missing → show zeroes, don't spam retries
         allVisitors = { today: 0, yesterday: 0, week: 0, month: 0, live: 0 };
         renderVisitorStats();
         return;
       }
-      // RLS permission error (403 / PGRST301)
-      if (code === 'PGRST301' || msg.includes('permission') || msg.includes('policy')) {
-        console.error('[Visitor] RLS Policy error — Supabase-এ "auth_read" SELECT policy আছে কিনা দেখো');
-      }
-      throw new Error(`[${code}] ${msg}`);
+      throw new Error(msg);
     }
 
     allVisitors = {
@@ -5008,10 +5007,17 @@ async function updateOrderStatus(id, status, customNote) {
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
     const trackCh = new BroadcastChannel('gm_order_sync');
-    // Broadcast real status (including extended ones like in_stock/collecting/collected)
-    trackCh.postMessage({ type: 'order_status_update', orderId: id, status, note, timestamp: now, status_name: dbStatus !== status ? status : undefined });
+    // ✅ শুধু plain primitive values — DataCloneError এড়াতে
+    trackCh.postMessage(JSON.parse(JSON.stringify({
+      type:        'order_status_update',
+      orderId:     String(id),
+      status:      String(status),
+      note:        note ? String(note) : null,
+      timestamp:   String(now),
+      status_name: (dbStatus !== status) ? String(status) : undefined,
+    })));
     trackCh.close();
-  } catch(e) { /* BroadcastChannel not available */ }
+  } catch(e) { console.warn('[BroadcastChannel] order_status_update failed:', e.message); }
 }
 
 /* ── Part 2: Item-level status update ── */
@@ -5078,9 +5084,22 @@ async function updateItemStatus(orderId, itemIdx, newStatus, selectEl) {
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
     const trackCh = new BroadcastChannel('gm_order_sync');
-    trackCh.postMessage({ type: 'item_status_update', orderId, itemIdx, newStatus, items: o.items });
+    // ✅ o.items থেকে শুধু plain fields নাও — Supabase internal objects DataCloneError করে
+    const safeItems = (o.items || []).map(it => ({
+      name:        String(it.name        || ''),
+      qty:         Number(it.qty         || 0),
+      price:       Number(it.price       || 0),
+      item_status: String(it.item_status || 'pending'),
+    }));
+    trackCh.postMessage(JSON.parse(JSON.stringify({
+      type:      'item_status_update',
+      orderId:   String(orderId),
+      itemIdx:   Number(itemIdx),
+      newStatus: String(newStatus),
+      items:     safeItems,
+    })));
     trackCh.close();
-  } catch(e) { /* BroadcastChannel not available */ }
+  } catch(e) { console.warn('[BroadcastChannel] item_status_update failed:', e.message); }
 }
 
 function switchOrderTab(tab) {
@@ -7667,7 +7686,8 @@ function renderFooterPreview(links) {
 function broadcastCmsUpdate(key, value) {
   try {
     const ch = new BroadcastChannel('gm_cms');
-    ch.postMessage({ key, value });
+    // ✅ JSON round-trip: non-cloneable objects (Headers, Response, etc.) বাদ পড়বে
+    ch.postMessage(JSON.parse(JSON.stringify({ key: String(key), value })));
     ch.close();
   } catch(e) { /* BroadcastChannel not supported — localStorage only */ }
 }
