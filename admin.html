@@ -3947,9 +3947,14 @@ function toggleVisitorDropdown() {
   // Position using fixed coords — escapes ALL overflow:hidden ancestors
   const rect = btn.getBoundingClientRect();
   menu.style.top    = (rect.bottom + 6) + 'px';
-  menu.style.right  = (window.innerWidth - rect.right) + 'px';
-  menu.style.left   = 'auto';
+  menu.style.left   = (rect.right - menu.offsetWidth || rect.right - 165) + 'px';
+  menu.style.right  = 'auto';
   menu.style.display = 'block';
+  // Re-align after display:block so offsetWidth is available
+  requestAnimationFrame(() => {
+    const menuW = menu.offsetWidth;
+    menu.style.left = Math.max(0, rect.right - menuW) + 'px';
+  });
   if (chevron) chevron.style.transform = 'rotate(180deg)';
 }
 
@@ -3972,7 +3977,8 @@ function _repositionVisitorDropdown() {
   if (!menu || menu.style.display !== 'block' || !btn) return;
   const rect = btn.getBoundingClientRect();
   menu.style.top   = (rect.bottom + 6) + 'px';
-  menu.style.right = (window.innerWidth - rect.right) + 'px';
+  menu.style.right = 'auto';
+  menu.style.left  = Math.max(0, rect.right - menu.offsetWidth) + 'px';
 }
 window.addEventListener('scroll', _repositionVisitorDropdown, true);
 window.addEventListener('resize', _repositionVisitorDropdown);
