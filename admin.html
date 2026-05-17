@@ -3840,53 +3840,54 @@ async function loadVisitorStats(retryCount = 0) {
   try {
     const now = new Date();
 
-    // ── Time boundaries (UTC-based to match Supabase server) ──
+    // ── Time boundaries (UTC) ──
     const D = (y, m, d) => new Date(Date.UTC(y, m, d)).toISOString();
     const y = now.getUTCFullYear(), mo = now.getUTCMonth(), d = now.getUTCDate();
 
     const todayStart     = D(y, mo, d);
     const yesterdayStart = D(y, mo, d - 1);
-    const weekStart      = D(y, mo, d - now.getUTCDay()); // Sunday of this week
-    const monthStart     = D(y, mo, 1);
-    // Live = last_seen within the past 3 minutes
+    const weekStart      = D(y, mo, d - 6);   // ← ঠিক: rolling শেষ ৭ দিন (আজসহ)
+    const monthStart     = D(y, mo, d - 29);  // ← ঠিক: rolling শেষ ৩০ দিন
     const liveThreshold  = new Date(Date.now() - 3 * 60 * 1000).toISOString();
 
     const [todayRes, yestRes, weekRes, monthRes, liveRes] = await Promise.all([
-      // Today: unique sessions with created_at >= today midnight
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', todayStart),
-      // Yesterday: created_at between yesterday midnight and today midnight
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', yesterdayStart)
         .lt('created_at', todayStart),
-      // This week: from Sunday of current week
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', weekStart),
-      // This month
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('created_at', monthStart),
-      // Live: last_seen within 3 minutes AND is_active = true
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
         .gte('last_seen', liveThreshold)
         .eq('is_active', true),
     ]);
 
-    // ── Graceful table-not-found handling ──
-    const anyError = [todayRes, yestRes, weekRes, monthRes, liveRes].find(r => r.error);
+    // ── Error handling ──
+    const results = [todayRes, yestRes, weekRes, monthRes, liveRes];
+    const anyError = results.find(r => r.error);
     if (anyError) {
       const msg = anyError.error.message || '';
-      if (msg.includes('does not exist') || msg.includes('42P01') || msg.includes('column') || msg.includes('does not exist')) {
-        // Table missing → show zeroes, don't spam retries
+      const code = anyError.error.code   || '';
+      // Table বা column নেই → Supabase-এ SQL চালাও (Settings panel-এ দেখো)
+      if (code === '42P01' || msg.includes('does not exist')) {
+        console.warn('[Visitor] visitor_logs table নেই — Settings > SQL দিয়ে তৈরি করো');
         allVisitors = { today: 0, yesterday: 0, week: 0, month: 0, live: 0 };
         renderVisitorStats();
         return;
       }
-      throw new Error(msg);
+      // RLS permission error (403 / PGRST301)
+      if (code === 'PGRST301' || msg.includes('permission') || msg.includes('policy')) {
+        console.error('[Visitor] RLS Policy error — Supabase-এ "auth_read" SELECT policy আছে কিনা দেখো');
+      }
+      throw new Error(`[${code}] ${msg}`);
     }
 
     allVisitors = {
