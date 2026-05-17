@@ -1724,9 +1724,9 @@ body {
                   <i class="fa-solid fa-chevron-down" id="visitorChevron" style="font-size:0.6rem;transition:transform 0.2s"></i>
                 </button>
 
-                <!-- Dropdown Menu — appended to <body> via JS for overflow:hidden escape -->
+                <!-- Dropdown Menu -->
                 <div id="visitorDropdownMenu" style="
-                  display:none;position:fixed;z-index:9990;
+                  display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:9990;
                   background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;
                   box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;min-width:165px;
                 ">
@@ -3933,32 +3933,12 @@ const VISITOR_PERIOD_CONFIG = {
 
 function toggleVisitorDropdown() {
   const menu    = document.getElementById('visitorDropdownMenu');
-  const btn     = document.getElementById('visitorFilterBtn');
   const chevron = document.getElementById('visitorChevron');
-  if (!menu || !btn) return;
+  if (!menu) return;
 
   const isOpen = menu.style.display === 'block';
-  if (isOpen) {
-    menu.style.display = 'none';
-    if (chevron) chevron.style.transform = '';
-    return;
-  }
-
-  // 1) Make visible but off-screen first so offsetWidth is measurable
-  menu.style.visibility = 'hidden';
-  menu.style.position   = 'fixed';
-  menu.style.display    = 'block';
-  menu.style.right      = 'auto';
-
-  // 2) Now offsetWidth is real — calculate correct left
-  const rect  = btn.getBoundingClientRect();
-  const menuW = menu.offsetWidth || 165;
-  const leftPx = Math.max(4, rect.right - menuW);
-
-  menu.style.top        = (rect.bottom + 6) + 'px';
-  menu.style.left       = leftPx + 'px';
-  menu.style.visibility = 'visible';
-  if (chevron) chevron.style.transform = 'rotate(180deg)';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 // Close dropdown when clicking outside
@@ -3967,24 +3947,13 @@ document.addEventListener('click', function(e) {
   const menu = document.getElementById('visitorDropdownMenu');
   if (!menu || menu.style.display !== 'block') return;
   if (wrap && wrap.contains(e.target)) return;
-  if (menu.contains(e.target)) return;
   const chevron = document.getElementById('visitorChevron');
   menu.style.display = 'none';
   if (chevron) chevron.style.transform = '';
 });
 
-// Reposition dropdown on scroll or resize (fixed positioning needs recalculation)
-function _repositionVisitorDropdown() {
-  const menu = document.getElementById('visitorDropdownMenu');
-  const btn  = document.getElementById('visitorFilterBtn');
-  if (!menu || menu.style.display !== 'block' || !btn) return;
-  const rect = btn.getBoundingClientRect();
-  menu.style.top   = (rect.bottom + 6) + 'px';
-  menu.style.right = 'auto';
-  menu.style.left  = Math.max(0, rect.right - menu.offsetWidth) + 'px';
-}
-window.addEventListener('scroll', _repositionVisitorDropdown, true);
-window.addEventListener('resize', _repositionVisitorDropdown);
+// (no scroll/resize reposition needed — absolute positioning handles it)
+function _repositionVisitorDropdown() { /* no-op: absolute pos auto-follows button */ }
 
 function selectVisitorPeriod(el) {
   const period = el.dataset.period;
