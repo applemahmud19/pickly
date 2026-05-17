@@ -3944,17 +3944,20 @@ function toggleVisitorDropdown() {
     return;
   }
 
-  // Position using fixed coords — escapes ALL overflow:hidden ancestors
-  const rect = btn.getBoundingClientRect();
-  menu.style.top    = (rect.bottom + 6) + 'px';
-  menu.style.left   = (rect.right - menu.offsetWidth || rect.right - 165) + 'px';
-  menu.style.right  = 'auto';
-  menu.style.display = 'block';
-  // Re-align after display:block so offsetWidth is available
-  requestAnimationFrame(() => {
-    const menuW = menu.offsetWidth;
-    menu.style.left = Math.max(0, rect.right - menuW) + 'px';
-  });
+  // 1) Make visible but off-screen first so offsetWidth is measurable
+  menu.style.visibility = 'hidden';
+  menu.style.position   = 'fixed';
+  menu.style.display    = 'block';
+  menu.style.right      = 'auto';
+
+  // 2) Now offsetWidth is real — calculate correct left
+  const rect  = btn.getBoundingClientRect();
+  const menuW = menu.offsetWidth || 165;
+  const leftPx = Math.max(4, rect.right - menuW);
+
+  menu.style.top        = (rect.bottom + 6) + 'px';
+  menu.style.left       = leftPx + 'px';
+  menu.style.visibility = 'visible';
   if (chevron) chevron.style.transform = 'rotate(180deg)';
 }
 
