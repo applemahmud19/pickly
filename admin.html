@@ -369,7 +369,7 @@ body {
 .kpi-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r); padding: 20px;
-  position: relative; overflow: hidden;
+  position: relative; overflow: visible;
   transition: all var(--t); box-shadow: var(--shadow);
 }
 .kpi-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md), var(--glow); transform: translateY(-2px); }
@@ -378,6 +378,7 @@ body {
 .kpi-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   border-radius: var(--r) var(--r) 0 0;
+  pointer-events: none;
 }
 .kpi-card:nth-child(1)::before { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
 .kpi-card:nth-child(2)::before { background: linear-gradient(90deg, var(--green), #30D158); }
@@ -1723,11 +1724,11 @@ body {
                   <i class="fa-solid fa-chevron-down" id="visitorChevron" style="font-size:0.6rem;transition:transform 0.2s"></i>
                 </button>
 
-                <!-- Dropdown Menu -->
+                <!-- Dropdown Menu — appended to <body> via JS for overflow:hidden escape -->
                 <div id="visitorDropdownMenu" style="
-                  display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:200;
+                  display:none;position:fixed;z-index:9990;
                   background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;
-                  box-shadow:var(--shadow-md);overflow:hidden;min-width:160px;
+                  box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;min-width:165px;
                 ">
                   <div class="visitor-dd-item active" data-period="today" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text);transition:background 0.15s;border-bottom:1px solid var(--border)">
                     <i class="fa-regular fa-clock" style="color:var(--cyan);width:14px;text-align:center;font-size:0.78rem"></i> আজ
@@ -3932,23 +3933,49 @@ const VISITOR_PERIOD_CONFIG = {
 
 function toggleVisitorDropdown() {
   const menu    = document.getElementById('visitorDropdownMenu');
+  const btn     = document.getElementById('visitorFilterBtn');
   const chevron = document.getElementById('visitorChevron');
-  if (!menu) return;
+  if (!menu || !btn) return;
+
   const isOpen = menu.style.display === 'block';
-  menu.style.display = isOpen ? 'none' : 'block';
-  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+  if (isOpen) {
+    menu.style.display = 'none';
+    if (chevron) chevron.style.transform = '';
+    return;
+  }
+
+  // Position using fixed coords — escapes ALL overflow:hidden ancestors
+  const rect = btn.getBoundingClientRect();
+  menu.style.top    = (rect.bottom + 6) + 'px';
+  menu.style.right  = (window.innerWidth - rect.right) + 'px';
+  menu.style.left   = 'auto';
+  menu.style.display = 'block';
+  if (chevron) chevron.style.transform = 'rotate(180deg)';
 }
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
   const wrap = document.getElementById('visitorDropdownWrap');
-  if (wrap && !wrap.contains(e.target)) {
-    const menu    = document.getElementById('visitorDropdownMenu');
-    const chevron = document.getElementById('visitorChevron');
-    if (menu)    menu.style.display = 'none';
-    if (chevron) chevron.style.transform = '';
-  }
+  const menu = document.getElementById('visitorDropdownMenu');
+  if (!menu || menu.style.display !== 'block') return;
+  if (wrap && wrap.contains(e.target)) return;
+  if (menu.contains(e.target)) return;
+  const chevron = document.getElementById('visitorChevron');
+  menu.style.display = 'none';
+  if (chevron) chevron.style.transform = '';
 });
+
+// Reposition dropdown on scroll or resize (fixed positioning needs recalculation)
+function _repositionVisitorDropdown() {
+  const menu = document.getElementById('visitorDropdownMenu');
+  const btn  = document.getElementById('visitorFilterBtn');
+  if (!menu || menu.style.display !== 'block' || !btn) return;
+  const rect = btn.getBoundingClientRect();
+  menu.style.top   = (rect.bottom + 6) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+}
+window.addEventListener('scroll', _repositionVisitorDropdown, true);
+window.addEventListener('resize', _repositionVisitorDropdown);
 
 function selectVisitorPeriod(el) {
   const period = el.dataset.period;
@@ -4465,7 +4492,12 @@ function renderProducts() {
 
   tbody.innerHTML = filtered.map(p => {
     const cleanName = stripEmojis(p.name || '');
-    const disc = p.old_price ? Math.round((1 - p.price / p.old_price) * 100) : 0;
+    // ── Effective price calculation using bulk_discount_percentage ──
+    const { originalPrice, baseDiscPct, bulkPct, totalDiscPct, salePrice, hasBulk } = getEffectiveSalePrice(p);
+    const showStrike  = totalDiscPct > 0;  // মূল দামে strike-through দেখাবে
+    const displayPrice = salePrice;        // UI-তে এই দামটি দেখাবে
+    const disc = Math.round(totalDiscPct); // মোট ডিসকাউন্ট %
+
     const imgEl = p.image_url
       ? `<img src="${p.image_url}" style="width:52px;height:52px;border-radius:8px;object-fit:contain;border:1px solid var(--border);background:#f8f9fa;padding:2px" onerror="this.style.display='none'">`
       : `<div style="width:38px;height:38px;border-radius:8px;background:${p.color||'#007AFF'}18;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;color:${p.color||'#007AFF'}"><i class="fa-solid ${p.icon||'fa-box'}"></i></div>`;
@@ -4478,13 +4510,17 @@ function renderProducts() {
             value="${Number(p.price || 0)}"
             onkeydown="if(event.key==='Enter')quickUpdate('${p.id}','price')"
             onblur="quickUpdate('${p.id}','price')"
-            title="দাম পরিবর্তন করুন">
+            title="নরমাল সেল প্রাইস পরিবর্তন করুন (bulk discount এখানে প্রযোজ্য নয়)">
           <button class="iq-btn" id="iq-price-btn-${p.id}" onclick="quickUpdate('${p.id}','price')" title="Save Price">
             <i class="fa-solid fa-check"></i>
           </button>
         </div>
-        ${p.old_price ? `<div style="font-size:0.68rem;text-decoration:line-through;color:var(--text3);margin-top:2px">৳${Number(p.old_price).toLocaleString()}</div>` : ''}
-        ${disc ? `<div style="font-size:0.64rem;color:var(--red);font-weight:700">-${disc}%</div>` : ''}
+        ${showStrike ? `<div style="font-size:0.68rem;text-decoration:line-through;color:var(--text3);margin-top:2px" title="মূল দাম (original_price) — অপরিবর্তিত">৳${originalPrice.toLocaleString()}</div>` : ''}
+        ${disc ? `<div style="font-size:0.64rem;font-weight:700;margin-top:1px;display:flex;align-items:center;gap:4px">
+          <span style="color:var(--red)">-${disc}%</span>
+          ${hasBulk ? `<span style="color:var(--amber);font-size:0.58rem;background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.25);border-radius:4px;padding:0 4px" title="bulk_discount_percentage = ${bulkPct}%">+${bulkPct}% বাল্ক</span>` : ''}
+        </div>` : ''}
+        ${hasBulk ? `<div style="font-size:0.6rem;color:var(--cyan);font-family:var(--mono);margin-top:1px" title="effective sale price = original_price × (1 - totalDisc%)">→ ৳${displayPrice.toLocaleString()} effective</div>` : ''}
       </td>
       <td>
         <div class="iq-wrap">
@@ -4530,35 +4566,121 @@ function populateBdCategoryDropdown() {
   updateRemoveBtn();
 }
 
+/* ══════════════════════════════════════════════════════════
+   BULK DISCOUNT — লজিক (bulk_discount_percentage)
+   ──────────────────────────────────────────────────────────
+   ডাটাবেজ মাইগ্রেশন (Supabase SQL Editor-এ একবার রান করুন):
+
+   ALTER TABLE products
+     ADD COLUMN IF NOT EXISTS bulk_discount_percentage numeric DEFAULT 0;
+
+   ✅ নিয়ম:
+   • original_price (old_price) — কখনোই স্পর্শ করা যাবে না
+   • price (নরমাল সেল প্রাইস) — কখনোই স্পর্শ করা যাবে না
+   • bulk_discount_percentage — শুধু এই ফিল্ডটিই পরিবর্তন হবে
+
+   📐 Effective Sale Price হিসেব:
+       original_price  = old_price  (মূল দাম, যেমন: ৳৫০০)
+       normalSalePrice = price      (নরমাল সেল প্রাইস, যেমন: ৳২৫০)
+       baseDiscPct     = (1 - normalSalePrice / original_price) × 100
+                       = (1 - 250/500) × 100 = 50%
+       bulkPct         = bulk_discount_percentage  (যেমন: 5)
+       totalDiscPct    = baseDiscPct + bulkPct = 50 + 5 = 55%
+       effectiveSalePrice = round(original_price × (1 - totalDiscPct/100))
+                          = round(500 × 0.45) = ৳২২৫
+
+   🔄 Apply  → শুধু bulk_discount_percentage = pct (old_price/price অস্পর্শিত)
+   🔄 Reset  → শুধু bulk_discount_percentage = 0  (old_price/price অস্পর্শিত)
+              → effective price স্বয়ংক্রিয়ভাবে আগের (৳২৫০) এ ফিরে যাবে
+══════════════════════════════════════════════════════════ */
+
+/**
+ * getEffectiveSalePrice(p)
+ * ─────────────────────────────────────────────────────────
+ * একটি প্রোডাক্টের effective sale price ও discount তথ্য বের করে।
+ *
+ * DB fields (কখনো পরিবর্তন হয় না):
+ *   p.old_price  → original_price (মূল/আসল দাম)
+ *   p.price      → normalSalePrice (নরমাল সেল প্রাইস, base discount সহ)
+ *   p.bulk_discount_percentage → বাড়তি bulk ছাড় (%)
+ *
+ * Returns:
+ *   originalPrice   – p.old_price (যদি না থাকে তবে p.price, অর্থাৎ কোনো base discount নেই)
+ *   normalSalePrice – p.price (DB-তে যা আছে, অপরিবর্তিত)
+ *   baseDiscPct     – old_price থেকে price পর্যন্ত % ছাড়
+ *   bulkPct         – bulk_discount_percentage
+ *   totalDiscPct    – baseDiscPct + bulkPct (সর্বোচ্চ ৯৯%)
+ *   effectiveSalePrice – original_price এর উপর totalDiscPct প্রয়োগ করা দাম
+ *   hasBulk         – bulk discount সক্রিয় আছে কিনা
+ */
+function getEffectiveSalePrice(p) {
+  // original_price: কখনো পরিবর্তন হয় না — এটি হিসেবের ভিত্তি
+  const originalPrice    = Number(p.old_price || p.price);
+  // normalSalePrice: DB-তে থাকা price — কখনো পরিবর্তন হয় না
+  const normalSalePrice  = Number(p.price);
+  // base discount: old_price → price পর্যন্ত কতটা ছাড় আছে
+  const baseDiscPct      = p.old_price
+    ? (1 - normalSalePrice / Number(p.old_price)) * 100
+    : 0;
+  // bulk discount: শুধু এই ফিল্ডটিই পরিবর্তন হয়
+  const bulkPct          = Number(p.bulk_discount_percentage || 0);
+  // total discount: base + bulk (সর্বোচ্চ ৯৯%)
+  const totalDiscPct     = Math.min(baseDiscPct + bulkPct, 99);
+  // effective sale price: original_price থেকে totalDiscPct বাদ দিয়ে
+  const effectiveSalePrice = Math.round(originalPrice * (1 - totalDiscPct / 100));
+
+  return {
+    originalPrice,      // মূল দাম (old_price) — UI-তে strike-through
+    normalSalePrice,    // নরমাল সেল প্রাইস (price) — bulk না থাকলে এটিই দেখাবে
+    baseDiscPct,        // base discount %
+    bulkPct,            // bulk discount %
+    totalDiscPct,       // মোট discount %
+    salePrice: effectiveSalePrice,  // UI-তে এটিই দেখাবে (bulk থাকলে)
+    hasBulk: bulkPct > 0,
+  };
+}
+
 function updateBulkPreview() {
-  const cat = document.getElementById('bdCategory')?.value || '';
-  const pct = parseFloat(document.getElementById('bdPercent')?.value || '0');
+  const cat  = document.getElementById('bdCategory')?.value || '';
+  const pct  = parseFloat(document.getElementById('bdPercent')?.value || '0');
   const prev = document.getElementById('bdPreview');
   if (!prev) return;
 
   if (!cat || !pct || pct <= 0 || pct >= 100) {
     prev.textContent = 'ক্যাটাগরি ও পার্সেন্টেজ দিন';
-    prev.className = 'bulk-disc-preview';
+    prev.className   = 'bulk-disc-preview';
     return;
   }
 
   const targets = allProducts.filter(p => p.category === cat && p.is_active !== false);
   if (!targets.length) {
     prev.textContent = `"${cat}" ক্যাটাগরিতে কোনো সক্রিয় পণ্য নেই`;
-    prev.className = 'bulk-disc-preview';
+    prev.className   = 'bulk-disc-preview';
     return;
   }
 
-  // Always calculate from the original/regular price, not the current sale price
+  // প্রিভিউ: নতুন bulk_discount_percentage দিলে কী হবে
+  // হিসেব: original_price (old_price) থেকে (baseDisc + newBulkPct)% বাদ দিয়ে নতুন effective price
   const sample = targets.slice(0, 2).map(p => {
-    const basePrice = Number(p.old_price || p.price); // original price
-    const newP      = Math.round(basePrice * (1 - pct / 100));
-    const label     = p.old_price ? `(মূল ৳${basePrice.toLocaleString()})` : '';
-    return `৳${basePrice.toLocaleString()} → ৳${newP.toLocaleString()} ${label}`.trim();
+    const { originalPrice, baseDiscPct, normalSalePrice } = getEffectiveSalePrice(p);
+    const newTotalDisc = Math.min(baseDiscPct + pct, 99);
+    const newEffective = Math.round(originalPrice * (1 - newTotalDisc / 100));
+    // normalSalePrice → newEffective (মোট discount % দেখাও)
+    return `৳${normalSalePrice.toLocaleString()} → ৳${newEffective.toLocaleString()} (মূল ৳${originalPrice.toLocaleString()} থেকে মোট ${newTotalDisc.toFixed(0)}% ছাড়)`;
   }).join(' · ');
 
-  prev.textContent = `${targets.length}টি পণ্য আপডেট হবে · উদাহরণ: ${sample}`;
-  prev.className = 'bulk-disc-preview active';
+  prev.textContent = `${targets.length}টি পণ্য আপডেট হবে · ${sample}`;
+  prev.className   = 'bulk-disc-preview active';
+}
+
+// ── Reset বাটন: ক্যাটাগরিতে bulk_discount_percentage > 0 থাকলে দেখাও
+function updateRemoveBtn() {
+  const cat = document.getElementById('bdCategory')?.value || '';
+  const btn = document.getElementById('bdRemoveBtn');
+  if (!btn) return;
+  if (!cat) { btn.style.display = 'none'; return; }
+  const hasBulk = allProducts.some(p => p.category === cat && Number(p.bulk_discount_percentage || 0) > 0);
+  btn.style.display = hasBulk ? '' : 'none';
 }
 
 async function applyBulkDiscount() {
@@ -4567,7 +4689,7 @@ async function applyBulkDiscount() {
   const cat = document.getElementById('bdCategory')?.value || '';
   const pct = parseFloat(document.getElementById('bdPercent')?.value || '0');
 
-  if (!cat)           { toast('ক্যাটাগরি বেছে নিন', 'কোনো ক্যাটাগরি সিলেক্ট করা হয়নি', 'error'); return; }
+  if (!cat) { toast('ক্যাটাগরি বেছে নিন', 'কোনো ক্যাটাগরি সিলেক্ট করা হয়নি', 'error'); return; }
   if (!pct || pct <= 0 || pct >= 100) {
     toast('ভুল পার্সেন্টেজ', '১ থেকে ৯৯-এর মধ্যে মান দিন', 'error'); return;
   }
@@ -4575,62 +4697,65 @@ async function applyBulkDiscount() {
   const targets = allProducts.filter(p => p.category === cat && p.is_active !== false);
   if (!targets.length) { toast('পণ্য নেই', `"${cat}"-এ কোনো সক্রিয় পণ্য পাওয়া যায়নি`, 'error'); return; }
 
-  // Confirmation popup
+  // ── sample দিয়ে confirm বক্সে দেখাও ──
+  const sampleP = targets[0];
+  const { originalPrice: sOrig, baseDiscPct: sBase, normalSalePrice: sNormal } = getEffectiveSalePrice(sampleP);
+  const sNewTotal = Math.min(sBase + pct, 99);
+  const sNewEffective = Math.round(sOrig * (1 - sNewTotal / 100));
+
   const confirmed = confirm(
     `⚠️ Bulk Discount Confirmation\n\n` +
-    `ক্যাটাগরি: ${cat}\n` +
-    `ডিসকাউন্ট: ${pct}% (সবসময় মূল দামের উপর)\n` +
-    `আক্রান্ত পণ্য: ${targets.length}টি\n\n` +
-    `প্রতিটি পণ্যের original price (old_price ?? price) থেকে\n` +
-    `${pct}% বাদ দিয়ে নতুন sale price সেট হবে।\n` +
-    `আগের যেকোনো ডিসকাউন্ট overwrite হয়ে যাবে।\n\n` +
+    `ক্যাটাগরি      : ${cat}\n` +
+    `নতুন বাল্ক ছাড় : ${pct}%\n` +
+    `আক্রান্ত পণ্য  : ${targets.length}টি\n\n` +
+    `📐 উদাহরণ (${sampleP.name?.slice(0,20) || 'পণ্য'}):\n` +
+    `  মূল দাম (old_price)    : ৳${sOrig.toLocaleString()}  ← অপরিবর্তিত থাকবে\n` +
+    `  নরমাল সেল প্রাইস (price): ৳${sNormal.toLocaleString()}  ← অপরিবর্তিত থাকবে\n` +
+    `  বিদ্যমান ছাড় (base)     : ${sBase.toFixed(0)}%\n` +
+    `  নতুন বাল্ক ছাড়          : +${pct}%\n` +
+    `  মোট ছাড়                : ${sNewTotal.toFixed(0)}% (মূল দামের উপর)\n` +
+    `  নতুন effective মূল্য    : ৳${sNewEffective.toLocaleString()}\n\n` +
+    `✅ শুধু bulk_discount_percentage আপডেট হবে।\n` +
+    `✅ old_price ও price — সম্পূর্ণ অস্পর্শিত থাকবে।\n` +
     `নিশ্চিত করতে OK চাপুন।`
   );
   if (!confirmed) return;
 
-  // UI: disable button + show spinner
-  const btn = document.getElementById('bdApplyBtn');
+  // ── UI spinner ──
+  const btn      = document.getElementById('bdApplyBtn');
   const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> আপডেট হচ্ছে...';
+  btn.disabled   = true;
+  btn.innerHTML  = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> আপডেট হচ্ছে...';
 
   let successCount = 0, failCount = 0;
 
-  // Process all in parallel (batch-style)
+  // ── শুধু bulk_discount_percentage আপডেট — old_price/price অস্পর্শিত ──
   await Promise.all(targets.map(async p => {
-    // ── KEY FIX: always base discount on the ORIGINAL price ──
-    // If old_price exists, it IS the original price (a previous discount may be active).
-    // If old_price is null/undefined, the current price IS the original price.
-    const originalPrice = Number(p.old_price || p.price);
-    const newPrice      = Math.round(originalPrice * (1 - pct / 100));
     try {
       const { error } = await sb.from('products')
-        .update({ price: newPrice, old_price: originalPrice })
+        .update({ bulk_discount_percentage: pct })
         .eq('id', p.id);
       if (error) throw error;
-      // Update local cache
-      p.old_price = originalPrice;
-      p.price     = newPrice;
+      p.bulk_discount_percentage = pct; // local cache
       successCount++;
     } catch (e) {
-      console.error('[bulkDiscount] failed for', p.id, e.message);
+      console.error('[applyBulkDiscount] failed for', p.id, e.message);
       failCount++;
     }
   }));
 
-  btn.disabled = false;
+  btn.disabled  = false;
   btn.innerHTML = origHtml;
 
   if (successCount > 0) {
     toast(
       `✅ Bulk Discount সম্পন্ন`,
-      `${cat} — ${successCount}টি পণ্যে ${pct}% ডিসকাউন্ট প্রয়োগ হয়েছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
+      `${cat} — ${successCount}টি পণ্যে ${pct}% বাল্ক ছাড় যোগ হয়েছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
       failCount ? 'warning' : 'success'
     );
-    // Refresh the inline inputs to reflect new prices
     renderProducts();
     updateBulkPreview();
-    updateRemoveBtn(); // show Reset button if discount was just applied
+    updateRemoveBtn();
   } else {
     toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য আপডেট হয়নি (${failCount}টি error)`, 'error');
   }
@@ -4639,69 +4764,51 @@ async function applyBulkDiscount() {
 /* ══════════════════════════════════════
    BULK DISCOUNT — REMOVE / RESET
 ══════════════════════════════════════ */
-
-// Show/hide the Reset Price button based on whether the selected category
-// has any products that currently have an old_price set (i.e. discounted)
-function updateRemoveBtn() {
-  const cat = document.getElementById('bdCategory')?.value || '';
-  const btn = document.getElementById('bdRemoveBtn');
-  if (!btn) return;
-  if (!cat) { btn.style.display = 'none'; return; }
-
-  const hasDiscounted = allProducts.some(p => p.category === cat && p.old_price && Number(p.old_price) > Number(p.price));
-  btn.style.display = hasDiscounted ? '' : 'none';
-}
-
 async function removeBulkDiscount() {
   if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
 
   const cat = document.getElementById('bdCategory')?.value || '';
   if (!cat) { toast('ক্যাটাগরি বেছে নিন', 'কোনো ক্যাটাগরি সিলেক্ট করা হয়নি', 'error'); return; }
 
-  // Only target products that actually have a discount (old_price > price)
   const targets = allProducts.filter(p =>
-    p.category === cat &&
-    p.old_price &&
-    Number(p.old_price) > Number(p.price)
+    p.category === cat && Number(p.bulk_discount_percentage || 0) > 0
   );
-
   if (!targets.length) {
-    toast('ডিসকাউন্ট নেই', `"${cat}"-এ কোনো ডিসকাউন্টেড পণ্য পাওয়া যায়নি`, 'warning');
+    toast('বাল্ক ডিসকাউন্ট নেই', `"${cat}"-এ কোনো বাল্ক ডিসকাউন্ট প্রযোজ্য নেই`, 'warning');
     return;
   }
 
-  // ── Confirmation popup ──
   const confirmed = confirm(
-    `⚠️ Discount Reset Confirmation\n\n` +
-    `ক্যাটাগরি: ${cat}\n` +
+    `⚠️ Bulk Discount Reset\n\n` +
+    `ক্যাটাগরি    : ${cat}\n` +
     `আক্রান্ত পণ্য: ${targets.length}টি\n\n` +
-    `এই পণ্যগুলোর price → original price (old_price)-এ ফিরে যাবে\n` +
-    `এবং old_price ফিল্ডটি মুছে যাবে।\n\n` +
+    `🔄 রিসেট হলে:\n` +
+    `  • bulk_discount_percentage → 0\n` +
+    `  • old_price (মূল দাম) — অপরিবর্তিত থাকবে\n` +
+    `  • price (নরমাল সেল প্রাইস) — অপরিবর্তিত থাকবে\n\n` +
+    `✅ প্রতিটি পণ্য স্বয়ংক্রিয়ভাবে তার আগের\n` +
+    `   নরমাল সেল প্রাইসে ফিরে যাবে।\n\n` +
     `নিশ্চিত করতে OK চাপুন।`
   );
   if (!confirmed) return;
 
-  // ── UI: disable buttons + spinner ──
-  const applyBtn  = document.getElementById('bdApplyBtn');
-  const removeBtn = document.getElementById('bdRemoveBtn');
+  const applyBtn      = document.getElementById('bdApplyBtn');
+  const removeBtn     = document.getElementById('bdRemoveBtn');
   const origRemoveHtml = removeBtn.innerHTML;
-  removeBtn.disabled = true;
+  removeBtn.disabled  = true;
   if (applyBtn) applyBtn.disabled = true;
   removeBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> রিসেট হচ্ছে...';
 
   let successCount = 0, failCount = 0;
 
-  // ── Restore original_price for each product in parallel ──
+  // ── bulk_discount_percentage = 0 — old_price/price অস্পর্শিত ──
   await Promise.all(targets.map(async p => {
-    const originalPrice = Number(p.old_price);
     try {
       const { error } = await sb.from('products')
-        .update({ price: originalPrice, old_price: null })
+        .update({ bulk_discount_percentage: 0 })
         .eq('id', p.id);
       if (error) throw error;
-      // Update local cache
-      p.price     = originalPrice;
-      p.old_price = null;
+      p.bulk_discount_percentage = 0; // local cache
       successCount++;
     } catch (e) {
       console.error('[removeBulkDiscount] failed for', p.id, e.message);
@@ -4709,20 +4816,19 @@ async function removeBulkDiscount() {
     }
   }));
 
-  // ── Re-enable buttons ──
-  removeBtn.disabled = false;
+  removeBtn.disabled  = false;
   if (applyBtn) applyBtn.disabled = false;
   removeBtn.innerHTML = origRemoveHtml;
 
   if (successCount > 0) {
     toast(
-      `✅ ডিসকাউন্ট রিসেট সম্পন্ন`,
-      `${cat} — ${successCount}টি পণ্যের দাম আগের মূল দামে ফিরে এসেছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
+      `✅ বাল্ক ডিসকাউন্ট রিসেট সম্পন্ন`,
+      `${cat} — ${successCount}টি পণ্য আগের দামে ফিরে এসেছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
       failCount ? 'warning' : 'success'
     );
     renderProducts();
     updateBulkPreview();
-    updateRemoveBtn(); // re-check visibility
+    updateRemoveBtn();
   } else {
     toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য রিসেট হয়নি (${failCount}টি error)`, 'error');
   }
