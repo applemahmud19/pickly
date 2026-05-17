@@ -7114,36 +7114,38 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // ══════════════════════════════════════════════════
 (async function initVisitorTracking() {
   try {
-    // ── 1. Session ID: unique per browser tab session (not per page refresh) ──
-    let sid = sessionStorage.getItem('gm_vsid');
-    if (!sid) {
-      sid = crypto.randomUUID ? crypto.randomUUID()
-          : Date.now().toString(36) + Math.random().toString(36).slice(2);
-      sessionStorage.setItem('gm_vsid', sid);
-    }
-
-    // ── 2. Daily unique token: resets at midnight (localStorage-based) ──
-    const todayKey = new Date().toISOString().slice(0, 10); // "2025-01-15"
+    // ── 1. Daily-scoped session ID ──
+    // প্রতিদিন মধ্যরাতে নতুন session_id তৈরি হবে → নতুন unique row = নতুন ভিজিটর counted
+    const todayKey = new Date().toISOString().slice(0, 10); // "2025-05-17"
     const storedDay = localStorage.getItem('gm_vday');
-    const isNewDayVisit = storedDay !== todayKey;
-    if (isNewDayVisit) localStorage.setItem('gm_vday', todayKey);
+
+    let sid = sessionStorage.getItem('gm_vsid');
+
+    // নতুন দিন অথবা প্রথমবার → নতুন session_id বানাও
+    if (!sid || storedDay !== todayKey) {
+      sid = (crypto.randomUUID ? crypto.randomUUID()
+           : Date.now().toString(36) + Math.random().toString(36).slice(2));
+      sessionStorage.setItem('gm_vsid', sid);
+      localStorage.setItem('gm_vday', todayKey);
+    }
 
     const page = window.location.pathname || '/';
     const now  = new Date().toISOString();
 
-    // ── 3. Upsert: same session_id → update last_seen + is_active=true ──
-    //    New session OR new day → insert fresh row (counts as unique today)
+    // ── 2. Insert-only (ignoreDuplicates: true) ──
+    // Same session_id একই দিনে দ্বিতীয়বার এলে skip → created_at কখনো overwrite হবে না
+    // নতুন দিনে নতুন sid → নতুন row insert → সেই দিনের count-এ যোগ হবে
     const { error } = await sb.from('visitor_logs').upsert(
       {
         session_id: sid,
-        created_at: now,       // ignored on update by upsert; only used on INSERT
+        created_at: now,
         last_seen:  now,
         page:       page,
         is_active:  true,
       },
-      { onConflict: 'session_id', ignoreDuplicates: false }
+      { onConflict: 'session_id', ignoreDuplicates: true } // ← conflict হলে কিছুই করবে না
     );
-    if (error) console.warn('[Visitor] upsert error:', error.message);
+    if (error) console.warn('[Visitor] insert error:', error.message);
 
     // ── 4. Heartbeat: update last_seen every 30s to mark as "live" ──
     setInterval(async () => {
