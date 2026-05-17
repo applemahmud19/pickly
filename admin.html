@@ -774,6 +774,69 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .conditional-field.visible { display: flex; flex-direction: column; gap: 5px; }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
+
+/* ── Live pulse animation ── */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.35; transform: scale(0.75); }
+}
+
+/* ── Bulk Discount Card ── */
+.bulk-disc-card {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(255,159,10,0.04) 0%, rgba(175,82,222,0.04) 100%);
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+}
+.bulk-disc-card label {
+  font-size: 0.7rem; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .04em;
+  display: block; margin-bottom: 5px;
+}
+.bulk-disc-field { display: flex; flex-direction: column; }
+.bulk-disc-field select,
+.bulk-disc-field input[type="number"] {
+  padding: 7px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: 0.82rem;
+  outline: none; transition: border-color .18s, box-shadow .18s; min-width: 160px;
+}
+.bulk-disc-field select:focus,
+.bulk-disc-field input[type="number"]:focus {
+  border-color: var(--amber); box-shadow: 0 0 0 3px rgba(255,159,10,.13);
+}
+.bulk-disc-preview {
+  font-size: 0.72rem; color: var(--text3); font-family: var(--mono);
+  padding: 5px 0 0 1px; min-height: 18px;
+}
+.bulk-disc-preview.active { color: var(--amber); font-weight: 600; }
+@media (max-width: 600px) {
+  .bulk-disc-card { flex-direction: column; align-items: stretch; }
+  .bulk-disc-field select,
+  .bulk-disc-field input[type="number"] { min-width: 0; width: 100%; }
+}
+
+/* ── Inline Quick Update ── */
+.iq-wrap { display:flex; align-items:center; gap:5px; }
+.iq-input {
+  width: 80px; padding: 4px 8px; border: 1.5px solid var(--border);
+  border-radius: 7px; font-size: 0.78rem; font-family: var(--mono);
+  background: var(--surface); color: var(--text);
+  outline: none; transition: border-color .18s, box-shadow .18s;
+}
+.iq-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,122,255,.13); }
+.iq-input.saving { opacity: .55; pointer-events: none; }
+.iq-input.success-flash { border-color: var(--green); box-shadow: 0 0 0 3px rgba(52,199,89,.18); }
+.iq-input.error-flash   { border-color: var(--red);   box-shadow: 0 0 0 3px rgba(255,59,48,.18); }
+.iq-btn {
+  width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text3); font-size: 0.7rem;
+  cursor: pointer; display:flex; align-items:center; justify-content:center;
+  transition: background .15s, color .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.iq-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.iq-btn.spinning { pointer-events:none; animation: iq-spin .6s linear infinite; }
+@keyframes iq-spin { to { transform: rotate(360deg); } }
+
 /* Status select in table */
 .status-select {
   background: var(--bg3); border: 1px solid var(--border);
@@ -1623,36 +1686,71 @@ body {
           </div>
         </div>
 
-        <!-- Visitor + Conversion KPIs -->
-        <div class="kpi-grid" id="visitorKPIs" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+        <!-- Visitor KPIs — 4 time-filter cards -->
+        <div class="kpi-grid" id="visitorKPIs" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+          <!-- Today -->
           <div class="kpi-card" style="cursor:default">
             <div class="kpi-top">
               <div class="kpi-icon" style="background:rgba(50,173,230,0.1);color:var(--cyan)"><i class="fa-solid fa-eye"></i></div>
-              <span class="kpi-badge na" id="kpi-visitor-badge">আজ</span>
+              <span class="kpi-badge na" id="kpi-visitor-badge">Today</span>
             </div>
             <div class="kpi-val" id="kpi-daily-visitors">—</div>
             <div class="kpi-label" style="font-family:var(--font-bn)">আজকের ভিজিটর</div>
           </div>
+          <!-- Yesterday -->
           <div class="kpi-card" style="cursor:default">
             <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-users"></i></div>
-              <span class="kpi-badge up" id="kpi-weekly-visitor-badge">৭ দিন</span>
+              <div class="kpi-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              <span class="kpi-badge na">Yesterday</span>
+            </div>
+            <div class="kpi-val" id="kpi-yesterday-visitors">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">গতকালের ভিজিটর</div>
+          </div>
+          <!-- This Week -->
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-calendar-week"></i></div>
+              <span class="kpi-badge up" id="kpi-weekly-visitor-badge">This Week</span>
             </div>
             <div class="kpi-val" id="kpi-weekly-visitors">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">সাপ্তাহিক ভিজিটর</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">এই সপ্তাহের ভিজিটর</div>
           </div>
+          <!-- This Month -->
           <div class="kpi-card" style="cursor:default">
             <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-chart-line"></i></div>
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-calendar-days"></i></div>
+              <span class="kpi-badge na">This Month</span>
+            </div>
+            <div class="kpi-val" id="kpi-monthly-visitors">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">এই মাসের ভিজিটর</div>
+          </div>
+        </div>
+
+        <!-- Live + Conversion + Revenue row -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+          <!-- Live Active -->
+          <div class="kpi-card" style="cursor:default;border-color:rgba(52,199,89,0.3)">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.12);color:var(--green)"><i class="fa-solid fa-wifi"></i></div>
+              <span class="kpi-badge up" style="background:rgba(52,199,89,0.12);color:var(--green);border:1px solid rgba(52,199,89,0.3)"><i class="fa-solid fa-circle" style="font-size:0.45rem;animation:livePulse 1.4s ease-in-out infinite"></i> Live</span>
+            </div>
+            <div class="kpi-val" id="kpi-live-visitors" style="color:var(--green)">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">এখন Active ভিজিটর</div>
+          </div>
+          <!-- Conversion Rate -->
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-chart-line"></i></div>
               <span class="kpi-badge up" id="kpi-conv-badge">—</span>
             </div>
             <div class="kpi-val" id="kpi-conv-rate">—</div>
             <div class="kpi-label" style="font-family:var(--font-bn)">Conversion Rate</div>
           </div>
+          <!-- Today Revenue -->
           <div class="kpi-card" style="cursor:default">
             <div class="kpi-top">
               <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-fire-flame-curved"></i></div>
-              <span class="kpi-badge na">Live</span>
+              <span class="kpi-badge na">আজ</span>
             </div>
             <div class="kpi-val" id="kpi-today-revenue">—</div>
             <div class="kpi-label" style="font-family:var(--font-bn)">আজকের আয়</div>
@@ -1773,6 +1871,27 @@ body {
               </button>
             </div>
           </div>
+          <!-- ── Bulk Discount Strip ── -->
+          <div class="bulk-disc-card" id="bulkDiscCard">
+            <div class="bulk-disc-field">
+              <label><i class="fa-solid fa-tag" style="margin-right:4px"></i>ক্যাটাগরি বেছে নিন</label>
+              <select id="bdCategory">
+                <option value="">— সব ক্যাটাগরি —</option>
+              </select>
+            </div>
+            <div class="bulk-disc-field">
+              <label><i class="fa-solid fa-percent" style="margin-right:4px"></i>ডিসকাউন্ট (%)</label>
+              <input type="number" id="bdPercent" min="1" max="99" step="1" placeholder="যেমন: 15" oninput="updateBulkPreview()">
+            </div>
+            <div class="bulk-disc-field" style="flex:1;min-width:160px">
+              <label style="opacity:0">apply</label>
+              <button class="btn btn-warning" id="bdApplyBtn" onclick="applyBulkDiscount()" style="background:rgba(255,159,10,0.12);color:var(--amber);border:1.5px solid rgba(255,159,10,0.35);font-weight:700;gap:7px">
+                <i class="fa-solid fa-bolt"></i> Apply Discount
+              </button>
+              <div class="bulk-disc-preview" id="bdPreview">ক্যাটাগরি ও পার্সেন্টেজ দিন</div>
+            </div>
+          </div>
+
           <div class="table-wrap">
             <table class="data-table">
               <thead><tr>
@@ -1975,6 +2094,24 @@ body {
             </button>
             <div style="font-size:0.72rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.7">
               ⚠ Settings are saved in localStorage. After rotating Supabase keys, paste the new key here and save.
+            </div>
+            <div style="font-size:0.7rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.9;margin-top:6px">
+              📋 <b style="color:var(--cyan)">visitor_logs</b> table SQL — Supabase SQL Editor-এ একবার রান করো:<br><br>
+              <span style="color:var(--purple)">CREATE TABLE IF NOT EXISTS</span> visitor_logs (<br>
+              &nbsp;&nbsp;id uuid DEFAULT gen_random_uuid() PRIMARY KEY,<br>
+              &nbsp;&nbsp;session_id text UNIQUE NOT NULL,<br>
+              &nbsp;&nbsp;created_at timestamptz DEFAULT now(),<br>
+              &nbsp;&nbsp;last_seen timestamptz DEFAULT now(),<br>
+              &nbsp;&nbsp;page text,<br>
+              &nbsp;&nbsp;is_active boolean DEFAULT true<br>
+              );<br>
+              <span style="color:var(--purple)">CREATE INDEX IF NOT EXISTS</span> idx_vl_created ON visitor_logs(created_at);<br>
+              <span style="color:var(--purple)">CREATE INDEX IF NOT EXISTS</span> idx_vl_lastseen ON visitor_logs(last_seen);<br>
+              <span style="color:var(--purple)">ALTER TABLE</span> visitor_logs <span style="color:var(--purple)">ENABLE ROW LEVEL SECURITY</span>;<br>
+              <span style="color:var(--green)">-- anon ইউজার insert/update করতে পারবে (ভিজিটর ট্র্যাকিং)</span><br>
+              <span style="color:var(--purple)">CREATE POLICY</span> "anon_insert" ON visitor_logs FOR INSERT TO anon WITH CHECK (true);<br>
+              <span style="color:var(--purple)">CREATE POLICY</span> "anon_update" ON visitor_logs FOR UPDATE TO anon USING (true);<br>
+              <span style="color:var(--purple)">CREATE POLICY</span> "auth_read" ON visitor_logs FOR SELECT TO authenticated USING (true);
             </div>
           </div>
         </div>
@@ -3348,6 +3485,7 @@ async function refreshAll() {
   await Promise.all([loadProducts(), loadOrders(), loadVisitorStats()]);
   renderDashboard();
   setupRealtimeSubscription();
+  startVisitorPolling(); // auto-refresh live visitor count every 60s
 }
 
 async function loadProducts() {
@@ -3652,37 +3790,75 @@ document.addEventListener('click', e => {
 /* ══════════════════════════════════════
    VISITOR TRACKING (Supabase)
 ══════════════════════════════════════ */
+// ── Visitor polling interval handle ──
+let _visitorPollTimer = null;
+
 async function loadVisitorStats(retryCount = 0) {
   if (!sb) return;
   try {
     const now = new Date();
-    // Use UTC midnight to match Supabase server timestamps (avoids timezone mismatch)
-    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())).toISOString();
-    const weekUTC  = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() - 6)).toISOString();
 
-    const [todayRes, weekRes] = await Promise.all([
-      sb.from('visitor_logs').select('*', { count: 'exact', head: true }).gte('created_at', todayUTC),
-      sb.from('visitor_logs').select('*', { count: 'exact', head: true }).gte('created_at', weekUTC),
+    // ── Time boundaries (UTC-based to match Supabase server) ──
+    const D = (y, m, d) => new Date(Date.UTC(y, m, d)).toISOString();
+    const y = now.getUTCFullYear(), mo = now.getUTCMonth(), d = now.getUTCDate();
+
+    const todayStart     = D(y, mo, d);
+    const yesterdayStart = D(y, mo, d - 1);
+    const weekStart      = D(y, mo, d - now.getUTCDay()); // Sunday of this week
+    const monthStart     = D(y, mo, 1);
+    // Live = last_seen within the past 3 minutes
+    const liveThreshold  = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+
+    const [todayRes, yestRes, weekRes, monthRes, liveRes] = await Promise.all([
+      // Today: unique sessions with created_at >= today midnight
+      sb.from('visitor_logs')
+        .select('session_id', { count: 'exact', head: true })
+        .gte('created_at', todayStart),
+      // Yesterday: created_at between yesterday midnight and today midnight
+      sb.from('visitor_logs')
+        .select('session_id', { count: 'exact', head: true })
+        .gte('created_at', yesterdayStart)
+        .lt('created_at', todayStart),
+      // This week: from Sunday of current week
+      sb.from('visitor_logs')
+        .select('session_id', { count: 'exact', head: true })
+        .gte('created_at', weekStart),
+      // This month
+      sb.from('visitor_logs')
+        .select('session_id', { count: 'exact', head: true })
+        .gte('created_at', monthStart),
+      // Live: last_seen within 3 minutes AND is_active = true
+      sb.from('visitor_logs')
+        .select('session_id', { count: 'exact', head: true })
+        .gte('last_seen', liveThreshold)
+        .eq('is_active', true),
     ]);
 
-    if (todayRes.error || weekRes.error) {
-      const errMsg = todayRes.error?.message || weekRes.error?.message || '';
-      // Table doesn't exist — show 0 gracefully
-      if (errMsg.includes('does not exist') || errMsg.includes('42P01')) {
-        allVisitors = { today: 0, week: 0 };
+    // ── Graceful table-not-found handling ──
+    const anyError = [todayRes, yestRes, weekRes, monthRes, liveRes].find(r => r.error);
+    if (anyError) {
+      const msg = anyError.error.message || '';
+      if (msg.includes('does not exist') || msg.includes('42P01') || msg.includes('column') || msg.includes('does not exist')) {
+        // Table missing → show zeroes, don't spam retries
+        allVisitors = { today: 0, yesterday: 0, week: 0, month: 0, live: 0 };
         renderVisitorStats();
         return;
       }
-      throw new Error(errMsg);
+      throw new Error(msg);
     }
 
     allVisitors = {
-      today: todayRes.count || 0,
-      week:  weekRes.count  || 0,
+      today:     todayRes.count  || 0,
+      yesterday: yestRes.count   || 0,
+      week:      weekRes.count   || 0,
+      month:     monthRes.count  || 0,
+      live:      liveRes.count   || 0,
     };
+
   } catch(e) {
-    allVisitors = { today: 0, week: 0 };
-    // Auto-retry up to 2 times with backoff
+    allVisitors = allVisitors?.today !== undefined
+      ? allVisitors  // keep last known good data on transient error
+      : { today: 0, yesterday: 0, week: 0, month: 0, live: 0 };
     if (retryCount < 2) {
       console.warn(`[loadVisitorStats] Retry ${retryCount + 1}/2:`, e.message);
       setTimeout(() => loadVisitorStats(retryCount + 1), 3000 * (retryCount + 1));
@@ -3693,55 +3869,97 @@ async function loadVisitorStats(retryCount = 0) {
   renderVisitorStats();
 }
 
+// ── Start auto-polling every 60s (live visitors update) ──
+function startVisitorPolling() {
+  if (_visitorPollTimer) return; // already running
+  _visitorPollTimer = setInterval(() => {
+    loadVisitorStats();
+  }, 60000); // every 60 seconds
+}
+
+function stopVisitorPolling() {
+  if (_visitorPollTimer) { clearInterval(_visitorPollTimer); _visitorPollTimer = null; }
+}
+
 function renderVisitorStats() {
-  const v = allVisitors;
-  const todayV = v.today || 0;
-  const weekV  = v.week  || 0;
-  // Conversion = orders today / visitors today
+  const v = allVisitors || {};
+  const todayV     = v.today     || 0;
+  const yesterdayV = v.yesterday || 0;
+  const weekV      = v.week      || 0;
+  const monthV     = v.month     || 0;
+  const liveV      = v.live      || 0;
+
+  // ── Orders stats for conversion ──
   const now = new Date();
-  const todayOrders = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === now.toDateString()).length;
+  const todayStr = now.toDateString();
+  const todayOrders = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr).length;
   const convRate = todayV > 0 ? ((todayOrders / todayV) * 100).toFixed(1) : '—';
-  const todayRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === now.toDateString() && o.status !== 'cancelled')
-    .reduce((s,o) => s+Number(o.total||0), 0);
+  const todayRev = allOrders
+    .filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr && o.status !== 'cancelled')
+    .reduce((s, o) => s + Number(o.total || 0), 0);
 
-  // Dashboard visitor KPIs
-  const dvEl = document.getElementById('kpi-daily-visitors');
-  const wvEl = document.getElementById('kpi-weekly-visitors');
-  const crEl = document.getElementById('kpi-conv-rate');
-  const trEl = document.getElementById('kpi-today-revenue');
-  if (dvEl) dvEl.textContent = todayV.toLocaleString();
-  if (wvEl) wvEl.textContent = weekV.toLocaleString();
-  if (crEl) { crEl.textContent = convRate !== '—' ? convRate + '%' : '—'; document.getElementById('kpi-conv-badge').textContent = convRate !== '—' ? convRate+'%' : 'N/A'; }
-  if (trEl) trEl.textContent = '৳' + todayRev.toLocaleString();
+  // ── Update KPI cards ──
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('kpi-daily-visitors',    todayV.toLocaleString());
+  set('kpi-yesterday-visitors', yesterdayV.toLocaleString());
+  set('kpi-weekly-visitors',   weekV.toLocaleString());
+  set('kpi-monthly-visitors',  monthV.toLocaleString());
+  set('kpi-live-visitors',     liveV.toLocaleString());
+  set('kpi-conv-rate',         convRate !== '—' ? convRate + '%' : '—');
+  set('kpi-today-revenue',     '৳' + todayRev.toLocaleString());
 
-  // Analytics panel
+  const convBadge = document.getElementById('kpi-conv-badge');
+  if (convBadge) convBadge.textContent = convRate !== '—' ? convRate + '%' : 'N/A';
+
+  // ── Analytics panel (visitorStatsPanel) ──
   const vp = document.getElementById('visitorStatsPanel');
   if (!vp) return;
-  const maxV = Math.max(todayV, weekV, 1);
+
+  const maxV = Math.max(todayV, yesterdayV, weekV, monthV, 1);
+
+  const bar = (val, gradient, label, sublabel) => `
+    <div class="visitor-stat-row">
+      <div style="min-width:110px">
+        <div style="font-size:0.78rem;font-weight:600;font-family:var(--font-bn)">${label}</div>
+        <div style="font-size:0.65rem;color:var(--text3);font-family:var(--mono)">${sublabel}</div>
+      </div>
+      <div class="visitor-bar-wrap">
+        <div class="visitor-bar-fill" style="width:${Math.round(val/maxV*100)}%;background:${gradient}"></div>
+      </div>
+      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);min-width:42px;text-align:right;color:${gradient.includes('cyan') ? 'var(--cyan)' : gradient.includes('purple') ? 'var(--purple)' : gradient.includes('52,199') ? 'var(--green)' : gradient.includes('0,122') ? 'var(--blue)' : 'var(--amber)'}">
+        ${val.toLocaleString()}
+      </div>
+    </div>`;
+
   vp.innerHTML = `
-    <div class="visitor-stat-row">
-      <div style="font-size:0.78rem;font-weight:600;min-width:90px;font-family:var(--font-bn)">আজকের ভিজিটর</div>
-      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${Math.round(todayV/maxV*100)}%;background:linear-gradient(90deg,var(--cyan),var(--blue))"></div></div>
-      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--cyan)">${todayV.toLocaleString()}</div>
+    <!-- Live badge -->
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0 14px;border-bottom:1px solid var(--border);margin-bottom:12px">
+      <div style="background:rgba(52,199,89,0.1);color:var(--green);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;flex:1">
+        <i class="fa-solid fa-wifi" style="font-size:1.1rem"></i>
+        <div>
+          <div style="font-size:1.4rem;font-weight:800;font-family:var(--mono);line-height:1">${liveV}</div>
+          <div style="font-size:0.68rem;font-family:var(--font-bn);color:var(--text3)">এখন Active</div>
+        </div>
+        <span style="margin-left:auto;font-size:0.65rem;background:rgba(52,199,89,0.15);color:var(--green);padding:2px 8px;border-radius:100px;border:1px solid rgba(52,199,89,0.3)">
+          <i class="fa-solid fa-circle" style="font-size:0.4rem;animation:livePulse 1.4s ease-in-out infinite"></i> Live
+        </span>
+      </div>
+      <div style="font-size:0.7rem;color:var(--text3);font-family:var(--font-bn);text-align:center;flex-shrink:0">
+        <div style="font-weight:700;color:var(--amber);font-size:1rem;font-family:var(--mono)">${convRate !== '—' ? convRate + '%' : '—'}</div>
+        Conversion
+      </div>
     </div>
-    <div class="visitor-stat-row">
-      <div style="font-size:0.78rem;font-weight:600;min-width:90px;font-family:var(--font-bn)">সাপ্তাহিক ভিজিটর</div>
-      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${Math.round(weekV/maxV*100)}%;background:linear-gradient(90deg,var(--purple),var(--blue))"></div></div>
-      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--purple)">${weekV.toLocaleString()}</div>
-    </div>
-    <div class="visitor-stat-row">
-      <div style="font-size:0.78rem;font-weight:600;min-width:90px;font-family:var(--font-bn)">আজকের অর্ডার</div>
-      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${Math.round(todayOrders/Math.max(todayOrders,1)*100)}%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div></div>
-      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--green)">${todayOrders.toLocaleString()}</div>
-    </div>
-    <div class="visitor-stat-row">
-      <div style="font-size:0.78rem;font-weight:600;min-width:90px">Conversion</div>
-      <div class="visitor-bar-wrap"><div class="visitor-bar-fill" style="width:${convRate !== '—' ? Math.min(parseFloat(convRate)*10,100) : 0}%;background:linear-gradient(90deg,var(--amber),var(--red))"></div></div>
-      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);color:var(--amber)">${convRate !== '—' ? convRate+'%' : '—'}</div>
-    </div>
-    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">
-      <i class="fa-solid fa-circle-info" style="margin-right:4px"></i>
-      কাস্টমার পেজ ভিজিট করলে visitor_logs টেবিলে এন্ট্রি হয়। আজকের UTC মধ্যরাত থেকে count।
+
+    <!-- Time-filter bars -->
+    ${bar(todayV,     'linear-gradient(90deg,var(--cyan),var(--blue))',       'আজকের ভিজিটর',       'Today')}
+    ${bar(yesterdayV, 'linear-gradient(90deg,var(--purple),var(--blue))',     'গতকালের ভিজিটর',     'Yesterday')}
+    ${bar(weekV,      'linear-gradient(90deg,var(--blue),var(--cyan))',       'এই সপ্তাহের ভিজিটর', 'This Week')}
+    ${bar(monthV,     'linear-gradient(90deg,var(--green),var(--cyan))',      'এই মাসের ভিজিটর',    'This Month')}
+    ${bar(todayOrders,'linear-gradient(90deg,var(--amber),var(--red))',       'আজকের অর্ডার',       'Orders')}
+
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--text3);font-family:var(--font-bn);display:flex;align-items:center;gap:6px">
+      <i class="fa-solid fa-circle-info"></i>
+      ভিজিটর ট্র্যাকিং প্রতি ৬০ সেকেন্ডে আপডেট হয়। Live = শেষ ৩ মিনিটে active session।
     </div>`;
 }
 
@@ -4082,8 +4300,32 @@ function renderProducts() {
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:10px">${imgEl}<div><div style="font-weight:600;font-size:0.84rem">${cleanName || '—'}</div><div style="font-size:0.7rem;color:var(--text3)">${p.category==='বই' && p.author ? p.author : (p.brand || '—')}</div></div></div></td>
       <td><span style="font-size:0.7rem;font-weight:700;font-family:var(--mono);background:var(--blue-ll);color:var(--blue);padding:2px 8px;border-radius:6px;border:1px solid rgba(0,122,255,0.2)">${p.category || '—'}</span></td>
-      <td><div style="font-weight:700">৳${Number(p.price || 0).toLocaleString()}</div>${p.old_price ? `<div style="font-size:0.7rem;text-decoration:line-through;color:var(--text3)">৳${(p.old_price ? Number(p.old_price).toLocaleString() : '—')}</div>` : ''}${disc ? `<div style="font-size:0.65rem;color:var(--red);font-weight:700">-${disc}%</div>` : ''}</td>
-      <td style="font-family:var(--mono);font-size:0.82rem;color:${p.stock > 10 ? 'var(--green)' : p.stock > 0 ? 'var(--amber)' : 'var(--red)'};font-weight:600">${p.stock || 0}</td>
+      <td>
+        <div class="iq-wrap">
+          <input class="iq-input" id="iq-price-${p.id}" type="number" min="0" step="0.01"
+            value="${Number(p.price || 0)}"
+            onkeydown="if(event.key==='Enter')quickUpdate('${p.id}','price')"
+            onblur="quickUpdate('${p.id}','price')"
+            title="দাম পরিবর্তন করুন">
+          <button class="iq-btn" id="iq-price-btn-${p.id}" onclick="quickUpdate('${p.id}','price')" title="Save Price">
+            <i class="fa-solid fa-check"></i>
+          </button>
+        </div>
+        ${p.old_price ? `<div style="font-size:0.68rem;text-decoration:line-through;color:var(--text3);margin-top:2px">৳${Number(p.old_price).toLocaleString()}</div>` : ''}
+        ${disc ? `<div style="font-size:0.64rem;color:var(--red);font-weight:700">-${disc}%</div>` : ''}
+      </td>
+      <td>
+        <div class="iq-wrap">
+          <input class="iq-input" id="iq-stock-${p.id}" type="number" min="0" step="1"
+            value="${p.stock || 0}"
+            onkeydown="if(event.key==='Enter')quickUpdate('${p.id}','stock')"
+            onblur="quickUpdate('${p.id}','stock')"
+            title="স্টক পরিবর্তন করুন">
+          <button class="iq-btn" id="iq-stock-btn-${p.id}" onclick="quickUpdate('${p.id}','stock')" title="Save Stock">
+            <i class="fa-solid fa-check"></i>
+          </button>
+        </div>
+      </td>
       <td>${p.is_active === false ? '<span class="pill pill-inactive">Inactive</span>' : '<span class="pill pill-active">Active</span>'}</td>
       <td><div style="display:flex;gap:5px">
         <button class="btn btn-secondary btn-xs" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
@@ -4091,6 +4333,206 @@ function renderProducts() {
       </div></td>
     </tr>`;
   }).join('');
+}
+
+/* ══════════════════════════════════════
+   BULK DISCOUNT (Category-wise)
+══════════════════════════════════════ */
+function populateBdCategoryDropdown() {
+  const sel = document.getElementById('bdCategory');
+  if (!sel) return;
+  // Collect unique categories from allProducts
+  const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+  // Preserve current selection
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— সব ক্যাটাগরি —</option>';
+  cats.forEach(c => {
+    const count = allProducts.filter(p => p.category === c).length;
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = `${c} (${count}টি পণ্য)`;
+    sel.appendChild(opt);
+  });
+  if (prev) sel.value = prev;
+  updateBulkPreview();
+}
+
+function updateBulkPreview() {
+  const cat = document.getElementById('bdCategory')?.value || '';
+  const pct = parseFloat(document.getElementById('bdPercent')?.value || '0');
+  const prev = document.getElementById('bdPreview');
+  if (!prev) return;
+
+  if (!cat || !pct || pct <= 0 || pct >= 100) {
+    prev.textContent = 'ক্যাটাগরি ও পার্সেন্টেজ দিন';
+    prev.className = 'bulk-disc-preview';
+    return;
+  }
+
+  const targets = allProducts.filter(p => p.category === cat && p.is_active !== false);
+  if (!targets.length) {
+    prev.textContent = `"${cat}" ক্যাটাগরিতে কোনো সক্রিয় পণ্য নেই`;
+    prev.className = 'bulk-disc-preview';
+    return;
+  }
+
+  const sample = targets.slice(0, 2).map(p => {
+    const newP = Math.round(Number(p.price) * (1 - pct / 100));
+    return `৳${Number(p.price).toLocaleString()} → ৳${newP.toLocaleString()}`;
+  }).join(' · ');
+
+  prev.textContent = `${targets.length}টি পণ্য আপডেট হবে · উদাহরণ: ${sample}`;
+  prev.className = 'bulk-disc-preview active';
+}
+
+async function applyBulkDiscount() {
+  if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
+
+  const cat = document.getElementById('bdCategory')?.value || '';
+  const pct = parseFloat(document.getElementById('bdPercent')?.value || '0');
+
+  if (!cat)           { toast('ক্যাটাগরি বেছে নিন', 'কোনো ক্যাটাগরি সিলেক্ট করা হয়নি', 'error'); return; }
+  if (!pct || pct <= 0 || pct >= 100) {
+    toast('ভুল পার্সেন্টেজ', '১ থেকে ৯৯-এর মধ্যে মান দিন', 'error'); return;
+  }
+
+  const targets = allProducts.filter(p => p.category === cat && p.is_active !== false);
+  if (!targets.length) { toast('পণ্য নেই', `"${cat}"-এ কোনো সক্রিয় পণ্য পাওয়া যায়নি`, 'error'); return; }
+
+  // Confirmation popup
+  const confirmed = confirm(
+    `⚠️ Bulk Discount Confirmation
+
+` +
+    `ক্যাটাগরি: ${cat}
+` +
+    `ডিসকাউন্ট: ${pct}%
+` +
+    `আক্রান্ত পণ্য: ${targets.length}টি
+
+` +
+    `এই পণ্যগুলোর বর্তমান price → old_price হিসেবে সংরক্ষিত হবে,
+` +
+    `এবং নতুন price = বর্তমান price × ${(1 - pct/100).toFixed(2)} হবে।
+
+` +
+    `নিশ্চিত করতে OK চাপুন।`
+  );
+  if (!confirmed) return;
+
+  // UI: disable button + show spinner
+  const btn = document.getElementById('bdApplyBtn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> আপডেট হচ্ছে...';
+
+  let successCount = 0, failCount = 0;
+
+  // Process all in parallel (batch-style)
+  await Promise.all(targets.map(async p => {
+    const newPrice   = Math.round(Number(p.price) * (1 - pct / 100));
+    const oldPrice   = Number(p.price);
+    try {
+      const { error } = await sb.from('products')
+        .update({ price: newPrice, old_price: oldPrice })
+        .eq('id', p.id);
+      if (error) throw error;
+      // Update local cache
+      p.old_price = oldPrice;
+      p.price     = newPrice;
+      successCount++;
+    } catch (e) {
+      console.error('[bulkDiscount] failed for', p.id, e.message);
+      failCount++;
+    }
+  }));
+
+  btn.disabled = false;
+  btn.innerHTML = origHtml;
+
+  if (successCount > 0) {
+    toast(
+      `✅ Bulk Discount সম্পন্ন`,
+      `${cat} — ${successCount}টি পণ্যে ${pct}% ডিসকাউন্ট প্রয়োগ হয়েছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
+      failCount ? 'warning' : 'success'
+    );
+    // Refresh the inline inputs to reflect new prices
+    renderProducts();
+    updateBulkPreview();
+  } else {
+    toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য আপডেট হয়নি (${failCount}টি error)`, 'error');
+  }
+}
+
+/* ══════════════════════════════════════
+   INLINE QUICK UPDATE (Price / Stock)
+══════════════════════════════════════ */
+// Debounce map: prevent double-fire from onblur + onclick
+const _iqPending = {};
+
+async function quickUpdate(productId, field) {
+  if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
+
+  // Debounce: ignore if same field already in-flight within 300ms
+  const key = productId + '_' + field;
+  if (_iqPending[key]) return;
+  _iqPending[key] = true;
+  setTimeout(() => { delete _iqPending[key]; }, 300);
+
+  const input = document.getElementById(`iq-${field}-${productId}`);
+  const btn   = document.getElementById(`iq-${field}-btn-${productId}`);
+  if (!input) return;
+
+  const rawVal = field === 'price'
+    ? parseFloat(input.value)
+    : parseInt(input.value, 10);
+
+  if (isNaN(rawVal) || rawVal < 0) {
+    input.classList.add('error-flash');
+    setTimeout(() => input.classList.remove('error-flash'), 1000);
+    toast('ভুল মান', `সঠিক ${field === 'price' ? 'দাম' : 'স্টক'} দিন`, 'error');
+    return;
+  }
+
+  // Check if value actually changed
+  const prod = allProducts.find(x => x.id === productId);
+  if (prod && Number(prod[field]) === rawVal) return; // no change, skip
+
+  // UI: saving state
+  input.classList.add('saving');
+  if (btn) {
+    btn.classList.add('spinning');
+    btn.innerHTML = '<i class="fa-solid fa-spinner"></i>';
+  }
+
+  try {
+    const payload = { [field]: rawVal };
+    const { error } = await sb.from('products').update(payload).eq('id', productId);
+
+    if (error) throw error;
+
+    // Update local cache
+    if (prod) prod[field] = rawVal;
+
+    // Success flash
+    input.classList.remove('saving');
+    input.classList.add('success-flash');
+    setTimeout(() => input.classList.remove('success-flash'), 1200);
+
+    const label = field === 'price' ? `দাম → ৳${rawVal.toLocaleString()}` : `স্টক → ${rawVal}`;
+    toast('✅ আপডেট হয়েছে', `${prod?.name ? prod.name.slice(0,24) + (prod.name.length>24?'…':'') : ''} — ${label}`, 'success');
+
+  } catch (err) {
+    input.classList.remove('saving');
+    input.classList.add('error-flash');
+    setTimeout(() => input.classList.remove('error-flash'), 1200);
+    toast('❌ ব্যর্থ', err.message || 'আপডেট হয়নি', 'error');
+  } finally {
+    if (btn) {
+      btn.classList.remove('spinning');
+      btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+    }
+  }
 }
 
 /* ══════════════════════════════════════
@@ -6075,6 +6517,8 @@ function populateProductCatFilter() {
   const cur = sel.value;
   sel.innerHTML = `<option value="">All Categories</option>` +
     cats.map(c => `<option value="${c.name}" ${c.name === cur ? 'selected' : ''}>${c.name}</option>`).join('');
+  // Also refresh the Bulk Discount dropdown
+  populateBdCategoryDropdown();
 }
 
 /* ── Category list panel renderer ── */
