@@ -373,6 +373,8 @@ body {
   transition: all var(--t); box-shadow: var(--shadow);
 }
 .kpi-card:hover { border-color: var(--blue); box-shadow: var(--shadow-md), var(--glow); transform: translateY(-2px); }
+.kpi-card.dropdown-open { transform: none !important; }
+.kpi-card.dropdown-open:hover { transform: none !important; }
 .kpi-card[onclick] { cursor: pointer; }
 .kpi-card[onclick]:hover { border-color: var(--amber); box-shadow: var(--shadow-md), 0 0 0 3px rgba(255,159,10,0.15); }
 .kpi-card::before {
@@ -1726,7 +1728,7 @@ body {
 
                 <!-- Dropdown Menu -->
                 <div id="visitorDropdownMenu" style="
-                  display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:9990;
+                  display:none;position:absolute;top:100%;right:0;z-index:9990;margin-top:2px;
                   background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;
                   box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;min-width:165px;
                 ">
@@ -3934,11 +3936,13 @@ const VISITOR_PERIOD_CONFIG = {
 function toggleVisitorDropdown() {
   const menu    = document.getElementById('visitorDropdownMenu');
   const chevron = document.getElementById('visitorChevron');
+  const card    = document.getElementById('visitorKPICard');
   if (!menu) return;
 
   const isOpen = menu.style.display === 'block';
   menu.style.display = isOpen ? 'none' : 'block';
   if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+  if (card)   card.classList.toggle('dropdown-open', !isOpen);
 }
 
 // Close dropdown when clicking outside
@@ -3948,8 +3952,10 @@ document.addEventListener('click', function(e) {
   if (!menu || menu.style.display !== 'block') return;
   if (wrap && wrap.contains(e.target)) return;
   const chevron = document.getElementById('visitorChevron');
+  const card    = document.getElementById('visitorKPICard');
   menu.style.display = 'none';
   if (chevron) chevron.style.transform = '';
+  if (card)    card.classList.remove('dropdown-open');
 });
 
 // (no scroll/resize reposition needed — absolute positioning handles it)
@@ -3963,8 +3969,10 @@ function selectVisitorPeriod(el) {
   // Close dropdown
   const menu    = document.getElementById('visitorDropdownMenu');
   const chevron = document.getElementById('visitorChevron');
+  const card    = document.getElementById('visitorKPICard');
   if (menu)    menu.style.display = 'none';
   if (chevron) chevron.style.transform = '';
+  if (card)    card.classList.remove('dropdown-open');
 
   // Update active state in menu items
   document.querySelectorAll('.visitor-dd-item').forEach(item => {
