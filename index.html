@@ -7315,7 +7315,9 @@ const recState = {
 const REC_CARD_W = 158; // card width (148) + gap (10)
 
 function buildRecCard(p) {
-  const disc = p.old_price ? Math.round((1 - p.price / p.old_price) * 100) : 0;
+  // ── Bulk-aware effective price ──
+  const { originalPrice, displayPrice, totalDiscPct, hasBulk, bulkPct } = getEffectiveSalePrice(p);
+  const disc = Math.round(totalDiscPct);
   const recImgHtml = p.image_url
     ? `<img src="${p.image_url}" alt="${p.name||''}" style="width:100%;height:100%;object-fit:contain;padding:6px;border-radius:0;background:#fff" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
        <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#007AFF'};display:none"></i>`
@@ -7330,8 +7332,8 @@ function buildRecCard(p) {
         <div class="rec-card-name bn">${p.name.length > 40 ? p.name.slice(0,40)+'…' : p.name}</div>
         ${p.category === 'বই' ? (p.author || p.brand ? `<div class="rec-card-brand">${((v)=>v.includes(',')?v.split(',')[0].trim():v.slice(0,22))(p.author||p.brand)}</div>` : '') : (p.brand ? `<div class="rec-card-brand">${((v)=>v.includes(',')?v.split(',')[0].trim():v.slice(0,22))(p.brand)}</div>` : '')}
         <div class="rec-card-price-row">
-          <span class="rec-card-price bn">৳${fmtPrice(p.price)}</span>
-          ${p.old_price ? `<span class="rec-card-old bn">৳${fmtPrice(p.old_price)}</span>` : ''}
+          <span class="rec-card-price bn">৳${fmtPrice(displayPrice)}</span>
+          ${p.old_price ? `<span class="rec-card-old bn">৳${fmtPrice(originalPrice)}</span>` : ''}
           ${disc ? `<span class="rec-card-disc">-${disc}%</span>` : ''}
         </div>
         <button class="rec-card-btn bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')">
@@ -7407,8 +7409,8 @@ function loadRecommendations(product) {
   const suggested = products
     .filter(p => p.category !== product.category && p.id !== product.id)
     .sort((a, b) => {
-      const discA = a.old_price ? (1 - a.price / a.old_price) : 0;
-      const discB = b.old_price ? (1 - b.price / b.old_price) : 0;
+      const discA = getEffectiveSalePrice(a).totalDiscPct / 100;
+      const discB = getEffectiveSalePrice(b).totalDiscPct / 100;
       return ((b.rating||4) * (1 + discB * 0.5)) - ((a.rating||4) * (1 + discA * 0.5));
     })
     .slice(0, 12);
@@ -7682,6 +7684,43 @@ function safeStr(val, fallback = '—') {
   return (val !== null && val !== undefined && val !== '' && val !== 'null') ? String(val) : fallback;
 }
 
+/* ══════════════════════════════════════════════════════════
+   BULK DISCOUNT — Effective Price Helper
+   ──────────────────────────────────────────────────────────
+   📐 হিসেব:
+     originalPrice   = old_price  (মূল দাম, অপরিবর্তিত)
+     normalSalePrice = price      (নরমাল সেল প্রাইস, অপরিবর্তিত)
+     baseDiscPct     = (1 - price/old_price) × 100
+     bulkPct         = bulk_discount_percentage
+     totalDiscPct    = baseDiscPct + bulkPct  (max 99%)
+     effectiveSalePrice = round(originalPrice × (1 - totalDiscPct/100))
+
+   🔑 গুরুত্বপূর্ণ: old_price ও price কখনো পরিবর্তন হয় না।
+      শুধু bulk_discount_percentage পরিবর্তন হয়।
+      Reset করলে bulk_discount_percentage = 0 হয় এবং
+      price স্বয়ংক্রিয়ভাবে পূর্বের মতো দেখায়।
+══════════════════════════════════════════════════════════ */
+function getEffectiveSalePrice(p) {
+  const originalPrice     = Number(p.old_price || p.price);  // মূল দাম — স্ট্রাইকথ্রু দেখাবে
+  const normalSalePrice   = Number(p.price);                  // DB-তে যা আছে — অপরিবর্তিত
+  const baseDiscPct       = p.old_price
+    ? (1 - normalSalePrice / Number(p.old_price)) * 100
+    : 0;
+  const bulkPct           = Number(p.bulk_discount_percentage || 0);
+  const totalDiscPct      = Math.min(baseDiscPct + bulkPct, 99);
+  const effectiveSalePrice = Math.round(originalPrice * (1 - totalDiscPct / 100));
+  return {
+    originalPrice,        // মূল দাম (old_price)
+    normalSalePrice,      // নরমাল সেল প্রাইস (price) — bulk না থাকলে এটিই দেখাবে
+    baseDiscPct,
+    bulkPct,
+    totalDiscPct,
+    salePrice: effectiveSalePrice,  // bulk থাকলে এটি দেখাবে, না থাকলে normalSalePrice
+    displayPrice: bulkPct > 0 ? effectiveSalePrice : normalSalePrice, // সবচেয়ে সহজ: সরাসরি UI-তে দেখাবার দাম
+    hasBulk: bulkPct > 0,
+  };
+}
+
 
 // ── REAL-TIME SYNC: product + order changes reflect instantly ──
 function subscribeRealtimeUpdates() {
@@ -7921,7 +7960,9 @@ function updateCounts() {
 }
 
 function buildProductCard(p) {
-  const disc = p.old_price ? Math.round((1 - p.price/p.old_price)*100) : 0;
+  // ── Bulk-aware effective price calculation ──
+  const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk } = getEffectiveSalePrice(p);
+  const disc   = Math.round(totalDiscPct);   // মোট discount % (base + bulk)
   const isBook = p.category === 'বই';
   // Show real image; fall back to icon
   const imgHtml = p.image_url
@@ -7935,10 +7976,31 @@ function buildProductCard(p) {
   const subLabel = isBook
     ? (authorDisplay ? authorDisplay : '')
     : (p.brand ? p.brand : '');
+
+  // ── Badge: discount badge হলে totalDisc দেখাও (bulk-aware) ──
+  const badgeHtml = p.badge==='hot'
+    ? '<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>'
+    : p.badge==='new'
+    ? '<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>'
+    : (p.badge==='sale' && disc ? `<div class="disc-badge">-${disc}% ছাড়</div>` : '');
+
+  // ── Price block: bulk থাকলে effective price দেখাও ──
+  //    original_price (old_price) = strike-through
+  //    displayPrice = effective sale price (bulk থাকলে) বা normalSalePrice (bulk না থাকলে)
+  const priceBlockHtml = `
+    <div class="price-block">
+      ${p.old_price ? `<div class="old bn">৳${fmtPrice(originalPrice)}</div>` : ''}
+      <div>
+        <span class="new bn">৳${fmtPrice(displayPrice)}</span>
+        ${disc ? `<span class="disc-pct">${disc}%</span>` : ''}
+        ${hasBulk ? `<span style="font-size:.6rem;color:var(--orange,#FF9500);font-weight:700;margin-left:3px" title="বাল্ক ডিসকাউন্ট সক্রিয়">+${bulkPct}%বাল্ক</span>` : ''}
+      </div>
+    </div>`;
+
   return `<div class="pcard" onclick="openProduct('${p.id}')">
     <div class="pcard-img">
       ${imgHtml}${iconHtml}
-      ${p.badge==='hot'?'<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>':p.badge==='new'?'<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>':p.badge==='sale'&&disc?`<div class="disc-badge">-${disc}% ছাড়</div>`:''}
+      ${badgeHtml}
       <button class="wish-btn${isWishlisted(p.id)?' liked':''}" onclick="event.stopPropagation();toggleCardWish(this,'${p.id}')">${isWishlisted(p.id)?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>'}</button>
     </div>
     <div class="pcard-body">
@@ -7947,10 +8009,7 @@ function buildProductCard(p) {
       <div class="pbrand bn">${subLabel}</div>
       <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
       <div class="pfooter">
-        <div class="price-block">
-          ${p.old_price?`<div class="old bn">৳${fmtPrice(p.old_price)}</div>`:''}
-          <div><span class="new bn">৳${fmtPrice(p.price)}</span>${disc?`<span class="disc-pct">${disc}%</span>`:''}</div>
-        </div>
+        ${priceBlockHtml}
         <div class="card-btns">
           <button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
         </div>
@@ -7972,7 +8031,9 @@ function renderProducts(list) {
 function getFiltered() {
   return products.filter(p => {
     const catOk = activeFilter.cat === 'সব' || p.category === activeFilter.cat;
-    const priceOk = p.price >= activeFilter.minPrice && p.price <= activeFilter.maxPrice;
+    // price range filter: bulk-aware displayPrice ব্যবহার করো
+    const dp = getEffectiveSalePrice(p).displayPrice;
+    const priceOk = dp >= activeFilter.minPrice && dp <= activeFilter.maxPrice;
     const ratingOk = (p.rating||4) >= activeFilter.rating;
     const srch = activeFilter.search.toLowerCase();
     const searchOk = !srch || p.name.toLowerCase().includes(srch) || (p.brand||'').toLowerCase().includes(srch) || p.category.includes(srch);
@@ -8009,10 +8070,10 @@ function filterProducts() {
 }
 function sortProducts(v) {
   let list = getFiltered();
-  if(v==='low') list.sort((a,b)=>a.price-b.price);
-  else if(v==='high') list.sort((a,b)=>b.price-a.price);
+  if(v==='low') list.sort((a,b) => getEffectiveSalePrice(a).displayPrice - getEffectiveSalePrice(b).displayPrice);
+  else if(v==='high') list.sort((a,b) => getEffectiveSalePrice(b).displayPrice - getEffectiveSalePrice(a).displayPrice);
   else if(v==='rating') list.sort((a,b)=>(b.rating||4)-(a.rating||4));
-  else if(v==='discount') list.sort((a,b)=>(b.old_price?(1-b.price/b.old_price):0)-(a.old_price?(1-a.price/a.old_price):0));
+  else if(v==='discount') list.sort((a,b)=> getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
   renderProducts(list);
 }
 function updateSlider(v) {
@@ -8142,7 +8203,10 @@ function updateHeaderHeight() {
 function openProduct(id, pushUrl = true) {
   const p = products.find(x=>x.id===id); if(!p) return;
   currentProduct = p; modalQty = 1;
-  const disc = p.old_price ? Math.round((1-p.price/p.old_price)*100) : 0;
+
+  // ── Bulk-aware effective price calculation ──
+  const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk } = getEffectiveSalePrice(p);
+  const disc   = Math.round(totalDiscPct);
   const isBook = p.category === 'বই';
 
   if (pushUrl) pushProductUrl(p);
@@ -8233,22 +8297,32 @@ function openProduct(id, pushUrl = true) {
   setText('fpRatingNum', `${(p.rating||4).toFixed(1)} রেটিং`);
 
   // ── Pricing ──
+  // old_price = original_price (মূল দাম) → strike-through দেখাবে
+  // displayPrice = effective sale price (bulk থাকলে) বা normalSalePrice (bulk না থাকলে)
   const oldEl = document.getElementById('fpOldPrice');
   if (oldEl) {
     oldEl.innerHTML = p.old_price
-      ? `<span style="text-decoration:line-through;color:var(--text-light)">৳${fmtPrice(p.old_price)}</span> <span style="font-size:.72rem;background:#FEF2F2;color:var(--red);padding:1px 6px;border-radius:4px;font-weight:700">আসল দাম</span>`
+      ? `<span style="text-decoration:line-through;color:var(--text-light)">৳${fmtPrice(originalPrice)}</span> <span style="font-size:.72rem;background:#FEF2F2;color:var(--red);padding:1px 6px;border-radius:4px;font-weight:700">মূল দাম</span>`
       : '';
   }
-  setText('fpNewPrice', `৳${fmtPrice(p.price)}`);
+  // effective sale price দেখাও (bulk থাকলে কমানো দাম, না থাকলে normalSalePrice)
+  setText('fpNewPrice', `৳${fmtPrice(displayPrice)}`);
   const discBadge = document.getElementById('fpDiscBadge');
   if (discBadge) {
-    discBadge.textContent = disc ? `${disc}% ছাড়` : '';
-    discBadge.style.display = disc ? 'inline-block' : 'none';
+    if (disc) {
+      discBadge.textContent = hasBulk
+        ? `${disc}% ছাড় (${Math.round(p.old_price?(1-normalSalePrice/Number(p.old_price))*100:0)}% + ${bulkPct}% বাল্ক)`
+        : `${disc}% ছাড়`;
+      discBadge.style.display = 'inline-block';
+    } else {
+      discBadge.textContent = '';
+      discBadge.style.display = 'none';
+    }
   }
   const savingsEl = document.getElementById('fpSavings');
-  if (savingsEl && p.old_price && p.old_price > p.price) {
-    const saved = Number(p.old_price) - Number(p.price);
-    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
+  if (savingsEl && p.old_price && originalPrice > displayPrice) {
+    const saved = originalPrice - displayPrice;
+    savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)${hasBulk ? ` — বাল্ক ডিসকাউন্ট সহ` : ''}`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
   // ── Stock ──
@@ -8466,11 +8540,11 @@ function renderCartItems() {
         <button class="ci-del" onclick="removeCart('${item.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
-    <div class="ci-price bn">৳${(item.price*item.qty).toLocaleString('en-US')}</div>
+    <div class="ci-price bn">৳${(getEffectiveSalePrice(item).displayPrice * item.qty).toLocaleString('en-US')}</div>
   </div>`;
   }).join('');
-  // Cart shows ONLY book subtotal (no delivery)
-  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  // Cart shows ONLY book subtotal (no delivery) — bulk-aware effective price ব্যবহার
+  const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString('en-US')}`;
 }
 function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); updateCartBadge();renderCartItems(); }
@@ -8518,7 +8592,7 @@ async function applyCoupon() {
       return;
     }
 
-    const sub = cart.reduce((s, x) => s + x.price * x.qty, 0);
+    const sub = cart.reduce((s, x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
 
     if (sub < (data.min_order || 0)) {
       toast('প্রযোজ্য নয়', `ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করুন`, 'w');
@@ -8652,7 +8726,8 @@ function showCheckoutPromoMsg(text, type) {
 }
 
 function refreshCheckoutTotals() {
-  const sub      = cart.reduce((s,x) => s + x.price * x.qty, 0);
+  // bulk-aware effective price দিয়ে subtotal হিসেব
+  const sub      = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   const delivery = calcDeliveryCharge();
   const total    = Math.max(0, sub + delivery - discount);
 
@@ -8688,9 +8763,11 @@ function openCheckout() {
   if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
 
   // ── Consolidated product savings across all cart items ──
+  // cart item-এ bulk_discount_percentage থাকলে effective price ব্যবহার করো
   const totalSaved = cart.reduce((sum, i) => {
-    const hasDisc = i.old_price && Number(i.old_price) > Number(i.price);
-    return sum + (hasDisc ? Math.round((Number(i.old_price) - Number(i.price)) * i.qty) : 0);
+    const { originalPrice, displayPrice } = getEffectiveSalePrice(i);
+    const hasDisc = i.old_price && originalPrice > displayPrice;
+    return sum + (hasDisc ? Math.round((originalPrice - displayPrice) * i.qty) : 0);
   }, 0);
 
   const summary = cart.map(i => {
@@ -8711,14 +8788,15 @@ function openCheckout() {
       ? (i.author || i.brand || '')
       : (i.brand || '');
 
-    // ── Discount calculation (per item) ──
-    const hasDisc  = i.old_price && Number(i.old_price) > Number(i.price);
-    const discPct  = hasDisc ? Math.round((1 - i.price / i.old_price) * 100) : 0;
+    // ── Discount calculation (per item) — bulk-aware ──
+    const { originalPrice: iOrig, displayPrice: iDisp, totalDiscPct: iTotalDisc } = getEffectiveSalePrice(i);
+    const hasDisc  = i.old_price && iOrig > iDisp;
+    const discPct  = hasDisc ? Math.round(iTotalDisc) : 0;
 
-    // Unit price line: old strikethrough (if discount) + current price
+    // Unit price line: old strikethrough (if discount) + effective price
     const unitPriceLine = hasDisc
-      ? `<span style="font-size:.68rem;color:var(--text-light);text-decoration:line-through;margin-right:2px">৳${Number(i.old_price).toLocaleString('en-US')}</span><span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString('en-US')}</span>`
-      : `<span style="font-size:.72rem;color:var(--text-mid)">৳${i.price.toLocaleString('en-US')}</span>`;
+      ? `<span style="font-size:.68rem;color:var(--text-light);text-decoration:line-through;margin-right:2px">৳${iOrig.toLocaleString('en-US')}</span><span style="font-size:.72rem;color:var(--text-mid)">৳${iDisp.toLocaleString('en-US')}</span>`
+      : `<span style="font-size:.72rem;color:var(--text-mid)">৳${iDisp.toLocaleString('en-US')}</span>`;
 
     // Discount badge (green pill) — shown inline, no per-item savings text
     const discBadge = hasDisc
@@ -8750,11 +8828,12 @@ function openCheckout() {
       </div>
 
       <!-- Price -->
-      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:800;color:var(--text);flex-shrink:0;margin-left:4px;white-space:nowrap">৳${(i.price*i.qty).toLocaleString('en-US')}</div>
+      <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:800;color:var(--text);flex-shrink:0;margin-left:4px;white-space:nowrap">৳${(iDisp*i.qty).toLocaleString('en-US')}</div>
     </div>`;
   }).join('');
   document.getElementById('checkoutSummary').innerHTML = summary;
-  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  // bulk-aware effective price দিয়ে subtotal
+  const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   document.getElementById('checkoutSubtotal').textContent = `৳${sub.toLocaleString('en-US')}`;
   document.getElementById('checkoutDelivery').textContent = '— জেলা বেছে নিন';
   document.getElementById('deliveryNote').textContent = '';
@@ -8825,11 +8904,19 @@ async function placeOrder() {
   if(!cart.length){ toast('কার্ট খালি','আগে কার্টে পণ্য যোগ করুন','w'); return; }
   const btn = document.getElementById('placeOrderBtn');
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> প্রসেস হচ্ছে...';
-  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  // ── bulk-aware effective price দিয়ে order total হিসেব ──
+  const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   const delivery = calcDeliveryCharge();
   const total = sub + delivery - discount;
   const orderNum = 'GM-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*99999)).padStart(5,'0');
-  const items = cart.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty}));
+  // items-এ effective price সেভ করো (DB-তে actual চার্জ হওয়া দাম)
+  const items = cart.map(i => ({
+    id: i.id,
+    name: i.name,
+    price: getEffectiveSalePrice(i).displayPrice,  // effective price সেভ
+    qty: i.qty,
+    bulk_discount_percentage: i.bulk_discount_percentage || 0,  // ট্র্যাসেবিলিটির জন্য
+  }));
   const fullDistrict = `${district} > ${upazila} > ${thana}`;
   const { data, error } = await sbQuery(
     () => sb.from('orders').insert({
@@ -10220,11 +10307,11 @@ function footerFilter(type) {
     renderProducts(sorted);
 
   } else if (type === 'offer') {
-    // সর্বোচ্চ ছাড়ের পণ্য (old_price আছে এমন)
+    // সর্বোচ্চ ছাড়ের পণ্য — bulk discount সহ totalDiscPct অনুযায়ী sort
     activeFilter = { cat: 'সব', minPrice: 0, maxPrice: 999999, rating: 0, search: '' };
     const offers = products
-      .filter(p => p.old_price && p.old_price > p.price)
-      .sort((a, b) => (1 - b.price / b.old_price) - (1 - a.price / a.old_price));
+      .filter(p => getEffectiveSalePrice(p).totalDiscPct > 0)
+      .sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
     renderProducts(offers);
 
   } else if (type === 'best') {
@@ -12651,11 +12738,11 @@ function renderCatPageProducts() {
     ? [...products]
     : products.filter(p => p.category === currentCatPage);
 
-  if (sort === 'low')      list.sort((a,b) => a.price - b.price);
-  else if (sort === 'high') list.sort((a,b) => b.price - a.price);
+  if (sort === 'low')      list.sort((a,b) => getEffectiveSalePrice(a).displayPrice - getEffectiveSalePrice(b).displayPrice);
+  else if (sort === 'high') list.sort((a,b) => getEffectiveSalePrice(b).displayPrice - getEffectiveSalePrice(a).displayPrice);
   else if (sort === 'rating') list.sort((a,b) => (b.rating||4) - (a.rating||4));
   else if (sort === 'discount') list.sort((a,b) =>
-    (b.old_price?(1-b.price/b.old_price):0) - (a.old_price?(1-a.price/a.old_price):0));
+    getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
 
   const subtitle = document.getElementById('catPageSubtitle');
   if (subtitle) subtitle.textContent = `${list.length} টি পণ্য পাওয়া গেছে`;
