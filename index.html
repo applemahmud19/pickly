@@ -7106,6 +7106,76 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+// ══════════════════════════════════════════════════
+// VISITOR TRACKER — Unique + Live tracking
+// visitor_logs table schema:
+//   id (uuid), session_id (text), created_at (timestamptz),
+//   last_seen (timestamptz), page (text), is_active (bool)
+// ══════════════════════════════════════════════════
+(async function initVisitorTracking() {
+  try {
+    // ── 1. Session ID: unique per browser tab session (not per page refresh) ──
+    let sid = sessionStorage.getItem('gm_vsid');
+    if (!sid) {
+      sid = crypto.randomUUID ? crypto.randomUUID()
+          : Date.now().toString(36) + Math.random().toString(36).slice(2);
+      sessionStorage.setItem('gm_vsid', sid);
+    }
+
+    // ── 2. Daily unique token: resets at midnight (localStorage-based) ──
+    const todayKey = new Date().toISOString().slice(0, 10); // "2025-01-15"
+    const storedDay = localStorage.getItem('gm_vday');
+    const isNewDayVisit = storedDay !== todayKey;
+    if (isNewDayVisit) localStorage.setItem('gm_vday', todayKey);
+
+    const page = window.location.pathname || '/';
+    const now  = new Date().toISOString();
+
+    // ── 3. Upsert: same session_id → update last_seen + is_active=true ──
+    //    New session OR new day → insert fresh row (counts as unique today)
+    const { error } = await sb.from('visitor_logs').upsert(
+      {
+        session_id: sid,
+        created_at: now,       // ignored on update by upsert; only used on INSERT
+        last_seen:  now,
+        page:       page,
+        is_active:  true,
+      },
+      { onConflict: 'session_id', ignoreDuplicates: false }
+    );
+    if (error) console.warn('[Visitor] upsert error:', error.message);
+
+    // ── 4. Heartbeat: update last_seen every 30s to mark as "live" ──
+    setInterval(async () => {
+      try {
+        await sb.from('visitor_logs')
+          .update({ last_seen: new Date().toISOString(), is_active: true })
+          .eq('session_id', sid);
+      } catch(e) { /* silent */ }
+    }, 30000);
+
+    // ── 5. Mark inactive on page hide/close ──
+    document.addEventListener('visibilitychange', async () => {
+      if (document.hidden) {
+        try {
+          await sb.from('visitor_logs')
+            .update({ is_active: false })
+            .eq('session_id', sid);
+        } catch(e) { /* silent */ }
+      } else {
+        // Page visible again → mark active + refresh last_seen
+        try {
+          await sb.from('visitor_logs')
+            .update({ last_seen: new Date().toISOString(), is_active: true })
+            .eq('session_id', sid);
+        } catch(e) { /* silent */ }
+      }
+    });
+  } catch(e) {
+    console.warn('[Visitor] tracking init failed:', e.message);
+  }
+})();
+
 // ── STATE ──
 let products = [];
 // Cart — persist in localStorage so it survives page refresh
