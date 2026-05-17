@@ -808,6 +808,8 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
   padding: 5px 0 0 1px; min-height: 18px;
 }
 .bulk-disc-preview.active { color: var(--amber); font-weight: 600; }
+#bdRemoveBtn:hover { background: rgba(255,59,48,0.16) !important; border-color: rgba(255,59,48,0.5) !important; transform: translateY(-1px); }
+#bdRemoveBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 @media (max-width: 600px) {
   .bulk-disc-card { flex-direction: column; align-items: stretch; }
   .bulk-disc-field select,
@@ -1366,8 +1368,7 @@ body {
   /* Revenue chart height reduced for small screens */
   #revenueChartCanvas { max-height: 160px !important; }
   .chart-container { padding: 12px 14px 10px; }
-  /* Visitor KPIs — 2x2 */
-  #visitorKPIs { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  /* Visitor KPI single card — full width on mobile (no change needed) */
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1686,45 +1687,78 @@ body {
           </div>
         </div>
 
-        <!-- Visitor KPIs — 4 time-filter cards -->
-        <div class="kpi-grid" id="visitorKPIs" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
-          <!-- Today -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(50,173,230,0.1);color:var(--cyan)"><i class="fa-solid fa-eye"></i></div>
-              <span class="kpi-badge na" id="kpi-visitor-badge">Today</span>
+        <!-- Visitor KPI — Single Dynamic Card with Dropdown Filter -->
+        <div style="margin-bottom:12px">
+          <div class="kpi-card" id="visitorKPICard" style="cursor:default;border-color:rgba(50,173,230,0.35);background:linear-gradient(135deg,var(--surface) 0%,var(--surface) 100%);position:relative;overflow:visible">
+            <!-- Gradient accent top bar -->
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;background:linear-gradient(90deg,var(--cyan),var(--blue))"></div>
+
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <!-- Left: icon + title -->
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="kpi-icon" id="visitorKPIIcon" style="background:rgba(50,173,230,0.12);color:var(--cyan);width:44px;height:44px;font-size:1.1rem;flex-shrink:0">
+                  <i class="fa-solid fa-eye"></i>
+                </div>
+                <div>
+                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিটর</div>
+                  <div style="display:flex;align-items:baseline;gap:8px">
+                    <div class="kpi-val" id="kpi-dynamic-visitors" style="font-size:2rem;line-height:1;color:var(--cyan)">—</div>
+                    <span id="visitorKPITrend" class="kpi-badge na" style="font-size:0.62rem"></span>
+                  </div>
+                  <div id="visitorKPILabel" class="kpi-label" style="font-family:var(--font-bn);margin-top:4px;font-size:0.78rem">আজকের ভিজিটর</div>
+                </div>
+              </div>
+
+              <!-- Right: Dropdown Filter -->
+              <div style="position:relative;flex-shrink:0" id="visitorDropdownWrap">
+                <button id="visitorFilterBtn" onclick="toggleVisitorDropdown()" style="
+                  display:flex;align-items:center;gap:6px;
+                  padding:7px 12px;border-radius:9px;
+                  background:var(--bg3);border:1.5px solid var(--border2);
+                  color:var(--text2);font-family:var(--font-bn);font-size:0.78rem;font-weight:600;
+                  cursor:pointer;transition:all var(--t);white-space:nowrap;
+                ">
+                  <i class="fa-solid fa-calendar-days" style="font-size:0.72rem;color:var(--cyan)"></i>
+                  <span id="visitorFilterLabel">আজ</span>
+                  <i class="fa-solid fa-chevron-down" id="visitorChevron" style="font-size:0.6rem;transition:transform 0.2s"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="visitorDropdownMenu" style="
+                  display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:200;
+                  background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;
+                  box-shadow:var(--shadow-md);overflow:hidden;min-width:160px;
+                ">
+                  <div class="visitor-dd-item active" data-period="today" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text);transition:background 0.15s;border-bottom:1px solid var(--border)">
+                    <i class="fa-regular fa-clock" style="color:var(--cyan);width:14px;text-align:center;font-size:0.78rem"></i> আজ
+                    <i class="fa-solid fa-check" style="margin-left:auto;color:var(--cyan);font-size:0.65rem"></i>
+                  </div>
+                  <div class="visitor-dd-item" data-period="yesterday" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s;border-bottom:1px solid var(--border)">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--purple);width:14px;text-align:center;font-size:0.78rem"></i> গতকাল
+                  </div>
+                  <div class="visitor-dd-item" data-period="week" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s;border-bottom:1px solid var(--border)">
+                    <i class="fa-solid fa-calendar-week" style="color:var(--blue);width:14px;text-align:center;font-size:0.78rem"></i> শেষ ৭ দিন
+                  </div>
+                  <div class="visitor-dd-item" data-period="month" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s">
+                    <i class="fa-solid fa-calendar-days" style="color:var(--green);width:14px;text-align:center;font-size:0.78rem"></i> শেষ ৩০ দিন
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="kpi-val" id="kpi-daily-visitors">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের ভিজিটর</div>
-          </div>
-          <!-- Yesterday -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-clock-rotate-left"></i></div>
-              <span class="kpi-badge na">Yesterday</span>
+
+            <!-- Mini sparkline dots (decorative) -->
+            <div style="margin-top:16px;display:flex;align-items:center;gap:6px">
+              <div style="flex:1;height:3px;border-radius:2px;background:linear-gradient(90deg,rgba(50,173,230,0.15),rgba(50,173,230,0.5),rgba(50,173,230,0.15))"></div>
+              <div style="font-size:0.62rem;font-family:var(--mono);color:var(--text3)" id="visitorKPISubnote">⟳ প্রতি ৬০ সেকেন্ডে আপডেট হয়</div>
             </div>
-            <div class="kpi-val" id="kpi-yesterday-visitors">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">গতকালের ভিজিটর</div>
-          </div>
-          <!-- This Week -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-calendar-week"></i></div>
-              <span class="kpi-badge up" id="kpi-weekly-visitor-badge">This Week</span>
-            </div>
-            <div class="kpi-val" id="kpi-weekly-visitors">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">এই সপ্তাহের ভিজিটর</div>
-          </div>
-          <!-- This Month -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-calendar-days"></i></div>
-              <span class="kpi-badge na">This Month</span>
-            </div>
-            <div class="kpi-val" id="kpi-monthly-visitors">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">এই মাসের ভিজিটর</div>
           </div>
         </div>
+
+        <style>
+        .visitor-dd-item:hover { background: var(--hover) !important; color: var(--text) !important; }
+        .visitor-dd-item.active { color: var(--cyan) !important; background: rgba(50,173,230,0.06) !important; }
+        #visitorFilterBtn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(50,173,230,0.07); }
+        </style>
 
         <!-- Live + Conversion + Revenue row -->
         <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
@@ -1875,7 +1909,7 @@ body {
           <div class="bulk-disc-card" id="bulkDiscCard">
             <div class="bulk-disc-field">
               <label><i class="fa-solid fa-tag" style="margin-right:4px"></i>ক্যাটাগরি বেছে নিন</label>
-              <select id="bdCategory">
+              <select id="bdCategory" onchange="updateBulkPreview();updateRemoveBtn()">
                 <option value="">— সব ক্যাটাগরি —</option>
               </select>
             </div>
@@ -1885,9 +1919,14 @@ body {
             </div>
             <div class="bulk-disc-field" style="flex:1;min-width:160px">
               <label style="opacity:0">apply</label>
-              <button class="btn btn-warning" id="bdApplyBtn" onclick="applyBulkDiscount()" style="background:rgba(255,159,10,0.12);color:var(--amber);border:1.5px solid rgba(255,159,10,0.35);font-weight:700;gap:7px">
-                <i class="fa-solid fa-bolt"></i> Apply Discount
-              </button>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <button class="btn btn-warning" id="bdApplyBtn" onclick="applyBulkDiscount()" style="background:rgba(255,159,10,0.12);color:var(--amber);border:1.5px solid rgba(255,159,10,0.35);font-weight:700;gap:7px">
+                  <i class="fa-solid fa-bolt"></i> Apply Discount
+                </button>
+                <button class="btn" id="bdRemoveBtn" onclick="removeBulkDiscount()" title="এই ক্যাটাগরির সব পণ্যের ডিসকাউন্ট মুছুন" style="background:rgba(255,59,48,0.08);color:var(--red);border:1.5px solid rgba(255,59,48,0.28);font-weight:700;gap:7px;display:none">
+                  <i class="fa-solid fa-rotate-left"></i> Reset Price
+                </button>
+              </div>
               <div class="bulk-disc-preview" id="bdPreview">ক্যাটাগরি ও পার্সেন্টেজ দিন</div>
             </div>
           </div>
@@ -3881,6 +3920,140 @@ function stopVisitorPolling() {
   if (_visitorPollTimer) { clearInterval(_visitorPollTimer); _visitorPollTimer = null; }
 }
 
+/* ══ VISITOR DROPDOWN FILTER ══ */
+let _activeVisitorPeriod = 'today'; // default
+
+const VISITOR_PERIOD_CONFIG = {
+  today:     { label: 'আজ',         cardLabel: 'আজকের ভিজিটর',        icon: 'fa-regular fa-clock',          color: 'var(--cyan)',   iconBg: 'rgba(50,173,230,0.12)' },
+  yesterday: { label: 'গতকাল',      cardLabel: 'গতকালের ভিজিটর',       icon: 'fa-solid fa-clock-rotate-left', color: 'var(--purple)', iconBg: 'rgba(175,82,222,0.12)' },
+  week:      { label: 'শেষ ৭ দিন', cardLabel: 'শেষ ৭ দিনের ভিজিটর',  icon: 'fa-solid fa-calendar-week',    color: 'var(--blue)',   iconBg: 'rgba(0,122,255,0.12)' },
+  month:     { label: 'শেষ ৩০ দিন', cardLabel: 'শেষ ৩০ দিনের ভিজিটর', icon: 'fa-solid fa-calendar-days',    color: 'var(--green)',  iconBg: 'rgba(52,199,89,0.12)' },
+};
+
+function toggleVisitorDropdown() {
+  const menu    = document.getElementById('visitorDropdownMenu');
+  const chevron = document.getElementById('visitorChevron');
+  if (!menu) return;
+  const isOpen = menu.style.display === 'block';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('visitorDropdownWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const menu    = document.getElementById('visitorDropdownMenu');
+    const chevron = document.getElementById('visitorChevron');
+    if (menu)    menu.style.display = 'none';
+    if (chevron) chevron.style.transform = '';
+  }
+});
+
+function selectVisitorPeriod(el) {
+  const period = el.dataset.period;
+  if (!period) return;
+  _activeVisitorPeriod = period;
+
+  // Close dropdown
+  const menu    = document.getElementById('visitorDropdownMenu');
+  const chevron = document.getElementById('visitorChevron');
+  if (menu)    menu.style.display = 'none';
+  if (chevron) chevron.style.transform = '';
+
+  // Update active state in menu items
+  document.querySelectorAll('.visitor-dd-item').forEach(item => {
+    const isActive = item.dataset.period === period;
+    item.classList.toggle('active', isActive);
+    const check = item.querySelector('.fa-check');
+    if (check) check.remove();
+    if (isActive) {
+      const chk = document.createElement('i');
+      chk.className = 'fa-solid fa-check';
+      chk.style.cssText = 'margin-left:auto;color:var(--cyan);font-size:0.65rem';
+      item.appendChild(chk);
+    }
+  });
+
+  // Update filter button label
+  const cfg = VISITOR_PERIOD_CONFIG[period];
+  const filterLabel = document.getElementById('visitorFilterLabel');
+  if (filterLabel && cfg) filterLabel.textContent = cfg.label;
+
+  // Update the card display
+  updateVisitorKPICard();
+}
+
+function updateVisitorKPICard() {
+  const period = _activeVisitorPeriod;
+  const cfg    = VISITOR_PERIOD_CONFIG[period];
+  const v      = allVisitors || {};
+
+  const periodMap = { today: v.today || 0, yesterday: v.yesterday || 0, week: v.week || 0, month: v.month || 0 };
+  const count = periodMap[period] ?? 0;
+
+  // Animate number change
+  const valEl = document.getElementById('kpi-dynamic-visitors');
+  if (valEl) {
+    valEl.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+    valEl.style.opacity    = '0';
+    valEl.style.transform  = 'translateY(-6px)';
+    setTimeout(() => {
+      valEl.textContent      = count.toLocaleString('bn-BD');
+      valEl.style.color      = cfg.color;
+      valEl.style.opacity    = '1';
+      valEl.style.transform  = 'translateY(0)';
+    }, 180);
+  }
+
+  // Update icon
+  const iconEl = document.getElementById('visitorKPIIcon');
+  if (iconEl && cfg) {
+    iconEl.style.background = cfg.iconBg;
+    iconEl.style.color      = cfg.color;
+    iconEl.innerHTML        = `<i class="${cfg.icon}"></i>`;
+  }
+
+  // Update label
+  const labelEl = document.getElementById('visitorKPILabel');
+  if (labelEl && cfg) labelEl.textContent = cfg.cardLabel;
+
+  // Update card border color
+  const card = document.getElementById('visitorKPICard');
+  if (card) {
+    const borderMap = {
+      today:    'rgba(50,173,230,0.35)',
+      yesterday:'rgba(175,82,222,0.35)',
+      week:     'rgba(0,122,255,0.35)',
+      month:    'rgba(52,199,89,0.35)',
+    };
+    card.style.borderColor = borderMap[period] || 'rgba(50,173,230,0.35)';
+  }
+
+  // Update gradient top bar
+  const gradMap = {
+    today:    'linear-gradient(90deg,var(--cyan),var(--blue))',
+    yesterday:'linear-gradient(90deg,var(--purple),var(--cyan))',
+    week:     'linear-gradient(90deg,var(--blue),var(--cyan))',
+    month:    'linear-gradient(90deg,var(--green),var(--cyan))',
+  };
+  const topBar = card && card.querySelector('[style*="height:3px"]');
+  if (topBar) topBar.style.background = gradMap[period] || gradMap.today;
+
+  // Trend badge: compare today vs yesterday (shown only for 'today')
+  const trendEl = document.getElementById('visitorKPITrend');
+  if (trendEl && period === 'today') {
+    const todayV = v.today || 0;
+    const yestV  = v.yesterday || 0;
+    if (yestV > 0) {
+      const diff = todayV - yestV;
+      const pct  = Math.abs((diff / yestV) * 100).toFixed(0);
+      trendEl.textContent = (diff >= 0 ? '↑ ' : '↓ ') + pct + '%';
+      trendEl.className   = diff >= 0 ? 'kpi-badge up' : 'kpi-badge down';
+    } else { trendEl.textContent = ''; }
+  } else if (trendEl) { trendEl.textContent = ''; }
+}
+
 function renderVisitorStats() {
   const v = allVisitors || {};
   const todayV     = v.today     || 0;
@@ -3900,11 +4073,10 @@ function renderVisitorStats() {
 
   // ── Update KPI cards ──
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('kpi-daily-visitors',    todayV.toLocaleString());
-  set('kpi-yesterday-visitors', yesterdayV.toLocaleString());
-  set('kpi-weekly-visitors',   weekV.toLocaleString());
-  set('kpi-monthly-visitors',  monthV.toLocaleString());
-  set('kpi-live-visitors',     liveV.toLocaleString());
+  // Keep hidden IDs for internal use (conversion logic, etc.)
+  set('kpi-live-visitors', liveV.toLocaleString());
+  // Update the new dynamic visitor card
+  updateVisitorKPICard();
   set('kpi-conv-rate',         convRate !== '—' ? convRate + '%' : '—');
   set('kpi-today-revenue',     '৳' + todayRev.toLocaleString());
 
@@ -4355,6 +4527,7 @@ function populateBdCategoryDropdown() {
   });
   if (prev) sel.value = prev;
   updateBulkPreview();
+  updateRemoveBtn();
 }
 
 function updateBulkPreview() {
@@ -4376,9 +4549,12 @@ function updateBulkPreview() {
     return;
   }
 
+  // Always calculate from the original/regular price, not the current sale price
   const sample = targets.slice(0, 2).map(p => {
-    const newP = Math.round(Number(p.price) * (1 - pct / 100));
-    return `৳${Number(p.price).toLocaleString()} → ৳${newP.toLocaleString()}`;
+    const basePrice = Number(p.old_price || p.price); // original price
+    const newP      = Math.round(basePrice * (1 - pct / 100));
+    const label     = p.old_price ? `(মূল ৳${basePrice.toLocaleString()})` : '';
+    return `৳${basePrice.toLocaleString()} → ৳${newP.toLocaleString()} ${label}`.trim();
   }).join(' · ');
 
   prev.textContent = `${targets.length}টি পণ্য আপডেট হবে · উদাহরণ: ${sample}`;
@@ -4401,21 +4577,13 @@ async function applyBulkDiscount() {
 
   // Confirmation popup
   const confirmed = confirm(
-    `⚠️ Bulk Discount Confirmation
-
-` +
-    `ক্যাটাগরি: ${cat}
-` +
-    `ডিসকাউন্ট: ${pct}%
-` +
-    `আক্রান্ত পণ্য: ${targets.length}টি
-
-` +
-    `এই পণ্যগুলোর বর্তমান price → old_price হিসেবে সংরক্ষিত হবে,
-` +
-    `এবং নতুন price = বর্তমান price × ${(1 - pct/100).toFixed(2)} হবে।
-
-` +
+    `⚠️ Bulk Discount Confirmation\n\n` +
+    `ক্যাটাগরি: ${cat}\n` +
+    `ডিসকাউন্ট: ${pct}% (সবসময় মূল দামের উপর)\n` +
+    `আক্রান্ত পণ্য: ${targets.length}টি\n\n` +
+    `প্রতিটি পণ্যের original price (old_price ?? price) থেকে\n` +
+    `${pct}% বাদ দিয়ে নতুন sale price সেট হবে।\n` +
+    `আগের যেকোনো ডিসকাউন্ট overwrite হয়ে যাবে।\n\n` +
     `নিশ্চিত করতে OK চাপুন।`
   );
   if (!confirmed) return;
@@ -4430,15 +4598,18 @@ async function applyBulkDiscount() {
 
   // Process all in parallel (batch-style)
   await Promise.all(targets.map(async p => {
-    const newPrice   = Math.round(Number(p.price) * (1 - pct / 100));
-    const oldPrice   = Number(p.price);
+    // ── KEY FIX: always base discount on the ORIGINAL price ──
+    // If old_price exists, it IS the original price (a previous discount may be active).
+    // If old_price is null/undefined, the current price IS the original price.
+    const originalPrice = Number(p.old_price || p.price);
+    const newPrice      = Math.round(originalPrice * (1 - pct / 100));
     try {
       const { error } = await sb.from('products')
-        .update({ price: newPrice, old_price: oldPrice })
+        .update({ price: newPrice, old_price: originalPrice })
         .eq('id', p.id);
       if (error) throw error;
       // Update local cache
-      p.old_price = oldPrice;
+      p.old_price = originalPrice;
       p.price     = newPrice;
       successCount++;
     } catch (e) {
@@ -4459,8 +4630,101 @@ async function applyBulkDiscount() {
     // Refresh the inline inputs to reflect new prices
     renderProducts();
     updateBulkPreview();
+    updateRemoveBtn(); // show Reset button if discount was just applied
   } else {
     toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য আপডেট হয়নি (${failCount}টি error)`, 'error');
+  }
+}
+
+/* ══════════════════════════════════════
+   BULK DISCOUNT — REMOVE / RESET
+══════════════════════════════════════ */
+
+// Show/hide the Reset Price button based on whether the selected category
+// has any products that currently have an old_price set (i.e. discounted)
+function updateRemoveBtn() {
+  const cat = document.getElementById('bdCategory')?.value || '';
+  const btn = document.getElementById('bdRemoveBtn');
+  if (!btn) return;
+  if (!cat) { btn.style.display = 'none'; return; }
+
+  const hasDiscounted = allProducts.some(p => p.category === cat && p.old_price && Number(p.old_price) > Number(p.price));
+  btn.style.display = hasDiscounted ? '' : 'none';
+}
+
+async function removeBulkDiscount() {
+  if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
+
+  const cat = document.getElementById('bdCategory')?.value || '';
+  if (!cat) { toast('ক্যাটাগরি বেছে নিন', 'কোনো ক্যাটাগরি সিলেক্ট করা হয়নি', 'error'); return; }
+
+  // Only target products that actually have a discount (old_price > price)
+  const targets = allProducts.filter(p =>
+    p.category === cat &&
+    p.old_price &&
+    Number(p.old_price) > Number(p.price)
+  );
+
+  if (!targets.length) {
+    toast('ডিসকাউন্ট নেই', `"${cat}"-এ কোনো ডিসকাউন্টেড পণ্য পাওয়া যায়নি`, 'warning');
+    return;
+  }
+
+  // ── Confirmation popup ──
+  const confirmed = confirm(
+    `⚠️ Discount Reset Confirmation\n\n` +
+    `ক্যাটাগরি: ${cat}\n` +
+    `আক্রান্ত পণ্য: ${targets.length}টি\n\n` +
+    `এই পণ্যগুলোর price → original price (old_price)-এ ফিরে যাবে\n` +
+    `এবং old_price ফিল্ডটি মুছে যাবে।\n\n` +
+    `নিশ্চিত করতে OK চাপুন।`
+  );
+  if (!confirmed) return;
+
+  // ── UI: disable buttons + spinner ──
+  const applyBtn  = document.getElementById('bdApplyBtn');
+  const removeBtn = document.getElementById('bdRemoveBtn');
+  const origRemoveHtml = removeBtn.innerHTML;
+  removeBtn.disabled = true;
+  if (applyBtn) applyBtn.disabled = true;
+  removeBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> রিসেট হচ্ছে...';
+
+  let successCount = 0, failCount = 0;
+
+  // ── Restore original_price for each product in parallel ──
+  await Promise.all(targets.map(async p => {
+    const originalPrice = Number(p.old_price);
+    try {
+      const { error } = await sb.from('products')
+        .update({ price: originalPrice, old_price: null })
+        .eq('id', p.id);
+      if (error) throw error;
+      // Update local cache
+      p.price     = originalPrice;
+      p.old_price = null;
+      successCount++;
+    } catch (e) {
+      console.error('[removeBulkDiscount] failed for', p.id, e.message);
+      failCount++;
+    }
+  }));
+
+  // ── Re-enable buttons ──
+  removeBtn.disabled = false;
+  if (applyBtn) applyBtn.disabled = false;
+  removeBtn.innerHTML = origRemoveHtml;
+
+  if (successCount > 0) {
+    toast(
+      `✅ ডিসকাউন্ট রিসেট সম্পন্ন`,
+      `${cat} — ${successCount}টি পণ্যের দাম আগের মূল দামে ফিরে এসেছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
+      failCount ? 'warning' : 'success'
+    );
+    renderProducts();
+    updateBulkPreview();
+    updateRemoveBtn(); // re-check visibility
+  } else {
+    toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য রিসেট হয়নি (${failCount}টি error)`, 'error');
   }
 }
 
