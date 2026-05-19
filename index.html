@@ -5963,7 +5963,10 @@ html, body {
 
       <!-- Category chip + name -->
       <div id="fpCatChip" class="fp-cat-chip bn"></div>
-      <h1 id="fpName" class="fp-name bn"></h1>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+        <h1 id="fpName" class="fp-name bn" style="margin:0"></h1>
+        <span id="fpBindingBadge" style="display:none;font-size:12px;color:#6c757d;background-color:#f8f9fa;padding:2px 8px;border-radius:4px;font-weight:normal;border:1px solid #dee2e6;white-space:nowrap;align-self:center"></span>
+      </div>
       <div id="fpBrandRow" class="fp-brand-row"></div>
       <div id="fpAuthorRow"></div>
 
@@ -8223,6 +8226,17 @@ function openProduct(id, pushUrl = true) {
   // ── Category chip + name ──
   setText('fpCatChip', p.category);
   setText('fpName', p.name);
+
+  // ── Binding Type badge (books only) ──
+  const bindingBadge = document.getElementById('fpBindingBadge');
+  if (bindingBadge) {
+    if (isBook && p.book_binding && p.book_binding !== 'None') {
+      bindingBadge.textContent = p.book_binding;
+      bindingBadge.style.display = 'inline-block';
+    } else {
+      bindingBadge.style.display = 'none';
+    }
+  }
 
   // ── Brand / Publisher ──
   // Non-books: show brand inline. Books: brand field hidden (author shown below)
