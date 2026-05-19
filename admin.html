@@ -2609,6 +2609,18 @@ body {
                 </select>
               </div>
             </div>
+            <!-- Binding Type row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">বাইন্ডিং টাইপ</label>
+                <select class="form-inp" id="pBindingType" style="padding:7px 10px;font-size:0.82rem">
+                  <option value="None">— None —</option>
+                  <option value="Paperback">Paperback</option>
+                  <option value="Hardcover">Hardcover</option>
+                </select>
+              </div>
+              <div></div>
+            </div>
           </div>
 
           <!-- Row 4: Price + Old Price + Stock + Color (4-col) -->
@@ -5771,6 +5783,8 @@ function openProductModal(product = null) {
   document.getElementById('pDescription').value = product?.description || '';
   document.getElementById('pPublisher').value   = product?.publisher || '';
   document.getElementById('pBookType') && (document.getElementById('pBookType').value = product?.book_type || '');
+  const bindingEl = document.getElementById('pBindingType');
+  if (bindingEl) bindingEl.value = product?.book_binding || 'None';
   // Fill author field (books) — fall back to brand for legacy products where author was saved in brand
   const authorInput = document.getElementById('pAuthor');
   if (authorInput) authorInput.value = product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
@@ -6076,6 +6090,7 @@ async function saveProduct() {
     // Check publisher & book_type
     const publisher = category === 'বই' ? document.getElementById('pPublisher').value.trim() || null : null;
     const book_type = category === 'বই' ? document.getElementById('pBookType').value || null : null;
+    const book_binding = category === 'বই' ? (document.getElementById('pBindingType')?.value || 'None') : null;
 
     // Author (books only)
     const authorVal = category === 'বই' ? (document.getElementById('pAuthor')?.value.trim() || null) : null;
@@ -6094,6 +6109,7 @@ async function saveProduct() {
       description: document.getElementById('pDescription').value.trim() || null,
       publisher,
       book_type,
+      book_binding,
       is_active:   true,
       ...(imageUrl    ? { image_url: imageUrl }     : {}),
       ...(imageUrls.length ? { images: imageUrls } : {}),
