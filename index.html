@@ -137,7 +137,7 @@ td.bn, .price-block .new, .price-block .old {
 .header-logo,
 .header-logo-container img,
 a.brand-logo img{
-  height:46px!important;max-height:50px!important;width:auto!important;
+  height:48px!important;max-height:50px!important;width:auto!important;max-width:100%!important;
   object-fit:contain!important;display:block;
   padding:0!important;margin:0!important;
   image-rendering:-webkit-optimize-contrast!important;
@@ -5610,11 +5610,7 @@ html, body {
   </span>
   <div class="social-links">
     <span class="bn" style="font-size:.7rem;color:rgba(255,255,255,.7);margin-right:6px">ফলো করুন:</span>
-    <a href="https://facebook.com/omnishop" target="_blank" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
-    <a href="https://instagram.com/omnishop" target="_blank" class="slink"><i class="fa-brands fa-instagram"></i></a>
-    <a href="https://tiktok.com/@omnishop" target="_blank" class="slink"><i class="fa-brands fa-tiktok"></i></a>
-    <a href="#" class="slink"><i class="fa-brands fa-youtube"></i></a>
-    <a href="#" class="slink"><i class="fa-brands fa-whatsapp"></i></a>
+    <a href="https://www.facebook.com/shopomnibd" target="_blank" rel="noopener noreferrer" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
   </div>
 </div>
   <!-- ── TOP ROW: Logo | Search | Actions ── -->
@@ -7163,11 +7159,7 @@ html, body {
       <div class="footer-logo-container"><img id="footerLogo" src="/Logo.png" alt="Omni Shop" class="footer-logo" /></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
       <div class="fsocials">
-        <a href="https://facebook.com/omnishop" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="https://instagram.com/omnishop" class="fs"><i class="fa-brands fa-instagram"></i></a>
-        <a href="https://tiktok.com/@omnishop" class="fs"><i class="fa-brands fa-tiktok"></i></a>
-        <a href="#" class="fs"><i class="fa-brands fa-youtube"></i></a>
-        <a href="#" class="fs"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://www.facebook.com/shopomnibd" target="_blank" rel="noopener noreferrer" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
       </div>
     </div>
 
@@ -10682,11 +10674,11 @@ const INFO_CONTENT = {
         </div>
         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
       </a>
-      <a class="contact-card" href="https://facebook.com/omnishop" target="_blank">
+      <a class="contact-card" href="https://www.facebook.com/shopomnibd" target="_blank" rel="noopener noreferrer">
         <div class="contact-card-icon" style="background:#EFF6FF;color:#1877F2"><i class="fa-brands fa-facebook-f"></i></div>
         <div class="contact-card-body">
           <div class="contact-card-label bn">ফেসবুক পেজ</div>
-          <div class="contact-card-val">facebook.com/omnishop</div>
+          <div class="contact-card-val">facebook.com/shopomnibd</div>
         </div>
         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
       </a>
@@ -14334,5 +14326,41 @@ window.addEventListener('popstate', function(e) {
 })();
 
 </script>
+
+<!-- ── FLOATING LIVE CHAT BUTTON ── -->
+<style>
+.custom-live-chat {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background-color: #0084FF;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.custom-live-chat:hover {
+  transform: scale(1.1);
+}
+.custom-live-chat svg {
+  width: 28px;
+  height: 28px;
+  fill: white;
+}
+</style>
+<a class="custom-live-chat" href="https://m.me/shopomnibd" target="_blank" rel="noopener noreferrer" title="লাইভ চ্যাট করুন">
+  <!-- Messenger icon -->
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.194 14.963l-3.055-3.26-5.963 3.26 6.559-6.963 3.13 3.26 5.889-3.26-6.56 6.963z"/>
+  </svg>
+</a>
 </body>
 </html>
