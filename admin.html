@@ -2,12 +2,13 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=1.0" />
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=1.0" />
-<link rel="apple-touch-icon" href="/favicon.png?v=1.0" />
-<link rel="shortcut icon" type="image/png" href="/favicon.png?v=1.0" />
+<link rel="icon" type="image/png" sizes="32x32" id="fav32" href="/favicon.png?v=1.1" />
+<link rel="icon" type="image/png" sizes="16x16" id="fav16" href="/favicon.png?v=1.1" />
+<link rel="apple-touch-icon" id="favApple" href="/favicon.png?v=1.1" />
+<link rel="shortcut icon" type="image/png" id="favShortcut" href="/favicon.png?v=1.1" />
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Omni Shop - Admin Dashboard</title>
+<title>Omni Shop — Admin Dashboard</title>
 <!--
 =================================================================
   OMNI SHOP ADMIN — DATA INTEGRITY AUDIT v2.1
@@ -1524,9 +1525,9 @@ body {
   <div class="login-wrap">
     <div class="login-card">
       <div class="login-logo">
-        <div class="login-logo-icon" style="background:none;box-shadow:none;padding:0;width:52px;height:52px;"><img src="/favicon.png?v=1.0" alt="Omni Shop" style="width:52px;height:52px;object-fit:contain;" /></div>
+        <div class="login-logo-icon" style="background:none;box-shadow:none;padding:0;width:52px;height:52px;border-radius:0;"><img src="/favicon.png?v=1.1" alt="Omni Shop" style="width:52px;height:52px;object-fit:contain;" /></div>
         <div>
-          <div class="login-logo-text" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Omni Shop</div>
+          <div class="login-logo-text" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;">Omni Shop</div>
           <div class="login-logo-sub">ADMIN PANEL</div>
         </div>
       </div>
@@ -2129,6 +2130,68 @@ body {
 
       <!-- ══ SETTINGS ══ -->
       <div class="section" id="sec-settings">
+
+        <!-- ══ WEBSITE BRANDING ══ -->
+        <div class="panel" style="max-width:600px;margin-bottom:20px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)">
+                <i class="fa-solid fa-palette"></i>
+              </div>
+              Website Branding
+            </div>
+            <span style="font-size:0.68rem;font-family:var(--mono);color:var(--text3);
+                         background:var(--bg3);padding:3px 10px;border-radius:100px">
+              site_settings টেবিল
+            </span>
+          </div>
+          <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+
+            <!-- Site Name -->
+            <div class="form-group">
+              <label class="form-label">Site Name</label>
+              <input class="form-inp" type="text" id="brandSiteName"
+                     placeholder="Omni Shop" value="Omni Shop" />
+            </div>
+
+            <!-- Logo Upload -->
+            <div class="form-group">
+              <label class="form-label">Logo Image <span style="font-size:.68rem;color:var(--text3)">(PNG/SVG, recommended height 80–120px)</span></label>
+              <input class="form-inp" type="file" id="brandLogoFile"
+                     accept="image/png,image/svg+xml,image/jpeg,image/webp"
+                     onchange="previewBrandAsset(this,'brandLogoPreview')" />
+              <img id="brandLogoPreview" src="" alt=""
+                   style="display:none;margin-top:8px;max-height:60px;border-radius:8px;border:1px solid var(--border)" />
+              <div id="brandCurrentLogo" style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:var(--mono)"></div>
+            </div>
+
+            <!-- Favicon Upload -->
+            <div class="form-group">
+              <label class="form-label">Favicon <span style="font-size:.68rem;color:var(--text3)">(PNG, 32×32 বা 64×64 recommended)</span></label>
+              <input class="form-inp" type="file" id="brandFaviconFile"
+                     accept="image/png,image/x-icon,image/svg+xml"
+                     onchange="previewBrandAsset(this,'brandFaviconPreview')" />
+              <img id="brandFaviconPreview" src="" alt=""
+                   style="display:none;margin-top:8px;max-height:40px;border-radius:6px;border:1px solid var(--border)" />
+              <div id="brandCurrentFavicon" style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:var(--mono)"></div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="saveBrandingSettings()" id="brandSaveBtn">
+                <i class="fa-solid fa-floppy-disk"></i> Save Branding
+              </button>
+              <span id="brandStatus" style="font-size:.75rem;color:var(--text3)"></span>
+            </div>
+
+            <div style="font-size:.7rem;color:var(--text3);background:var(--bg3);
+                        border-radius:9px;padding:12px 14px;line-height:1.8;font-family:var(--mono)">
+              ℹ️ Files are uploaded to Supabase Storage <b style="color:var(--cyan)">branding</b> bucket
+              and URLs are saved in <b style="color:var(--purple)">site_settings</b> (id=1).
+              Changes go live on the store immediately.
+            </div>
+          </div>
+        </div>
+
         <div class="panel" style="max-width:560px">
           <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:var(--bg3);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>Supabase Configuration</div></div>
           <div style="padding:22px;display:flex;flex-direction:column;gap:14px">
@@ -6167,6 +6230,78 @@ async function deleteProduct(id) {
 /* ══════════════════════════════════════
    SETTINGS
 ══════════════════════════════════════ */
+
+// ══════════════════════════════════════════════════════════════════════
+// DYNAMIC BRANDING — Website Settings (site_settings table)
+// ══════════════════════════════════════════════════════════════════════
+function previewBrandAsset(input, previewId) {
+  const file = input.files[0];
+  if (!file) return;
+  const prev = document.getElementById(previewId);
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = 'block';
+}
+
+async function loadCurrentBranding() {
+  try {
+    const { data } = await sb.from('site_settings').select('*').eq('id', 1).single();
+    if (!data) return;
+    const nm = document.getElementById('brandSiteName');
+    if (nm) nm.value = data.site_name || 'Omni Shop';
+    const cl = document.getElementById('brandCurrentLogo');
+    if (cl && data.logo_url) cl.textContent = '✅ Current: ' + data.logo_url;
+    const cf = document.getElementById('brandCurrentFavicon');
+    if (cf && data.favicon_url) cf.textContent = '✅ Current: ' + data.favicon_url;
+  } catch(e) { console.warn('[Branding] load failed', e); }
+}
+
+async function uploadBrandFile(file, fileName) {
+  const { data, error } = await sb.storage
+    .from('branding')
+    .upload(fileName, file, { upsert: true, contentType: file.type });
+  if (error) throw error;
+  const { data: urlData } = sb.storage.from('branding').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+async function saveBrandingSettings() {
+  const btn = document.getElementById('brandSaveBtn');
+  const status = document.getElementById('brandStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+  status.textContent = '';
+
+  try {
+    const siteName = document.getElementById('brandSiteName').value.trim() || 'Omni Shop';
+    const logoFile = document.getElementById('brandLogoFile').files[0];
+    const favFile  = document.getElementById('brandFaviconFile').files[0];
+
+    const updates = { site_name: siteName, updated_at: new Date().toISOString() };
+
+    if (logoFile)  updates.logo_url    = await uploadBrandFile(logoFile,  'logo.png');
+    if (favFile)   updates.favicon_url = await uploadBrandFile(favFile,   'favicon.png');
+
+    const { error } = await sb
+      .from('site_settings')
+      .update(updates)
+      .eq('id', 1);
+
+    if (error) throw error;
+
+    toast('✅ Branding Saved', 'লোগো ও ফেভিকন লাইভ হয়ে গেছে!', 'success');
+    status.textContent = '✅ Saved at ' + new Date().toLocaleTimeString();
+    await loadCurrentBranding();
+
+  } catch(e) {
+    console.error('[Branding] save error', e);
+    toast('❌ Error', e.message || 'Upload failed', 'error');
+    status.textContent = '❌ ' + (e.message || 'Failed');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Branding';
+  }
+}
+
 function saveSettings() {
   const url    = document.getElementById('cfgUrl').value.trim();
   const key    = document.getElementById('cfgKey').value.trim();
@@ -6195,6 +6330,7 @@ function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
+  if (sec === 'settings') loadCurrentBranding();
   const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
@@ -7624,10 +7760,6 @@ function previewCmsPage() {
   const body  = document.getElementById('cmsPageBody').value || '<p>কোনো কন্টেন্ট নেই।</p>';
   const w = window.open('', '_blank');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=1.0" />
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=1.0" />
-<link rel="apple-touch-icon" href="/favicon.png?v=1.0" />
-<link rel="shortcut icon" type="image/png" href="/favicon.png?v=1.0" />
     <title>${escHtml(title)}</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
     <style>body{font-family:'Hind Siliguri',sans-serif;max-width:760px;margin:40px auto;padding:0 20px;line-height:1.8;color:#0F172A}
