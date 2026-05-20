@@ -2,7 +2,10 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=1.0" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=1.0" />
+<link rel="apple-touch-icon" href="/favicon.png?v=1.0" />
+<link rel="shortcut icon" type="image/png" href="/favicon.png?v=1.0" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omni Shop - Your Trusted Online Shop</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -332,7 +335,7 @@ header.scrolled{
 }
 
 /* Logo */
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;min-width:0}
+.logo{display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0;min-width:0;padding:2px 0}
 .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.05rem;flex-shrink:0;box-shadow:0 4px 12px rgba(0,122,255,.25)}
 .logo-text{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--blue);line-height:1.15;white-space:nowrap}
 .logo-text small{display:block;font-size:.55rem;color:var(--text-light);font-weight:500;letter-spacing:.02em}
@@ -5510,8 +5513,8 @@ html, body {
 
 <!-- LOADING -->
 <div id="loadingScreen">
-  <div class="loader-logo"><i class="fa-solid fa-store"></i></div>
-  <div class="loader-brand bn">Omni Shop</div>
+  <div class="loader-logo" style="background:none;box-shadow:none;border-radius:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><img src="/favicon.png?v=1.0" alt="Omni Shop" style="width:80px;height:80px;object-fit:contain;" /></div>
+  <div class="loader-brand" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:1.2rem;letter-spacing:.02em;">Omni Shop</div>
   <div class="loader-text bn">লোড হচ্ছে...</div>
   <div class="loader-bar"><div class="loader-bar-inner"></div></div>
 </div>
@@ -5539,9 +5542,9 @@ html, body {
   </span>
   <div class="social-links">
     <span class="bn" style="font-size:.7rem;color:rgba(255,255,255,.7);margin-right:6px">ফলো করুন:</span>
-    <a href="https://facebook.com/bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
-    <a href="https://instagram.com/bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-instagram"></i></a>
-    <a href="https://tiktok.com/@bookgalaxybd" target="_blank" class="slink"><i class="fa-brands fa-tiktok"></i></a>
+    <a href="https://facebook.com/omnishop" target="_blank" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
+    <a href="https://instagram.com/omnishop" target="_blank" class="slink"><i class="fa-brands fa-instagram"></i></a>
+    <a href="https://tiktok.com/@omnishop" target="_blank" class="slink"><i class="fa-brands fa-tiktok"></i></a>
     <a href="#" class="slink"><i class="fa-brands fa-youtube"></i></a>
     <a href="#" class="slink"><i class="fa-brands fa-whatsapp"></i></a>
   </div>
@@ -5551,10 +5554,7 @@ html, body {
 
     <!-- Logo -->
     <a class="logo" href="/" onclick="event.preventDefault();if(typeof closeAllPagesAndModals==='function')closeAllPagesAndModals();if(typeof setMobNavActive==='function')setMobNavActive('mobNavHome');window.scrollTo({top:0,behavior:'smooth'})">
-      <div class="logo-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8C42);border-radius:10px">
-        <i class="fa-solid fa-bag-shopping" style="color:white;font-size:1rem"></i>
-      </div>
-      <div class="logo-text" style="display:flex;align-items:center;"><img src="/Logo.png" alt="Omni Shop" style="max-height:40px;width:auto;object-fit:contain;"></div>
+      <img src="/Logo.png" alt="Omni Shop" style="max-height:44px;width:auto;object-fit:contain;display:block;" />
     </a>
 
     <!-- Search Bar (desktop) -->
@@ -7095,9 +7095,9 @@ html, body {
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:.9rem"><i class="fa-solid fa-store"></i></div><span style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:white">Omni Shop</span></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
       <div class="fsocials">
-        <a href="https://facebook.com/bookgalaxybd" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="https://instagram.com/bookgalaxybd" class="fs"><i class="fa-brands fa-instagram"></i></a>
-        <a href="https://tiktok.com/@bookgalaxybd" class="fs"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://facebook.com/omnishop" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="https://instagram.com/omnishop" class="fs"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://tiktok.com/@omnishop" class="fs"><i class="fa-brands fa-tiktok"></i></a>
         <a href="#" class="fs"><i class="fa-brands fa-youtube"></i></a>
         <a href="#" class="fs"><i class="fa-brands fa-whatsapp"></i></a>
       </div>
@@ -10552,19 +10552,19 @@ const INFO_CONTENT = {
     iconBg: '#EFF6FF', iconColor: '#2563EB',
     html: `
       <p class="bn" style="font-size:.78rem;color:var(--text-mid);margin-bottom:14px;line-height:1.7">যেকোনো সমস্যা বা জিজ্ঞাসায় আমাদের সাথে যোগাযোগ করুন। আমরা সর্বদা সাহায্য করতে প্রস্তুত।</p>
-      <a class="contact-card" href="mailto:bookgalaxybd@gmail.com">
+      <a class="contact-card" href="mailto:omnishop@gmail.com">
         <div class="contact-card-icon" style="background:#FEF2F2;color:#DC2626"><i class="fa-solid fa-envelope"></i></div>
         <div class="contact-card-body">
           <div class="contact-card-label bn">ইমেইল</div>
-          <div class="contact-card-val">bookgalaxybd@gmail.com</div>
+          <div class="contact-card-val">omnishop@gmail.com</div>
         </div>
         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
       </a>
-      <a class="contact-card" href="https://facebook.com/bookgalaxybd" target="_blank">
+      <a class="contact-card" href="https://facebook.com/omnishop" target="_blank">
         <div class="contact-card-icon" style="background:#EFF6FF;color:#1877F2"><i class="fa-brands fa-facebook-f"></i></div>
         <div class="contact-card-body">
           <div class="contact-card-label bn">ফেসবুক পেজ</div>
-          <div class="contact-card-val">facebook.com/bookgalaxybd</div>
+          <div class="contact-card-val">facebook.com/omnishop</div>
         </div>
         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
       </a>
@@ -10768,7 +10768,7 @@ async function loadProductReviews(productId) {
 function getDemoReviews() {
   return [
     { id:1, reviewer_name:'রাহেলা বেগম', rating:5, review_text:'অসাধারণ পণ্য! প্যাকেজিং খুব সুন্দর ছিল এবং সময়মতো ডেলিভারি পেয়েছি।', created_at: new Date(Date.now()-86400000*2).toISOString(), verified:true },
-    { id:2, reviewer_name:'Karim Ahmed', rating:4, review_text:'Quality is good. Will buy again from Galaxy Mart BD.', created_at: new Date(Date.now()-86400000*5).toISOString(), verified:true },
+    { id:2, reviewer_name:'Karim Ahmed', rating:4, review_text:'Quality is good. Will buy again from Omni Shop.', created_at: new Date(Date.now()-86400000*5).toISOString(), verified:true },
     { id:3, reviewer_name:'মোঃ সালাউদ্দিন', rating:5, review_text:'দাম অনুযায়ী পণ্যটি অনেক ভালো। সব বন্ধুদের রেকমেন্ড করেছি।', created_at: new Date(Date.now()-86400000*10).toISOString(), verified:false },
   ];
 }
