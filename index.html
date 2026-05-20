@@ -2,10 +2,11 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=1.1" />
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=1.1" />
-<link rel="apple-touch-icon" href="/favicon.png?v=1.1" />
-<link rel="shortcut icon" type="image/png" href="/favicon.png?v=1.1" />
+<!-- Favicon fallback (overridden dynamically by JS) -->
+<link rel="icon" type="image/png" sizes="32x32" id="fav32" href="/favicon.png?v=1.1" />
+<link rel="icon" type="image/png" sizes="16x16" id="fav16" href="/favicon.png?v=1.1" />
+<link rel="apple-touch-icon" id="favApple" href="/favicon.png?v=1.1" />
+<link rel="shortcut icon" type="image/png" id="favShortcut" href="/favicon.png?v=1.1" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omni Shop - Your Trusted Online Shop</title>
@@ -118,7 +119,7 @@ td.bn, .price-block .new, .price-block .old {
   font-variant-numeric: lining-nums !important;
 }
 
-/* Omni Shop — responsive header logo image */
+/* ── Omni Shop dynamic header logo ── */
 .header-logo{max-height:44px;width:auto;object-fit:contain;display:block;}
 @media(max-width:600px){.header-logo{max-height:34px;}}
 </style>
@@ -5518,8 +5519,8 @@ html, body {
 
 <!-- LOADING -->
 <div id="loadingScreen">
-  <div class="loader-logo" style="background:none;box-shadow:none;border-radius:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><img src="/favicon.png?v=1.1" alt="Omni Shop" style="width:80px;height:80px;object-fit:contain;" /></div>
-  <div class="loader-brand" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:1.2rem;letter-spacing:.02em;">Omni Shop</div>
+  <div class="loader-logo" style="background:none;box-shadow:none;border-radius:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><img id="splashIcon" src="/favicon.png?v=1.1" alt="Omni Shop" style="width:80px;height:80px;object-fit:contain;" /></div>
+  <div class="loader-brand" id="splashBrand" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:1.2rem;letter-spacing:.02em;">Omni Shop</div>
   <div class="loader-text bn">লোড হচ্ছে...</div>
   <div class="loader-bar"><div class="loader-bar-inner"></div></div>
 </div>
@@ -5559,7 +5560,7 @@ html, body {
 
     <!-- Logo -->
     <a class="logo" href="/" onclick="event.preventDefault();if(typeof closeAllPagesAndModals==='function')closeAllPagesAndModals();if(typeof setMobNavActive==='function')setMobNavActive('mobNavHome');window.scrollTo({top:0,behavior:'smooth'})">
-      <img src="/Logo.png" alt="Omni Shop" class="header-logo" style="max-height:44px;width:auto;object-fit:contain;display:block;" />
+      <img id="headerLogo" src="/Logo.png" alt="Omni Shop" class="header-logo" style="max-height:44px;width:auto;object-fit:contain;display:block;" />
     </a>
 
     <!-- Search Bar (desktop) -->
@@ -7097,7 +7098,7 @@ html, body {
 <footer>
   <div class="foot-top">
     <div class="foot-brand">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px"><img src="/Logo.png" alt="Omni Shop" style="height:36px;width:auto;object-fit:contain;" /></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px"><img id="footerLogo" src="/Logo.png" alt="Omni Shop" style="height:36px;width:auto;object-fit:contain;" /></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
       <div class="fsocials">
         <a href="https://facebook.com/omnishop" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
@@ -7148,6 +7149,66 @@ const SUPABASE_URL  = 'https://srasvcuycvfspbwhnbpl.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYXN2Y3V5Y3Zmc3Bid2huYnBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzc4MjIsImV4cCI6MjA5MzcxMzgyMn0.FMU8DM-a0wg3Yxke1q-L79_kqYU3UkS4dibeH04AGJU'; // Supabase Dashboard থেকে নতুন anon key নাও
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ══════════════════════════════════════════════════════════════════════
+// DYNAMIC BRANDING SYSTEM — site_settings টেবিল থেকে লোগো/ফেভিকন ফেচ
+// ══════════════════════════════════════════════════════════════════════
+async function applyDynamicBranding() {
+  try {
+    const { data, error } = await sb
+      .from('site_settings')
+      .select('site_name, logo_url, favicon_url')
+      .eq('id', 1)
+      .single();
+
+    if (error || !data) return; // fallback static assets ব্যবহার হবে
+
+    const ts = '?v=' + Date.now(); // cache-buster
+
+    // ── Site Name ──────────────────────────────────────────────────
+    if (data.site_name) {
+      document.title = data.site_name + ' - Your Trusted Online Shop';
+      // splash brand
+      const sb_ = document.getElementById('splashBrand');
+      if (sb_) sb_.textContent = data.site_name;
+      // alt text on logos
+      ['headerLogo','footerLogo','splashIcon'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.alt = data.site_name;
+      });
+    }
+
+    // ── Logo URL ───────────────────────────────────────────────────
+    if (data.logo_url) {
+      const logoSrc = data.logo_url + ts;
+      ['headerLogo','footerLogo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.src = logoSrc;
+      });
+    }
+
+    // ── Favicon URL ────────────────────────────────────────────────
+    if (data.favicon_url) {
+      const favSrc = data.favicon_url + ts;
+      // splash icon
+      const si = document.getElementById('splashIcon');
+      if (si) si.src = favSrc;
+      // browser tab favicon
+      ['fav32','fav16','favApple','favShortcut'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.href = favSrc;
+      });
+    }
+
+  } catch (e) {
+    console.warn('[Branding] fetch failed, using static fallback.', e);
+  }
+}
+
+// পেজ লোডের সাথে সাথে branding fetch করো
+applyDynamicBranding();
+
+
 
 // ══════════════════════════════════════════════════
 // VISITOR TRACKER — Unique + Live tracking
