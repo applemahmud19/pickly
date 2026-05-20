@@ -2,8 +2,9 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/favicon.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>গ্যালাক্সি মার্ট BD</title>
+<title>Omni Shop - Your Trusted Online Shop</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- Primary Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -5510,7 +5511,7 @@ html, body {
 <!-- LOADING -->
 <div id="loadingScreen">
   <div class="loader-logo"><i class="fa-solid fa-store"></i></div>
-  <div class="loader-brand bn">গ্যালাক্সি মার্ট BD</div>
+  <div class="loader-brand bn">Omni Shop</div>
   <div class="loader-text bn">লোড হচ্ছে...</div>
   <div class="loader-bar"><div class="loader-bar-inner"></div></div>
 </div>
@@ -5553,7 +5554,7 @@ html, body {
       <div class="logo-icon" style="background:linear-gradient(135deg,#FF6B35,#FF8C42);border-radius:10px">
         <i class="fa-solid fa-bag-shopping" style="color:white;font-size:1rem"></i>
       </div>
-      <div class="logo-text">গ্যালাক্সি মার্ট BD<small>আপনার বিশ্বস্ত অনলাইন শপ</small></div>
+      <div class="logo-text" style="display:flex;align-items:center;"><img src="/Logo.png" alt="Omni Shop" style="max-height:40px;width:auto;object-fit:contain;"></div>
     </a>
 
     <!-- Search Bar (desktop) -->
@@ -6837,7 +6838,7 @@ html, body {
         <div class="terms-hd-icon">
           <i class="fa-solid fa-file-contract"></i>
         </div>
-        <h3 class="bn">গ্যালাক্সি মার্ট বিডি
+        <h3 class="bn">Omni Shop
           <small>আমাদের শর্তাবলী ও নীতিমালা</small>
         </h3>
       </div>
@@ -6905,7 +6906,7 @@ html, body {
         </div>
         <div class="terms-item-content">
           <p class="terms-item-title bn">অ্যাকাউন্ট নিরাপত্তা</p>
-          <p class="terms-item-desc bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। কোনো অনাকাঙ্ক্ষিত লগইনের জন্য গ্যালাক্সি মার্ট বিডি দায়ী থাকবে না।</p>
+          <p class="terms-item-desc bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। কোনো অনাকাঙ্ক্ষিত লগইনের জন্য Omni Shop দায়ী থাকবে না।</p>
         </div>
       </div>
 
@@ -6988,7 +6989,19 @@ html, body {
             <h4 class="bn" style="margin-bottom:13px;font-size:.82rem">নতুন পণ্য যোগ করুন</h4>
             <div class="fgrid">
               <div class="form-group"><label class="bn">পণ্যের নাম *</label><input class="form-inp bn" id="fpName" type="text" placeholder="পণ্যের নাম"></div>
-              <div class="form-group"><label class="bn">ক্যাটাগরি *</label><select class="form-sel bn" id="fpCat"><option>বই</option><option>ইলেকট্রনিক্স</option><option>ফ্যাশন</option><option>হোম</option><option>বিউটি</option><option>স্টেশনারি</option><option>শিশু</option><option>স্পোর্টস</option></select></div>
+              <div class="form-group"><label class="bn">ক্যাটাগরি *</label><select class="form-sel bn" id="fpCat" onchange="onCatChange()"><option>বই</option><option>ইলেকট্রনিক্স</option><option>ফ্যাশন</option><option>হোম</option><option>বিউটি</option><option>স্টেশনারি</option><option>শিশু</option><option>স্পোর্টস</option></select></div>
+              <!-- ── DYNAMIC SUB-CATEGORY ROW ── -->
+              <div class="form-group" id="fpSubWrap" style="grid-column:1/-1">
+                <label class="bn">সাব-ক্যাটাগরি</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <select class="form-sel bn" id="fpSub" style="flex:1">
+                    <option value="">-- সাব-ক্যাটাগরি বেছে নিন --</option>
+                  </select>
+                  <button type="button" class="abtn primary bn" style="white-space:nowrap;padding:0 12px;height:38px;font-size:.78rem" onclick="openAddSubCatModal()">
+                    <i class="fa-solid fa-plus"></i> নতুন যোগ
+                  </button>
+                </div>
+              </div>
               <div class="form-group"><label class="bn">বিক্রয় মূল্য ৳ *</label><input class="form-inp" id="fpPrice" type="number" placeholder="০"></div>
               <div class="form-group"><label class="bn">আসল মূল্য ৳</label><input class="form-inp" id="fpOld" type="number" placeholder="০"></div>
               <div class="form-group"><label class="bn">ব্র্যান্ড / লেখক / প্রকাশনী</label><input class="form-inp bn" id="fpBrand" type="text" placeholder="ব্র্যান্ড / লেখকের নাম"></div>
@@ -6998,6 +7011,28 @@ html, body {
             <div style="display:flex;gap:8px">
               <button class="abtn primary bn" onclick="addProduct()"><i class="fa-solid fa-check"></i>পণ্য যোগ করুন</button>
               <button class="abtn outline bn" onclick="toggleAddForm()">বাতিল</button>
+            </div>
+          </div>
+
+          <!-- ── ADD SUB-CATEGORY MODAL ── -->
+          <div id="addSubCatModal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.45);align-items:center;justify-content:center" onclick="if(event.target===this)closeAddSubCatModal()">
+            <div style="background:#fff;border-radius:16px;padding:28px 26px;width:min(400px,90vw);box-shadow:0 8px 40px rgba(0,0,0,.18)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+                <h4 class="bn" style="font-size:.9rem;font-weight:700">নতুন সাব-ক্যাটাগরি যোগ করুন</h4>
+                <button onclick="closeAddSubCatModal()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-light)"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="bn">ক্যাটাগরি</label>
+                <input class="form-inp bn" id="scModalCat" readonly style="background:var(--blue-light);color:var(--blue);font-weight:600">
+              </div>
+              <div class="form-group" style="margin-bottom:18px">
+                <label class="bn">সাব-ক্যাটাগরির নাম *</label>
+                <input class="form-inp bn" id="scModalName" type="text" placeholder="যেমন: উপন্যাস, ইয়ারবাড, স্মার্টওয়াচ..." onkeydown="if(event.key==='Enter')saveNewSubCat()">
+              </div>
+              <div style="display:flex;gap:9px">
+                <button class="abtn primary bn" style="flex:1" onclick="saveNewSubCat()"><i class="fa-solid fa-check"></i>সেভ করুন</button>
+                <button class="abtn outline bn" onclick="closeAddSubCatModal()">বাতিল</button>
+              </div>
             </div>
           </div>
           <div style="overflow-x:auto"><table class="atable"><thead><tr><th class="bn">পণ্য</th><th class="bn">ক্যাটাগরি</th><th class="bn">মূল্য</th><th class="bn">স্টক</th><th class="bn">স্ট্যাটাস</th><th class="bn">অ্যাকশন</th></tr></thead><tbody id="adminProductBody"></tbody></table></div>
@@ -7057,7 +7092,7 @@ html, body {
 <footer>
   <div class="foot-top">
     <div class="foot-brand">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:.9rem"><i class="fa-solid fa-store"></i></div><span style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:white">গ্যালাক্সি মার্ট BD</span></div>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:.9rem"><i class="fa-solid fa-store"></i></div><span style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:white">Omni Shop</span></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
       <div class="fsocials">
         <a href="https://facebook.com/bookgalaxybd" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
@@ -7095,7 +7130,7 @@ html, body {
     </div>
   </div>
   <div class="foot-bottom">
-    <p class="bn">© ২০২৬ গ্যালাক্সি মার্ট BD · সর্বস্বত্ব সংরক্ষিত</p>
+    <p class="bn">© ২০২৬ Omni Shop · সর্বস্বত্ব সংরক্ষিত</p>
     <div class="pay-methods"><span class="pm">COD</span><span class="pm">bKash</span><span class="pm">Nagad</span><span class="pm">Rocket</span></div>
   </div>
 </footer>
@@ -7495,7 +7530,7 @@ async function _restorePageFromUrl() {
     if (currentUser) {
       openProfilePage();
     } else {
-      history.replaceState({}, 'গ্যালাক্সি মার্ট BD', '/');
+      history.replaceState({}, 'Omni Shop', '/');
     }
     return;
   }
@@ -7504,7 +7539,7 @@ async function _restorePageFromUrl() {
     if (currentUser) {
       openWishlistPage();
     } else {
-      history.replaceState({}, 'গ্যালাক্সি মার্ট BD', '/');
+      history.replaceState({}, 'Omni Shop', '/');
     }
     return;
   }
@@ -7516,7 +7551,7 @@ async function _restorePageFromUrl() {
       openProduct(p.id, false);
     } else {
       // Product পাওয়া যায়নি — clean URL রেখে home দেখাও
-      history.replaceState({}, 'গ্যালাক্সি মার্ট BD', '/');
+      history.replaceState({}, 'Omni Shop', '/');
     }
     return;
   }
@@ -8111,10 +8146,10 @@ function pushProductUrl(p) {
   const slug = slugify(p.name) || p.id;
   const url = `/product/${slug}`;
   history.pushState({ productId: p.id, slug, page: 'product' }, p.name, url);
-  document.title = `${p.name} — গ্যালাক্সি মার্ট BD`;
+  document.title = `${p.name} — Omni Shop`;
   let metaDesc = document.querySelector('meta[name="description"]');
   if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name='description'; document.head.appendChild(metaDesc); }
-  metaDesc.content = p.description ? p.description.slice(0,155) : `${p.name} কিনুন গ্যালাক্সি মার্ট BD-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`;
+  metaDesc.content = p.description ? p.description.slice(0,155) : `${p.name} কিনুন Omni Shop-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`;
   let metaCan = document.querySelector('link[rel="canonical"]');
   if (!metaCan) { metaCan = document.createElement('link'); metaCan.rel='canonical'; document.head.appendChild(metaCan); }
   metaCan.href = window.location.origin + url;
@@ -8123,8 +8158,8 @@ function pushProductUrl(p) {
 function restoreHomeUrl() {
   // pushState দিলে নতুন history entry হয় এবং popstate fire করে —
   // replaceState ব্যবহার করো যাতে শুধু URL পরিবর্তন হয়, event না ওঠে
-  history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
-  document.title = 'গ্যালাক্সি মার্ট BD';
+  history.replaceState({ page: 'home' }, 'Omni Shop', '/');
+  document.title = 'Omni Shop';
 }
 
 // ── Global UI visibility manager ──
@@ -8168,9 +8203,9 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
-  if (name === 'track') history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/');
-  if (name === 'profile') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
-  if (name === 'wishlist') { history.replaceState({ page: 'home' }, 'গ্যালাক্সি মার্ট BD', '/'); document.title = 'গ্যালাক্সি মার্ট BD'; }
+  if (name === 'track') history.replaceState({ page: 'home' }, 'Omni Shop', '/');
+  if (name === 'profile') { history.replaceState({ page: 'home' }, 'Omni Shop', '/'); document.title = 'Omni Shop'; }
+  if (name === 'wishlist') { history.replaceState({ page: 'home' }, 'Omni Shop', '/'); document.title = 'Omni Shop'; }
   if (name === 'order-detail') {
     // Re-open track page when going back from order detail
     openPage('track');
@@ -9365,25 +9400,176 @@ async function updateOrderStatus(id, status) {
   else { toast('আপডেট হয়েছে','অর্ডার স্ট্যাটাস পরিবর্তন হয়েছে','s'); await sb.from('order_status_history').insert({order_id:id,status,note:`স্ট্যাটাস পরিবর্তন: ${status}`}); }
 }
 
-function toggleAddForm() { const f=document.getElementById('addForm'); f.style.display=f.style.display==='none'?'block':'none'; }
+/* ══════════════════════════════════════════════════════════════
+   DYNAMIC SUB-CATEGORY SYSTEM
+   ─ Default sub-categories stored in localStorage as fallback
+   ─ Supabase `sub_categories` table used when available
+   ─ Schema: { id, category_name, sub_name, created_at }
+   ══════════════════════════════════════════════════════════════ */
 
+// Default sub-categories per category (fallback if Supabase table missing)
+const DEFAULT_SUBCATS = {
+  'বই':          ['উপন্যাস','গল্প','কবিতা','ইসলামিক','আত্মজীবনী','শিশু সাহিত্য','বিজ্ঞান','ইতিহাস','অনুবাদ','রহস্য'],
+  'ইলেকট্রনিক্স': ['স্মার্টফোন','ল্যাপটপ','ট্যাবলেট','ইয়ারবাড','স্মার্টওয়াচ','ক্যামেরা','চার্জার','স্পিকার'],
+  'ফ্যাশন':       ['পুরুষ পোশাক','মহিলা পোশাক','জুতা','ব্যাগ','গহনা','সানগ্লাস','ঘড়ি'],
+  'হোম':          ['রান্নাঘর','বেডরুম','বাথরুম','সজ্জা','ফার্নিচার','বাগান','ক্লিনিং'],
+  'বিউটি':        ['স্কিনকেয়ার','হেয়ারকেয়ার','মেকআপ','পারফিউম','নেইলকেয়ার'],
+  'স্টেশনারি':    ['কলম','নোটবুক','ফাইল','রঙ','ড্রয়িং','অফিস সাপ্লাই'],
+  'শিশু':         ['খেলনা','পোশাক','বই','ফিডিং','ডায়াপার','শিক্ষামূলক'],
+  'স্পোর্টস':    ['ক্রিকেট','ফুটবল','ব্যাডমিন্টন','সাইক্লিং','ফিটনেস','সুইমিং'],
+};
+
+// In-memory store (merged with Supabase data)
+let _subCatStore = {};
+
+// Load sub-categories from Supabase + defaults
+async function loadSubCategories() {
+  // Start with defaults
+  _subCatStore = {};
+  Object.keys(DEFAULT_SUBCATS).forEach(cat => {
+    _subCatStore[cat] = DEFAULT_SUBCATS[cat].map((name, i) => ({ id: 'def_' + cat + '_' + i, name }));
+  });
+
+  // Try loading from localStorage cache first (instant)
+  try {
+    const cached = localStorage.getItem('gm_subcats');
+    if (cached) {
+      const rows = JSON.parse(cached);
+      _mergeSubcatRows(rows);
+    }
+  } catch(e) {}
+
+  // Then try Supabase (async, overwrites cache)
+  try {
+    const { data } = await sb.from('sub_categories').select('*').order('created_at', { ascending: true });
+    if (data && data.length) {
+      _mergeSubcatRows(data);
+      localStorage.setItem('gm_subcats', JSON.stringify(data));
+    }
+  } catch(e) {
+    // Table may not exist yet — defaults suffice
+  }
+
+  // Refresh the dropdown if form is open
+  _refreshSubCatDropdown();
+}
+
+function _mergeSubcatRows(rows) {
+  rows.forEach(row => {
+    const cat = row.category_name;
+    if (!cat) return;
+    if (!_subCatStore[cat]) _subCatStore[cat] = [];
+    // Avoid duplicates by name
+    if (!_subCatStore[cat].find(s => s.name === row.sub_name)) {
+      _subCatStore[cat].push({ id: row.id, name: row.sub_name });
+    }
+  });
+}
+
+function _refreshSubCatDropdown() {
+  const catEl = document.getElementById('fpCat');
+  const subEl = document.getElementById('fpSub');
+  if (!catEl || !subEl) return;
+  const cat = catEl.value;
+  const subs = _subCatStore[cat] || [];
+  subEl.innerHTML = '<option value="">-- সাব-ক্যাটাগরি বেছে নিন --</option>' +
+    subs.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+}
+
+function onCatChange() {
+  _refreshSubCatDropdown();
+}
+
+// ── Sub-Category Modal ──────────────────────────────────────
+function openAddSubCatModal() {
+  const cat = document.getElementById('fpCat').value;
+  document.getElementById('scModalCat').value = cat;
+  document.getElementById('scModalName').value = '';
+  const modal = document.getElementById('addSubCatModal');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('scModalName').focus(), 80);
+}
+
+function closeAddSubCatModal() {
+  document.getElementById('addSubCatModal').style.display = 'none';
+}
+
+async function saveNewSubCat() {
+  const cat  = document.getElementById('scModalCat').value;
+  const name = document.getElementById('scModalName').value.trim();
+  if (!name) { toast('ত্রুটি','সাব-ক্যাটাগরির নাম দিন','w'); return; }
+
+  // Check duplicate
+  if (_subCatStore[cat] && _subCatStore[cat].find(s => s.name === name)) {
+    toast('আগে থেকেই আছে',`"${name}" ইতিমধ্যে যোগ আছে`,'w');
+    return;
+  }
+
+  // Save to Supabase (best-effort)
+  let newId = 'local_' + Date.now();
+  try {
+    const { data, error } = await sb.from('sub_categories').insert({
+      category_name: cat,
+      sub_name: name
+    }).select().single();
+    if (!error && data) {
+      newId = data.id;
+      // Update cache
+      try {
+        const cached = JSON.parse(localStorage.getItem('gm_subcats') || '[]');
+        cached.push(data);
+        localStorage.setItem('gm_subcats', JSON.stringify(cached));
+      } catch(e) {}
+    }
+  } catch(e) {}
+
+  // Add to in-memory store & update dropdown immediately
+  if (!_subCatStore[cat]) _subCatStore[cat] = [];
+  _subCatStore[cat].push({ id: newId, name });
+  _refreshSubCatDropdown();
+
+  // Auto-select the new option
+  const subEl = document.getElementById('fpSub');
+  if (subEl) subEl.value = name;
+
+  closeAddSubCatModal();
+  toast('সাব-ক্যাটাগরি যোগ হয়েছে!', `"${name}" → ${cat}`, 's');
+}
+
+// ── Add Product Form Toggle ─────────────────────────────────
+function toggleAddForm() {
+  const f = document.getElementById('addForm');
+  const isHidden = f.style.display === 'none';
+  f.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    loadSubCategories(); // Load/refresh sub-cats on form open
+  }
+}
+
+// ── Add Product ─────────────────────────────────────────────
 async function addProduct() {
-  const name=document.getElementById('fpName').value.trim();
-  const cat=document.getElementById('fpCat').value;
-  const price=parseFloat(document.getElementById('fpPrice').value);
-  const old=parseFloat(document.getElementById('fpOld').value)||null;
-  const brand=document.getElementById('fpBrand').value.trim()||null;
-  const stock=parseInt(document.getElementById('fpStock').value)||0;
-  const desc=document.getElementById('fpDesc').value.trim()||null;
-  if(!name||!price){ toast('ত্রুটি','নাম ও মূল্য দিন','w'); return; }
-  const icons={বই:'fa-book',ইলেকট্রনিক্স:'fa-mobile-screen',ফ্যাশন:'fa-shirt',হোম:'fa-house',বিউটি:'fa-spa',স্টেশনারি:'fa-pen',শিশু:'fa-child',স্পোর্টস:'fa-dumbbell'};
-  const colors={বই:'#007AFF',ইলেকট্রনিক্স:'#F97316',ফ্যাশন:'#EC4899',হোম:'#10B981',বিউটি:'#F59E0B',স্টেশনারি:'#06B6D4',শিশু:'#EF4444',স্পোর্টস:'#84CC16'};
-  const badge = old && old>price ? 'sale' : null;
-  const { error } = await sb.from('products').insert({name,category:cat,price,old_price:old,brand,stock,description:desc,badge,icon:icons[cat]||'fa-box',color:colors[cat]||'#007AFF'});
-  if(error){ toast('ত্রুটি',error.message,'e'); return; }
-  toast('পণ্য যোগ হয়েছে!',`"${name}" ডেটাবেসে যোগ হয়েছে`,'s');
+  const name  = document.getElementById('fpName').value.trim();
+  const cat   = document.getElementById('fpCat').value;
+  const sub   = document.getElementById('fpSub').value || null;
+  const price = parseFloat(document.getElementById('fpPrice').value);
+  const old   = parseFloat(document.getElementById('fpOld').value) || null;
+  const brand = document.getElementById('fpBrand').value.trim() || null;
+  const stock = parseInt(document.getElementById('fpStock').value) || 0;
+  const desc  = document.getElementById('fpDesc').value.trim() || null;
+  if (!name || !price) { toast('ত্রুটি','নাম ও মূল্য দিন','w'); return; }
+  const icons  = {বই:'fa-book',ইলেকট্রনিক্স:'fa-mobile-screen',ফ্যাশন:'fa-shirt',হোম:'fa-house',বিউটি:'fa-spa',স্টেশনারি:'fa-pen',শিশু:'fa-child',স্পোর্টস:'fa-dumbbell'};
+  const colors = {বই:'#007AFF',ইলেকট্রনিক্স:'#F97316',ফ্যাশন:'#EC4899',হোম:'#10B981',বিউটি:'#F59E0B',স্টেশনারি:'#06B6D4',শিশু:'#EF4444',স্পোর্টস:'#84CC16'};
+  const badge  = old && old > price ? 'sale' : null;
+  const { error } = await sb.from('products').insert({
+    name, category: cat, sub_category: sub, price, old_price: old,
+    brand, stock, description: desc, badge,
+    icon: icons[cat] || 'fa-box', color: colors[cat] || '#007AFF'
+  });
+  if (error) { toast('ত্রুটি', error.message, 'e'); return; }
+  toast('পণ্য যোগ হয়েছে!', `"${name}" ডেটাবেসে যোগ হয়েছে`, 's');
   toggleAddForm();
-  ['fpName','fpBrand','fpPrice','fpOld','fpStock','fpDesc'].forEach(id=>document.getElementById(id).value='');
+  ['fpName','fpBrand','fpPrice','fpOld','fpStock','fpDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fpSub').value = '';
   await loadProducts(); await loadAdminProducts(); await loadDashboardKPIs();
 }
 
@@ -9558,8 +9744,8 @@ function closeCart() {
   document.body.style.overflow = '';
 }
 function openTrack(pushUrl = true) {
-  if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD', '/track-order');
-  document.title = 'অর্ডার ট্র্যাক — গ্যালাক্সি মার্ট BD';
+  if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — Omni Shop', '/track-order');
+  document.title = 'অর্ডার ট্র্যাক — Omni Shop';
   updateHeaderHeight();
 
   // Show user chip in topbar if logged in
@@ -10422,12 +10608,12 @@ const INFO_CONTENT = {
         <div style="width:60px;height:60px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(0,122,255,.25)">
           <i class="fa-solid fa-store" style="font-size:1.5rem;color:white"></i>
         </div>
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px">গ্যালাক্সি মার্ট BD</div>
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px">Omni Shop</div>
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-light)">বিশ্বস্ত অনলাইন শপ — বাংলাদেশ</div>
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-heart" style="color:var(--red)"></i>আমাদের মিশন</div>
-        <p class="info-section-body bn">গ্যালাক্সি মার্ট বিডি বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপ যেখানে আমরা সেরা মানের পণ্য সাশ্রয়ী দামে পৌঁছে দেই। আমাদের লক্ষ্য — প্রতিটি গ্রাহকের কাছে সেরা শপিং অভিজ্ঞতা নিশ্চিত করা।</p>
+        <p class="info-section-body bn">Omni Shop বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপ যেখানে আমরা সেরা মানের পণ্য সাশ্রয়ী দামে পৌঁছে দেই। আমাদের লক্ষ্য — প্রতিটি গ্রাহকের কাছে সেরা শপিং অভিজ্ঞতা নিশ্চিত করা।</p>
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-shield-halved" style="color:var(--blue)"></i>কেন আমরা আলাদা</div>
@@ -10467,7 +10653,7 @@ const INFO_CONTENT = {
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-key" style="color:var(--gold)"></i>অ্যাকাউন্ট নিরাপত্তা</div>
-        <p class="info-section-body bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। অনাকাঙ্ক্ষিত লগইনের জন্য গ্যালাক্সি মার্ট বিডি দায়ী থাকবে না। সন্দেহজনক কার্যক্রম দেখলে অবিলম্বে পাসওয়ার্ড পরিবর্তন করুন।</p>
+        <p class="info-section-body bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। অনাকাঙ্ক্ষিত লগইনের জন্য Omni Shop দায়ী থাকবে না। সন্দেহজনক কার্যক্রম দেখলে অবিলম্বে পাসওয়ার্ড পরিবর্তন করুন।</p>
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-cookie-bite" style="color:var(--orange)"></i>কুকি ব্যবহার</div>
@@ -12887,8 +13073,8 @@ function copyOrderIdToast(id, btn) {
 // ══════════════════════════════════════════════════
 async function openProfilePage() {
   if (!currentUser) { openAuth(); return; }
-  history.pushState({ page: 'profile' }, 'আমার প্রোফাইল — গ্যালাক্সি মার্ট BD', '/profile');
-  document.title = 'আমার প্রোফাইল — গ্যালাক্সি মার্ট BD';
+  history.pushState({ page: 'profile' }, 'আমার প্রোফাইল — Omni Shop', '/profile');
+  document.title = 'আমার প্রোফাইল — Omni Shop';
   openPage('profile');
 
   // Fill static info
@@ -13014,8 +13200,8 @@ function updateFpWishBtn() {
 }
 
 function openWishlistPage() {
-  history.pushState({ page: 'wishlist' }, 'উইশলিস্ট — গ্যালাক্সি মার্ট BD', '/wishlist');
-  document.title = 'উইশলিস্ট — গ্যালাক্সি মার্ট BD';
+  history.pushState({ page: 'wishlist' }, 'উইশলিস্ট — Omni Shop', '/wishlist');
+  document.title = 'উইশলিস্ট — Omni Shop';
   renderWishlistGrid();
   openPage('wishlist');
 }
@@ -13917,15 +14103,15 @@ window.addEventListener('popstate', function(e) {
 
   } else if (state.page === 'profile') {
     if (currentUser && typeof window.openProfilePage === 'function') openProfilePage();
-    else document.title = 'গ্যালাক্সি মার্ট BD';
+    else document.title = 'Omni Shop';
 
   } else if (state.page === 'wishlist') {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
-    else document.title = 'গ্যালাক্সি মার্ট BD';
+    else document.title = 'Omni Shop';
 
   } else {
     // Home (state.page === 'home' বা state === {}) — সব বন্ধ, home দেখাও
-    document.title = 'গ্যালাক্সি মার্ট BD';
+    document.title = 'Omni Shop';
   }
 }, { capture: true });
 
