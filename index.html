@@ -2,11 +2,11 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<!-- Favicon fallback (overridden dynamically by JS) -->
-<link rel="icon" type="image/png" sizes="32x32" id="fav32" href="/favicon.png?v=1.1" />
-<link rel="icon" type="image/png" sizes="16x16" id="fav16" href="/favicon.png?v=1.1" />
-<link rel="apple-touch-icon" id="favApple" href="/favicon.png?v=1.1" />
-<link rel="shortcut icon" type="image/png" id="favShortcut" href="/favicon.png?v=1.1" />
+<!-- ── Favicon: static fallback (JS overrides after DB fetch) ── -->
+<link rel="icon"         type="image/png" sizes="32x32" id="fav32"      href="/favicon.png?v=1.1" />
+<link rel="icon"         type="image/png" sizes="16x16" id="fav16"      href="/favicon.png?v=1.1" />
+<link rel="apple-touch-icon"                            id="favApple"   href="/favicon.png?v=1.1" />
+<link rel="shortcut icon" type="image/png"              id="favShortcut" href="/favicon.png?v=1.1" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omni Shop - Your Trusted Online Shop</title>
@@ -119,9 +119,27 @@ td.bn, .price-block .new, .price-block .old {
   font-variant-numeric: lining-nums !important;
 }
 
-/* ── Omni Shop dynamic header logo ── */
-.header-logo{max-height:44px;width:auto;object-fit:contain;display:block;}
-@media(max-width:600px){.header-logo{max-height:34px;}}
+/* ═══════════════════════════════════════════════
+   Omni Shop — Header & Footer Logo Optimization
+═══════════════════════════════════════════════ */
+.header-logo-container{display:flex;align-items:center;padding:3px 0}
+.header-logo{height:55px!important;max-height:60px;width:auto!important;
+  object-fit:contain;display:block;padding:4px 0;
+  image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges}
+.footer-logo-container{display:flex;align-items:center;margin-bottom:12px}
+.footer-logo{height:45px!important;width:auto!important;object-fit:contain;
+  display:block;filter:brightness(1.05)}
+.header-top{min-height:68px!important}
+@media(max-width:900px){
+  .header-logo{height:50px!important;max-height:54px}
+  .footer-logo{height:40px!important}
+}
+@media(max-width:768px){
+  .header-logo{height:45px!important;max-height:48px;padding:2px 0}
+  .footer-logo{height:36px!important}
+}
+@media(max-width:400px){.header-logo{height:38px!important}}
+
 </style>
 <style>
 :root{
@@ -5560,7 +5578,7 @@ html, body {
 
     <!-- Logo -->
     <a class="logo" href="/" onclick="event.preventDefault();if(typeof closeAllPagesAndModals==='function')closeAllPagesAndModals();if(typeof setMobNavActive==='function')setMobNavActive('mobNavHome');window.scrollTo({top:0,behavior:'smooth'})">
-      <img id="headerLogo" src="/Logo.png" alt="Omni Shop" class="header-logo" style="max-height:44px;width:auto;object-fit:contain;display:block;" />
+      <div class="header-logo-container"><img id="headerLogo" src="/Logo.png" alt="Omni Shop" class="header-logo" /></div>
     </a>
 
     <!-- Search Bar (desktop) -->
@@ -7098,7 +7116,7 @@ html, body {
 <footer>
   <div class="foot-top">
     <div class="foot-brand">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px"><img id="footerLogo" src="/Logo.png" alt="Omni Shop" style="height:36px;width:auto;object-fit:contain;" /></div>
+      <div class="footer-logo-container"><img id="footerLogo" src="/Logo.png" alt="Omni Shop" class="footer-logo" /></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
       <div class="fsocials">
         <a href="https://facebook.com/omnishop" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
@@ -7150,9 +7168,26 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ══════════════════════════════════════════════════════════════════════
-// DYNAMIC BRANDING SYSTEM — site_settings টেবিল থেকে লোগো/ফেভিকন ফেচ
-// ══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// DYNAMIC BRANDING — site_settings টেবিল থেকে live fetch
+// ══════════════════════════════════════════════════════════════════
+function setFaviconHref(url) {
+  // Dynamic favicon: set all link tags + create if missing
+  const ids = ['fav32','fav16','favApple','favShortcut'];
+  const ts  = '?v=' + Date.now();
+  ids.forEach(id => {
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('link');
+      el.id  = id;
+      el.rel = id === 'favApple' ? 'apple-touch-icon' : id === 'favShortcut' ? 'shortcut icon' : 'icon';
+      el.type = 'image/png';
+      document.head.appendChild(el);
+    }
+    el.href = url + ts;
+  });
+}
+
 async function applyDynamicBranding() {
   try {
     const { data, error } = await sb
@@ -7160,52 +7195,29 @@ async function applyDynamicBranding() {
       .select('site_name, logo_url, favicon_url')
       .eq('id', 1)
       .single();
+    if (error || !data) return;
 
-    if (error || !data) return; // fallback static assets ব্যবহার হবে
-
-    const ts = '?v=' + Date.now(); // cache-buster
-
-    // ── Site Name ──────────────────────────────────────────────────
     if (data.site_name) {
       document.title = data.site_name + ' - Your Trusted Online Shop';
-      // splash brand
       const sb_ = document.getElementById('splashBrand');
       if (sb_) sb_.textContent = data.site_name;
-      // alt text on logos
       ['headerLogo','footerLogo','splashIcon'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.alt = data.site_name;
+        const el = document.getElementById(id); if (el) el.alt = data.site_name;
       });
     }
-
-    // ── Logo URL ───────────────────────────────────────────────────
     if (data.logo_url) {
-      const logoSrc = data.logo_url + ts;
+      const src = data.logo_url + '?v=' + Date.now();
       ['headerLogo','footerLogo'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.src = logoSrc;
+        const el = document.getElementById(id); if (el) el.src = src;
       });
     }
-
-    // ── Favicon URL ────────────────────────────────────────────────
     if (data.favicon_url) {
-      const favSrc = data.favicon_url + ts;
-      // splash icon
+      setFaviconHref(data.favicon_url);
       const si = document.getElementById('splashIcon');
-      if (si) si.src = favSrc;
-      // browser tab favicon
-      ['fav32','fav16','favApple','favShortcut'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.href = favSrc;
-      });
+      if (si) si.src = data.favicon_url + '?v=' + Date.now();
     }
-
-  } catch (e) {
-    console.warn('[Branding] fetch failed, using static fallback.', e);
-  }
+  } catch(e) { console.warn('[Branding] fetch failed, using static fallback.', e); }
 }
-
-// পেজ লোডের সাথে সাথে branding fetch করো
 applyDynamicBranding();
 
 
