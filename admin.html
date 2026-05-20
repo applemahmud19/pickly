@@ -2,10 +2,11 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" sizes="32x32" id="fav32" href="/favicon.png?v=1.1" />
-<link rel="icon" type="image/png" sizes="16x16" id="fav16" href="/favicon.png?v=1.1" />
-<link rel="apple-touch-icon" id="favApple" href="/favicon.png?v=1.1" />
-<link rel="shortcut icon" type="image/png" id="favShortcut" href="/favicon.png?v=1.1" />
+<!-- ── Admin Favicon: static fallback (JS overrides from site_settings) ── -->
+<link rel="icon"          type="image/png" sizes="32x32" id="adFav32"      href="/favicon.png?v=1.1" />
+<link rel="icon"          type="image/png" sizes="16x16" id="adFav16"      href="/favicon.png?v=1.1" />
+<link rel="apple-touch-icon"                             id="adFavApple"   href="/favicon.png?v=1.1" />
+<link rel="shortcut icon" type="image/png"               id="adFavShortcut" href="/favicon.png?v=1.1" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omni Shop — Admin Dashboard</title>
@@ -2146,48 +2147,34 @@ body {
             </span>
           </div>
           <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
-
-            <!-- Site Name -->
             <div class="form-group">
               <label class="form-label">Site Name</label>
-              <input class="form-inp" type="text" id="brandSiteName"
-                     placeholder="Omni Shop" value="Omni Shop" />
+              <input class="form-inp" type="text" id="brandSiteName" placeholder="Omni Shop" value="Omni Shop" />
             </div>
-
-            <!-- Logo Upload -->
             <div class="form-group">
-              <label class="form-label">Logo Image <span style="font-size:.68rem;color:var(--text3)">(PNG/SVG, recommended height 80–120px)</span></label>
-              <input class="form-inp" type="file" id="brandLogoFile"
-                     accept="image/png,image/svg+xml,image/jpeg,image/webp"
+              <label class="form-label">Logo <span style="font-size:.68rem;color:var(--text3)">(PNG/SVG, height 80–120px recommended)</span></label>
+              <input class="form-inp" type="file" id="brandLogoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp"
                      onchange="previewBrandAsset(this,'brandLogoPreview')" />
-              <img id="brandLogoPreview" src="" alt=""
-                   style="display:none;margin-top:8px;max-height:60px;border-radius:8px;border:1px solid var(--border)" />
+              <img id="brandLogoPreview" src="" alt="" style="display:none;margin-top:8px;max-height:60px;border-radius:8px;border:1px solid var(--border)" />
               <div id="brandCurrentLogo" style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:var(--mono)"></div>
             </div>
-
-            <!-- Favicon Upload -->
             <div class="form-group">
-              <label class="form-label">Favicon <span style="font-size:.68rem;color:var(--text3)">(PNG, 32×32 বা 64×64 recommended)</span></label>
-              <input class="form-inp" type="file" id="brandFaviconFile"
-                     accept="image/png,image/x-icon,image/svg+xml"
+              <label class="form-label">Favicon <span style="font-size:.68rem;color:var(--text3)">(PNG 32×32 বা 64×64 recommended)</span></label>
+              <input class="form-inp" type="file" id="brandFaviconFile" accept="image/png,image/x-icon,image/svg+xml"
                      onchange="previewBrandAsset(this,'brandFaviconPreview')" />
-              <img id="brandFaviconPreview" src="" alt=""
-                   style="display:none;margin-top:8px;max-height:40px;border-radius:6px;border:1px solid var(--border)" />
+              <img id="brandFaviconPreview" src="" alt="" style="display:none;margin-top:8px;max-height:40px;border-radius:6px;border:1px solid var(--border)" />
               <div id="brandCurrentFavicon" style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:var(--mono)"></div>
             </div>
-
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <button class="btn btn-primary" onclick="saveBrandingSettings()" id="brandSaveBtn">
                 <i class="fa-solid fa-floppy-disk"></i> Save Branding
               </button>
               <span id="brandStatus" style="font-size:.75rem;color:var(--text3)"></span>
             </div>
-
-            <div style="font-size:.7rem;color:var(--text3);background:var(--bg3);
-                        border-radius:9px;padding:12px 14px;line-height:1.8;font-family:var(--mono)">
-              ℹ️ Files are uploaded to Supabase Storage <b style="color:var(--cyan)">branding</b> bucket
-              and URLs are saved in <b style="color:var(--purple)">site_settings</b> (id=1).
-              Changes go live on the store immediately.
+            <div style="font-size:.7rem;color:var(--text3);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.8;font-family:var(--mono)">
+              ℹ️ Files upload to Supabase Storage <b style="color:var(--cyan)">branding</b> bucket.
+              URLs saved in <b style="color:var(--purple)">site_settings</b> (id=1).
+              Changes go live on store &amp; admin tab instantly.
             </div>
           </div>
         </div>
@@ -3385,6 +3372,52 @@ function initSB() {
   } catch (e) { return false; }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// ADMIN DYNAMIC FAVICON — site_settings টেবিল থেকে fetch করো
+// ══════════════════════════════════════════════════════════════════
+function setAdminFaviconHref(url) {
+  const ts = '?v=' + Date.now();
+  ['adFav32','adFav16','adFavApple','adFavShortcut'].forEach(id => {
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('link');
+      el.id  = id;
+      el.rel = id === 'adFavApple' ? 'apple-touch-icon'
+             : id === 'adFavShortcut' ? 'shortcut icon' : 'icon';
+      el.type = 'image/png';
+      document.head.appendChild(el);
+    }
+    el.href = url + ts;
+  });
+}
+
+async function applyAdminBranding() {
+  try {
+    const { data, error } = await sb
+      .from('site_settings')
+      .select('site_name, favicon_url, logo_url')
+      .eq('id', 1)
+      .single();
+    if (error || !data) return;
+
+    // Browser tab title
+    if (data.site_name)
+      document.title = data.site_name + ' — Admin Dashboard';
+
+    // Browser tab favicon
+    if (data.favicon_url)
+      setAdminFaviconHref(data.favicon_url);
+
+    // Login screen logo img (if still visible)
+    const loginImg = document.querySelector('.login-logo-icon img');
+    if (loginImg && data.favicon_url)
+      loginImg.src = data.favicon_url + '?v=' + Date.now();
+
+  } catch(e) { console.warn('[AdminBranding] fetch failed, using /favicon.png fallback', e); }
+}
+
+
+
 window.addEventListener('load', async () => {
   // Load saved theme
   const savedTheme = localStorage.getItem('gm_theme') || 'light';
@@ -3396,6 +3429,7 @@ window.addEventListener('load', async () => {
   document.getElementById('cfgBucket').value = getConfig().bucket;
 
   if (!initSB()) return;
+  applyAdminBranding(); // fetch favicon + title from site_settings
 
   // Check existing session — with timeout guard so a sleeping DB doesn't hang
   let session = null;
@@ -6231,15 +6265,11 @@ async function deleteProduct(id) {
    SETTINGS
 ══════════════════════════════════════ */
 
-// ══════════════════════════════════════════════════════════════════════
-// DYNAMIC BRANDING — Website Settings (site_settings table)
-// ══════════════════════════════════════════════════════════════════════
+// ── Website Branding CRUD ─────────────────────────────────────────
 function previewBrandAsset(input, previewId) {
-  const file = input.files[0];
-  if (!file) return;
+  const file = input.files[0]; if (!file) return;
   const prev = document.getElementById(previewId);
-  prev.src = URL.createObjectURL(file);
-  prev.style.display = 'block';
+  prev.src = URL.createObjectURL(file); prev.style.display = 'block';
 }
 
 async function loadCurrentBranding() {
@@ -6247,18 +6277,16 @@ async function loadCurrentBranding() {
     const { data } = await sb.from('site_settings').select('*').eq('id', 1).single();
     if (!data) return;
     const nm = document.getElementById('brandSiteName');
-    if (nm) nm.value = data.site_name || 'Omni Shop';
+    if (nm && data.site_name) nm.value = data.site_name;
     const cl = document.getElementById('brandCurrentLogo');
-    if (cl && data.logo_url) cl.textContent = '✅ Current: ' + data.logo_url;
+    if (cl && data.logo_url) cl.textContent = '✅ ' + data.logo_url;
     const cf = document.getElementById('brandCurrentFavicon');
-    if (cf && data.favicon_url) cf.textContent = '✅ Current: ' + data.favicon_url;
+    if (cf && data.favicon_url) cf.textContent = '✅ ' + data.favicon_url;
   } catch(e) { console.warn('[Branding] load failed', e); }
 }
 
 async function uploadBrandFile(file, fileName) {
-  const { data, error } = await sb.storage
-    .from('branding')
-    .upload(fileName, file, { upsert: true, contentType: file.type });
+  const { error } = await sb.storage.from('branding').upload(fileName, file, { upsert: true, contentType: file.type });
   if (error) throw error;
   const { data: urlData } = sb.storage.from('branding').getPublicUrl(fileName);
   return urlData.publicUrl;
@@ -6270,30 +6298,20 @@ async function saveBrandingSettings() {
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
   status.textContent = '';
-
   try {
     const siteName = document.getElementById('brandSiteName').value.trim() || 'Omni Shop';
     const logoFile = document.getElementById('brandLogoFile').files[0];
     const favFile  = document.getElementById('brandFaviconFile').files[0];
-
-    const updates = { site_name: siteName, updated_at: new Date().toISOString() };
-
-    if (logoFile)  updates.logo_url    = await uploadBrandFile(logoFile,  'logo.png');
-    if (favFile)   updates.favicon_url = await uploadBrandFile(favFile,   'favicon.png');
-
-    const { error } = await sb
-      .from('site_settings')
-      .update(updates)
-      .eq('id', 1);
-
+    const updates  = { site_name: siteName, updated_at: new Date().toISOString() };
+    if (logoFile) updates.logo_url    = await uploadBrandFile(logoFile, 'logo.png');
+    if (favFile)  updates.favicon_url = await uploadBrandFile(favFile,  'favicon.png');
+    const { error } = await sb.from('site_settings').update(updates).eq('id', 1);
     if (error) throw error;
-
-    toast('✅ Branding Saved', 'লোগো ও ফেভিকন লাইভ হয়ে গেছে!', 'success');
-    status.textContent = '✅ Saved at ' + new Date().toLocaleTimeString();
+    toast('✅ Branding Saved', 'লোগো ও ফেভিকন লাইভ!', 'success');
+    status.textContent = '✅ ' + new Date().toLocaleTimeString();
     await loadCurrentBranding();
-
+    await applyAdminBranding(); // update admin tab favicon immediately
   } catch(e) {
-    console.error('[Branding] save error', e);
     toast('❌ Error', e.message || 'Upload failed', 'error');
     status.textContent = '❌ ' + (e.message || 'Failed');
   } finally {
