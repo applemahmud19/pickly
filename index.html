@@ -2,10 +2,11 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=1.0" />
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=1.0" />
-<link rel="apple-touch-icon" href="/favicon.png?v=1.0" />
-<link rel="shortcut icon" type="image/png" href="/favicon.png?v=1.0" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=1.1" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon.png?v=1.1" />
+<link rel="apple-touch-icon" href="/favicon.png?v=1.1" />
+<link rel="shortcut icon" type="image/png" href="/favicon.png?v=1.1" />
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Omni Shop - Your Trusted Online Shop</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -116,6 +117,10 @@ td.bn, .price-block .new, .price-block .old {
   font-family: 'Inter', Arial, sans-serif !important;
   font-variant-numeric: lining-nums !important;
 }
+
+/* Omni Shop — responsive header logo image */
+.header-logo{max-height:44px;width:auto;object-fit:contain;display:block;}
+@media(max-width:600px){.header-logo{max-height:34px;}}
 </style>
 <style>
 :root{
@@ -335,7 +340,7 @@ header.scrolled{
 }
 
 /* Logo */
-.logo{display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0;min-width:0;padding:2px 0}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;min-width:0}
 .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.05rem;flex-shrink:0;box-shadow:0 4px 12px rgba(0,122,255,.25)}
 .logo-text{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--blue);line-height:1.15;white-space:nowrap}
 .logo-text small{display:block;font-size:.55rem;color:var(--text-light);font-weight:500;letter-spacing:.02em}
@@ -5513,7 +5518,7 @@ html, body {
 
 <!-- LOADING -->
 <div id="loadingScreen">
-  <div class="loader-logo" style="background:none;box-shadow:none;border-radius:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><img src="/favicon.png?v=1.0" alt="Omni Shop" style="width:80px;height:80px;object-fit:contain;" /></div>
+  <div class="loader-logo" style="background:none;box-shadow:none;border-radius:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><img src="/favicon.png?v=1.1" alt="Omni Shop" style="width:80px;height:80px;object-fit:contain;" /></div>
   <div class="loader-brand" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:1.2rem;letter-spacing:.02em;">Omni Shop</div>
   <div class="loader-text bn">লোড হচ্ছে...</div>
   <div class="loader-bar"><div class="loader-bar-inner"></div></div>
@@ -5554,7 +5559,7 @@ html, body {
 
     <!-- Logo -->
     <a class="logo" href="/" onclick="event.preventDefault();if(typeof closeAllPagesAndModals==='function')closeAllPagesAndModals();if(typeof setMobNavActive==='function')setMobNavActive('mobNavHome');window.scrollTo({top:0,behavior:'smooth'})">
-      <img src="/Logo.png" alt="Omni Shop" style="max-height:44px;width:auto;object-fit:contain;display:block;" />
+      <img src="/Logo.png" alt="Omni Shop" class="header-logo" style="max-height:44px;width:auto;object-fit:contain;display:block;" />
     </a>
 
     <!-- Search Bar (desktop) -->
@@ -7092,7 +7097,7 @@ html, body {
 <footer>
   <div class="foot-top">
     <div class="foot-brand">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:.9rem"><i class="fa-solid fa-store"></i></div><span style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:white">Omni Shop</span></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px"><img src="/Logo.png" alt="Omni Shop" style="height:36px;width:auto;object-fit:contain;" /></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
       <div class="fsocials">
         <a href="https://facebook.com/omnishop" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
