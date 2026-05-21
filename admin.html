@@ -2625,11 +2625,11 @@ body {
             </div>
           </div>
 
-          <!-- Sub-category row — always visible, populates on category change -->
+          <!-- Sub-category row — shows for ALL categories, populates dynamically on category change -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="subCatRow">
             <div class="form-group" style="gap:3px">
               <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;justify-content:space-between">
-                <span>Sub-Category</span>
+                <span id="subCatLabel">Sub-Category</span>
                 <span id="subCatLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
               </label>
               <select class="form-inp" id="pSubCategory" style="padding:7px 10px;font-size:0.82rem">
@@ -2638,11 +2638,12 @@ body {
             </div>
             <div class="form-group" style="gap:3px">
               <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;gap:5px">
-                <i class="fa-solid fa-circle-plus" style="color:var(--blue);font-size:0.65rem"></i> নতুন Sub-Category যোগ করুন
+                <i class="fa-solid fa-circle-plus" style="color:var(--blue);font-size:0.65rem"></i>
+                <span id="newSubCatLabel">নতুন Sub-Category যোগ করুন</span>
               </label>
               <div style="display:flex;gap:5px">
                 <input class="form-inp" type="text" id="newSubCatInput"
-                  placeholder="যেমন: Mobile, Headphone…"
+                  placeholder="প্রথমে ক্যাটাগরি সিলেক্ট করুন"
                   style="padding:7px 10px;font-size:0.82rem;flex:1;font-family:var(--font-bn)"
                   onkeydown="if(event.key==='Enter'){event.preventDefault();addSubCategoryInline()}"
                   disabled>
@@ -5995,7 +5996,39 @@ function handleCategoryChange(cat) {
     if (authorField)    authorField.classList.remove('visible');
     if (brandField)     brandField.style.display = 'block';
   }
-  // Load sub-categories for selected category
+
+  // ── Dynamic Sub-Category labels: update for ALL categories ──
+  const subCatLabel    = document.getElementById('subCatLabel');
+  const newSubCatLabel = document.getElementById('newSubCatLabel');
+  const newSubCatInput = document.getElementById('newSubCatInput');
+
+  if (cat) {
+    // Update dropdown label to show selected category name
+    if (subCatLabel)    subCatLabel.textContent    = cat + ' — Sub-Category';
+    if (newSubCatLabel) newSubCatLabel.textContent  = cat + '-এ নতুন যোগ করুন';
+
+    // Update input placeholder dynamically based on category
+    const PLACEHOLDER_MAP = {
+      'বই':            'যেমন: উপন্যাস, কবিতা…',
+      'ইলেকট্রনিক্স':  'যেমন: মোবাইল, ল্যাপটপ…',
+      'ফ্যাশন':        'যেমন: শার্ট, জুতা…',
+      'হোম':           'যেমন: রান্নাঘর, বেডরুম…',
+      'বিউটি':         'যেমন: স্কিনকেয়ার, মেকআপ…',
+      'স্টেশনারি':     'যেমন: কলম, নোটবুক…',
+      'শিশু':          'যেমন: খেলনা, শিশু পোশাক…',
+      'স্পোর্টস':     'যেমন: ক্রিকেট, ফুটবল…',
+    };
+    if (newSubCatInput) {
+      newSubCatInput.placeholder = PLACEHOLDER_MAP[cat] || 'নতুন সাব-ক্যাটাগরির নাম লিখুন…';
+    }
+  } else {
+    // No category selected — reset labels
+    if (subCatLabel)    subCatLabel.textContent    = 'Sub-Category';
+    if (newSubCatLabel) newSubCatLabel.textContent  = 'নতুন Sub-Category যোগ করুন';
+    if (newSubCatInput) newSubCatInput.placeholder  = 'প্রথমে ক্যাটাগরি সিলেক্ট করুন';
+  }
+
+  // Load sub-categories for selected category (works for ALL categories)
   loadSubCategoriesForCategory(cat);
 }
 
