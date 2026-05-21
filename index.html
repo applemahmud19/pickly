@@ -11162,11 +11162,19 @@ async function loadHeroBanners() {
     );
 
     if (!pbErr && photoBanners && photoBanners.length) {
-      // These are photo banners uploaded via admin — render as image slides
+      // These are banners uploaded via admin — render as image or dynamic_builder
       heroBanners = photoBanners.map(b => ({
         ...b,
-        _isPhoto: true,
-        image_url: b.image_url || b.imageUrl || b.photo_url || b.url || ''
+        _type:       b.type || (b.image_url ? 'image' : 'dynamic_builder'),
+        _isPhoto:    (b.type === 'image' || (!b.type && b.image_url)),
+        _isDynamic:  (b.type === 'dynamic_builder'),
+        image_url:   b.image_url || b.imageUrl || b.photo_url || b.url || '',
+        badge_text:  b.badge_text  || '',
+        main_title:  b.main_title  || b.title || '',
+        subtitle:    b.subtitle    || '',
+        button_text: b.button_text || 'শপিং করুন',
+        button_link: b.button_link || b.link  || '',
+        bg_color:    b.bg_color    || '#007AFF',
       }));
       renderHeroBanners();
       return;
@@ -11195,21 +11203,61 @@ function renderHeroBanners() {
   if(!slides || !dots) return;
 
   slides.innerHTML = heroBanners.map(b => {
-    // Photo banner (uploaded via admin) — render as full-width image slide
+
+    /* ── TYPE 1: Photo/image banner (admin-uploaded image) ── */
     if (b._isPhoto && b.image_url) {
       return `
-        <div class="hero-slide hero-slide--photo" style="background:#0a0f1e;cursor:pointer;min-height:160px;position:relative;overflow:hidden" onclick="${b.link ? `window.open('${b.link}','_self')` : 'void(0)'}">
-          <img src="${b.image_url}" alt="${b.title||'Banner'}"
+        <div class="hero-slide hero-slide--photo" style="background:#0a0f1e;cursor:pointer;min-height:160px;position:relative;overflow:hidden" onclick="${b.button_link||b.link ? `window.open('${b.button_link||b.link}','_self')` : 'void(0)'}">
+          <img src="${b.image_url}" alt="${b.main_title||b.title||'Banner'}"
             style="width:100%;height:100%;min-height:160px;max-height:260px;object-fit:cover;object-position:center center;display:block;border-radius:0"
             onerror="this.style.display='none'">
         </div>`;
     }
 
+    /* ── TYPE 2: Dynamic Builder banner ── */
+    if (b._isDynamic || b.type === 'dynamic_builder') {
+      const bg      = b.bg_color || '#007AFF';
+      const btnLink = b.button_link || b.link || '';
+      const btnAct  = btnLink ? `window.open('${btnLink}','_self')` : `document.querySelector('.main').scrollIntoView({behavior:'smooth'})`;
+      return `
+        <div class="hero-slide hero-slide--dynamic" style="
+          background:linear-gradient(120deg, ${bg} 0%, ${bg}CC 100%);
+          min-height:185px; position:relative; overflow:hidden; display:flex; align-items:stretch">
+
+          <!-- Deco circles -->
+          <div style="position:absolute;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.06);top:-80px;right:-30px;pointer-events:none"></div>
+          <div style="position:absolute;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.05);bottom:-60px;right:100px;pointer-events:none"></div>
+
+          <!-- Left: Text content -->
+          <div class="hslide-content" style="flex:1;position:relative;z-index:2">
+            ${b.badge_text ? `<div class="hslide-tag bn" style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3)">
+              <i class="fa-solid fa-tag"></i> ${b.badge_text}
+            </div>` : ''}
+            <div class="hslide-title bn" style="text-shadow:0 2px 8px rgba(0,0,0,.18)">${b.main_title||b.title||''}</div>
+            ${b.subtitle ? `<div class="hslide-sub bn">${b.subtitle}</div>` : ''}
+            <div class="hslide-btns">
+              <button class="hslide-btn bn"
+                style="background:#fff;color:${bg};border:none"
+                onclick="${btnAct}">
+                <i class="fa-solid fa-bag-shopping"></i> ${b.button_text||'শপিং করুন'}
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Icon cluster -->
+          <div class="hslide-icons" style="position:absolute;right:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:2">
+            <div class="hslide-icon"><i class="fa-solid fa-tag"></i></div>
+            <div class="hslide-icon"><i class="fa-solid fa-gift"></i></div>
+            <div class="hslide-icon"><i class="fa-solid fa-percent"></i></div>
+          </div>
+        </div>`;
+    }
+
+    /* ── TYPE 3: Legacy text/gradient banner (DEFAULT_BANNERS) ── */
     const iconsHtml = (b.icons||[]).slice(0,3).map(ic =>
       `<div class="hslide-icon"><i class="fa-solid ${ic}"></i></div>`
     ).join('');
 
-    // Stats strip (only for slides with show_stats)
     const statsHtml = b.show_stats ? `
       <div class="hslide-stats">
         <div class="hslide-stat"><div class="snum">৫০০+</div><div class="slbl bn">পণ্য</div></div>
@@ -11218,13 +11266,11 @@ function renderHeroBanners() {
         <div class="hslide-stat"><div class="snum">COD</div><div class="slbl bn">পেমেন্ট</div></div>
       </div>` : '';
 
-    // Second button
     const btn2Html = b.btn2_label ? `
       <button class="hslide-btn-outline bn" onclick="${b.btn2_action||''}">
         <i class="fa-solid fa-location-dot"></i> ${b.btn2_label}
       </button>` : '';
 
-    // Multi-line title support (newline → <br>)
     const titleHtml = (b.title||'').replace(/\n/g, '<br>');
 
     return `
