@@ -2625,6 +2625,38 @@ body {
             </div>
           </div>
 
+          <!-- Sub-category row — always visible, populates on category change -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="subCatRow">
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;justify-content:space-between">
+                <span>Sub-Category</span>
+                <span id="subCatLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
+              </label>
+              <select class="form-inp" id="pSubCategory" style="padding:7px 10px;font-size:0.82rem">
+                <option value="">— প্রথমে ক্যাটাগরি বেছে নিন —</option>
+              </select>
+            </div>
+            <div class="form-group" style="gap:3px">
+              <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;gap:5px">
+                <i class="fa-solid fa-circle-plus" style="color:var(--blue);font-size:0.65rem"></i> নতুন Sub-Category যোগ করুন
+              </label>
+              <div style="display:flex;gap:5px">
+                <input class="form-inp" type="text" id="newSubCatInput"
+                  placeholder="যেমন: Mobile, Headphone…"
+                  style="padding:7px 10px;font-size:0.82rem;flex:1;font-family:var(--font-bn)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();addSubCategoryInline()}"
+                  disabled>
+                <button type="button" id="addSubCatBtn"
+                  onclick="addSubCategoryInline()"
+                  disabled
+                  title="নতুন সাব-ক্যাটাগরি যোগ করুন"
+                  style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--blue);background:var(--blue-ll);color:var(--blue);font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .18s;flex-shrink:0">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Row 2: Brand / Author (conditional) + Badge -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="form-group" id="brandField" style="gap:3px">
@@ -3005,163 +3037,62 @@ body {
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     BANNER MODAL — with Banner Maker
-══════════════════════════════════════ -->
 <style>
-/* ── Banner Maker Extra Styles ── */
-.bm-toggle-row{display:flex;background:var(--bg3);border-radius:10px;padding:4px;gap:4px;margin-bottom:18px}
-.bm-toggle-btn{flex:1;padding:8px 10px;border:none;border-radius:8px;font-family:var(--font-bn);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--text2)}
-.bm-toggle-btn.active{background:var(--surface);color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
-.bm-panel{display:none}.bm-panel.active{display:block}
-.bm-preview-wrap{border-radius:12px;overflow:hidden;aspect-ratio:16/5;position:relative;min-height:130px;margin-bottom:14px;background:#0a1628}
-.bm-preview-slide{width:100%;height:100%;display:flex;align-items:stretch;position:relative;overflow:hidden}
-.bm-preview-left{flex:1;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:6px;position:relative;z-index:2}
-.bm-preview-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:3px 10px;font-size:.6rem;font-weight:700;color:#fff;width:fit-content;backdrop-filter:blur(6px)}
-.bm-preview-title{font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;line-height:1.25;text-shadow:0 2px 8px rgba(0,0,0,.2)}
-.bm-preview-sub{font-family:'Hind Siliguri',sans-serif;font-size:.62rem;color:rgba(255,255,255,.82);line-height:1.5;max-width:230px}
-.bm-preview-btn{display:inline-flex;align-items:center;gap:5px;background:#fff;color:#0a1628;border-radius:7px;padding:5px 12px;font-size:.65rem;font-weight:700;font-family:'Hind Siliguri',sans-serif;margin-top:4px;width:fit-content;box-shadow:0 3px 10px rgba(0,0,0,.2)}
-.bm-preview-right{width:120px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;z-index:2;padding:12px}
-.bm-icons-cluster{display:flex;flex-direction:column;gap:8px;align-items:center}
-.bm-icon-box{width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:white;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.22)}
-.bm-deco-circle{position:absolute;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
-/* Color palette */
-.bm-color-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.bm-color-swatch{width:28px;height:28px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:all .18s;flex-shrink:0}
-.bm-color-swatch.active,.bm-color-swatch:hover{transform:scale(1.18);border-color:var(--text)}
-.bm-color-custom{width:36px;height:28px;border-radius:7px;border:1.5px solid var(--border2);cursor:pointer;padding:0;overflow:hidden;flex-shrink:0}
+/* ── Sub-category inline add button ── */
+#addSubCatBtn:not([disabled]):hover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+#addSubCatBtn[disabled], #newSubCatInput[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style>
 
+<!-- ══════════════════════════════════════
+     BANNER MODAL
+══════════════════════════════════════ -->
 <div class="modal-overlay" id="bannerModal" onclick="if(event.target===this)closeModal('bannerModal')">
-  <div class="modal-box" style="max-width:680px">
+  <div class="modal-box" style="max-width:520px">
     <div class="modal-header">
-      <div class="modal-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue)"></i> Banner Manager</div>
+      <div class="modal-title">নতুন ব্যানার আপলোড করুন</div>
       <button class="modal-close" onclick="closeModal('bannerModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-
-      <!-- Toggle: Image Upload vs Custom Builder -->
-      <div class="bm-toggle-row">
-        <button class="bm-toggle-btn active" id="bmToggleImage" onclick="bmSwitchMode('image')">
-          <i class="fa-solid fa-image"></i> ইমেজ আপলোড করুন
-        </button>
-        <button class="bm-toggle-btn" id="bmToggleBuilder" onclick="bmSwitchMode('builder')">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> কাস্টম ব্যানার বানান
-        </button>
-      </div>
-
-      <!-- ── PANEL A: Image Upload ── -->
-      <div class="bm-panel active" id="bmPanelImage">
-        <div style="display:grid;gap:14px">
-          <div class="form-group">
-            <label class="form-label">Banner Image <span class="required">*</span></label>
-            <div class="upload-preview empty" id="bannerPreview" style="aspect-ratio:16/5">
-              <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
-            </div>
-            <div class="upload-zone" id="bannerUploadZone">
-              <input type="file" id="bannerImageFile" accept="image/*" onchange="handleBannerImageSelect(this)">
-              <i class="fa-solid fa-panorama uz-icon"></i>
-              <div class="uz-title">Banner ছবি ড্র্যাগ করুন বা ক্লিক করুন</div>
-              <div class="uz-sub">Recommended: 1200×400px · PNG, JPG, WEBP · Max 5MB</div>
-              <div class="uz-drag-hint">✦ Drop to upload!</div>
-            </div>
+      <div style="display:grid;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Banner Image <span class="required">*</span></label>
+          <div class="upload-preview empty" id="bannerPreview" style="aspect-ratio:16/5">
+            <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
           </div>
-          <div class="form-group">
-            <label class="form-label">Banner Title</label>
-            <input class="form-inp" type="text" id="bannerTitle" placeholder="e.g. Eid Special Banner 2026">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Link URL (Optional)</label>
-            <input class="form-inp" type="url" id="bannerLink" placeholder="https://...">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Sort Order</label>
-            <input class="form-inp" type="number" id="bannerOrder" placeholder="1" min="1" value="1">
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
-            <button class="btn btn-ghost" onclick="closeModal('bannerModal')">Cancel</button>
-            <button class="btn btn-primary" onclick="saveBanner()" id="saveBannerBtn">
-              <i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন
-            </button>
+          <div class="upload-zone" id="bannerUploadZone">
+            <input type="file" id="bannerImageFile" accept="image/*" onchange="handleBannerImageSelect(this)">
+            <i class="fa-solid fa-panorama uz-icon"></i>
+            <div class="uz-title">Banner ছবি ড্র্যাগ করুন বা ক্লিক করুন</div>
+            <div class="uz-sub">Recommended: 1200×400px · PNG, JPG, WEBP · Max 5MB</div>
+            <div class="uz-drag-hint">✦ Drop to upload!</div>
           </div>
         </div>
-      </div>
-
-      <!-- ── PANEL B: Custom Banner Builder ── -->
-      <div class="bm-panel" id="bmPanelBuilder">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-
-          <!-- LEFT: Form inputs -->
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="form-group">
-              <label class="form-label">ব্যাজ টেক্সট (Badge)</label>
-              <input class="form-inp" type="text" id="bmBadge" placeholder="ঈদ স্পেশাল অফার" oninput="bmUpdatePreview()" style="font-family:var(--font-bn)">
-            </div>
-            <div class="form-group">
-              <label class="form-label">মেইন টাইটেল <span class="required">*</span></label>
-              <input class="form-inp" type="text" id="bmTitle" placeholder="৩০% পর্যন্ত ছাড়!" oninput="bmUpdatePreview()" style="font-family:var(--font-bn)">
-            </div>
-            <div class="form-group">
-              <label class="form-label">সাবটাইটেল</label>
-              <textarea class="form-inp" id="bmSubtitle" rows="2" placeholder="সারা বাংলাদেশে ক্যাশ অন ডেলিভারি..." oninput="bmUpdatePreview()" style="font-family:var(--font-bn);resize:vertical"></textarea>
-            </div>
-            <div class="form-group">
-              <label class="form-label">বাটনের লেখা</label>
-              <input class="form-inp" type="text" id="bmBtnText" placeholder="শপিং করুন" oninput="bmUpdatePreview()" style="font-family:var(--font-bn)">
-            </div>
-            <div class="form-group">
-              <label class="form-label">বাটন লিঙ্ক</label>
-              <input class="form-inp" type="url" id="bmBtnLink" placeholder="https://..." style="font-family:var(--mono);font-size:.8rem">
-            </div>
-            <div class="form-group">
-              <label class="form-label">ব্যাকগ্রাউন্ড কালার</label>
-              <div class="bm-color-row" id="bmColorRow">
-                <!-- Swatches injected by JS -->
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Sort Order</label>
-              <input class="form-inp" type="number" id="bmOrder" placeholder="1" min="1" value="1">
-            </div>
-          </div>
-
-          <!-- RIGHT: Live Preview -->
-          <div>
-            <div style="font-size:.72rem;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">
-              <i class="fa-solid fa-eye" style="color:var(--blue)"></i> লাইভ প্রিভিউ
-            </div>
-            <div class="bm-preview-wrap" id="bmPreviewWrap">
-              <div class="bm-preview-slide" id="bmPreviewSlide">
-                <!-- deco circles -->
-                <div class="bm-deco-circle" style="width:180px;height:180px;top:-60px;right:-30px"></div>
-                <div class="bm-deco-circle" style="width:100px;height:100px;bottom:-40px;right:80px"></div>
-                <div class="bm-preview-left">
-                  <div class="bm-preview-badge" id="bmPvBadge"><i class="fa-solid fa-tag" style="font-size:.5rem"></i> <span id="bmPvBadgeText">ঈদ স্পেশাল অফার</span></div>
-                  <div class="bm-preview-title" id="bmPvTitle">৩০% পর্যন্ত ছাড়!</div>
-                  <div class="bm-preview-sub" id="bmPvSub">সারা বাংলাদেশে ক্যাশ অন ডেলিভারি — দ্রুত পৌঁছানোর গ্যারান্টি।</div>
-                  <div class="bm-preview-btn" id="bmPvBtn"><i class="fa-solid fa-bag-shopping" style="font-size:.6rem"></i> শপিং করুন</div>
-                </div>
-                <div class="bm-preview-right">
-                  <div class="bm-icons-cluster">
-                    <div class="bm-icon-box"><i class="fa-solid fa-tag"></i></div>
-                    <div class="bm-icon-box"><i class="fa-solid fa-gift"></i></div>
-                    <div class="bm-icon-box"><i class="fa-solid fa-percent"></i></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style="font-size:.65rem;color:var(--text3);font-family:var(--mono);margin-top:6px;text-align:center">প্রিভিউ — মোবাইলে আরো কমপ্যাক্ট দেখাবে</div>
-          </div>
+        <div class="form-group">
+          <label class="form-label">Banner Title</label>
+          <input class="form-inp" type="text" id="bannerTitle" placeholder="e.g. Summer Sale 2025">
         </div>
-
-        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:16px;border-top:1px solid var(--border);margin-top:4px">
+        <div class="form-group">
+          <label class="form-label">Link URL (Optional)</label>
+          <input class="form-inp" type="url" id="bannerLink" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sort Order</label>
+          <input class="form-inp" type="number" id="bannerOrder" placeholder="1" min="1" value="1">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
           <button class="btn btn-ghost" onclick="closeModal('bannerModal')">Cancel</button>
-          <button class="btn btn-primary" onclick="saveBuilderBanner()" id="saveBuilderBannerBtn">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> ব্যানার তৈরি করুন
+          <button class="btn btn-primary" onclick="saveBanner()" id="saveBannerBtn">
+            <i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন
           </button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -6038,6 +5969,10 @@ function openProductModal(product = null) {
     prev.innerHTML = `<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>`;
   }
 
+  // Sub-category: store pending value so loadSubCategoriesForCategory picks it up
+  const subSel = document.getElementById('pSubCategory');
+  if (subSel) subSel.setAttribute('data-pending-val', product?.sub_category || '');
+
   handleCategoryChange(product?.category || '');
   openModal('productModal');
 }
@@ -6060,6 +5995,8 @@ function handleCategoryChange(cat) {
     if (authorField)    authorField.classList.remove('visible');
     if (brandField)     brandField.style.display = 'block';
   }
+  // Load sub-categories for selected category
+  loadSubCategoriesForCategory(cat);
 }
 
 // ── Admin gallery sortable state ──
@@ -6312,8 +6249,12 @@ async function saveProduct() {
     // Brand (non-books only)
     const brandVal  = category !== 'বই' ? (document.getElementById('pBrand').value.trim() || null) : null;
 
+    // Sub-category (all categories)
+    const sub_category = document.getElementById('pSubCategory')?.value || null;
+
     const payload = {
       name, category,
+      sub_category,
       brand:       brandVal,
       author:      authorVal,
       badge:       document.getElementById('pBadge').value || null,
@@ -6542,151 +6483,6 @@ function toast(title, sub = '', type = 'success') {
 let allBanners = [];           // populated from Supabase (+ localStorage fallback)
 let selectedBannerFile = null;
 
-/* ══════════════════════════════════════════
-   BANNER MAKER — mode toggle, preview, save
-══════════════════════════════════════════ */
-const BM_COLORS = [
-  { hex:'#007AFF', label:'Blue'     },
-  { hex:'#0055CC', label:'Dark Blue'},
-  { hex:'#10B981', label:'Green'    },
-  { hex:'#059669', label:'Emerald'  },
-  { hex:'#EF4444', label:'Red'      },
-  { hex:'#F97316', label:'Orange'   },
-  { hex:'#8B5CF6', label:'Violet'   },
-  { hex:'#0E7490', label:'Teal'     },
-  { hex:'#1E293B', label:'Dark'     },
-];
-let bmSelectedColor = '#007AFF';
-
-// Called when the banner modal opens — init color swatches
-function bmInitColorPalette() {
-  const row = document.getElementById('bmColorRow');
-  if (!row || row.dataset.init) return;
-  row.dataset.init = '1';
-  row.innerHTML = BM_COLORS.map(c => `
-    <div class="bm-color-swatch ${c.hex === bmSelectedColor ? 'active':''}"
-      style="background:${c.hex}"
-      title="${c.label}"
-      onclick="bmPickColor('${c.hex}',this)"></div>
-  `).join('') + `
-  <input type="color" class="bm-color-custom" value="${bmSelectedColor}" title="কাস্টম কালার"
-    oninput="bmPickColorCustom(this.value)">`;
-}
-
-function bmPickColor(hex, el) {
-  bmSelectedColor = hex;
-  document.querySelectorAll('.bm-color-swatch').forEach(s => s.classList.remove('active'));
-  if (el) el.classList.add('active');
-  bmUpdatePreview();
-}
-function bmPickColorCustom(hex) {
-  bmSelectedColor = hex;
-  document.querySelectorAll('.bm-color-swatch').forEach(s => s.classList.remove('active'));
-  bmUpdatePreview();
-}
-
-function bmSwitchMode(mode) {
-  document.getElementById('bmPanelImage').classList.toggle('active', mode === 'image');
-  document.getElementById('bmPanelBuilder').classList.toggle('active', mode === 'builder');
-  document.getElementById('bmToggleImage').classList.toggle('active', mode === 'image');
-  document.getElementById('bmToggleBuilder').classList.toggle('active', mode === 'builder');
-  if (mode === 'builder') { bmInitColorPalette(); bmUpdatePreview(); }
-}
-
-function bmUpdatePreview() {
-  const badge   = document.getElementById('bmBadge')?.value    || 'ব্যাজ টেক্সট';
-  const title   = document.getElementById('bmTitle')?.value    || 'মেইন টাইটেল';
-  const sub     = document.getElementById('bmSubtitle')?.value || 'সাবটাইটেল...';
-  const btnText = document.getElementById('bmBtnText')?.value  || 'শপিং করুন';
-  const color   = bmSelectedColor || '#007AFF';
-
-  const slide = document.getElementById('bmPreviewSlide');
-  if (slide) {
-    // Gradient from selected color
-    const hex2rgba = (h, a) => {
-      const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
-      return `rgba(${r},${g},${b},${a})`;
-    };
-    slide.style.background = `linear-gradient(120deg, ${color} 0%, ${hex2rgba(color, .75)} 100%)`;
-  }
-  const pBadge = document.getElementById('bmPvBadgeText');
-  const pTitle = document.getElementById('bmPvTitle');
-  const pSub   = document.getElementById('bmPvSub');
-  const pBtn   = document.getElementById('bmPvBtn');
-  if (pBadge) pBadge.textContent = badge;
-  if (pTitle) pTitle.textContent = title;
-  if (pSub)   pSub.textContent   = sub;
-  if (pBtn)   pBtn.innerHTML = `<i class="fa-solid fa-bag-shopping" style="font-size:.6rem"></i> ${btnText}`;
-}
-
-async function saveBuilderBanner() {
-  const badge    = document.getElementById('bmBadge')?.value.trim()    || '';
-  const title    = document.getElementById('bmTitle')?.value.trim()    || '';
-  const subtitle = document.getElementById('bmSubtitle')?.value.trim() || '';
-  const btnText  = document.getElementById('bmBtnText')?.value.trim()  || 'শপিং করুন';
-  const btnLink  = document.getElementById('bmBtnLink')?.value.trim()  || '';
-  const order    = parseInt(document.getElementById('bmOrder')?.value)  || 1;
-  const bgColor  = bmSelectedColor || '#007AFF';
-
-  if (!title) { toast('Required', 'মেইন টাইটেল লিখুন', 'error'); return; }
-
-  const btn = document.getElementById('saveBuilderBannerBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> তৈরি হচ্ছে...';
-
-  const row = {
-    type:            'dynamic_builder',
-    badge_text:      badge,
-    main_title:      title,
-    subtitle:        subtitle,
-    button_text:     btnText,
-    button_link:     btnLink || null,
-    bg_color:        bgColor,
-    image_url:       null,
-    sort_order:      order,
-    is_active:       true,
-    created_at:      new Date().toISOString()
-  };
-
-  try {
-    if (sb) {
-      const { error } = await sb.from('banners').insert(row);
-      if (error) throw new Error(error.message);
-    } else {
-      // localStorage fallback
-      const saved = JSON.parse(localStorage.getItem('gm_banners') || '[]');
-      saved.push({ ...row, id: Date.now(), _fromLocal: true });
-      localStorage.setItem('gm_banners', JSON.stringify(saved));
-    }
-    toast('তৈরি হয়েছে! ✓', 'কাস্টম ব্যানার সেভ হয়েছে — ওয়েবসাইটে দেখাবে', 'success');
-    closeModal('bannerModal');
-    bmResetBuilder();
-    await loadBannersFromSupabase();
-  } catch(err) {
-    toast('Error', err.message || 'ব্যানার সেভ ব্যর্থ হয়েছে', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> ব্যানার তৈরি করুন';
-  }
-}
-
-function bmResetBuilder() {
-  ['bmBadge','bmTitle','bmSubtitle','bmBtnText','bmBtnLink'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  bmSelectedColor = '#007AFF';
-  const row = document.getElementById('bmColorRow');
-  if (row) { delete row.dataset.init; row.innerHTML = ''; }
-}
-// Re-init palette each time modal opens
-const _origOpenModal = window.openModal;
-window.openModal = function(id) {
-  if (typeof _origOpenModal === 'function') _origOpenModal(id);
-  if (id === 'bannerModal') {
-    bmSwitchMode('image'); // reset to image tab
-  }
-};
-
 // Load banners from Supabase `banners` table; merge with any localStorage-only entries
 async function loadBannersFromSupabase() {
   if (!sb) {
@@ -6699,21 +6495,14 @@ async function loadBannersFromSupabase() {
     if (!error && data) {
       // Normalize: Supabase rows use snake_case; legacy localStorage rows use camelCase
       allBanners = data.map(b => ({
-        id:           b.id,
-        type:         b.type         || 'image',
-        title:        b.title        || b.main_title || 'Banner',
-        main_title:   b.main_title   || b.title || '',
-        badge_text:   b.badge_text   || '',
-        subtitle:     b.subtitle     || '',
-        button_text:  b.button_text  || 'শপিং করুন',
-        button_link:  b.button_link  || '',
-        bg_color:     b.bg_color     || '#007AFF',
-        imageUrl:     b.image_url    || b.imageUrl || '',
-        image_url:    b.image_url    || b.imageUrl || '',
-        link:         b.link         || b.button_link || '',
-        order:        b.sort_order   || 1,
-        is_active:    b.is_active !== false,
-        createdAt:    b.created_at   || new Date().toISOString(),
+        id:        b.id,
+        title:     b.title || 'Banner',
+        imageUrl:  b.image_url || b.imageUrl || '',
+        image_url: b.image_url || b.imageUrl || '',
+        link:      b.link || '',
+        order:     b.sort_order || 1,
+        is_active: b.is_active !== false,
+        createdAt: b.created_at || new Date().toISOString(),
         _fromSupabase: true
       }));
     } else {
@@ -6886,39 +6675,23 @@ function renderBanners() {
     return;
   }
   grid.innerHTML = allBanners.map(b => {
-    const isDynamic   = (b.type === 'dynamic_builder' || b.banner_type === 'dynamic_builder');
-    const imgSrc      = b.image_url || b.imageUrl || '';
+    const imgSrc = b.image_url || b.imageUrl || '';
     const activeLabel = b.is_active !== false ? 'Active' : 'Inactive';
     const activeColor = b.is_active !== false ? 'var(--green,#10B981)' : 'var(--text3)';
     const toggleIcon  = b.is_active !== false ? 'fa-eye-slash' : 'fa-eye';
     const toggleTitle = b.is_active !== false ? 'Deactivate' : 'Activate';
-    const displayTitle = b.main_title || b.title || 'Banner';
-    // Dynamic builder card preview
-    const cardImgHtml = isDynamic
-      ? `<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:12px 14px;background:${b.bg_color||'#007AFF'};position:relative;overflow:hidden">
-           <div style="position:absolute;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.07);top:-30px;right:-20px"></div>
-           <div style="font-family:'Hind Siliguri',sans-serif;font-size:.58rem;color:rgba(255,255,255,.8);margin-bottom:3px">${escHtml(b.badge_text||'')}</div>
-           <div style="font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:800;color:#fff;line-height:1.2">${escHtml(displayTitle)}</div>
-           <div style="font-size:.55rem;color:rgba(255,255,255,.7);margin-top:3px;font-family:'Hind Siliguri',sans-serif">${escHtml((b.subtitle||'').slice(0,60))}…</div>
-           <div style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;background:#fff;border-radius:5px;padding:3px 8px;font-size:.55rem;font-weight:700;color:${b.bg_color||'#007AFF'};width:fit-content;font-family:'Hind Siliguri',sans-serif">
-             <i class="fa-solid fa-bag-shopping" style="font-size:.45rem"></i> ${escHtml(b.button_text||'শপিং করুন')}
-           </div>
-           <span style="position:absolute;top:6px;right:8px;background:rgba(255,255,255,.18);color:#fff;font-size:.5rem;border-radius:4px;padding:2px 6px;font-weight:700">✦ Custom</span>
-         </div>`
-      : `<img src="${imgSrc}" alt="${escHtml(displayTitle)}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image-slash\\' style=\\'font-size:2rem;color:var(--text4)\\'></i>'">`;
-
     return `
     <div class="banner-card">
-      <div class="banner-card-img">${cardImgHtml}</div>
-      <div class="banner-order-badge">#${b.order || b.sort_order || 1}</div>
+      <div class="banner-card-img">
+        <img src="${imgSrc}" alt="${b.title}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image-slash\\' style=\\'font-size:2rem;color:var(--text4)\\'></i>'">
+      </div>
+      <div class="banner-order-badge">#${b.order}</div>
       <div class="banner-card-info">
-        <div class="banner-card-title">${escHtml(displayTitle)}</div>
+        <div class="banner-card-title">${b.title}</div>
         <div class="banner-card-meta">
-          ${isDynamic
-            ? `<span style="background:${b.bg_color||'#007AFF'}22;color:${b.bg_color||'#007AFF'};border-radius:4px;padding:1px 6px;font-size:.6rem;font-weight:700">✦ Dynamic</span>`
-            : (b.link ? `<a href="${b.link}" target="_blank" style="color:var(--blue);text-decoration:none">${b.link.slice(0,32)}…</a>` : 'No link')}
+          ${b.link ? `<a href="${b.link}" target="_blank" style="color:var(--blue);text-decoration:none">${b.link.slice(0,40)}...</a>` : 'No link'}
           · <span style="color:${activeColor};font-weight:600">${activeLabel}</span>
-          · ${fmtDate(b.createdAt || b.created_at)}
+          · ${fmtDate(b.createdAt)}
         </div>
         <div class="banner-card-actions">
           <button class="btn btn-xs" style="background:var(--bg3);color:var(--text)" title="${toggleTitle}" onclick="toggleBannerActive('${b.id}',${b.is_active !== false})">
@@ -7339,6 +7112,164 @@ function populateBookTypeDropdown(selectedVal = '') {
   const currentVal = selectedVal || sel.value;
   sel.innerHTML = `<option value="">— ধরণ বেছে নিন —</option>` +
     types.map(t => `<option value="${t}" ${t === currentVal ? 'selected' : ''}>${t}</option>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UNIVERSAL SUB-CATEGORY ENGINE
+   — Works for ALL main categories (Electronics, Fashion, etc.)
+   — Stores in Supabase `sub_categories` table (with category_id)
+     and localStorage fallback (key: gm_subcats_<catname>)
+══════════════════════════════════════════════════════════════ */
+const SUBCAT_LS_PREFIX = 'gm_subcats_';
+
+// Default sub-categories per category (shown until DB is available)
+const DEFAULT_SUBCATS = {
+  'বই':            ['উপন্যাস','গল্পগ্রন্থ','কবিতা','ইসলামি বই','আত্মউন্নয়ন','শিক্ষামূলক','ইতিহাস','বিজ্ঞান','শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'],
+  'ইলেকট্রনিক্স':  ['মোবাইল ফোন','ল্যাপটপ','হেডফোন','চার্জার','ক্যামেরা','ট্যাবলেট','স্মার্টওয়াচ','স্পিকার','অন্যান্য'],
+  'ফ্যাশন':        ['পুরুষের পোশাক','মহিলার পোশাক','জুতা','ব্যাগ','ঘড়ি','গহনা','সানগ্লাস','অন্যান্য'],
+  'হোম':           ['রান্নাঘর','বেডরুম','বাথরুম','আসবাবপত্র','লাইটিং','ডেকোর','গার্ডেনিং','অন্যান্য'],
+  'বিউটি':         ['স্কিনকেয়ার','হেয়ারকেয়ার','মেকআপ','পারফিউম','নেইল কেয়ার','অন্যান্য'],
+  'স্টেশনারি':     ['কলম ও পেন্সিল','নোটবুক','ফাইল ও ফোল্ডার','আর্ট সাপ্লাইজ','অফিস সাপ্লাইজ','অন্যান্য'],
+  'শিশু':          ['খেলনা','শিশু পোশাক','শিশু খাবার','শিশু যত্ন','শিক্ষামূলক খেলনা','অন্যান্য'],
+  'স্পোর্টস':     ['ক্রিকেট','ফুটবল','ব্যায়ামের যন্ত্র','সাইক্লিং','সুইমিং','অন্যান্য'],
+};
+
+// In-memory cache: { [catName]: [{id, name, category_name}] }
+let _subCatCache = {};
+
+/* Get sub-cats from localStorage fallback */
+function _getLocalSubCats(catName) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(SUBCAT_LS_PREFIX + catName));
+    if (Array.isArray(stored) && stored.length) return stored;
+  } catch {}
+  return (DEFAULT_SUBCATS[catName] || []).map((n, i) => ({ id: `default_${i}`, name: n, category_name: catName }));
+}
+
+function _saveLocalSubCats(catName, items) {
+  localStorage.setItem(SUBCAT_LS_PREFIX + catName, JSON.stringify(items));
+}
+
+/* Load sub-cats: Supabase first, localStorage fallback */
+async function loadSubCategoriesForCategory(catName, selectedVal = '') {
+  const sel     = document.getElementById('pSubCategory');
+  const input   = document.getElementById('newSubCatInput');
+  const addBtn  = document.getElementById('addSubCatBtn');
+  const loading = document.getElementById('subCatLoading');
+
+  if (!sel) return;
+
+  if (!catName) {
+    sel.innerHTML = '<option value="">— প্রথমে ক্যাটাগরি বেছে নিন —</option>';
+    if (input)  { input.disabled = true; input.value = ''; }
+    if (addBtn) addBtn.disabled = true;
+    return;
+  }
+
+  // Enable inline add
+  if (input)  input.disabled  = false;
+  if (addBtn) addBtn.disabled = false;
+
+  // Show spinner
+  if (loading) loading.style.display = 'inline';
+
+  let items = [];
+
+  // Try Supabase `sub_categories` table
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('sub_categories')
+        .select('id, name, category_name')
+        .eq('category_name', catName)
+        .order('name', { ascending: true });
+
+      if (!error && data && data.length) {
+        items = data;
+        _subCatCache[catName] = items;
+        _saveLocalSubCats(catName, items); // keep local in sync
+      } else {
+        // DB returned nothing — use defaults and push them to DB
+        items = _getLocalSubCats(catName);
+        _subCatCache[catName] = items;
+        // Silently seed defaults into Supabase (non-blocking)
+        _seedDefaultSubCats(catName, items);
+      }
+    } catch {
+      items = _getLocalSubCats(catName);
+      _subCatCache[catName] = items;
+    }
+  } else {
+    items = _getLocalSubCats(catName);
+    _subCatCache[catName] = items;
+  }
+
+  if (loading) loading.style.display = 'none';
+
+  // Render dropdown
+  const currentVal = selectedVal || sel.getAttribute('data-pending-val') || '';
+  sel.innerHTML = `<option value="">— সাব-ক্যাটাগরি বেছে নিন —</option>` +
+    items.map(s => `<option value="${escHtml(s.name)}" ${s.name === currentVal ? 'selected' : ''}>${escHtml(s.name)}</option>`).join('');
+}
+
+/* Silently seed default sub-cats into Supabase (runs once per cat) */
+async function _seedDefaultSubCats(catName, items) {
+  if (!sb) return;
+  const defaults = items.filter(i => String(i.id).startsWith('default_'));
+  if (!defaults.length) return;
+  try {
+    await sb.from('sub_categories').insert(
+      defaults.map(d => ({ name: d.name, category_name: catName }))
+    );
+  } catch {}
+}
+
+/* Add a new sub-category inline from the product form */
+async function addSubCategoryInline() {
+  const catName = document.getElementById('pCategory')?.value;
+  const input   = document.getElementById('newSubCatInput');
+  const sel     = document.getElementById('pSubCategory');
+  if (!catName) { toast('ক্যাটাগরি বেছে নিন', 'প্রথমে মেইন ক্যাটাগরি সিলেক্ট করুন', 'warning'); return; }
+  const name = input?.value.trim();
+  if (!name) { toast('নাম দিন', 'সাব-ক্যাটাগরির নাম লিখুন', 'error'); return; }
+
+  // Check duplicate in cache
+  const existing = _subCatCache[catName] || [];
+  if (existing.find(s => s.name.toLowerCase() === name.toLowerCase())) {
+    toast('ডুপ্লিকেট', `"${name}" আগে থেকেই আছে`, 'error');
+    sel.value = name;
+    return;
+  }
+
+  const btn = document.getElementById('addSubCatBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+
+  let newItem = { id: Date.now(), name, category_name: catName };
+
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('sub_categories')
+        .insert({ name, category_name: catName })
+        .select('id, name, category_name')
+        .single();
+      if (!error && data) newItem = data;
+    } catch {}
+  }
+
+  // Update cache + localStorage
+  const updated = [...(_subCatCache[catName] || []), newItem];
+  _subCatCache[catName] = updated;
+  _saveLocalSubCats(catName, updated);
+
+  // Add option to dropdown & select it
+  const opt = document.createElement('option');
+  opt.value = name; opt.textContent = name; opt.selected = true;
+  sel?.appendChild(opt);
+
+  if (input) input.value = '';
+  if (btn)   { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add'; }
+  toast('যোগ হয়েছে ✓', `"${name}" সাব-ক্যাটাগরি তৈরি ও সিলেক্ট হয়েছে`, 'success');
 }
 
 /* ── Populate product category filter dropdown ── */
