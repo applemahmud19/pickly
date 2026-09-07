@@ -9,7 +9,7 @@
 <link rel="shortcut icon" type="image/png"              id="favShortcut" href="/favicon.png?v=1.1" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Omni Shop - Your Trusted Online Shop</title>
+<title>বুক গ্যালাক্সি - Your Trusted Online Shop</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- Primary Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -120,7 +120,7 @@ td.bn, .price-block .new, .price-block .old {
 }
 
 /* ═══════════════════════════════════════════════
-   Omni Shop — Header & Footer Logo Optimization
+   বুক গ্যালাক্সি — Header & Footer Logo Optimization
 ═══════════════════════════════════════════════ */
 
 /* ── মেইন হেডার বার — স্ট্যান্ডার্ড হাইট ── */
@@ -187,12 +187,12 @@ footer .logo .logo-text{font-size:1.1rem!important;font-weight:800!important}
 </style>
 <style>
 :root{
-  --blue:#007AFF;--blue-dark:#0055CC;--blue-light:#F0F7FF;--blue-mid:#DAEEFF;
+  --blue:#AA2C2D;--blue-dark:#711D1E;--blue-light:#FBF1F1;--blue-mid:#F5D6D6;
   --white:#fff;--border:#E1E8ED;--text:#1E293B;--text-mid:#475569;--text-light:#94A3B8;
   --gold:#F5A623;--gold-dark:#D97706;--gold-light:#FEF3C7;--green:#10B981;--red:#EF4444;--orange:#F97316;
   --radius:12px;--radius-sm:8px;
-  --glow:0 0 0 3px rgba(0,122,255,.12),0 6px 28px rgba(0,122,255,.10);
-  --card-shadow:0 0 0 1px #E1E8ED,0 4px 20px rgba(0,122,255,.06);
+  --glow:0 0 0 3px rgba(170,44,45,.12),0 6px 28px rgba(170,44,45,.10);
+  --card-shadow:0 0 0 1px #E1E8ED,0 4px 20px rgba(170,44,45,.06);
   --t:.2s cubic-bezier(.4,0,.2,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -228,76 +228,10 @@ label,.form-group label{font-size:.875rem!important;font-weight:700}
 .ci-name{font-size:.9rem!important}
 .meta-sm,.text-xs{font-size:.8125rem;color:var(--text-light)}
 
-/* ── LOADING SCREEN ── */
-/* ── PRELOADER — full-screen, above everything including header ── */
-#loadingScreen{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100vh;
-  background:#ffffff;
-  /* Must exceed header z-index (9999) and any other fixed layers */
-  z-index:99999;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:20px;
-  /* Smooth fade-out when .hide is applied */
-  transition:opacity .45s cubic-bezier(.4,0,.2,1), visibility .45s;
-  visibility:visible;
-  opacity:1;
-}
-#loadingScreen.hide{
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-}
-/* Body locked while loader active — prevents scroll flash */
-body.loading{overflow:hidden!important}
-
-.loader-logo{
-  width:72px;height:72px;
-  background:linear-gradient(135deg,var(--blue),var(--blue-dark));
-  border-radius:20px;
-  display:flex;align-items:center;justify-content:center;
-  color:white;font-size:2rem;
-  box-shadow:0 8px 32px rgba(0,122,255,.28);
-  animation:pulse 1.5s infinite;
-}
+/* ── LOADING ── full-screen preloader removed; per-component
+   skeletons/spinners (see .hslide-skeleton, .rec-skel, and inline
+   fa-spinner indicators) now handle in-progress data fetches. ── */
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-
-.loader-brand{
-  font-family:'Hind Siliguri',sans-serif;
-  font-size:1.1rem;font-weight:700;
-  color:var(--blue);
-  letter-spacing:.01em;
-}
-.loader-text{
-  font-family:'Hind Siliguri',sans-serif;
-  font-size:.82rem;
-  color:var(--text-light);
-  margin-top:-10px;
-}
-
-/* Progress bar */
-.loader-bar{
-  width:220px;height:4px;
-  background:var(--blue-mid);
-  border-radius:4px;overflow:hidden;
-  margin-top:4px;
-}
-.loader-bar-inner{
-  height:100%;width:0;
-  background:linear-gradient(90deg,var(--blue),#38BDF8);
-  border-radius:4px;
-  animation:load 1.9s cubic-bezier(.4,0,.2,1) forwards;
-}
-@keyframes load{
-  0%  {width:0%}
-  60% {width:75%}
-  85% {width:90%}
-  100%{width:100%}
-}
 
 /* ── PAGE-CONTEXT UI HIDE: social bar + category nav hidden on product/checkout/track pages ── */
 body.page-product-open .social-bar,
@@ -385,7 +319,7 @@ header {
   transform: translateZ(0);
 }
 header.scrolled{
-  box-shadow: 0 2px 20px rgba(0,122,255,.13), 0 1px 0 rgba(0,0,0,.06);
+  box-shadow: 0 2px 20px rgba(170,44,45,.13), 0 1px 0 rgba(0,0,0,.06);
 }
 .social-bar span{font-family:'Hind Siliguri',sans-serif;font-size:.75rem;color:rgba(255,255,255,.9)}
 .social-links{display:flex;gap:4px;align-items:center}
@@ -404,7 +338,7 @@ header.scrolled{
 
 /* Logo */
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;min-width:0}
-.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.05rem;flex-shrink:0;box-shadow:0 4px 12px rgba(0,122,255,.25)}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.05rem;flex-shrink:0;box-shadow:0 4px 12px rgba(170,44,45,.25)}
 .logo-text{font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--blue);line-height:1.15;white-space:nowrap}
 .logo-text small{display:block;font-size:.55rem;color:var(--text-light);font-weight:500;letter-spacing:.02em}
 
@@ -443,7 +377,7 @@ header.scrolled{
   background:white;
   border:1px solid var(--border);
   border-radius:var(--radius);
-  box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,122,255,.05);
+  box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(170,44,45,.05);
   z-index:999;
   overflow:hidden;
   animation:dropIn .18s cubic-bezier(.4,0,.2,1);
@@ -598,7 +532,7 @@ header.scrolled{
     so banners are always fully visible regardless of header state.
   - Also add scroll-margin-top = typical header height so anchor links work.
 */
-.hero{padding:10px 22px 14px;background:#EBF4FF;position:relative;scroll-margin-top:var(--header-h,115px)}
+.hero{padding:10px 22px 14px;background:#F6DEDE;position:relative;scroll-margin-top:var(--header-h,115px)}
 
 /* ── HERO BANNER SLIDER — Full Width ── */
 .hero-right{position:relative;z-index:1;overflow:visible}
@@ -737,7 +671,7 @@ header.scrolled{
 
 /* Slider dots */
 .hslider-dots{display:flex;gap:6px;justify-content:center;margin-top:11px}
-.hslider-dot{width:7px;height:7px;border-radius:4px;background:rgba(0,122,255,.25);cursor:pointer;transition:all .3s}
+.hslider-dot{width:7px;height:7px;border-radius:4px;background:rgba(170,44,45,.25);cursor:pointer;transition:all .3s}
 .hslider-dot.active{width:22px;background:var(--blue)}
 
 /* Slider arrows */
@@ -793,7 +727,7 @@ header.scrolled{
 .fchip{width:100%;display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--radius-sm);border:1.5px solid transparent;background:transparent;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid);transition:all var(--t);text-align:left}
 .fchip i{width:15px;text-align:center;font-size:.75rem;color:var(--text-light)}
 .fchip:hover{background:var(--blue-light);color:var(--text)}
-.fchip.active{background:var(--blue-light);border-color:rgba(0,122,255,.3);color:var(--blue);font-weight:600}
+.fchip.active{background:var(--blue-light);border-color:rgba(170,44,45,.3);color:var(--blue);font-weight:600}
 .fchip.active i{color:var(--blue)}
 .fchip .cnt{margin-left:auto;background:var(--blue-mid);color:var(--blue);font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:100px}
 .price-inputs{display:flex;gap:6px;margin-bottom:10px;width:100%}
@@ -802,7 +736,7 @@ header.scrolled{
 .rslider{width:100%;max-width:100%;display:block;accent-color:var(--blue);cursor:pointer;margin:0;box-sizing:border-box}
 .star-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:all var(--t);border:1.5px solid transparent}
 .star-row:hover{background:var(--blue-light)}
-.star-row.active{background:var(--blue-light);border-color:rgba(0,122,255,.3)}
+.star-row.active{background:var(--blue-light);border-color:rgba(170,44,45,.3)}
 .gold-stars{color:#F5A623;font-size:.82rem;letter-spacing:1px}
 .trow{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--t);font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)}
 .trow:hover{background:var(--blue-light)}
@@ -840,7 +774,7 @@ header.scrolled{
 /* ── PRODUCT GRID ── */
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:14px}
 .pcard{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all var(--t);cursor:pointer;position:relative;will-change:transform,box-shadow}
-.pcard:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow);transform:translateY(-4px)}
+.pcard:hover{border-color:rgba(170,44,45,.25);box-shadow:var(--glow);transform:translateY(-4px)}
 .pcard-img{height:230px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background var(--t)}
 .pcard:hover .pcard-img{background:#f0f2f5}
 .pcard-icon{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.65rem;transition:transform var(--t);box-shadow:0 4px 16px rgba(0,0,0,.10);position:static;float:none}
@@ -889,10 +823,10 @@ header.scrolled{
   border:none;
   font-family:'Hind Siliguri',sans-serif;font-size:.67rem;font-weight:700;
   cursor:pointer;transition:all var(--t);white-space:nowrap;
-  box-shadow:0 2px 8px rgba(0,122,255,.25);
+  box-shadow:0 2px 8px rgba(170,44,45,.25);
   letter-spacing:.01em;
 }
-.btn-cart:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,122,255,.4)}
+.btn-cart:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(170,44,45,.4)}
 .btn-buy{display:flex;align-items:center;gap:4px;padding:6px 9px;border-radius:var(--radius-sm);background:var(--orange);color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.67rem;font-weight:600;cursor:pointer;transition:all var(--t);white-space:nowrap}
 .btn-buy:hover{background:#EA6C00}
 
@@ -954,7 +888,7 @@ header.scrolled{
   display:flex;align-items:center;gap:7px;
   padding:8px 16px;border-radius:var(--radius-sm);
   background:var(--blue-light);color:var(--blue);
-  border:1.5px solid rgba(0,122,255,.2);
+  border:1.5px solid rgba(170,44,45,.2);
   font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;
   cursor:pointer;transition:all var(--t);
 }
@@ -990,10 +924,10 @@ header.scrolled{
   overflow:hidden;
   transition:border-color var(--t);
 }
-.pd-img-panel:hover{border-color:rgba(0,122,255,.25);box-shadow:var(--glow)}
+.pd-img-panel:hover{border-color:rgba(170,44,45,.25);box-shadow:var(--glow)}
 .pd-img-panel::before{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at 30% 30%,rgba(0,122,255,.04) 0%,transparent 60%);
+  background:radial-gradient(circle at 30% 30%,rgba(170,44,45,.04) 0%,transparent 60%);
   pointer-events:none;
 }
 .pd-big-icon{
@@ -1061,7 +995,7 @@ header.scrolled{
 
 /* highlights */
 .pd-highlights{
-  background:var(--blue-light);border:1px solid rgba(0,122,255,.12);
+  background:var(--blue-light);border:1px solid rgba(170,44,45,.12);
   border-radius:var(--radius-sm);padding:14px 16px;
   margin-bottom:18px;
 }
@@ -1101,7 +1035,7 @@ header.scrolled{
   font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;
   cursor:pointer;transition:all var(--t);
 }
-.pd-cart-btn:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.35)}
+.pd-cart-btn:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(170,44,45,.35)}
 .pd-buy-btn{
   flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
   padding:14px;border-radius:var(--radius);
@@ -1310,7 +1244,7 @@ header.scrolled{
   white-space:nowrap;
 }
 .btn-primary i{color:#FFFFFF;font-size:.88rem}
-.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,122,255,.35)}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(170,44,45,.35)}
 /* FIX: Missing .btn-outline class — used in auth modal for signup button */
 .btn-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:var(--radius);background:transparent;color:var(--blue);border:1.5px solid var(--blue);font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all var(--t);letter-spacing:.01em;white-space:nowrap}
 .btn-outline:hover{background:var(--blue-light);transform:translateY(-1px)}
@@ -1368,14 +1302,14 @@ header.scrolled{
 .promo-row{display:flex;gap:7px;margin-bottom:11px}
 .promo-inp{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Hind Siliguri',sans-serif;font-size:.76rem;color:var(--text);outline:none;background:var(--blue-light);transition:border-color var(--t)}
 .promo-inp:focus{border-color:var(--blue);background:white}
-.promo-btn{padding:8px 13px;border-radius:var(--radius-sm);background:var(--blue-light);color:var(--blue);border:1.5px solid rgba(0,122,255,.2);font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all var(--t)}
+.promo-btn{padding:8px 13px;border-radius:var(--radius-sm);background:var(--blue-light);color:var(--blue);border:1.5px solid rgba(170,44,45,.2);font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;transition:all var(--t)}
 .promo-btn:hover{background:var(--blue);color:white}
 .cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .cart-total-row .lbl{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid)}
 .cart-total-row .amt{font-size:1.3rem;font-weight:700}
 .cod-note{background:var(--blue-light);border-radius:var(--radius-sm);padding:7px 11px;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-mid);display:flex;align-items:center;gap:6px;margin-bottom:11px}
-.checkout-btn{width:100%;padding:13px 16px;border-radius:var(--radius);background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em;box-shadow:0 4px 16px rgba(0,122,255,.28)}
-.checkout-btn:hover{background:linear-gradient(135deg,var(--blue-dark),#003DA6);box-shadow:0 8px 28px rgba(0,122,255,.38);transform:translateY(-1px)}
+.checkout-btn{width:100%;padding:13px 16px;border-radius:var(--radius);background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em;box-shadow:0 4px 16px rgba(170,44,45,.28)}
+.checkout-btn:hover{background:linear-gradient(135deg,var(--blue-dark),#003DA6);box-shadow:0 8px 28px rgba(170,44,45,.38);transform:translateY(-1px)}
 
 /* ── CHECKOUT MODAL ── */
 /* checkout is now full-page */
@@ -1406,7 +1340,7 @@ header.scrolled{
 .titem{position:relative;margin-bottom:18px}
 .titem:last-child{margin-bottom:0}
 .tdot{position:absolute;left:-20px;top:3px;width:13px;height:13px;border-radius:50%;border:2px solid var(--border);background:white;z-index:1}
-.titem.done .tdot{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,122,255,.15)}
+.titem.done .tdot{background:var(--blue);border-color:var(--blue);box-shadow:0 0 0 3px rgba(170,44,45,.15)}
 .titem.active .tdot{border-color:var(--blue);animation:blink 1.5s infinite}
 .ttitle{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;margin-bottom:1px}
 .titem:not(.done):not(.active) .ttitle{color:var(--text-light)}
@@ -1448,7 +1382,7 @@ header.scrolled{
   background:white;border:1.5px solid var(--border);border-radius:var(--radius);
   margin-bottom:12px;overflow:hidden;transition:border-color var(--t),box-shadow var(--t);
 }
-.olist-card:hover{border-color:rgba(0,122,255,.3);box-shadow:0 4px 18px rgba(0,122,255,.08)}
+.olist-card:hover{border-color:rgba(170,44,45,.3);box-shadow:0 4px 18px rgba(170,44,45,.08)}
 .olist-card-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:11px 14px 8px;gap:10px;flex-wrap:wrap;
@@ -1480,7 +1414,7 @@ header.scrolled{
 .olist-thumb img{width:100%;height:100%;object-fit:contain;padding:3px}
 .olist-thumb-more{
   width:42px;height:42px;border-radius:8px;
-  background:var(--blue-mid);border:1.5px solid rgba(0,122,255,.2);
+  background:var(--blue-mid);border:1.5px solid rgba(170,44,45,.2);
   display:flex;align-items:center;justify-content:center;
   font-family:'Hind Siliguri',sans-serif;font-size:.68rem;font-weight:700;
   color:var(--blue);flex-shrink:0;
@@ -1498,7 +1432,7 @@ header.scrolled{
   font-family:'Hind Siliguri',sans-serif;font-size:.74rem;font-weight:700;
   cursor:pointer;transition:all var(--t);white-space:nowrap;
 }
-.olist-track-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,122,255,.3)}
+.olist-track-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(170,44,45,.3)}
 /* Detail expand panel */
 .olist-detail{
   display:none;border-top:1px solid var(--border);
@@ -1603,7 +1537,7 @@ header.scrolled{
 /* Forgot password sub-panel */
 .auth-forgot-panel {
   background: var(--blue-light);
-  border: 1.5px solid rgba(0,122,255,.18);
+  border: 1.5px solid rgba(170,44,45,.18);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -1626,7 +1560,7 @@ header.scrolled{
 }
 .auth-banner.error  { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
 .auth-banner.success{ background: #ECFDF5; border: 1px solid #6EE7B7; color: #065F46; }
-.auth-banner.info   { background: var(--blue-light); border: 1px solid rgba(0,122,255,.25); color: var(--blue-dark); }
+.auth-banner.info   { background: var(--blue-light); border: 1px solid rgba(170,44,45,.25); color: var(--blue-dark); }
 .auth-banner.show   { display: flex; }
 
 /* ── TERMS MODAL ─────────────────────────────────────────────── */
@@ -1868,7 +1802,7 @@ header.scrolled{
   margin-bottom: 8px; overflow: hidden;
   transition: border-color var(--t);
 }
-.faq-item.open { border-color: rgba(0,122,255,.3); }
+.faq-item.open { border-color: rgba(170,44,45,.3); }
 .faq-q {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 14px; cursor: pointer; gap: 10px;
@@ -1885,7 +1819,7 @@ header.scrolled{
   display: none; padding: 0 14px 12px;
   font-family: 'Hind Siliguri', sans-serif;
   font-size: .78rem; color: var(--text-mid); line-height: 1.7;
-  border-top: 1px solid rgba(0,122,255,.1);
+  border-top: 1px solid rgba(170,44,45,.1);
   background: var(--blue-light);
 }
 .faq-item.open .faq-ans { display: block; }
@@ -1976,7 +1910,7 @@ header.scrolled{
 /* KPI */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:18px}
 .kpi{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden;transition:all var(--t)}
-.kpi:hover{box-shadow:var(--glow);border-color:rgba(0,122,255,.2)}
+.kpi:hover{box-shadow:var(--glow);border-color:rgba(170,44,45,.2)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .kpi:nth-child(1)::before{background:var(--blue)}
 .kpi:nth-child(2)::before{background:var(--green)}
@@ -2006,7 +1940,7 @@ header.scrolled{
 .aibtn.del:hover{border-color:var(--red);color:var(--red);background:#FEF2F2}
 
 /* ADD PRODUCT FORM */
-.add-form{background:var(--blue-light);border:1px solid rgba(0,122,255,.15);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.add-form{background:var(--blue-light);border:1px solid rgba(170,44,45,.15);border-radius:var(--radius);padding:18px;margin-bottom:14px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 
 /* CHART */
@@ -2014,7 +1948,7 @@ header.scrolled{
 .chart-title{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}
 .chart-bars{display:flex;align-items:flex-end;gap:7px;height:100px}
 .cbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.cbar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue),rgba(0,122,255,.45));transition:all var(--t);cursor:pointer}
+.cbar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue),rgba(170,44,45,.45));transition:all var(--t);cursor:pointer}
 .cbar:hover{background:linear-gradient(180deg,var(--blue-dark),var(--blue))}
 .cbar-lbl{font-family:'Hind Siliguri',sans-serif;font-size:.58rem;color:var(--text-light);text-align:center}
 
@@ -2431,8 +2365,8 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   background: #fff;
   transition: border-color .2s, box-shadow .2s, transform .15s;
 }
-.fp-thumb-chip:hover { border-color: var(--blue); box-shadow: 0 3px 12px rgba(0,122,255,.18); transform: translateY(-1px); }
-.fp-thumb-chip.active { border-color: var(--blue); box-shadow: 0 4px 16px rgba(0,122,255,.22); }
+.fp-thumb-chip:hover { border-color: var(--blue); box-shadow: 0 3px 12px rgba(170,44,45,.18); transform: translateY(-1px); }
+.fp-thumb-chip.active { border-color: var(--blue); box-shadow: 0 4px 16px rgba(170,44,45,.22); }
 .fp-thumb-chip img { width:100%; height:100%; object-fit:contain; padding:3px; display:block; }
 /* Fade-in on main image swap */
 @keyframes fpImgFade { from { opacity:.3; transform:scale(.98); } to { opacity:1; transform:scale(1); } }
@@ -2467,7 +2401,7 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   cursor: pointer;
 }
 .fp-price-box {
-  background: linear-gradient(135deg, #F0F7FF, #EBF4FF);
+  background: linear-gradient(135deg, #FBF1F1, #F6DEDE);
   border: 1.5px solid var(--blue-mid);
   border-radius: 16px; padding: 18px 20px; margin-bottom: 18px;
 }
@@ -2529,10 +2463,10 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   background: var(--blue); color: white;
   border: none; border-radius: var(--radius);
   font-size: .95rem; font-weight: 700; cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,122,255,.3);
+  box-shadow: 0 4px 16px rgba(170,44,45,.3);
   transition: all var(--t);
 }
-.fp-btn-cart:hover { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,122,255,.4); }
+.fp-btn-cart:hover { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(170,44,45,.4); }
 
 /* Mobile: CTA buttons full-width, side-by-side, no gaps */
 @media(max-width:600px){
@@ -2755,7 +2689,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   background: white; border-radius: 16px;
   border: 1.5px solid var(--border);
   overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0,122,255,.05);
+  box-shadow: 0 2px 16px rgba(170,44,45,.05);
 }
 .tp-panel-head {
   display: flex; align-items: center; gap: 10px;
@@ -2821,7 +2755,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   overflow: hidden; transition: all var(--t);
   background: white;
 }
-.tp-order-card:hover { border-color: rgba(0,122,255,.3); box-shadow: 0 4px 20px rgba(0,122,255,.09); }
+.tp-order-card:hover { border-color: rgba(170,44,45,.3); box-shadow: 0 4px 20px rgba(170,44,45,.09); }
 .tp-oc-head {
   display: flex; align-items: center; gap: 12px;
   padding: 13px 16px; background: linear-gradient(135deg,#FAFCFF,white);
@@ -2854,7 +2788,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
 .tp-oc-thumb img { width:100%; height:100%; object-fit:contain; padding:3px; }
 .tp-oc-more {
   width: 40px; height: 40px; border-radius: 8px;
-  background: var(--blue-mid); border: 1.5px solid rgba(0,122,255,.2);
+  background: var(--blue-mid); border: 1.5px solid rgba(170,44,45,.2);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Hind Siliguri',sans-serif; font-size: .68rem; font-weight: 700; color: var(--blue);
 }
@@ -2866,7 +2800,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
 .tp-oc-expand-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: var(--radius-sm);
-  border: 1.5px solid rgba(0,122,255,.25); background: var(--blue-light);
+  border: 1.5px solid rgba(170,44,45,.25); background: var(--blue-light);
   color: var(--blue); font-family:'Hind Siliguri',sans-serif;
   font-size: .76rem; font-weight: 700; cursor: pointer;
   transition: all var(--t); white-space: nowrap; flex-shrink: 0;
@@ -2987,7 +2921,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   border-radius:var(--radius);overflow:hidden;cursor:pointer;
   transition:all var(--t);display:flex;flex-direction:column;
 }
-.rec-card:hover{border-color:rgba(0,122,255,.35);box-shadow:0 6px 22px rgba(0,122,255,.12);transform:translateY(-3px)}
+.rec-card:hover{border-color:rgba(170,44,45,.35);box-shadow:0 6px 22px rgba(170,44,45,.12);transform:translateY(-3px)}
 /* position:relative so disc-badge stays inside image area */
 .rec-card-img{height:118px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;flex-shrink:0;overflow:hidden;position:relative;background:#f5f7fa;}
 .rec-card-img img{width:100%;height:100%;object-fit:contain;padding:8px;display:block;}
@@ -3009,10 +2943,10 @@ footer, footer *:not(i):not([class*="fa-"]) {
   font-family:'Hind Siliguri',sans-serif;font-size:.7rem;font-weight:700;
   cursor:pointer;transition:all var(--t);
   display:flex;align-items:center;justify-content:center;gap:5px;
-  box-shadow:0 2px 8px rgba(0,122,255,.22);
+  box-shadow:0 2px 8px rgba(170,44,45,.22);
   flex-shrink:0;
 }
-.rec-card-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,122,255,.35)}
+.rec-card-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(170,44,45,.35)}
 .rec-arrow{
   position:absolute;top:50%;transform:translateY(-50%);
   width:28px;height:28px;border-radius:50%;
@@ -3172,7 +3106,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   width: 320px;
   background: white; border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(0,0,0,.13), 0 0 0 1px rgba(0,122,255,.05);
+  box-shadow: 0 12px 40px rgba(0,0,0,.13), 0 0 0 1px rgba(170,44,45,.05);
   z-index: 999; overflow: hidden;
   animation: dropIn .18s cubic-bezier(.4,0,.2,1);
 }
@@ -3197,7 +3131,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   cursor: pointer; transition: background var(--t); position: relative;
 }
 .notif-item:hover { background: var(--blue-light); }
-.notif-item.unread { background: #F0F7FF; }
+.notif-item.unread { background: #FBF1F1; }
 .notif-item.unread::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0;
   width: 3px; background: var(--blue); border-radius: 0 2px 2px 0;
@@ -3263,7 +3197,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
   background: var(--blue); color: white; border: none;
   font-family: 'Hind Siliguri', sans-serif; font-size: .9rem; font-weight: 700;
   cursor: pointer; transition: all var(--t);
-  box-shadow: 0 4px 14px rgba(0,122,255,.3);
+  box-shadow: 0 4px 14px rgba(170,44,45,.3);
   margin-top: 4px;
 }
 .profile-save-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
@@ -3766,7 +3700,7 @@ body {
   transition: box-shadow .2s, transform .2s !important;
 }
 .pcard:hover {
-  box-shadow: 0 4px 20px rgba(0,122,255,.12) !important;
+  box-shadow: 0 4px 20px rgba(170,44,45,.12) !important;
   transform: translateY(-2px) !important;
 }
 /* ── PRODUCT CARD IMAGE — fixed height, no stretch ── */
@@ -4173,7 +4107,7 @@ div.pcard-icon {
     font-size: .85rem !important;
     font-weight: 700 !important;
     cursor: pointer !important;
-    box-shadow: 0 3px 10px rgba(0,122,255,.25) !important;
+    box-shadow: 0 3px 10px rgba(170,44,45,.25) !important;
     transition: all .18s !important;
   }
   .fp-mobile-cart-btn:active { opacity: .88; transform: scale(.98); }
@@ -4513,7 +4447,7 @@ html, body {
   }
   .mob-nav-item.active,
   .mob-nav-item:hover {
-    color: #007AFF;
+    color: #AA2C2D;
   }
   .mob-nav-item.active i,
   .mob-nav-item:hover i {
@@ -4632,7 +4566,7 @@ html, body {
   }
   .ncat.active {
     background: #EBF5FF !important;
-    color: #007AFF !important;
+    color: #AA2C2D !important;
     border-bottom: none !important;
     font-weight: 700 !important;
   }
@@ -4640,7 +4574,7 @@ html, body {
   /* ── 6. Hero — proper height on mobile ── */
   .hero {
     padding: 10px 10px 12px !important;
-    background: #EBF4FF !important;
+    background: #F6DEDE !important;
   }
   .hero-slider {
     height: 190px !important;
@@ -5551,13 +5485,13 @@ html, body {
 })();
 </script>
 </head>
-<body class="loading">
+<body>
 <!--
 =================================================================
   GALAXY MART BD — DATA INTEGRITY AUDIT v5.1
   Audit performed & fixed:
 
-  ✅ FIX 1:  p.color/icon null safety → fallback #007AFF
+  ✅ FIX 1:  p.color/icon null safety → fallback #AA2C2D
   ✅ FIX 2:  Phone validation (BD format: 01XXXXXXXXX)
              Name length check (≥3 chars)
              Cart empty check before order
@@ -5578,14 +5512,6 @@ html, body {
 =================================================================
 -->
 
-
-<!-- LOADING -->
-<div id="loadingScreen">
-  <div class="loader-logo" style="background:none;box-shadow:none;border-radius:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><img id="splashIcon" src="/favicon.png?v=1.1" alt="Omni Shop" style="width:80px;height:80px;object-fit:contain;" /></div>
-  <div class="loader-brand" id="splashBrand" style="background:linear-gradient(90deg,#007AFF,#00C6FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:1.2rem;letter-spacing:.02em;">Omni Shop</div>
-  <div class="loader-text bn">লোড হচ্ছে...</div>
-  <div class="loader-bar"><div class="loader-bar-inner"></div></div>
-</div>
 
 <!-- HEADER (includes social bar so everything scrolls together as one sticky unit) -->
 <header id="mainHeader" class="header-svg-zone">
@@ -5608,9 +5534,12 @@ html, body {
       <span>বিশ্বস্ত অনলাইন শপ</span>
     </span>
   </span>
-  <div class="social-links">
+  <div class="social-links" id="headerSocialLinks">
     <span class="bn" style="font-size:.7rem;color:rgba(255,255,255,.7);margin-right:6px">ফলো করুন:</span>
-    <a href="https://www.facebook.com/shopomnibd" target="_blank" rel="noopener noreferrer" class="slink"><i class="fa-brands fa-facebook-f"></i></a>
+    <a href="mailto:" target="_blank" rel="noopener noreferrer" class="slink" id="socHeaderEmail" style="display:none"><i class="fa-solid fa-envelope"></i></a>
+    <a href="#" target="_blank" rel="noopener noreferrer" class="slink" id="socHeaderFacebook" style="display:none"><i class="fa-brands fa-facebook-f"></i></a>
+    <a href="#" target="_blank" rel="noopener noreferrer" class="slink" id="socHeaderInstagram" style="display:none"><i class="fa-brands fa-instagram"></i></a>
+    <a href="#" target="_blank" rel="noopener noreferrer" class="slink" id="socHeaderTiktok" style="display:none"><i class="fa-brands fa-tiktok"></i></a>
   </div>
 </div>
   <!-- ── TOP ROW: Logo | Search | Actions ── -->
@@ -5618,7 +5547,7 @@ html, body {
 
     <!-- Logo -->
     <a class="logo" href="/" onclick="event.preventDefault();if(typeof closeAllPagesAndModals==='function')closeAllPagesAndModals();if(typeof setMobNavActive==='function')setMobNavActive('mobNavHome');window.scrollTo({top:0,behavior:'smooth'})">
-      <div class="header-logo-container"><img id="headerLogo" src="/Logo.png" alt="Omni Shop" class="header-logo" /></div>
+      <div class="header-logo-container"><img id="headerLogo" src="/Logo.png" alt="বুক গ্যালাক্সি" class="header-logo" /></div>
     </a>
 
     <!-- Search Bar (desktop) -->
@@ -6902,7 +6831,7 @@ html, body {
         <div class="terms-hd-icon">
           <i class="fa-solid fa-file-contract"></i>
         </div>
-        <h3 class="bn">Omni Shop
+        <h3 class="bn">বুক গ্যালাক্সি
           <small>আমাদের শর্তাবলী ও নীতিমালা</small>
         </h3>
       </div>
@@ -6970,7 +6899,7 @@ html, body {
         </div>
         <div class="terms-item-content">
           <p class="terms-item-title bn">অ্যাকাউন্ট নিরাপত্তা</p>
-          <p class="terms-item-desc bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। কোনো অনাকাঙ্ক্ষিত লগইনের জন্য Omni Shop দায়ী থাকবে না।</p>
+          <p class="terms-item-desc bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। কোনো অনাকাঙ্ক্ষিত লগইনের জন্য বুক গ্যালাক্সি দায়ী থাকবে না।</p>
         </div>
       </div>
 
@@ -7156,10 +7085,13 @@ html, body {
 <footer>
   <div class="foot-top">
     <div class="foot-brand">
-      <div class="footer-logo-container"><img id="footerLogo" src="/Logo.png" alt="Omni Shop" class="footer-logo" /></div>
+      <div class="footer-logo-container"><img id="footerLogo" src="/Logo.png" alt="বুক গ্যালাক্সি" class="footer-logo" /></div>
       <p class="flabel bn">বাংলাদেশের বিশ্বস্ত অনলাইন শপ। সেরা পণ্য, সেরা দামে। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।</p>
-      <div class="fsocials">
-        <a href="https://www.facebook.com/shopomnibd" target="_blank" rel="noopener noreferrer" class="fs"><i class="fa-brands fa-facebook-f"></i></a>
+      <div class="fsocials" id="footerSocialLinks">
+        <a href="mailto:" target="_blank" rel="noopener noreferrer" class="fs" id="socFooterEmail" style="display:none"><i class="fa-solid fa-envelope"></i></a>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="fs" id="socFooterFacebook" style="display:none"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="fs" id="socFooterInstagram" style="display:none"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="fs" id="socFooterTiktok" style="display:none"><i class="fa-brands fa-tiktok"></i></a>
       </div>
     </div>
 
@@ -7190,7 +7122,7 @@ html, body {
     </div>
   </div>
   <div class="foot-bottom">
-    <p class="bn">© ২০২৬ Omni Shop · সর্বস্বত্ব সংরক্ষিত</p>
+    <p class="bn">© ২০২৬ বুক গ্যালাক্সি · সর্বস্বত্ব সংরক্ষিত</p>
     <div class="pay-methods"><span class="pm">COD</span><span class="pm">bKash</span><span class="pm">Nagad</span><span class="pm">Rocket</span></div>
   </div>
 </footer>
@@ -7235,9 +7167,7 @@ async function applyDynamicBranding() {
 
     if (data.site_name) {
       document.title = data.site_name + ' - Your Trusted Online Shop';
-      const sb_ = document.getElementById('splashBrand');
-      if (sb_) sb_.textContent = data.site_name;
-      ['headerLogo','footerLogo','splashIcon'].forEach(id => {
+      ['headerLogo','footerLogo'].forEach(id => {
         const el = document.getElementById(id); if (el) el.alt = data.site_name;
       });
     }
@@ -7249,12 +7179,52 @@ async function applyDynamicBranding() {
     }
     if (data.favicon_url) {
       setFaviconHref(data.favicon_url);
-      const si = document.getElementById('splashIcon');
-      if (si) si.src = data.favicon_url + '?v=' + Date.now();
     }
   } catch(e) { console.warn('[Branding] fetch failed, using static fallback.', e); }
 }
 applyDynamicBranding();
+
+// ══════════════════════════════════════════════════════════════════
+// DYNAMIC SOCIAL MEDIA LINKS — site_settings টেবিল থেকে live fetch
+// Hides any icon (Header + Footer) whose link is empty in the admin panel.
+// ══════════════════════════════════════════════════════════════════
+function renderSocialLinks(data) {
+  if (!data) return;
+  const links = {
+    Email:     data.social_email     ? ('mailto:' + data.social_email) : '',
+    Facebook:  data.social_facebook  || '',
+    Instagram: data.social_instagram || '',
+    Tiktok:    data.social_tiktok    || ''
+  };
+  ['Header', 'Footer'].forEach(zone => {
+    Object.entries(links).forEach(([platform, url]) => {
+      const el = document.getElementById('soc' + zone + platform);
+      if (!el) return;
+      if (url) { el.href = url; el.style.display = ''; }
+      else     { el.removeAttribute('href'); el.style.display = 'none'; }
+    });
+  });
+}
+
+async function applyDynamicSocialLinks() {
+  try {
+    const { data, error } = await sb
+      .from('site_settings')
+      .select('social_email, social_facebook, social_instagram, social_tiktok')
+      .eq('id', 1)
+      .single();
+    if (error || !data) return;
+    renderSocialLinks(data);
+    try { localStorage.setItem('gm_social', JSON.stringify(data)); } catch(e) {}
+  } catch(e) {
+    console.warn('[Social] fetch failed, using cached/static fallback.', e);
+    try {
+      const cached = JSON.parse(localStorage.getItem('gm_social') || 'null');
+      if (cached) renderSocialLinks(cached);
+    } catch(e2) {}
+  }
+}
+applyDynamicSocialLinks();
 
 
 
@@ -7474,8 +7444,8 @@ function buildRecCard(p) {
   const disc = Math.round(totalDiscPct);
   const recImgHtml = p.image_url
     ? `<img src="${p.image_url}" alt="${p.name||''}" style="width:100%;height:100%;object-fit:contain;padding:6px;border-radius:0;background:#fff" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-       <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#007AFF'};display:none"></i>`
-    : `<i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#007AFF'}"></i>`;
+       <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#AA2C2D'};display:none"></i>`
+    : `<i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#AA2C2D'}"></i>`;
   return `
     <div class="rec-card" onclick="openProduct('${p.id}')">
       <div class="rec-card-img" style="background:${p.image_url?'#fff':`linear-gradient(135deg,${p.color}22,${p.color}11)`}">
@@ -7599,7 +7569,7 @@ async function init() {
   // এটা আলাদা ফাংশনে রাখা হয়েছে যাতে race condition না হয়
   await _restorePageFromUrl();
 
-  hiddenLoader();
+  _initDone = true;
 }
 
 /* ──────────────────────────────────────────────────────────────
@@ -7644,7 +7614,7 @@ async function _restorePageFromUrl() {
     if (currentUser) {
       openProfilePage();
     } else {
-      history.replaceState({}, 'Omni Shop', '/');
+      history.replaceState({}, 'বুক গ্যালাক্সি', '/');
     }
     return;
   }
@@ -7653,7 +7623,7 @@ async function _restorePageFromUrl() {
     if (currentUser) {
       openWishlistPage();
     } else {
-      history.replaceState({}, 'Omni Shop', '/');
+      history.replaceState({}, 'বুক গ্যালাক্সি', '/');
     }
     return;
   }
@@ -7665,7 +7635,7 @@ async function _restorePageFromUrl() {
       openProduct(p.id, false);
     } else {
       // Product পাওয়া যায়নি — clean URL রেখে home দেখাও
-      history.replaceState({}, 'Omni Shop', '/');
+      history.replaceState({}, 'বুক গ্যালাক্সি', '/');
     }
     return;
   }
@@ -7802,24 +7772,11 @@ document.addEventListener('click', function(e) {
   if (wrap && !wrap.contains(e.target)) closeDropdown();
 });
 
-function hiddenLoader() {
-  setTimeout(() => {
-    const ls = document.getElementById('loadingScreen');
-    if (ls) ls.classList.add('hide');
-    document.body.classList.remove('loading');
-    document.body.style.overflow = 'auto';
-    // Immediately set correct body padding after loader hides
-    if (typeof updateHeaderHeight === 'function') updateHeaderHeight();
-  }, 1800);
-}
-
-// Safety net: force-hide loader after 12s regardless — prevents infinite white screen
+// Safety net: if initial data fetch stalls, let the user know instead of
+// leaving in-component spinners running silently forever.
+let _initDone = false;
 setTimeout(() => {
-  const ls = document.getElementById('loadingScreen');
-  if (ls && !ls.classList.contains('hide')) {
-    ls.classList.add('hide');
-    document.body.classList.remove('loading');
-    document.body.style.overflow = 'auto';
+  if (!_initDone) {
     toast('Connection Timeout!', 'কিছু ডেটা লোড হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন এবং পেজ রিফ্রেশ করুন।', 'e');
   }
 }, 12000);
@@ -8120,11 +8077,11 @@ function buildProductCard(p) {
   const isBook = p.category === 'বই';
   // Show real image; fall back to icon
   const imgHtml = p.image_url
-    ? `<img src="${p.image_url}" alt="${p.name||''}" style="width:100%;height:100%;object-fit:contain;padding:8px;display:block;background:#fff" onerror="this.style.display='none';var ic=document.createElement('div');ic.className='pcard-icon';ic.style.cssText='background:linear-gradient(135deg,${(p.color||'#007AFF')}CC,${p.color||'#007AFF'})';ic.innerHTML='<i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white;font-size:2rem\\'></i>';this.parentNode.insertBefore(ic,this.nextSibling)">`
+    ? `<img src="${p.image_url}" alt="${p.name||''}" style="width:100%;height:100%;object-fit:contain;padding:8px;display:block;background:#fff" onerror="this.style.display='none';var ic=document.createElement('div');ic.className='pcard-icon';ic.style.cssText='background:linear-gradient(135deg,${(p.color||'#AA2C2D')}CC,${p.color||'#AA2C2D'})';ic.innerHTML='<i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white;font-size:2rem\\'></i>';this.parentNode.insertBefore(ic,this.nextSibling)">`
     : '';
   const iconHtml = p.image_url
     ? '' // image আছে — icon সম্পূর্ণ HTML-এ রাখাই হবে না
-    : `<div class="pcard-icon" style="background:linear-gradient(135deg,${(p.color||'#007AFF')}CC,${p.color||'#007AFF'})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
+    : `<div class="pcard-icon" style="background:linear-gradient(135deg,${(p.color||'#AA2C2D')}CC,${p.color||'#AA2C2D'})"><i class="fa-solid ${p.icon||'fa-box'}" style="color:white;font-size:2rem"></i></div>`;
   // Books: show author (new column) with brand fallback for legacy data; others: show brand
   const authorDisplay = p.author || (isBook ? p.brand : null);
   const subLabel = isBook
@@ -8260,10 +8217,10 @@ function pushProductUrl(p) {
   const slug = slugify(p.name) || p.id;
   const url = `/product/${slug}`;
   history.pushState({ productId: p.id, slug, page: 'product' }, p.name, url);
-  document.title = `${p.name} — Omni Shop`;
+  document.title = `${p.name} — বুক গ্যালাক্সি`;
   let metaDesc = document.querySelector('meta[name="description"]');
   if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name='description'; document.head.appendChild(metaDesc); }
-  metaDesc.content = p.description ? p.description.slice(0,155) : `${p.name} কিনুন Omni Shop-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`;
+  metaDesc.content = p.description ? p.description.slice(0,155) : `${p.name} কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`;
   let metaCan = document.querySelector('link[rel="canonical"]');
   if (!metaCan) { metaCan = document.createElement('link'); metaCan.rel='canonical'; document.head.appendChild(metaCan); }
   metaCan.href = window.location.origin + url;
@@ -8272,8 +8229,8 @@ function pushProductUrl(p) {
 function restoreHomeUrl() {
   // pushState দিলে নতুন history entry হয় এবং popstate fire করে —
   // replaceState ব্যবহার করো যাতে শুধু URL পরিবর্তন হয়, event না ওঠে
-  history.replaceState({ page: 'home' }, 'Omni Shop', '/');
-  document.title = 'Omni Shop';
+  history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+  document.title = 'বুক গ্যালাক্সি';
 }
 
 // ── Global UI visibility manager ──
@@ -8317,9 +8274,9 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
-  if (name === 'track') history.replaceState({ page: 'home' }, 'Omni Shop', '/');
-  if (name === 'profile') { history.replaceState({ page: 'home' }, 'Omni Shop', '/'); document.title = 'Omni Shop'; }
-  if (name === 'wishlist') { history.replaceState({ page: 'home' }, 'Omni Shop', '/'); document.title = 'Omni Shop'; }
+  if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+  if (name === 'profile') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
+  if (name === 'wishlist') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
   if (name === 'order-detail') {
     // Re-open track page when going back from order detail
     openPage('track');
@@ -8403,7 +8360,7 @@ function openProduct(id, pushUrl = true) {
     const authorName = isBook ? (p.author || p.brand) : null;
     if (authorName) {
       authorEl.innerHTML = `
-        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(0,122,255,.15);border-radius:20px;padding:4px 12px 4px 10px;margin-bottom:6px;flex-wrap:wrap;max-width:100%">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(170,44,45,.15);border-radius:20px;padding:4px 12px 4px 10px;margin-bottom:6px;flex-wrap:wrap;max-width:100%">
           <i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.75rem"></i>
           <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text-mid)">লেখক:</span>
           <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--blue);word-break:break-word">${authorName}</span>
@@ -8688,9 +8645,9 @@ function renderCartItems() {
   el.innerHTML = cart.map(item=>{
     const thumbHtml = item.image_url
       ? `<div class="ci-icon" style="background:#f8f9fa;border:1px solid var(--border);overflow:hidden;padding:0">
-           <img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:contain;padding:3px" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${item.icon||'fa-box'}\\' style=\\'color:${item.color||'#007AFF'};font-size:1.3rem\\'></i>';this.parentElement.style.background='${(item.color||'#007AFF')}22'">
+           <img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:contain;padding:3px" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid ${item.icon||'fa-box'}\\' style=\\'color:${item.color||'#AA2C2D'};font-size:1.3rem\\'></i>';this.parentElement.style.background='${(item.color||'#AA2C2D')}22'">
          </div>`
-      : `<div class="ci-icon" style="background:${(item.color||'#007AFF')}22"><i class="fa-solid ${item.icon||'fa-box'}" style="color:${item.color||'#007AFF'};font-size:1.3rem"></i></div>`;
+      : `<div class="ci-icon" style="background:${(item.color||'#AA2C2D')}22"><i class="fa-solid ${item.icon||'fa-box'}" style="color:${item.color||'#AA2C2D'};font-size:1.3rem"></i></div>`;
     return `<div class="ci">
     ${thumbHtml}
     <div class="ci-info">
@@ -8939,11 +8896,11 @@ function openCheckout() {
       ? `<img src="${i.image_url}" alt="${i.name}"
             style="width:100%;height:100%;object-fit:contain;padding:5px;display:block;border-radius:7px;background:#fff"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-         ><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:${(i.color||'#007AFF')}18;border-radius:7px">
-           <i class="fa-solid ${i.icon||'fa-box'}" style="color:${i.color||'#007AFF'};font-size:1.35rem"></i>
+         ><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:${(i.color||'#AA2C2D')}18;border-radius:7px">
+           <i class="fa-solid ${i.icon||'fa-box'}" style="color:${i.color||'#AA2C2D'};font-size:1.35rem"></i>
          </div>`
-      : `<div style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:${(i.color||'#007AFF')}18;border-radius:7px">
-           <i class="fa-solid ${i.icon||'fa-box'}" style="color:${i.color||'#007AFF'};font-size:1.35rem"></i>
+      : `<div style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:${(i.color||'#AA2C2D')}18;border-radius:7px">
+           <i class="fa-solid ${i.icon||'fa-box'}" style="color:${i.color||'#AA2C2D'};font-size:1.35rem"></i>
          </div>`;
 
     // Sub-label: author for books, brand otherwise
@@ -8974,7 +8931,7 @@ function openCheckout() {
         border-radius:9px;
         border:1.5px solid var(--border);
         overflow:hidden;
-        background:${i.image_url ? '#fff' : (i.color||'#007AFF')+'18'};
+        background:${i.image_url ? '#fff' : (i.color||'#AA2C2D')+'18'};
         box-shadow:0 1px 4px rgba(0,0,0,.07);
         position:relative;
       ">${thumbInner}</div>
@@ -9138,7 +9095,7 @@ async function trackOrder() {
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="oid-lbl">${data.order_number}</div>
         <button onclick="copyOrderIdToast('${data.order_number}',this)"
-          style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;background:var(--blue-light);border:1px solid rgba(0,122,255,.2);color:var(--blue);font-size:.68rem;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;transition:all .2s">
+          style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;background:var(--blue-light);border:1px solid rgba(170,44,45,.2);color:var(--blue);font-size:.68rem;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;transition:all .2s">
           <i class="fa-regular fa-copy"></i> <span>Copy</span>
         </button>
       </div>
@@ -9672,12 +9629,12 @@ async function addProduct() {
   const desc  = document.getElementById('fpDesc').value.trim() || null;
   if (!name || !price) { toast('ত্রুটি','নাম ও মূল্য দিন','w'); return; }
   const icons  = {বই:'fa-book',ইলেকট্রনিক্স:'fa-mobile-screen',ফ্যাশন:'fa-shirt',হোম:'fa-house',বিউটি:'fa-spa',স্টেশনারি:'fa-pen',শিশু:'fa-child',স্পোর্টস:'fa-dumbbell'};
-  const colors = {বই:'#007AFF',ইলেকট্রনিক্স:'#F97316',ফ্যাশন:'#EC4899',হোম:'#10B981',বিউটি:'#F59E0B',স্টেশনারি:'#06B6D4',শিশু:'#EF4444',স্পোর্টস:'#84CC16'};
+  const colors = {বই:'#AA2C2D',ইলেকট্রনিক্স:'#F97316',ফ্যাশন:'#EC4899',হোম:'#10B981',বিউটি:'#F59E0B',স্টেশনারি:'#06B6D4',শিশু:'#EF4444',স্পোর্টস:'#84CC16'};
   const badge  = old && old > price ? 'sale' : null;
   const { error } = await sb.from('products').insert({
     name, category: cat, sub_category: sub, price, old_price: old,
     brand, stock, description: desc, badge,
-    icon: icons[cat] || 'fa-box', color: colors[cat] || '#007AFF'
+    icon: icons[cat] || 'fa-box', color: colors[cat] || '#AA2C2D'
   });
   if (error) { toast('ত্রুটি', error.message, 'e'); return; }
   toast('পণ্য যোগ হয়েছে!', `"${name}" ডেটাবেসে যোগ হয়েছে`, 's');
@@ -9719,7 +9676,7 @@ async function loadCoupons() {
   const { data } = await sb.from('coupons').select('*').order('created_at',{ascending:false});
   const el = document.getElementById('couponList');
   if(!data||!data.length){ el.innerHTML='<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)">কোনো কুপন নেই</div>'; return; }
-  el.innerHTML = data.map(c=>`<div style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--blue-light);border-radius:var(--radius-sm);margin-bottom:9px;border:1.5px solid ${c.is_active?'rgba(0,122,255,.2)':'var(--border)'}">
+  el.innerHTML = data.map(c=>`<div style="display:flex;align-items:center;gap:11px;padding:11px 13px;background:var(--blue-light);border-radius:var(--radius-sm);margin-bottom:9px;border:1.5px solid ${c.is_active?'rgba(170,44,45,.2)':'var(--border)'}">
     <span style="font-size:.9rem;font-weight:700;color:var(--blue);letter-spacing:.05em;flex:1">${c.code}</span>
     <span class="bn" style="flex:2;font-size:.74rem;color:var(--text-mid)">${c.discount_type==='percent'?c.discount_value+'% ছাড়':'৳'+c.discount_value+' ছাড়'} · ন্যূনতম ৳${c.min_order}</span>
     <span class="spill ${c.is_active?'s-ok':'s-err'} bn">${c.is_active?'সক্রিয়':'বন্ধ'}</span>
@@ -9858,8 +9815,8 @@ function closeCart() {
   document.body.style.overflow = '';
 }
 function openTrack(pushUrl = true) {
-  if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — Omni Shop', '/track-order');
-  document.title = 'অর্ডার ট্র্যাক — Omni Shop';
+  if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — বুক গ্যালাক্সি', '/track-order');
+  document.title = 'অর্ডার ট্র্যাক — বুক গ্যালাক্সি';
   updateHeaderHeight();
 
   // Show user chip in topbar if logged in
@@ -10437,7 +10394,7 @@ function buildOrderDetailPanel(data, history) {
           const stepIcons = ['fa-cart-shopping','fa-thumbs-up','fa-box','fa-truck','fa-house'];
           return `
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative">
-            <div style="width:36px;height:36px;border-radius:50%;border:2.5px solid ${borderClr};background:${bgClr};display:flex;align-items:center;justify-content:center;transition:all .35s;box-shadow:${done||active?'0 4px 12px rgba(0,122,255,.25)':'none'};flex-shrink:0;z-index:1">
+            <div style="width:36px;height:36px;border-radius:50%;border:2.5px solid ${borderClr};background:${bgClr};display:flex;align-items:center;justify-content:center;transition:all .35s;box-shadow:${done||active?'0 4px 12px rgba(170,44,45,.25)':'none'};flex-shrink:0;z-index:1">
               <i class="fa-solid ${done?'fa-check':(active?stepIcons[i]:'fa-circle')}" style="font-size:${done?'.65rem':'.72rem'};color:${done||active?'white':'var(--border)'}"></i>
             </div>
             <div class="bn" style="font-size:.54rem;font-weight:700;color:${active?'var(--blue)':txtClr};text-align:center;line-height:1.3;white-space:nowrap">${STATUS_LABEL[s]}</div>
@@ -10461,7 +10418,7 @@ function buildOrderDetailPanel(data, history) {
 
   // Courier info
   const courierHtml = data.tracking_link ? `
-    <div style="background:#E0F2FE;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:12px;border:1px solid rgba(0,122,255,.2)">
+    <div style="background:#E0F2FE;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:12px;border:1px solid rgba(170,44,45,.2)">
       <div class="bn" style="font-size:.72rem;font-weight:700;color:var(--blue);margin-bottom:5px"><i class="fa-solid fa-truck-fast" style="margin-right:4px"></i>কুরিয়ার ট্র্যাকিং</div>
       <div class="bn" style="font-size:.78rem;font-weight:600;margin-bottom:3px">${data.courier_service||''} ${data.tracking_id?`· ${data.tracking_id}`:''}</div>
       <a href="${data.tracking_link}" target="_blank" style="font-size:.72rem;color:var(--blue-dark);word-break:break-all">${data.tracking_link}</a>
@@ -10479,7 +10436,7 @@ function buildOrderDetailPanel(data, history) {
   const totalAmt    = Number(data.total       || (subtotal + shippingFee - discAmt));
 
   const itemsHtml = items.length ? `
-    <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,122,255,.05)">
+    <div style="background:white;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(170,44,45,.05)">
       <!-- Section header -->
       <div style="display:flex;align-items:center;gap:6px;padding:11px 13px;border-bottom:1px solid var(--blue-light);background:var(--blue-light)">
         <i class="fa-solid fa-bag-shopping" style="color:var(--blue);font-size:.78rem"></i>
@@ -10579,7 +10536,7 @@ function buildOrderDetailPanel(data, history) {
   // Admin/Tracking note (uses tracking_note column)
   const noteVal = data.tracking_note || data.admin_note || '';
   const noteHtml = noteVal ? `
-    <div style="background:rgba(0,122,255,.05);border:1px solid rgba(0,122,255,.18);border-radius:var(--radius-sm);padding:11px 13px;margin-top:10px">
+    <div style="background:rgba(170,44,45,.05);border:1px solid rgba(170,44,45,.18);border-radius:var(--radius-sm);padding:11px 13px;margin-top:10px">
       <div style="font-size:.6rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-family:'Hind Siliguri',sans-serif">
         <i class="fa-solid fa-message" style="margin-right:4px"></i>নোট
       </div>
@@ -10666,11 +10623,11 @@ const INFO_CONTENT = {
     iconBg: '#EFF6FF', iconColor: '#2563EB',
     html: `
       <p class="bn" style="font-size:.78rem;color:var(--text-mid);margin-bottom:14px;line-height:1.7">যেকোনো সমস্যা বা জিজ্ঞাসায় আমাদের সাথে যোগাযোগ করুন। আমরা সর্বদা সাহায্য করতে প্রস্তুত।</p>
-      <a class="contact-card" href="mailto:omnishop@gmail.com">
+      <a class="contact-card" href="mailto:bookgalaxybd@gmail.com">
         <div class="contact-card-icon" style="background:#FEF2F2;color:#DC2626"><i class="fa-solid fa-envelope"></i></div>
         <div class="contact-card-body">
           <div class="contact-card-label bn">ইমেইল</div>
-          <div class="contact-card-val">omnishop@gmail.com</div>
+          <div class="contact-card-val">bookgalaxybd@gmail.com</div>
         </div>
         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:.7rem;color:var(--text-light);margin-left:auto"></i>
       </a>
@@ -10719,15 +10676,15 @@ const INFO_CONTENT = {
     iconBg: '#ECFDF5', iconColor: '#059669',
     html: `
       <div style="text-align:center;padding:16px 0 20px">
-        <div style="width:60px;height:60px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(0,122,255,.25)">
+        <div style="width:60px;height:60px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 24px rgba(170,44,45,.25)">
           <i class="fa-solid fa-store" style="font-size:1.5rem;color:white"></i>
         </div>
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px">Omni Shop</div>
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px">বুক গ্যালাক্সি</div>
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-light)">বিশ্বস্ত অনলাইন শপ — বাংলাদেশ</div>
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-heart" style="color:var(--red)"></i>আমাদের মিশন</div>
-        <p class="info-section-body bn">Omni Shop বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপ যেখানে আমরা সেরা মানের পণ্য সাশ্রয়ী দামে পৌঁছে দেই। আমাদের লক্ষ্য — প্রতিটি গ্রাহকের কাছে সেরা শপিং অভিজ্ঞতা নিশ্চিত করা।</p>
+        <p class="info-section-body bn">বুক গ্যালাক্সি বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপ যেখানে আমরা সেরা মানের পণ্য সাশ্রয়ী দামে পৌঁছে দেই। আমাদের লক্ষ্য — প্রতিটি গ্রাহকের কাছে সেরা শপিং অভিজ্ঞতা নিশ্চিত করা।</p>
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-shield-halved" style="color:var(--blue)"></i>কেন আমরা আলাদা</div>
@@ -10767,7 +10724,7 @@ const INFO_CONTENT = {
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-key" style="color:var(--gold)"></i>অ্যাকাউন্ট নিরাপত্তা</div>
-        <p class="info-section-body bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। অনাকাঙ্ক্ষিত লগইনের জন্য Omni Shop দায়ী থাকবে না। সন্দেহজনক কার্যক্রম দেখলে অবিলম্বে পাসওয়ার্ড পরিবর্তন করুন।</p>
+        <p class="info-section-body bn">আপনার পাসওয়ার্ড গোপন রাখার দায়িত্ব আপনার নিজের। অনাকাঙ্ক্ষিত লগইনের জন্য বুক গ্যালাক্সি দায়ী থাকবে না। সন্দেহজনক কার্যক্রম দেখলে অবিলম্বে পাসওয়ার্ড পরিবর্তন করুন।</p>
       </div>
       <div class="info-section">
         <div class="info-section-title bn"><i class="fa-solid fa-cookie-bite" style="color:var(--orange)"></i>কুকি ব্যবহার</div>
@@ -10882,7 +10839,7 @@ async function loadProductReviews(productId) {
 function getDemoReviews() {
   return [
     { id:1, reviewer_name:'রাহেলা বেগম', rating:5, review_text:'অসাধারণ পণ্য! প্যাকেজিং খুব সুন্দর ছিল এবং সময়মতো ডেলিভারি পেয়েছি।', created_at: new Date(Date.now()-86400000*2).toISOString(), verified:true },
-    { id:2, reviewer_name:'Karim Ahmed', rating:4, review_text:'Quality is good. Will buy again from Omni Shop.', created_at: new Date(Date.now()-86400000*5).toISOString(), verified:true },
+    { id:2, reviewer_name:'Karim Ahmed', rating:4, review_text:'Quality is good. Will buy again from বুক গ্যালাক্সি.', created_at: new Date(Date.now()-86400000*5).toISOString(), verified:true },
     { id:3, reviewer_name:'মোঃ সালাউদ্দিন', rating:5, review_text:'দাম অনুযায়ী পণ্যটি অনেক ভালো। সব বন্ধুদের রেকমেন্ড করেছি।', created_at: new Date(Date.now()-86400000*10).toISOString(), verified:false },
   ];
 }
@@ -11117,7 +11074,7 @@ const DEFAULT_BANNERS = [
     btn2_label: 'অর্ডার ট্র্যাক',
     btn2_action: 'openTrack()',
     icons: ['fa-book','fa-mobile-screen','fa-shirt'],
-    gradient: 'linear-gradient(120deg,#007AFF 0%,#0055CC 100%)',
+    gradient: 'linear-gradient(120deg,#AA2C2D 0%,#711D1E 100%)',
     show_stats: true,
     is_active: true
   },
@@ -11129,7 +11086,7 @@ const DEFAULT_BANNERS = [
     btn_label: 'অফার দেখুন',
     btn2_label: null,
     icons: ['fa-tag','fa-gift','fa-percent'],
-    gradient: 'linear-gradient(120deg,#007AFF 0%,#3B82F6 60%,#60A5FA 100%)',
+    gradient: 'linear-gradient(120deg,#AA2C2D 0%,#3B82F6 60%,#60A5FA 100%)',
     show_stats: false,
     is_active: true
   },
@@ -11174,7 +11131,7 @@ async function loadHeroBanners() {
         subtitle:    b.subtitle    || '',
         button_text: b.button_text || 'শপিং করুন',
         button_link: b.button_link || b.link  || '',
-        bg_color:    b.bg_color    || '#007AFF',
+        bg_color:    b.bg_color    || '#AA2C2D',
       }));
       renderHeroBanners();
       return;
@@ -11216,7 +11173,7 @@ function renderHeroBanners() {
 
     /* ── TYPE 2: Dynamic Builder banner ── */
     if (b._isDynamic || b.type === 'dynamic_builder') {
-      const bg      = b.bg_color || '#007AFF';
+      const bg      = b.bg_color || '#AA2C2D';
       const btnLink = b.button_link || b.link || '';
       const btnAct  = btnLink ? `window.open('${btnLink}','_self')` : `document.querySelector('.main').scrollIntoView({behavior:'smooth'})`;
       return `
@@ -12032,12 +11989,12 @@ function _buildDistrictSearch() {
         line-height: 1.7;    /* FIX: generous line-height for Bengali ascenders */
         overflow: visible;
       }
-      .district-fake-input:hover { border-color: rgba(0,122,255,.4); }
+      .district-fake-input:hover { border-color: rgba(170,44,45,.4); }
       .district-fake-input.open,
       .district-fake-input:focus-within {
         border-color: var(--blue);
         background: white;
-        box-shadow: 0 0 0 3px rgba(0,122,255,.12);
+        box-shadow: 0 0 0 3px rgba(170,44,45,.12);
       }
       .district-fake-input .dfi-val {
         flex: 1;
@@ -12066,7 +12023,7 @@ function _buildDistrictSearch() {
         background: white;
         border: 1.5px solid var(--blue);
         border-radius: var(--radius, 12px);
-        box-shadow: 0 12px 40px rgba(0,122,255,.20), 0 2px 8px rgba(0,0,0,.06);
+        box-shadow: 0 12px 40px rgba(170,44,45,.20), 0 2px 8px rgba(0,0,0,.06);
         z-index: 999999;       /* FIX: extremely high — above all grid/form siblings */
         overflow: hidden;
         min-width: 200px;      /* FIX: never narrower than needed for district names */
@@ -12390,12 +12347,12 @@ function _buildUpazilaSearch() {
         cursor: not-allowed;
         pointer-events: none;
       }
-      .upazila-fake-input:not(.disabled):hover { border-color: rgba(0,122,255,.4); }
+      .upazila-fake-input:not(.disabled):hover { border-color: rgba(170,44,45,.4); }
       .upazila-fake-input.open,
       .upazila-fake-input:not(.disabled):focus-within {
         border-color: var(--blue);
         background: white;
-        box-shadow: 0 0 0 3px rgba(0,122,255,.12);
+        box-shadow: 0 0 0 3px rgba(170,44,45,.12);
       }
       .upazila-fake-input .ufi-val {
         flex: 1;
@@ -12424,7 +12381,7 @@ function _buildUpazilaSearch() {
         background: white;
         border: 1.5px solid var(--blue);
         border-radius: var(--radius, 12px);
-        box-shadow: 0 12px 40px rgba(0,122,255,.20), 0 2px 8px rgba(0,0,0,.06);
+        box-shadow: 0 12px 40px rgba(170,44,45,.20), 0 2px 8px rgba(0,0,0,.06);
         z-index: 999999;
         overflow: hidden;
         min-width: 200px;
@@ -12703,11 +12660,11 @@ function _buildUnionSearch() {
         cursor: not-allowed;
         pointer-events: none;
       }
-      #unionFakeInput:not(.disabled):hover { border-color: rgba(0,122,255,.4); }
+      #unionFakeInput:not(.disabled):hover { border-color: rgba(170,44,45,.4); }
       #unionFakeInput.open {
         border-color: var(--blue);
         background: white;
-        box-shadow: 0 0 0 3px rgba(0,122,255,.12);
+        box-shadow: 0 0 0 3px rgba(170,44,45,.12);
       }
       #unionFakeInput .uniValSpan {
         flex: 1;
@@ -12736,7 +12693,7 @@ function _buildUnionSearch() {
         background: white;
         border: 1.5px solid var(--blue);
         border-radius: var(--radius, 12px);
-        box-shadow: 0 12px 40px rgba(0,122,255,.20), 0 2px 8px rgba(0,0,0,.06);
+        box-shadow: 0 12px 40px rgba(170,44,45,.20), 0 2px 8px rgba(0,0,0,.06);
         z-index: 999999;
         overflow: hidden;
         min-width: 200px;
@@ -12770,7 +12727,7 @@ function _buildUnionSearch() {
         font-size: .78rem;
         color: var(--blue);
         background: #EFF6FF;
-        border-bottom: 1px dashed rgba(0,122,255,.25);
+        border-bottom: 1px dashed rgba(170,44,45,.25);
       }
       #unionCustomHint.visible { display: block; }
 
@@ -13233,8 +13190,8 @@ function copyOrderIdToast(id, btn) {
 // ══════════════════════════════════════════════════
 async function openProfilePage() {
   if (!currentUser) { openAuth(); return; }
-  history.pushState({ page: 'profile' }, 'আমার প্রোফাইল — Omni Shop', '/profile');
-  document.title = 'আমার প্রোফাইল — Omni Shop';
+  history.pushState({ page: 'profile' }, 'আমার প্রোফাইল — বুক গ্যালাক্সি', '/profile');
+  document.title = 'আমার প্রোফাইল — বুক গ্যালাক্সি';
   openPage('profile');
 
   // Fill static info
@@ -13360,8 +13317,8 @@ function updateFpWishBtn() {
 }
 
 function openWishlistPage() {
-  history.pushState({ page: 'wishlist' }, 'উইশলিস্ট — Omni Shop', '/wishlist');
-  document.title = 'উইশলিস্ট — Omni Shop';
+  history.pushState({ page: 'wishlist' }, 'উইশলিস্ট — বুক গ্যালাক্সি', '/wishlist');
+  document.title = 'উইশলিস্ট — বুক গ্যালাক্সি';
   renderWishlistGrid();
   openPage('wishlist');
 }
@@ -14263,15 +14220,15 @@ window.addEventListener('popstate', function(e) {
 
   } else if (state.page === 'profile') {
     if (currentUser && typeof window.openProfilePage === 'function') openProfilePage();
-    else document.title = 'Omni Shop';
+    else document.title = 'বুক গ্যালাক্সি';
 
   } else if (state.page === 'wishlist') {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
-    else document.title = 'Omni Shop';
+    else document.title = 'বুক গ্যালাক্সি';
 
   } else {
     // Home (state.page === 'home' বা state === {}) — সব বন্ধ, home দেখাও
-    document.title = 'Omni Shop';
+    document.title = 'বুক গ্যালাক্সি';
   }
 }, { capture: true });
 
