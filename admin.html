@@ -2269,8 +2269,20 @@ body {
               </div>
               <span id="catCountBadge" style="font-size:0.68rem;font-family:var(--mono);color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:100px">— টি ক্যাটাগরি</span>
             </div>
-            <div style="padding:16px 20px" id="categoryListPanel">
-              <div style="text-align:center;padding:24px"><div class="spinner" style="margin:auto"></div></div>
+            <div id="categorySetupNotice"></div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr>
+                  <th style="width:40px"></th>
+                  <th style="font-family:var(--font-bn)">নাম</th>
+                  <th>Slug</th>
+                  <th style="font-family:var(--font-bn)">স্ট্যাটাস</th>
+                  <th style="text-align:right">অ্যাকশন</th>
+                </tr></thead>
+                <tbody id="categoryListPanel">
+                  <tr><td colspan="5" style="text-align:center;padding:24px"><div class="spinner" style="margin:auto"></div></td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -2287,12 +2299,13 @@ body {
               <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
                 <div class="form-group">
                   <label class="form-label bn-label">ক্যাটাগরির নাম (বাংলা) <span class="required">*</span></label>
-                  <input class="form-inp" type="text" id="newCatName" placeholder="যেমন: ইলেকট্রনিক্স, ফ্যাশন..." oninput="previewCatSlug()">
+                  <input class="form-inp" type="text" id="newCatName" placeholder="যেমন: উপন্যাস, গল্প..." oninput="previewCatSlug()">
+                  <div style="font-size:0.68rem;color:var(--text3);font-family:var(--mono);margin-top:4px" id="newCatSlugPreview"></div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">আইকন (FA class)</label>
                   <input class="form-inp" type="text" id="newCatIcon" placeholder="fa-box" style="font-family:var(--mono);font-size:0.82rem">
-                  <div style="font-size:0.68rem;color:var(--text3);margin-top:4px">যেমন: fa-mobile-screen, fa-shirt, fa-book</div>
+                  <div style="font-size:0.68rem;color:var(--text3);margin-top:4px">যেমন: fa-book-open, fa-feather, fa-rocket</div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">রঙ</label>
@@ -3324,6 +3337,7 @@ body {
     </div>
     <div class="modal-body">
       <input type="hidden" id="editCatOriginalName">
+      <input type="hidden" id="editCatIndex">
       <div style="display:grid;gap:13px">
         <div class="form-group">
           <label class="form-label bn-label">ক্যাটাগরির নাম <span class="required">*</span></label>
@@ -6535,7 +6549,7 @@ function navTo(sec) {
   if (sec === 'banners')    loadBannersFromSupabase();
   if (sec === 'promos')     renderPromos();
   if (sec === 'admins')     renderAdminList();
-  if (sec === 'categories') { renderCategoryList(); renderBookTypeList(); }
+  if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  loadVisitorStats();
@@ -7180,20 +7194,44 @@ function cap(s = '') { return s.charAt(0).toUpperCase() + s.slice(1); }
 /* ══════════════════════════════════════
    CATEGORY MANAGEMENT
    Stored in localStorage as JSON array:
-   [{ name, icon, color }, ...]
+   [{ id, name, slug, icon, color, is_active }, ...]
 ══════════════════════════════════════ */
 const CAT_KEY      = 'gm_categories';
 const BOOKTYPE_KEY = 'gm_book_types';
 
+// Manual slug map for the default book categories (clean, readable URLs)
+const CAT_SLUG_MAP = {
+  'উপন্যাস':              'uponnash',
+  'গল্প':                 'golpo',
+  'ইসলামী বই':            'islamic-boi',
+  'সায়েন্স ফিকশন':        'science-fiction',
+  'ক্যারিয়ার ও মোটিভেশন': 'career-motivation',
+  'অনুবাদ':                'anubad',
+  'শিশু সাহিত্য':          'shishu-sahitya',
+  'কবিতা':                 'kobita'
+};
+
+// Generate a URL-safe slug for any category name (falls back for custom/admin-added names)
+function slugifyCategoryName(name) {
+  if (!name) return '';
+  const trimmed = name.trim();
+  if (CAT_SLUG_MAP[trimmed]) return CAT_SLUG_MAP[trimmed];
+  return trimmed
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '') || 'category';
+}
+
+// Default categories = only real book categories (dummy Electronics/Fashion/etc. removed)
 const DEFAULT_CATEGORIES = [
-  { name:'বই',          icon:'fa-book',          color:'#AA2C2D' },
-  { name:'ইলেকট্রনিক্স', icon:'fa-mobile-screen',  color:'#32ADE6' },
-  { name:'ফ্যাশন',      icon:'fa-shirt',          color:'#AF52DE' },
-  { name:'হোম',         icon:'fa-house',           color:'#34C759' },
-  { name:'বিউটি',       icon:'fa-spa',             color:'#FF375F' },
-  { name:'স্টেশনারি',   icon:'fa-pen-ruler',       color:'#FF9F0A' },
-  { name:'শিশু',        icon:'fa-baby',            color:'#5AC8FA' },
-  { name:'স্পোর্টস',   icon:'fa-dumbbell',        color:'#30D158' },
+  { id: 1, name:'উপন্যাস',              slug:'uponnash',           icon:'fa-book-open',       color:'#AA2C2D', is_active:true },
+  { id: 2, name:'গল্প',                 slug:'golpo',              icon:'fa-feather',         color:'#FF9F0A', is_active:true },
+  { id: 3, name:'ইসলামী বই',            slug:'islamic-boi',        icon:'fa-mosque',          color:'#34C759', is_active:true },
+  { id: 4, name:'সায়েন্স ফিকশন',        slug:'science-fiction',    icon:'fa-rocket',          color:'#32ADE6', is_active:true },
+  { id: 5, name:'ক্যারিয়ার ও মোটিভেশন', slug:'career-motivation',  icon:'fa-arrow-trend-up',  color:'#AF52DE', is_active:true },
+  { id: 6, name:'অনুবাদ',                slug:'anubad',            icon:'fa-language',        color:'#FF375F', is_active:true },
+  { id: 7, name:'শিশু সাহিত্য',          slug:'shishu-sahitya',    icon:'fa-child-reaching',  color:'#5AC8FA', is_active:true },
+  { id: 8, name:'কবিতা',                 slug:'kobita',            icon:'fa-feather-pointed', color:'#FFD60A', is_active:true },
 ];
 
 const DEFAULT_BOOK_TYPES = [
@@ -7202,13 +7240,92 @@ const DEFAULT_BOOK_TYPES = [
   'শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'
 ];
 
-function getCategories() {
-  try { return JSON.parse(localStorage.getItem(CAT_KEY)) || DEFAULT_CATEGORIES; }
-  catch { return DEFAULT_CATEGORIES; }
+// SQL to create the `categories` table in Supabase (shown in-panel if the table is missing)
+const CATEGORIES_TABLE_SQL = `-- Run this SQL once in Supabase → SQL Editor:
+
+CREATE TABLE IF NOT EXISTS categories (
+  id          bigserial PRIMARY KEY,
+  name        text NOT NULL,
+  slug        text NOT NULL UNIQUE,
+  icon        text DEFAULT 'fa-box',
+  color       text DEFAULT '#AA2C2D',
+  is_active   boolean DEFAULT true,
+  created_at  timestamptz DEFAULT now()
+);
+
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "allow_all" ON categories;
+CREATE POLICY "allow_all" ON categories FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO categories (name, slug, icon, color, is_active) VALUES
+  ('উপন্যাস','uponnash','fa-book-open','#AA2C2D',true),
+  ('গল্প','golpo','fa-feather','#FF9F0A',true),
+  ('ইসলামী বই','islamic-boi','fa-mosque','#34C759',true),
+  ('সায়েন্স ফিকশন','science-fiction','fa-rocket','#32ADE6',true),
+  ('ক্যারিয়ার ও মোটিভেশন','career-motivation','fa-arrow-trend-up','#AF52DE',true),
+  ('অনুবাদ','anubad','fa-language','#FF375F',true),
+  ('শিশু সাহিত্য','shishu-sahitya','fa-child-reaching','#5AC8FA',true),
+  ('কবিতা','kobita','fa-feather-pointed','#FFD60A',true)
+ON CONFLICT (slug) DO NOTHING;`;
+
+// In-memory list — populated from Supabase `categories` table (localStorage is only an offline fallback)
+let allCategories = [];
+let categoriesTableMissing = false;
+
+function getLocalCategories() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(CAT_KEY));
+    return Array.isArray(stored) && stored.length ? stored : DEFAULT_CATEGORIES.map(c => ({ ...c }));
+  } catch { return DEFAULT_CATEGORIES.map(c => ({ ...c })); }
 }
-function saveCategories(cats) {
+function saveLocalCategories(cats) {
   localStorage.setItem(CAT_KEY, JSON.stringify(cats));
 }
+
+/* ── Load categories: Supabase `categories` table first, localStorage fallback ── */
+async function loadCategoriesFromSupabase() {
+  categoriesTableMissing = false;
+  if (!sb) {
+    allCategories = getLocalCategories();
+    renderCategoryList();
+    return;
+  }
+  try {
+    const { data, error } = await sb.from('categories').select('*').order('id', { ascending: true });
+    if (error) {
+      categoriesTableMissing = true;
+      allCategories = getLocalCategories();
+    } else if (!data || !data.length) {
+      // Table exists but is empty — seed it once with the default book categories
+      allCategories = await seedDefaultCategoriesToSupabase();
+    } else {
+      allCategories = data.map(c => ({
+        id: c.id, name: c.name, slug: c.slug || slugifyCategoryName(c.name),
+        icon: c.icon || 'fa-box', color: c.color || '#AA2C2D',
+        is_active: c.is_active !== false, _fromSupabase: true
+      }));
+    }
+  } catch (e) {
+    categoriesTableMissing = true;
+    allCategories = getLocalCategories();
+  }
+  renderCategoryList();
+}
+
+async function seedDefaultCategoriesToSupabase() {
+  try {
+    const rows = DEFAULT_CATEGORIES.map(({ id, ...rest }) => rest);
+    const { data, error } = await sb.from('categories').insert(rows).select();
+    if (!error && data && data.length) {
+      return data.map(c => ({
+        id: c.id, name: c.name, slug: c.slug, icon: c.icon || 'fa-box',
+        color: c.color || '#AA2C2D', is_active: c.is_active !== false, _fromSupabase: true
+      }));
+    }
+  } catch (e) {}
+  return DEFAULT_CATEGORIES.map(c => ({ ...c }));
+}
+
 function getBookTypes() {
   try {
     const stored = JSON.parse(localStorage.getItem(BOOKTYPE_KEY));
@@ -7221,7 +7338,7 @@ function saveBookTypes(types) {
 
 /* ── Populate pCategory dropdown in product modal ── */
 function populateCategoryDropdown(selectedVal = '') {
-  const cats = getCategories();
+  const cats = allCategories.filter(c => c.is_active !== false);
   const sel = document.getElementById('pCategory');
   if (!sel) return;
   const currentVal = selectedVal || sel.value;
@@ -7399,7 +7516,7 @@ async function addSubCategoryInline() {
 
 /* ── Populate product category filter dropdown ── */
 function populateProductCatFilter() {
-  const cats = getCategories();
+  const cats = allCategories;
   const sel = document.getElementById('productCatFilter');
   if (!sel) return;
   const cur = sel.value;
@@ -7411,62 +7528,130 @@ function populateProductCatFilter() {
 
 /* ── Category list panel renderer ── */
 function renderCategoryList() {
-  const cats = getCategories();
   const panel = document.getElementById('categoryListPanel');
   const badge = document.getElementById('catCountBadge');
-  if (badge) badge.textContent = `${cats.length} টি ক্যাটাগরি`;
+  const notice = document.getElementById('categorySetupNotice');
+  if (badge) badge.textContent = `${allCategories.length} টি ক্যাটাগরি`;
+
+  if (notice) {
+    notice.innerHTML = categoriesTableMissing ? `
+      <div style="background:#FFF7E6;border:1px solid #FFD98A;border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:.75rem;color:#8A5A00;line-height:1.6">
+        <b>⚠ Supabase-এ <code>categories</code> টেবিল পাওয়া যায়নি।</b> আপাতত পরিবর্তনগুলো শুধু এই ব্রাউজারে (localStorage) সেভ হচ্ছে, স্থায়ীভাবে ডেটাবেসে নয়।
+        নিচের SQL Supabase → SQL Editor-এ একবার রান করে পেজ রিফ্রেশ করুন — এরপর থেকে সব ক্যাটাগরি Supabase-এ সেভ হবে।
+        <details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">SQL দেখুন</summary>
+        <pre style="white-space:pre-wrap;background:#111;color:#7CFC7C;padding:10px;border-radius:6px;margin-top:8px;font-size:.66rem;overflow-x:auto">${CATEGORIES_TABLE_SQL.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}</pre>
+        </details>
+      </div>` : '';
+  }
+
   if (!panel) return;
-  if (!cats.length) {
-    panel.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-bn)">কোনো ক্যাটাগরি নেই</div>`;
+  if (!allCategories.length) {
+    panel.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-bn)">কোনো ক্যাটাগরি নেই</td></tr>`;
     return;
   }
-  panel.innerHTML = cats.map((c, i) => `
-    <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
-      <div style="width:36px;height:36px;border-radius:9px;background:${c.color}18;border:1px solid ${c.color}40;display:flex;align-items:center;justify-content:center;color:${c.color};flex-shrink:0;font-size:0.88rem">
-        <i class="fa-solid ${c.icon || 'fa-box'}"></i>
-      </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:0.88rem;font-weight:600;color:var(--text);font-family:var(--font-bn)">${c.name}</div>
-        <div style="font-size:0.65rem;color:var(--text3);font-family:var(--mono)">${c.icon || 'fa-box'} · ${c.color || '#AA2C2D'}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+  panel.innerHTML = allCategories.map((c, i) => `
+    <tr>
+      <td>
+        <div style="width:32px;height:32px;border-radius:8px;background:${c.color}18;border:1px solid ${c.color}40;display:flex;align-items:center;justify-content:center;color:${c.color};font-size:0.82rem">
+          <i class="fa-solid ${c.icon || 'fa-box'}"></i>
+        </div>
+      </td>
+      <td style="font-family:var(--font-bn);font-weight:600">${escHtml(c.name)}</td>
+      <td style="font-family:var(--mono);font-size:0.72rem;color:var(--text3)">/${escHtml(c.slug || slugifyCategoryName(c.name))}</td>
+      <td><span class="spill ${c.is_active !== false ? 's-ok' : 's-err'} bn">${c.is_active !== false ? 'সক্রিয়' : 'বন্ধ'}</span></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick="toggleCategoryActive(${i})" title="${c.is_active !== false ? 'নিষ্ক্রিয় করুন' : 'সক্রিয় করুন'}">
+          <i class="fa-solid fa-${c.is_active !== false ? 'eye-slash' : 'eye'}"></i>
+        </button>
         <button class="btn btn-secondary btn-xs" onclick="openEditCategory(${i})" title="সম্পাদনা">
           <i class="fa-solid fa-pen-to-square"></i>
         </button>
         <button class="btn btn-danger btn-xs" onclick="deleteCategory(${i})" title="মুছুন">
           <i class="fa-solid fa-trash"></i>
         </button>
-      </div>
-    </div>`).join('');
+      </td>
+    </tr>`).join('');
   // Also refresh dropdowns everywhere
   populateCategoryDropdown();
   populateProductCatFilter();
 }
 
-/* ── Add new category ── */
-function addCategory() {
+/* ── Live slug preview while typing a new category name ── */
+function previewCatSlug() {
+  const nameEl = document.getElementById('newCatName');
+  const previewEl = document.getElementById('newCatSlugPreview');
+  if (!nameEl || !previewEl) return;
+  const name = nameEl.value.trim();
+  previewEl.textContent = name ? ('/category/' + slugifyCategoryName(name)) : '';
+}
+
+/* ── Toggle a category's is_active status (Supabase + local fallback) ── */
+async function toggleCategoryActive(idx) {
+  const c = allCategories[idx];
+  if (!c) return;
+  const newVal = c.is_active === false ? true : false;
+  if (sb && c._fromSupabase) {
+    const { error } = await sb.from('categories').update({ is_active: newVal }).eq('id', c.id);
+    if (error) { toast('Error', 'আপডেট ব্যর্থ: ' + error.message, 'error'); return; }
+  }
+  c.is_active = newVal;
+  if (!c._fromSupabase) saveLocalCategories(allCategories);
+  renderCategoryList();
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter
+  toast(newVal ? 'সক্রিয় হয়েছে' : 'নিষ্ক্রিয় হয়েছে', `"${c.name}"`, 'success');
+}
+
+/* ── Add new category — saves to Supabase when available, else localStorage ── */
+async function addCategory() {
   const name  = document.getElementById('newCatName').value.trim();
   const icon  = document.getElementById('newCatIcon').value.trim() || 'fa-box';
   const color = document.getElementById('newCatColor').value.trim() || '#AA2C2D';
   if (!name) { toast('Validation', 'ক্যাটাগরির নাম দিন', 'error'); return; }
-  const cats = getCategories();
-  if (cats.find(c => c.name === name)) { toast('Duplicate', 'এই নামে ক্যাটাগরি আছে', 'error'); return; }
-  cats.push({ name, icon, color });
-  saveCategories(cats);
+  if (allCategories.find(c => c.name === name)) { toast('Duplicate', 'এই নামে ক্যাটাগরি আছে', 'error'); return; }
+  const slug = slugifyCategoryName(name);
+  if (allCategories.find(c => c.slug === slug)) { toast('Duplicate', 'একই রকম slug-এর ক্যাটাগরি আগে থেকেই আছে', 'error'); return; }
+
+  const btn = document.querySelector('#sec-categories .btn-primary');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
+
+  let newCat = { name, slug, icon, color, is_active: true };
+  if (sb) {
+    const { data, error } = await sb.from('categories').insert(newCat).select().single();
+    if (error) {
+      categoriesTableMissing = true;
+      toast('Supabase Error', 'ডেটাবেসে সেভ ব্যর্থ, লোকালি সেভ হয়েছে: ' + error.message, 'warning');
+      newCat = { id: Date.now(), ...newCat };
+      allCategories.push(newCat);
+      saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
+    } else {
+      newCat = { id: data.id, name: data.name, slug: data.slug, icon: data.icon, color: data.color, is_active: true, _fromSupabase: true };
+      allCategories.push(newCat);
+      toast('Added!', `"${name}" ক্যাটাগরি Supabase-এ সেভ হয়েছে`, 'success');
+    }
+  } else {
+    newCat = { id: Date.now(), ...newCat };
+    allCategories.push(newCat);
+    saveLocalCategories(allCategories);
+    toast('Added!', `"${name}" ক্যাটাগরি যোগ হয়েছে (লোকাল)`, 'success');
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> <span style="font-family:var(--font-bn)">ক্যাটাগরি যোগ করুন</span>'; }
   document.getElementById('newCatName').value  = '';
   document.getElementById('newCatIcon').value  = '';
   document.getElementById('newCatColor').value = '#AA2C2D';
   document.getElementById('newCatColorPicker').value = '#AA2C2D';
+  const previewEl = document.getElementById('newCatSlugPreview');
+  if (previewEl) previewEl.textContent = '';
   renderCategoryList();
-  toast('Added!', `"${name}" ক্যাটাগরি যোগ হয়েছে`, 'success');
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter
 }
 
 /* ── Open edit category modal ── */
 function openEditCategory(idx) {
-  const cats = getCategories();
-  const c = cats[idx];
+  const c = allCategories[idx];
   if (!c) return;
   document.getElementById('editCatOriginalName').value = c.name;
+  document.getElementById('editCatIndex').value = idx;
   document.getElementById('editCatName').value  = c.name;
   document.getElementById('editCatIcon').value  = c.icon || '';
   document.getElementById('editCatColor').value = c.color || '#AA2C2D';
@@ -7474,32 +7659,48 @@ function openEditCategory(idx) {
   openModal('editCategoryModal');
 }
 
-/* ── Save category edit ── */
-function saveCategoryEdit() {
-  const origName = document.getElementById('editCatOriginalName').value;
+/* ── Save category edit — Supabase update when available, else localStorage ── */
+async function saveCategoryEdit() {
+  const idx      = parseInt(document.getElementById('editCatIndex').value, 10);
   const newName  = document.getElementById('editCatName').value.trim();
   const newIcon  = document.getElementById('editCatIcon').value.trim() || 'fa-box';
   const newColor = document.getElementById('editCatColor').value.trim() || '#AA2C2D';
   if (!newName) { toast('Validation', 'নাম দিন', 'error'); return; }
-  let cats = getCategories();
-  const idx = cats.findIndex(c => c.name === origName);
-  if (idx === -1) { toast('Error', 'ক্যাটাগরি পাওয়া যায়নি', 'error'); return; }
-  cats[idx] = { name: newName, icon: newIcon, color: newColor };
-  saveCategories(cats);
+  const existing = allCategories[idx];
+  if (!existing) { toast('Error', 'ক্যাটাগরি পাওয়া যায়নি', 'error'); return; }
+  const newSlug = newName === existing.name ? (existing.slug || slugifyCategoryName(newName)) : slugifyCategoryName(newName);
+  if (allCategories.some((c, i) => i !== idx && (c.name === newName || c.slug === newSlug))) {
+    toast('Duplicate', 'এই নাম বা slug ইতিমধ্যে ব্যবহৃত হয়েছে', 'error'); return;
+  }
+
+  const updated = { ...existing, name: newName, slug: newSlug, icon: newIcon, color: newColor };
+  if (sb && existing._fromSupabase) {
+    const { error } = await sb.from('categories').update({ name: newName, slug: newSlug, icon: newIcon, color: newColor }).eq('id', existing.id);
+    if (error) { toast('Error', 'Supabase আপডেট ব্যর্থ: ' + error.message, 'error'); return; }
+  }
+  allCategories[idx] = updated;
+  if (!updated._fromSupabase) saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
   closeModal('editCategoryModal');
   renderCategoryList();
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter
   toast('Updated!', `"${newName}" আপডেট হয়েছে`, 'success');
 }
 
-/* ── Delete category ── */
-function deleteCategory(idx) {
-  const cats = getCategories();
-  const c = cats[idx];
-  if (!confirm(`"${c?.name}" ক্যাটাগরি মুছে ফেলবেন?`)) return;
-  cats.splice(idx, 1);
-  saveCategories(cats);
+/* ── Delete category — removes from Supabase when available, else localStorage.
+     (Use the eye-icon button instead to Deactivate a category without deleting it.) ── */
+async function deleteCategory(idx) {
+  const c = allCategories[idx];
+  if (!c) return;
+  if (!confirm(`"${c.name}" ক্যাটাগরি স্থায়ীভাবে মুছে ফেলবেন? (নিষ্ক্রিয় করতে চাইলে বাতিল করে চোখ-আইকনে ক্লিক করুন)`)) return;
+  if (sb && c._fromSupabase) {
+    const { error } = await sb.from('categories').delete().eq('id', c.id);
+    if (error) { toast('Error', 'Supabase থেকে মুছতে সমস্যা: ' + error.message, 'error'); return; }
+  }
+  allCategories.splice(idx, 1);
+  saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
   renderCategoryList();
-  toast('Removed', `"${c?.name}" মুছে ফেলা হয়েছে`, 'info');
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter
+  toast('Removed', `"${c.name}" মুছে ফেলা হয়েছে`, 'info');
 }
 
 /* ══════════════════════════════════════
