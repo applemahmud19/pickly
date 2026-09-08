@@ -2675,10 +2675,31 @@ body {
               <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits" style="padding:7px 10px;font-size:0.82rem">
             </div>
             <div class="form-group" style="gap:3px">
-              <label class="form-label" style="font-size:0.62rem">Category <span class="required">*</span></label>
+              <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;justify-content:space-between">
+                <span>Category <span class="required">*</span></span>
+                <span id="pCategoryLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
+              </label>
               <select class="form-inp" id="pCategory" onchange="handleCategoryChange(this.value)" style="padding:7px 10px;font-size:0.82rem">
                 <option value="">— Select —</option>
               </select>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+                <span id="pCategoryEmptyHint" style="display:none;font-size:0.6rem;color:var(--red,#EF4444);font-family:var(--font-bn)">কোনো ক্যাটাগরি নেই — নিচে থেকে একটি যোগ করুন</span>
+                <button type="button" id="quickAddCatToggleBtn" onclick="toggleQuickAddCategory()" style="margin-left:auto;background:none;border:none;color:var(--blue);font-size:0.66rem;font-weight:700;cursor:pointer;padding:2px 0;display:flex;align-items:center;gap:3px">
+                  <i class="fa-solid fa-circle-plus" style="font-size:0.62rem"></i> Add New Category
+                </button>
+              </div>
+              <!-- Quick-add row — lets you create a category without leaving this modal -->
+              <div id="quickAddCatRow" style="display:none;gap:5px;margin-top:4px">
+                <input type="text" id="quickCatName" placeholder="নতুন ক্যাটাগরির নাম"
+                  class="form-inp" style="flex:1;padding:6px 8px;font-size:0.78rem;font-family:var(--font-bn)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();quickAddCategoryInline()}">
+                <input type="color" id="quickCatColor" value="#AA2C2D" title="Category color"
+                  style="width:34px;height:32px;padding:0;border:1px solid var(--border);border-radius:6px;cursor:pointer;flex-shrink:0">
+                <button type="button" id="quickAddCatSaveBtn" onclick="quickAddCategoryInline()"
+                  style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--blue);background:var(--blue-ll);color:var(--blue);font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                  Add
+                </button>
+              </div>
             </div>
           </div>
 
@@ -5971,8 +5992,15 @@ async function saveOrderEdits() {
 /* ══════════════════════════════════════
    PRODUCT CRUD
 ══════════════════════════════════════ */
-function openProductModal(product = null) {
-  // Refresh dynamic dropdowns first
+async function openProductModal(product = null) {
+  // Fetch the freshest categories from Supabase every time this modal opens,
+  // so a category added just now (here, in the Categories tab, or by another
+  // admin) always shows up — never a stale in-memory list.
+  const loadingEl = document.getElementById('pCategoryLoading');
+  if (loadingEl) loadingEl.style.display = 'inline-flex';
+  await loadCategoriesFromSupabase();
+  if (loadingEl) loadingEl.style.display = 'none';
+
   populateCategoryDropdown(product?.category || '');
   populateBookTypeDropdown(product?.book_type || '');
   document.getElementById('editProductId').value = product?.id || '';
@@ -7282,17 +7310,20 @@ function saveLocalCategories(cats) {
   localStorage.setItem(CAT_KEY, JSON.stringify(cats));
 }
 
-/* ── Load categories: Supabase `categories` table first, localStorage fallback ── */
+/* ── Load categories: Supabase `categories` table (id, name, slug, icon, color, is_active)
+     is the source of truth; localStorage is only an offline/error fallback. ── */
 async function loadCategoriesFromSupabase() {
   categoriesTableMissing = false;
   if (!sb) {
+    console.error('[Categories] Supabase client not initialized — using local fallback.');
     allCategories = getLocalCategories();
     renderCategoryList();
     return;
   }
   try {
-    const { data, error } = await sb.from('categories').select('*').order('id', { ascending: true });
+    const { data, error } = await sb.from('categories').select('id, name, slug, icon, color, is_active').order('id', { ascending: true });
     if (error) {
+      console.error('[Categories] Supabase fetch failed, falling back to local cache:', error);
       categoriesTableMissing = true;
       allCategories = getLocalCategories();
     } else if (!data || !data.length) {
@@ -7306,6 +7337,7 @@ async function loadCategoriesFromSupabase() {
       }));
     }
   } catch (e) {
+    console.error('[Categories] Unexpected error fetching categories, falling back to local cache:', e);
     categoriesTableMissing = true;
     allCategories = getLocalCategories();
   }
@@ -7340,8 +7372,17 @@ function saveBookTypes(types) {
 function populateCategoryDropdown(selectedVal = '') {
   const cats = allCategories.filter(c => c.is_active !== false);
   const sel = document.getElementById('pCategory');
+  const hint = document.getElementById('pCategoryEmptyHint');
   if (!sel) return;
   const currentVal = selectedVal || sel.value;
+
+  if (!cats.length) {
+    // Graceful empty state — no categories exist yet (fetch failed or table is empty)
+    sel.innerHTML = `<option value="">— কোনো ক্যাটাগরি নেই —</option>`;
+    if (hint) hint.style.display = 'block';
+    return;
+  }
+  if (hint) hint.style.display = 'none';
   sel.innerHTML = `<option value="">— Select —</option>` +
     cats.map(c => `<option value="${c.name}" ${c.name === currentVal ? 'selected' : ''}>${c.name}</option>`).join('');
 }
@@ -7644,6 +7685,68 @@ async function addCategory() {
   if (previewEl) previewEl.textContent = '';
   renderCategoryList();
   broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter
+}
+
+/* ── Quick-add row inside the Product modal's Category field ──
+     Lets the admin create a category without leaving "Add Product". ── */
+function toggleQuickAddCategory(forceState) {
+  const row = document.getElementById('quickAddCatRow');
+  if (!row) return;
+  const show = typeof forceState === 'boolean' ? forceState : row.style.display === 'none';
+  row.style.display = show ? 'flex' : 'none';
+  if (show) document.getElementById('quickCatName')?.focus();
+}
+
+/* ── Add a category from inside the Product modal (Supabase-first, local fallback) ── */
+async function quickAddCategoryInline() {
+  const nameEl  = document.getElementById('quickCatName');
+  const colorEl = document.getElementById('quickCatColor');
+  const name  = nameEl?.value.trim() || '';
+  const color = colorEl?.value || '#AA2C2D';
+  const icon  = 'fa-tag';
+
+  if (!name) { toast('Validation', 'ক্যাটাগরির নাম দিন', 'error'); return; }
+  if (allCategories.find(c => c.name === name)) { toast('Duplicate', 'এই নামে ক্যাটাগরি আগে থেকেই আছে', 'error'); return; }
+  const slug = slugifyCategoryName(name);
+  if (allCategories.find(c => c.slug === slug)) { toast('Duplicate', 'একই রকম slug-এর ক্যাটাগরি আগে থেকেই আছে', 'error'); return; }
+
+  const saveBtn = document.getElementById('quickAddCatSaveBtn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+
+  let newCat = { name, slug, icon, color, is_active: true };
+  try {
+    if (sb) {
+      const { data, error } = await sb.from('categories').insert(newCat).select('id, name, slug, icon, color, is_active').single();
+      if (error) throw error;
+      newCat = { id: data.id, name: data.name, slug: data.slug, icon: data.icon, color: data.color, is_active: true, _fromSupabase: true };
+      toast('Added!', `"${name}" ক্যাটাগরি Supabase-এ সেভ হয়েছে`, 'success');
+    } else {
+      throw new Error('Supabase client not available');
+    }
+  } catch (e) {
+    console.error('[Categories] Quick-add from product modal failed, saving locally instead:', e);
+    categoriesTableMissing = true;
+    newCat = { id: Date.now(), ...newCat };
+    toast('Supabase Error', 'ডেটাবেসে সেভ ব্যর্থ, লোকালি সেভ হয়েছে', 'warning');
+  }
+
+  allCategories.push(newCat);
+  if (!newCat._fromSupabase) saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter + other open tabs
+
+  // Refresh this modal's dropdown and select the category we just created
+  populateCategoryDropdown(name);
+  const catSel = document.getElementById('pCategory');
+  if (catSel) catSel.value = name;
+  handleCategoryChange(name);
+
+  // Keep the full Category Management table in sync if it's open in another tab
+  renderCategoryList();
+
+  if (nameEl) nameEl.value = '';
+  if (colorEl) colorEl.value = '#AA2C2D';
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = 'Add'; }
+  toggleQuickAddCategory(false);
 }
 
 /* ── Open edit category modal ── */
