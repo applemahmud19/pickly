@@ -2780,9 +2780,40 @@ body {
                 <label class="form-label bn-label" style="font-size:0.68rem">বাইন্ডিং টাইপ</label>
                 <select class="form-inp" id="pBindingType" style="padding:7px 10px;font-size:0.82rem">
                   <option value="None">— None —</option>
-                  <option value="Paperback">Paperback</option>
                   <option value="Hardcover">Hardcover</option>
+                  <option value="Paperback">Paperback</option>
+                  <option value="Board Book">Board Book</option>
+                  <option value="Leather Bound">Leather Bound</option>
+                  <option value="eBook / Soft Copy">eBook / Soft Copy</option>
                 </select>
+              </div>
+              <div></div>
+            </div>
+            <!-- Optional book specification fields -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">ISBN</label>
+                <input class="form-inp" type="text" id="pISBN" placeholder="978-..." style="padding:7px 10px;font-size:0.82rem">
+              </div>
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">সংস্করণ (Edition)</label>
+                <input class="form-inp" type="text" id="pEdition" placeholder="যেমন: ১ম সংস্করণ" style="padding:7px 10px;font-size:0.82rem">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">পৃষ্ঠা সংখ্যা</label>
+                <input class="form-inp" type="number" id="pPages" placeholder="0" min="0" style="padding:7px 10px;font-size:0.82rem">
+              </div>
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">দেশ</label>
+                <input class="form-inp" type="text" id="pCountry" placeholder="যেমন: বাংলাদেশ" style="padding:7px 10px;font-size:0.82rem">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              <div class="form-group" style="gap:3px">
+                <label class="form-label bn-label" style="font-size:0.68rem">ভাষা</label>
+                <input class="form-inp" type="text" id="pLanguage" placeholder="যেমন: বাংলা" style="padding:7px 10px;font-size:0.82rem">
               </div>
               <div></div>
             </div>
@@ -6018,6 +6049,12 @@ async function openProductModal(product = null) {
   document.getElementById('pBookType') && (document.getElementById('pBookType').value = product?.book_type || '');
   const bindingEl = document.getElementById('pBindingType');
   if (bindingEl) bindingEl.value = product?.book_binding || 'None';
+  // Optional book specification fields
+  const isbnEl = document.getElementById('pISBN');       if (isbnEl)     isbnEl.value     = product?.isbn || '';
+  const editionEl = document.getElementById('pEdition'); if (editionEl)  editionEl.value  = product?.edition || '';
+  const pagesEl = document.getElementById('pPages');     if (pagesEl)    pagesEl.value    = product?.pages || '';
+  const countryEl = document.getElementById('pCountry'); if (countryEl)  countryEl.value  = product?.country || '';
+  const languageEl = document.getElementById('pLanguage'); if (languageEl) languageEl.value = product?.language || '';
   // Fill author field (books) — fall back to brand for legacy products where author was saved in brand
   const authorInput = document.getElementById('pAuthor');
   if (authorInput) authorInput.value = product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
@@ -6363,6 +6400,13 @@ async function saveProduct() {
     const book_type = category === 'বই' ? document.getElementById('pBookType').value || null : null;
     const book_binding = category === 'বই' ? (document.getElementById('pBindingType')?.value || 'None') : null;
 
+    // Optional book specification fields (books only)
+    const isbn     = category === 'বই' ? (document.getElementById('pISBN')?.value.trim() || null) : null;
+    const edition  = category === 'বই' ? (document.getElementById('pEdition')?.value.trim() || null) : null;
+    const pages    = category === 'বই' ? (parseInt(document.getElementById('pPages')?.value) || null) : null;
+    const country  = category === 'বই' ? (document.getElementById('pCountry')?.value.trim() || null) : null;
+    const language = category === 'বই' ? (document.getElementById('pLanguage')?.value.trim() || null) : null;
+
     // Author (books only)
     const authorVal = category === 'বই' ? (document.getElementById('pAuthor')?.value.trim() || null) : null;
     // Brand (non-books only)
@@ -6385,6 +6429,11 @@ async function saveProduct() {
       publisher,
       book_type,
       book_binding,
+      isbn,
+      edition,
+      pages,
+      country,
+      language,
       is_active:   true,
       ...(imageUrl    ? { image_url: imageUrl }     : {}),
       ...(imageUrls.length ? { images: imageUrls } : {}),
@@ -7407,7 +7456,7 @@ const SUBCAT_LS_PREFIX = 'gm_subcats_';
 
 // Default sub-categories per category (shown until DB is available)
 const DEFAULT_SUBCATS = {
-  'বই':            ['উপন্যাস','গল্পগ্রন্থ','কবিতা','ইসলামি বই','আত্মউন্নয়ন','শিক্ষামূলক','ইতিহাস','বিজ্ঞান','শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'],
+  'বই':            ['উপন্যাস','গল্পগ্রন্থ','কবিতা','ইসলামি বই','আত্মউন্নয়ন','ক্যারিয়ার ও মোটিভেশন','সায়েন্স ফিকশন','অনুবাদ','শিক্ষামূলক','ইতিহাস','বিজ্ঞান','শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'],
   'ইলেকট্রনিক্স':  ['মোবাইল ফোন','ল্যাপটপ','হেডফোন','চার্জার','ক্যামেরা','ট্যাবলেট','স্মার্টওয়াচ','স্পিকার','অন্যান্য'],
   'ফ্যাশন':        ['পুরুষের পোশাক','মহিলার পোশাক','জুতা','ব্যাগ','ঘড়ি','গহনা','সানগ্লাস','অন্যান্য'],
   'হোম':           ['রান্নাঘর','বেডরুম','বাথরুম','আসবাবপত্র','লাইটিং','ডেকোর','গার্ডেনিং','অন্যান্য'],
