@@ -10768,6 +10768,13 @@ function buildSpecTable(p) {
   }
   // Book type shown only for books
   if (isBook && p.book_type) rows.push(['বইয়ের ধরণ', p.book_type]);
+  if (isBook && p.book_binding && p.book_binding !== 'None') rows.push(['বাইন্ডিং', p.book_binding]);
+  // Book-specific specifications
+  if (isBook && p.isbn)     rows.push(['ISBN', p.isbn]);
+  if (isBook && p.edition)  rows.push(['সংস্করণ', p.edition]);
+  if (isBook && p.pages)    rows.push(['পৃষ্ঠা সংখ্যা', p.pages]);
+  if (isBook && p.language) rows.push(['ভাষা', p.language]);
+  if (isBook && p.country)  rows.push(['দেশ', p.country]);
   // Author stays under the product title — NOT in spec table
   if (p.rating) rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
   const table = document.getElementById('pdSpecTable');
