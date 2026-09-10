@@ -783,6 +783,18 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .conditional-field.visible { display: flex; flex-direction: column; gap: 5px; }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── Product Type segmented selector (top of Add Product modal) ── */
+.ptype-option {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: var(--bg3); transition: all .15s ease; position: relative;
+}
+.ptype-option input[type="radio"] { accent-color: var(--blue); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+.ptype-option .ptype-title { font-size: 0.8rem; font-weight: 700; color: var(--text2); font-family: var(--font-bn); }
+.ptype-option .ptype-sub { font-size: 0.6rem; color: var(--text3); font-weight: 500; }
+.ptype-option.active { border-color: var(--blue); background: var(--blue-ll); }
+.ptype-option.active .ptype-title { color: var(--blue); }
+
 
 /* ── Live pulse animation ── */
 @keyframes livePulse {
@@ -2635,6 +2647,27 @@ body {
     <div style="overflow-y:auto;flex:1;padding:14px 18px">
       <input type="hidden" id="editProductId">
 
+      <!-- ══ Primary Type Selector — top-level, mandatory, drives all conditional rendering below ══ -->
+      <div class="form-group" style="gap:6px;margin-bottom:14px">
+        <label class="form-label bn-label" style="font-size:0.7rem">পণ্যের ধরণ (Product Type) <span class="required">*</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <label class="ptype-option active" id="ptypeGeneralWrap" for="ptypeGeneral">
+            <input type="radio" name="productType" id="ptypeGeneral" value="general" checked onchange="handleProductTypeChange('general')">
+            <div>
+              <div class="ptype-title">সাধারণ পণ্য</div>
+              <div class="ptype-sub">General Product</div>
+            </div>
+          </label>
+          <label class="ptype-option" id="ptypeBookWrap" for="ptypeBook">
+            <input type="radio" name="productType" id="ptypeBook" value="book" onchange="handleProductTypeChange('book')">
+            <div>
+              <div class="ptype-title">বই</div>
+              <div class="ptype-sub">Book</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <!-- Two-column: Left = image (fixed), Right = all fields -->
       <div style="display:grid;grid-template-columns:175px 1fr;gap:14px;align-items:start">
 
@@ -2668,15 +2701,15 @@ body {
         <!-- RIGHT: All fields — compact grid -->
         <div style="display:grid;gap:8px">
 
-          <!-- Row 1: Name + Category -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <!-- Row 1: Name + Category (Category hidden when Product Type = Book) -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="row1Grid">
             <div class="form-group" style="gap:3px">
               <label class="form-label" style="font-size:0.62rem">Product Name <span class="required">*</span></label>
               <input class="form-inp" type="text" id="pName" placeholder="e.g. Atomic Habits" style="padding:7px 10px;font-size:0.82rem">
             </div>
-            <div class="form-group" style="gap:3px">
+            <div class="form-group" id="categoryFieldWrap" style="gap:3px">
               <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;justify-content:space-between">
-                <span>Category <span class="required">*</span></span>
+                <span>Main Category <span class="required">*</span></span>
                 <span id="pCategoryLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
               </label>
               <select class="form-inp" id="pCategory" onchange="handleCategoryChange(this.value)" style="padding:7px 10px;font-size:0.82rem">
@@ -2777,14 +2810,12 @@ body {
             <!-- Binding Type row -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
               <div class="form-group" style="gap:3px">
-                <label class="form-label bn-label" style="font-size:0.68rem">বাইন্ডিং টাইপ</label>
+                <label class="form-label bn-label" style="font-size:0.68rem">কভার টাইপ (Cover Type)</label>
                 <select class="form-inp" id="pBindingType" style="padding:7px 10px;font-size:0.82rem">
-                  <option value="None">— None —</option>
                   <option value="Hardcover">Hardcover</option>
                   <option value="Paperback">Paperback</option>
                   <option value="Board Book">Board Book</option>
-                  <option value="Leather Bound">Leather Bound</option>
-                  <option value="eBook / Soft Copy">eBook / Soft Copy</option>
+                  <option value="eBook">eBook</option>
                 </select>
               </div>
               <div></div>
@@ -2819,8 +2850,8 @@ body {
             </div>
           </div>
 
-          <!-- Row 4: Price + Old Price + Stock + Color (4-col) -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+          <!-- Row 4: Price + Old Price + Stock + Color (Color hidden when Product Type = Book) -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px" id="row4Grid">
             <div class="form-group" style="gap:3px">
               <label class="form-label" style="font-size:0.6rem">Sale Price (৳) <span class="required">*</span></label>
               <input class="form-inp" type="number" id="pPrice" placeholder="0" min="0" style="padding:7px 10px;font-size:0.82rem">
@@ -2833,7 +2864,7 @@ body {
               <label class="form-label" style="font-size:0.6rem">Stock Qty <span class="required">*</span></label>
               <input class="form-inp" type="number" id="pStock" placeholder="0" min="0" style="padding:7px 10px;font-size:0.82rem">
             </div>
-            <div class="form-group" style="gap:3px">
+            <div class="form-group" id="colorField" style="gap:3px">
               <label class="form-label" style="font-size:0.6rem">Color Hex</label>
               <input class="form-inp" type="text" id="pColor" placeholder="#AA2C2D" style="padding:7px 10px;font-size:0.82rem">
             </div>
@@ -6048,16 +6079,27 @@ async function openProductModal(product = null) {
   document.getElementById('pPublisher').value   = product?.publisher || '';
   document.getElementById('pBookType') && (document.getElementById('pBookType').value = product?.book_type || '');
   const bindingEl = document.getElementById('pBindingType');
-  if (bindingEl) bindingEl.value = product?.book_binding || 'None';
+  if (bindingEl) bindingEl.value = product?.cover_type || product?.book_binding || 'Hardcover';
   // Optional book specification fields
   const isbnEl = document.getElementById('pISBN');       if (isbnEl)     isbnEl.value     = product?.isbn || '';
   const editionEl = document.getElementById('pEdition'); if (editionEl)  editionEl.value  = product?.edition || '';
   const pagesEl = document.getElementById('pPages');     if (pagesEl)    pagesEl.value    = product?.pages || '';
   const countryEl = document.getElementById('pCountry'); if (countryEl)  countryEl.value  = product?.country || '';
   const languageEl = document.getElementById('pLanguage'); if (languageEl) languageEl.value = product?.language || '';
-  // Fill author field (books) — fall back to brand for legacy products where author was saved in brand
+  // Fill author field (books) — fall back to legacy `author`/`brand` columns
   const authorInput = document.getElementById('pAuthor');
-  if (authorInput) authorInput.value = product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
+  if (authorInput) authorInput.value = product?.author_name || product?.author || (product?.category === 'বই' ? (product?.brand || '') : '') || '';
+
+  // ── Determine & apply Product Type (mandatory top-level selector) ──
+  // Prefer the explicit `product_type` column; fall back to inferring from
+  // the legacy category text for products saved before this field existed.
+  const productType = product
+    ? (product.product_type || (product.category === 'বই' ? 'book' : 'general'))
+    : 'general';
+  const ptypeGeneralEl = document.getElementById('ptypeGeneral');
+  const ptypeBookEl    = document.getElementById('ptypeBook');
+  if (ptypeGeneralEl) ptypeGeneralEl.checked = productType === 'general';
+  if (ptypeBookEl)    ptypeBookEl.checked    = productType === 'book';
   selectedImageFiles = [];
   selectedImageFile  = null;
   document.getElementById('imageFile').value = '';
@@ -6097,7 +6139,7 @@ async function openProductModal(product = null) {
   const subSel = document.getElementById('pSubCategory');
   if (subSel) subSel.setAttribute('data-pending-val', product?.sub_category || '');
 
-  handleCategoryChange(product?.category || '');
+  handleProductTypeChange(productType);
   openModal('productModal');
 }
 
@@ -6106,28 +6148,70 @@ function editProduct(id) {
   if (p) openProductModal(p);
 }
 
-function handleCategoryChange(cat) {
-  const publisherField = document.getElementById('publisherField');
-  const authorField    = document.getElementById('authorField');
-  const brandField     = document.getElementById('brandField');
-  if (cat === 'বই') {
+/* ── Product Type toggle (Book vs General Product) ──
+   Single source of truth for which field set is shown. Replaces the old
+   implicit "category === 'বই'" inference with an explicit, mandatory
+   top-level selector. ── */
+function getSelectedProductType() {
+  const checked = document.querySelector('input[name="productType"]:checked');
+  return checked ? checked.value : 'general';
+}
+
+function handleProductTypeChange(type) {
+  const isBook = type === 'book';
+
+  // Visual state of the two segmented option cards
+  const generalWrap = document.getElementById('ptypeGeneralWrap');
+  const bookWrap     = document.getElementById('ptypeBookWrap');
+  if (generalWrap) generalWrap.classList.toggle('active', !isBook);
+  if (bookWrap)     bookWrap.classList.toggle('active', isBook);
+
+  const publisherField    = document.getElementById('publisherField');
+  const authorField       = document.getElementById('authorField');
+  const brandField        = document.getElementById('brandField');
+  const colorField        = document.getElementById('colorField');
+  const categoryFieldWrap = document.getElementById('categoryFieldWrap');
+  const row1Grid          = document.getElementById('row1Grid');
+  const row4Grid          = document.getElementById('row4Grid');
+  const pCategory         = document.getElementById('pCategory');
+
+  if (isBook) {
+    // Show Book Information section
     if (publisherField) publisherField.classList.add('visible');
     if (authorField)    authorField.classList.add('visible');
-    if (brandField)     brandField.style.display = 'none';
+    // Hide irrelevant General Product fields
+    if (brandField)        brandField.style.display = 'none';
+    if (colorField)        colorField.style.display = 'none';
+    if (categoryFieldWrap) categoryFieldWrap.style.display = 'none';
+    if (row1Grid)          row1Grid.style.gridTemplateColumns = '1fr';
+    if (row4Grid)          row4Grid.style.gridTemplateColumns = '1fr 1fr 1fr';
+    // Category is fixed to বই behind the scenes (storefront groups books by this)
+    if (pCategory) pCategory.value = 'বই';
+    handleCategoryChange('বই');
   } else {
     if (publisherField) publisherField.classList.remove('visible');
     if (authorField)    authorField.classList.remove('visible');
-    if (brandField)     brandField.style.display = 'block';
+    if (brandField)        brandField.style.display = 'block';
+    if (colorField)        colorField.style.display = 'block';
+    if (categoryFieldWrap) categoryFieldWrap.style.display = 'flex';
+    if (row1Grid)          row1Grid.style.gridTemplateColumns = '1fr 1fr';
+    if (row4Grid)          row4Grid.style.gridTemplateColumns = '1fr 1fr 1fr 1fr';
+    // Clear the auto-assigned বই category so the admin must pick a real one
+    if (pCategory && pCategory.value === 'বই') pCategory.value = '';
+    handleCategoryChange(pCategory ? pCategory.value : '');
   }
+}
 
-  // ── Dynamic Sub-Category labels: update for ALL categories ──
+function handleCategoryChange(cat) {
+  // ── Dynamic Sub-Category / Book-Genre labels ──
   const subCatLabel    = document.getElementById('subCatLabel');
   const newSubCatLabel = document.getElementById('newSubCatLabel');
   const newSubCatInput = document.getElementById('newSubCatInput');
+  const isBook = cat === 'বই';
 
   if (cat) {
     // Update dropdown label to show selected category name
-    if (subCatLabel)    subCatLabel.textContent    = cat + ' — Sub-Category';
+    if (subCatLabel)    subCatLabel.textContent    = isBook ? 'বই এর ক্যাটাগরি / জনরা (Book Category / Genre)' : (cat + ' — Sub-Category');
     if (newSubCatLabel) newSubCatLabel.textContent  = cat + '-এ নতুন যোগ করুন';
 
     // Update input placeholder dynamically based on category
@@ -6357,11 +6441,12 @@ async function uploadAllImages() {
 async function saveProduct() {
   if (!sb) { toast('Not Connected', 'Configure Supabase in Settings', 'error'); return; }
 
-  const id       = document.getElementById('editProductId').value;
-  const name     = document.getElementById('pName').value.trim();
-  const category = document.getElementById('pCategory').value;
-  const price    = parseFloat(document.getElementById('pPrice').value);
-  const stock    = parseInt(document.getElementById('pStock').value) || 0;
+  const id          = document.getElementById('editProductId').value;
+  const productType = getSelectedProductType(); // 'book' | 'general' — mandatory top-level selector
+  const name        = document.getElementById('pName').value.trim();
+  const category    = document.getElementById('pCategory').value; // auto-set to 'বই' for books
+  const price       = parseFloat(document.getElementById('pPrice').value);
+  const stock       = parseInt(document.getElementById('pStock').value) || 0;
 
   if (!name || !category || !price) { toast('Validation Error', 'Name, category & price are required', 'error'); return; }
 
@@ -6395,45 +6480,54 @@ async function saveProduct() {
       imageUrl = imageUrls[0]; // primary image
     }
 
+    const isBook = productType === 'book';
+
     // Check publisher & book_type
-    const publisher = category === 'বই' ? document.getElementById('pPublisher').value.trim() || null : null;
-    const book_type = category === 'বই' ? document.getElementById('pBookType').value || null : null;
-    const book_binding = category === 'বই' ? (document.getElementById('pBindingType')?.value || 'None') : null;
+    const publisher = isBook ? document.getElementById('pPublisher').value.trim() || null : null;
+    const book_type = isBook ? document.getElementById('pBookType').value || null : null;
+    const cover_type = isBook ? (document.getElementById('pBindingType')?.value || 'Hardcover') : null;
 
     // Optional book specification fields (books only)
-    const isbn     = category === 'বই' ? (document.getElementById('pISBN')?.value.trim() || null) : null;
-    const edition  = category === 'বই' ? (document.getElementById('pEdition')?.value.trim() || null) : null;
-    const pages    = category === 'বই' ? (parseInt(document.getElementById('pPages')?.value) || null) : null;
-    const country  = category === 'বই' ? (document.getElementById('pCountry')?.value.trim() || null) : null;
-    const language = category === 'বই' ? (document.getElementById('pLanguage')?.value.trim() || null) : null;
+    const isbn     = isBook ? (document.getElementById('pISBN')?.value.trim() || null) : null;
+    const edition  = isBook ? (document.getElementById('pEdition')?.value.trim() || null) : null;
+    const pages    = isBook ? (parseInt(document.getElementById('pPages')?.value) || null) : null;
+    const country  = isBook ? (document.getElementById('pCountry')?.value.trim() || null) : null;
+    const language = isBook ? (document.getElementById('pLanguage')?.value.trim() || null) : null;
 
     // Author (books only)
-    const authorVal = category === 'বই' ? (document.getElementById('pAuthor')?.value.trim() || null) : null;
-    // Brand (non-books only)
-    const brandVal  = category !== 'বই' ? (document.getElementById('pBrand').value.trim() || null) : null;
+    const authorVal = isBook ? (document.getElementById('pAuthor')?.value.trim() || null) : null;
+    // Brand (General Product only) — Color Hex always sent (defaults to brand red)
+    // since it also drives icon/badge tinting on the storefront for books.
+    const brandVal  = !isBook ? (document.getElementById('pBrand').value.trim() || null) : null;
+    const colorVal  = document.getElementById('pColor').value || '#AA2C2D';
 
-    // Sub-category (all categories)
+    // Sub-category — doubles as "Book Category / Genre" when Product Type = Book
     const sub_category = document.getElementById('pSubCategory')?.value || null;
 
     const payload = {
       name, category,
+      product_type: productType, // 'book' | 'general' — explicit top-level type
       sub_category,
       brand:       brandVal,
-      author:      authorVal,
+      color:       colorVal,
       badge:       document.getElementById('pBadge').value || null,
       price,
       old_price:   parseFloat(document.getElementById('pOldPrice').value) || null,
       stock,
-      color:       document.getElementById('pColor').value || '#AA2C2D',
       description: document.getElementById('pDescription').value.trim() || null,
+      // Book-specific fields (null for General Product)
+      author_name: authorVal,
       publisher,
       book_type,
-      book_binding,
+      cover_type,
       isbn,
       edition,
       pages,
       country,
       language,
+      // Legacy columns kept in sync for backward compatibility with the storefront
+      author:       authorVal,
+      book_binding: cover_type,
       is_active:   true,
       ...(imageUrl    ? { image_url: imageUrl }     : {}),
       ...(imageUrls.length ? { images: imageUrls } : {}),
@@ -7317,6 +7411,16 @@ const DEFAULT_BOOK_TYPES = [
   'শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'
 ];
 
+// ── One-time migration for the new Product Type fields (Add Product modal) ──
+// Run this once in Supabase → SQL Editor if `product_type`, `author_name` or
+// `cover_type` columns don't already exist on `products`. Safe to re-run.
+const PRODUCT_TYPE_MIGRATION_SQL = `-- Run this SQL once in Supabase → SQL Editor:
+ALTER TABLE products ADD COLUMN IF NOT EXISTS product_type text DEFAULT 'general';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS author_name  text;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS cover_type   text;
+-- Backfill product_type for existing rows saved before this field existed:
+UPDATE products SET product_type = 'book' WHERE category = 'বই' AND (product_type IS NULL OR product_type = 'general');`;
+
 // SQL to create the `categories` table in Supabase (shown in-panel if the table is missing)
 const CATEGORIES_TABLE_SQL = `-- Run this SQL once in Supabase → SQL Editor:
 
@@ -7426,8 +7530,10 @@ function saveBookTypes(types) {
 const HARDCODED_PRIMARY_CATEGORY = { id: 'hardcoded_boi', name: 'বই', slug: 'boi', icon: 'fa-book', color: '#AA2C2D', is_active: true, _hardcoded: true };
 
 function populateCategoryDropdown(selectedVal = '') {
-  const dynamicCats = allCategories.filter(c => c.is_active !== false && c.name !== HARDCODED_PRIMARY_CATEGORY.name);
-  const cats = [HARDCODED_PRIMARY_CATEGORY, ...dynamicCats];
+  // 'বই' (Book) is no longer offered in the Main Category dropdown — it's
+  // now selected via the top-level Product Type toggle instead, and applied
+  // to the category field automatically (see handleProductTypeChange).
+  const cats = allCategories.filter(c => c.is_active !== false && c.name !== HARDCODED_PRIMARY_CATEGORY.name);
   const sel = document.getElementById('pCategory');
   const hint = document.getElementById('pCategoryEmptyHint');
   if (!sel) return;
