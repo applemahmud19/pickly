@@ -7417,20 +7417,22 @@ function saveBookTypes(types) {
   localStorage.setItem(BOOKTYPE_KEY, JSON.stringify(types));
 }
 
-/* ── Populate pCategory dropdown in product modal ── */
+/* ── Populate pCategory dropdown in product modal ──
+   'বই' (Book) is always hardcoded as the primary/first category —
+   it doesn't depend on the Supabase `categories` table, so it's
+   never missing even before that table has been seeded. Dynamic
+   categories (from Supabase, or admin-added ones) are appended
+   after it. ── */
+const HARDCODED_PRIMARY_CATEGORY = { id: 'hardcoded_boi', name: 'বই', slug: 'boi', icon: 'fa-book', color: '#AA2C2D', is_active: true, _hardcoded: true };
+
 function populateCategoryDropdown(selectedVal = '') {
-  const cats = allCategories.filter(c => c.is_active !== false);
+  const dynamicCats = allCategories.filter(c => c.is_active !== false && c.name !== HARDCODED_PRIMARY_CATEGORY.name);
+  const cats = [HARDCODED_PRIMARY_CATEGORY, ...dynamicCats];
   const sel = document.getElementById('pCategory');
   const hint = document.getElementById('pCategoryEmptyHint');
   if (!sel) return;
   const currentVal = selectedVal || sel.value;
 
-  if (!cats.length) {
-    // Graceful empty state — no categories exist yet (fetch failed or table is empty)
-    sel.innerHTML = `<option value="">— কোনো ক্যাটাগরি নেই —</option>`;
-    if (hint) hint.style.display = 'block';
-    return;
-  }
   if (hint) hint.style.display = 'none';
   sel.innerHTML = `<option value="">— Select —</option>` +
     cats.map(c => `<option value="${c.name}" ${c.name === currentVal ? 'selected' : ''}>${c.name}</option>`).join('');
@@ -7456,7 +7458,7 @@ const SUBCAT_LS_PREFIX = 'gm_subcats_';
 
 // Default sub-categories per category (shown until DB is available)
 const DEFAULT_SUBCATS = {
-  'বই':            ['উপন্যাস','গল্পগ্রন্থ','কবিতা','ইসলামি বই','আত্মউন্নয়ন','ক্যারিয়ার ও মোটিভেশন','সায়েন্স ফিকশন','অনুবাদ','শিক্ষামূলক','ইতিহাস','বিজ্ঞান','শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'],
+  'বই':            ['উপন্যাস','গল্প','কবিতা','ইসলামী বই','আত্মউন্নয়ন','ক্যারিয়ার ও মোটিভেশন','সায়েন্স ফিকশন','অনুবাদ','শিক্ষামূলক','ইতিহাস','বিজ্ঞান','শিশুতোষ','রান্না','ভ্রমণ','অন্যান্য'],
   'ইলেকট্রনিক্স':  ['মোবাইল ফোন','ল্যাপটপ','হেডফোন','চার্জার','ক্যামেরা','ট্যাবলেট','স্মার্টওয়াচ','স্পিকার','অন্যান্য'],
   'ফ্যাশন':        ['পুরুষের পোশাক','মহিলার পোশাক','জুতা','ব্যাগ','ঘড়ি','গহনা','সানগ্লাস','অন্যান্য'],
   'হোম':           ['রান্নাঘর','বেডরুম','বাথরুম','আসবাবপত্র','লাইটিং','ডেকোর','গার্ডেনিং','অন্যান্য'],
