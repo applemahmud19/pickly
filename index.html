@@ -7406,7 +7406,7 @@ function buildRecCard(p) {
       <div class="rec-card-body">
         <div class="rec-card-cat">${p.category}</div>
         <div class="rec-card-name bn">${p.name.length > 40 ? p.name.slice(0,40)+'…' : p.name}</div>
-        ${p.category === 'বই' ? (p.author || p.brand ? `<div class="rec-card-brand">${((v)=>v.includes(',')?v.split(',')[0].trim():v.slice(0,22))(p.author||p.brand)}</div>` : '') : (p.brand ? `<div class="rec-card-brand">${((v)=>v.includes(',')?v.split(',')[0].trim():v.slice(0,22))(p.brand)}</div>` : '')}
+        ${isBookProduct(p) ? (p.author || p.brand ? `<div class="rec-card-brand">${((v)=>v.includes(',')?v.split(',')[0].trim():v.slice(0,22))(p.author||p.brand)}</div>` : '') : (p.brand ? `<div class="rec-card-brand">${((v)=>v.includes(',')?v.split(',')[0].trim():v.slice(0,22))(p.brand)}</div>` : '')}
         <div class="rec-card-price-row">
           <span class="rec-card-price bn">৳${fmtPrice(displayPrice)}</span>
           ${p.old_price ? `<span class="rec-card-old bn">৳${fmtPrice(originalPrice)}</span>` : ''}
@@ -7747,6 +7747,20 @@ function safeStr(val, fallback = '—') {
   return (val !== null && val !== undefined && val !== '' && val !== 'null') ? String(val) : fallback;
 }
 
+/* ── Book detection ──
+   The Add Product modal now stores a Book's Main Category as its genre
+   (e.g. "অনুবাদ", "সায়েন্স ফিকশন") — not the literal string "বই" — with an
+   explicit `product_type` column ('book' | 'general') as the real source of
+   truth. Always check `product_type` first; only fall back to the legacy
+   `category === 'বই'` comparison for older rows saved before that column
+   existed. Used everywhere the storefront needs to know whether to show
+   author/publisher/ISBN-style book fields vs. brand. */
+function isBookProduct(p) {
+  if (!p) return false;
+  if (p.product_type) return p.product_type === 'book';
+  return p.category === 'বই';
+}
+
 /* ══════════════════════════════════════════════════════════
    BULK DISCOUNT — Effective Price Helper
    ──────────────────────────────────────────────────────────
@@ -8026,8 +8040,7 @@ function buildProductCard(p) {
   // ── Bulk-aware effective price calculation ──
   const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk } = getEffectiveSalePrice(p);
   const disc   = Math.round(totalDiscPct);   // মোট discount % (base + bulk)
-  const isBook = p.category === 'বই';
-  // Show real image; fall back to icon
+  const isBook = isBookProduct(p);
   const imgHtml = p.image_url
     ? `<img src="${p.image_url}" alt="${p.name||''}" style="width:100%;height:100%;object-fit:contain;padding:8px;display:block;background:#fff" onerror="this.style.display='none';var ic=document.createElement('div');ic.className='pcard-icon';ic.style.cssText='background:linear-gradient(135deg,${(p.color||'#AA2C2D')}CC,${p.color||'#AA2C2D'})';ic.innerHTML='<i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white;font-size:2rem\\'></i>';this.parentNode.insertBefore(ic,this.nextSibling)">`
     : '';
@@ -8269,9 +8282,7 @@ function openProduct(id, pushUrl = true) {
   // ── Bulk-aware effective price calculation ──
   const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk } = getEffectiveSalePrice(p);
   const disc   = Math.round(totalDiscPct);
-  const isBook = p.category === 'বই';
-
-  if (pushUrl) pushProductUrl(p);
+  const isBook = isBookProduct(p);
   updateHeaderHeight();
 
   // ── Breadcrumb ──
@@ -8603,7 +8614,7 @@ function renderCartItems() {
     ${thumbHtml}
     <div class="ci-info">
       <div class="ci-name bn">${item.name}</div>
-      <div class="ci-brand">${item.category === 'বই' ? (item.author || item.brand || '') : (item.brand || '')}</div>
+      <div class="ci-brand">${isBookProduct(item) ? (item.author || item.brand || '') : (item.brand || '')}</div>
       <div class="ci-qty">
         <button class="ciqbtn" onclick="changeCartQty('${item.id}',-1)">−</button>
         <span style="font-weight:700;font-size:.8rem;min-width:18px;text-align:center">${item.qty}</span>
@@ -8855,7 +8866,7 @@ function openCheckout() {
          </div>`;
 
     // Sub-label: author for books, brand otherwise
-    const subLabel = i.category === 'বই'
+    const subLabel = isBookProduct(i)
       ? (i.author || i.brand || '')
       : (i.brand || '');
 
@@ -10748,9 +10759,12 @@ function switchPdTab(tab) {
 }
 
 function buildSpecTable(p) {
-  const isBook = p.category === 'বই';
+  const isBook = isBookProduct(p);
   const rows = [];
   if (p.category) rows.push(['ক্যাটাগরি', p.category]);
+  // Optional Sub-Category — books: the flexible tag under the genre (e.g.
+  // "রোমান্টিক উপন্যাস"); General products: the ordinary sub-category select.
+  if (p.sub_category) rows.push(['সাব-ক্যাটাগরি', p.sub_category]);
   // Books: publisher from publisher column (separate from author/brand)
   // Others: brand column
   if (isBook && p.publisher) {
