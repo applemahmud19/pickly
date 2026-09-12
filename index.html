@@ -2330,25 +2330,31 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
   width: 100%;
   border: 1.5px solid var(--border);
 }
-/* Main gallery image — fills the card */
+/* Main gallery image — full cover always fits, never cropped */
 #fpIcon[id] {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   max-width: 100% !important;
+  max-height: 300px !important;
   object-fit: contain !important;
   padding: 12px !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   display: block !important;
+  margin: 0 auto !important;
 }
 @media(max-width:860px){
   .fp-img-card {
-    aspect-ratio: auto;      /* let the capped height below govern, not a forced square */
-    height: 320px;
-    max-height: 320px;
+    aspect-ratio: auto;      /* let the image dictate height, no forced crop box */
+    height: auto;
+    max-height: none;
     max-width: 320px;        /* keep it centered rather than full-bleed */
     width: 100%;
     margin: 0 auto 16px;     /* mx-auto + mb-4 equivalent, spacing before details below */
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 .fp-icon {
@@ -3429,14 +3435,14 @@ body {
 
 @media (max-width: 860px) {
   .fp-body { grid-template-columns: 1fr; gap: 0; padding: 0 16px; margin: 16px auto 0; }
-  .fp-img-card { height: 320px; max-height: 320px; max-width: 320px; width: 100%; margin: 0 auto 16px; border-radius: 22px; }
+  .fp-img-card { height: auto; max-height: none; overflow: visible; max-width: 320px; width: 100%; margin: 0 auto 16px; border-radius: 22px; display: flex; justify-content: center; align-items: center; }
   .fp-icon { width: 110px; height: 110px; font-size: 3.2rem; }
 }
 
 @media (max-width: 600px) {
   .fp-body { padding: 0 12px; }
   .fp-name { font-size: 1.2rem; margin-bottom: 8px; }
-  .fp-img-card { height: 300px; max-height: 300px; max-width: 300px; }
+  .fp-img-card { height: auto; max-height: none; max-width: 300px; overflow: visible; }
   .fp-icon { width: 90px; height: 90px; font-size: 2.5rem; }
   /* Price box */
   .fp-price-box { padding: 14px 15px; margin-bottom: 14px; }
@@ -4149,14 +4155,17 @@ div.pcard-icon {
   }
   .fp-img-card {
     aspect-ratio: auto !important;
-    height: 320px !important;
-    max-height: 320px !important;
+    height: auto !important;
+    max-height: none !important;
     max-width: 320px !important;
     width: 100% !important;
     margin: 0 auto 16px !important;
     border-radius: 14px !important;
     background: #F5F8FC !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
   .fp-icon { width: 120px !important; height: 120px !important; font-size: 3.5rem !important; }
   .fp-name { font-size: 1.2rem !important; line-height: 1.35 !important; margin-bottom: 6px !important; }
@@ -4194,7 +4203,7 @@ div.pcard-icon {
 @media (max-width: 480px) {
   .fp-name { font-size: 1.05rem !important; }
   .fp-new-price { font-size: 1.75rem !important; }
-  .fp-img-card { height: 280px !important; max-height: 280px !important; max-width: 280px !important; }
+  .fp-img-card { height: auto !important; max-height: none !important; max-width: 280px !important; overflow: visible !important; }
   .fp-mobile-buy-btn, .fp-mobile-cart-btn { font-size: .84rem !important; padding: 13px 10px !important; }
 }
 
@@ -8356,7 +8365,7 @@ function openProduct(id, pushUrl = true) {
 
   if (iconEl) {
     if (primaryImg) {
-      iconEl.outerHTML = `<img id="fpIcon" src="${primaryImg}" alt="${p.name}" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
+      iconEl.outerHTML = `<img id="fpIcon" src="${primaryImg}" alt="${p.name}" style="width:100%;height:auto;max-height:300px;object-fit:contain;display:block;margin:0 auto" onerror="this.outerHTML='<div id=\\'fpIcon\\' class=\\'fp-icon\\' style=\\'background:linear-gradient(135deg,${p.color}CC,${p.color})\\'><i class=\\'fa-solid ${p.icon||'fa-box'}\\' style=\\'color:white\\'></i></div>'">`;
     } else {
       iconEl.style.cssText = `width:140px;height:140px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 12px 40px rgba(0,0,0,.14);background:linear-gradient(135deg,${p.color}CC,${p.color})`;
       iconEl.innerHTML = `<i class="fa-solid ${p.icon||'fa-box'}" style="color:white"></i>`;
@@ -8463,7 +8472,7 @@ function fpSwitchGallery(encodedSrc, chip) {
 
   if (mainImg && mainImg.tagName !== 'IMG') {
     // Was icon div — replace with img (CSS handles sizing)
-    mainImg.outerHTML = `<img id="fpIcon" src="${src}" alt="">`;
+    mainImg.outerHTML = `<img id="fpIcon" src="${src}" alt="" style="width:100%;height:auto;max-height:300px;object-fit:contain;display:block;margin:0 auto">`;
     mainImg = document.getElementById('fpIcon');
   } else if (mainImg) {
     mainImg.classList.remove('fp-img-fade');
