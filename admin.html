@@ -6443,12 +6443,25 @@ async function saveProduct() {
 
   const id          = document.getElementById('editProductId').value;
   const productType = getSelectedProductType(); // 'book' | 'general' — mandatory top-level selector
+  const isBook      = productType === 'book';
   const name        = document.getElementById('pName').value.trim();
-  const category    = document.getElementById('pCategory').value; // auto-set to 'বই' for books
-  const price       = parseFloat(document.getElementById('pPrice').value);
+  const subCategoryVal = document.getElementById('pSubCategory')?.value || '';
+  // Category: the Main Category dropdown intentionally never contains a 'বই'
+  // option (see populateCategoryDropdown), so `pCategory.value = 'বই'` in
+  // handleProductTypeChange silently no-ops and leaves it blank. Bypass the
+  // dropdown entirely for books — 'বই' is always the category, hardcoded.
+  const category    = isBook ? 'বই' : document.getElementById('pCategory').value;
+  const price       = parseFloat(document.getElementById('pPrice').value); // Sale Price field (pPrice)
   const stock       = parseInt(document.getElementById('pStock').value) || 0;
 
-  if (!name || !category || !price) { toast('Validation Error', 'Name, category & price are required', 'error'); return; }
+  // Books validate against the Book Sub-category/Genre field instead of the
+  // (hidden, inapplicable) Main Category dropdown; General products still
+  // require the Main Category dropdown.
+  if (!name || !price || (isBook ? !subCategoryVal : !category)) {
+    const msg = isBook ? 'Name, Book Category/Genre & price are required' : 'Name, category & price are required';
+    toast('Validation Error', msg, 'error');
+    return;
+  }
 
   const btn = document.getElementById('saveProductBtn');
   btn.disabled = true;
@@ -6480,8 +6493,6 @@ async function saveProduct() {
       imageUrl = imageUrls[0]; // primary image
     }
 
-    const isBook = productType === 'book';
-
     // Check publisher & book_type
     const publisher = isBook ? document.getElementById('pPublisher').value.trim() || null : null;
     const book_type = isBook ? document.getElementById('pBookType').value || null : null;
@@ -6502,7 +6513,7 @@ async function saveProduct() {
     const colorVal  = document.getElementById('pColor').value || '#AA2C2D';
 
     // Sub-category — doubles as "Book Category / Genre" when Product Type = Book
-    const sub_category = document.getElementById('pSubCategory')?.value || null;
+    const sub_category = subCategoryVal || null;
 
     const payload = {
       name, category,
