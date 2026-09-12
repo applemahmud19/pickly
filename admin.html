@@ -2745,7 +2745,7 @@ body {
                 <span><span id="subCatLabel">Sub-Category</span> <span class="required" id="subCatRequiredMark" style="display:none">*</span></span>
                 <span id="subCatLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
               </label>
-              <select class="form-inp" id="pSubCategory" style="padding:7px 10px;font-size:0.82rem">
+              <select class="form-inp" id="pSubCategory" onchange="handleSubCategorySelectChange(this.value)" style="padding:7px 10px;font-size:0.82rem">
                 <option value="">— প্রথমে ক্যাটাগরি বেছে নিন —</option>
               </select>
             </div>
@@ -2772,10 +2772,34 @@ body {
           </div>
 
           <!-- Book-only: optional, flexible secondary tag — e.g. Main Category = অনুবাদ,
-               Sub-Category = রোমান্টিক উপন্যাস. Never required; saves as null when empty. -->
+               Sub-Category = রোমান্টিক উপন্যাস. Never required; saves as null when empty.
+               Dropdown of existing sub-categories (scoped to the selected genre in
+               #pSubCategory) + inline "+ Add" to create a new one without leaving
+               the modal — mirrors the General-product Sub-Category engine below. -->
           <div class="form-group conditional-field" id="bookSubCategoryWrap" style="gap:3px">
-            <label class="form-label bn-label" style="font-size:0.68rem">সাব-ক্যাটাগরি (Sub-Category - Optional)</label>
-            <input class="form-inp" type="text" id="pBookSubCategory" placeholder="যেমন: রোমান্টিক উপন্যাস (ঐচ্ছিক — খালি রাখা যাবে)" style="padding:7px 10px;font-size:0.82rem;font-family:var(--font-bn)">
+            <label class="form-label bn-label" style="font-size:0.68rem;display:flex;align-items:center;justify-content:space-between">
+              <span>সাব-ক্যাটাগরি (Sub-Category - Optional)</span>
+              <span id="bookSubCatLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
+            </label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <select class="form-inp" id="pBookSubCategory" style="padding:7px 10px;font-size:0.82rem">
+                <option value="">— সিলেক্ট করুন (ঐচ্ছিক) —</option>
+              </select>
+              <div style="display:flex;gap:5px">
+                <input class="form-inp" type="text" id="newBookSubCatInput"
+                  placeholder="যেমন: রোমান্টিক উপন্যাস"
+                  style="padding:7px 10px;font-size:0.82rem;flex:1;font-family:var(--font-bn)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();addBookSubCategoryInline()}"
+                  disabled>
+                <button type="button" id="addBookSubCatBtn"
+                  onclick="addBookSubCategoryInline()"
+                  disabled
+                  title="নতুন সাব-ক্যাটাগরি যোগ করুন"
+                  style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--blue);background:var(--blue-ll);color:var(--blue);font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .18s;flex-shrink:0">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Row 2: Brand / Author (conditional) + Badge -->
@@ -6141,9 +6165,12 @@ async function openProductModal(product = null) {
     const pendingVal = productType === 'book' ? (product?.category || '') : (product?.sub_category || '');
     subSel.setAttribute('data-pending-val', pendingVal);
   }
-  // New optional flexible Sub-Category tag — books only, stored in `sub_category`
+  // New optional flexible Sub-Category tag — books only, stored in `sub_category`.
+  // #pBookSubCategory is now a <select>; its options are loaded async (scoped to
+  // the selected genre) by handleProductTypeChange/loadBookSubCategoriesForGenre,
+  // so stash the desired value here for that loader to pick up once ready.
   const bookSubCatEl = document.getElementById('pBookSubCategory');
-  if (bookSubCatEl) bookSubCatEl.value = productType === 'book' ? (product?.sub_category || '') : '';
+  if (bookSubCatEl) bookSubCatEl.setAttribute('data-pending-val', productType === 'book' ? (product?.sub_category || '') : '');
 
   handleProductTypeChange(productType);
   openModal('productModal');
@@ -6209,6 +6236,13 @@ function handleProductTypeChange(type) {
     if (newSubCatInput) { newSubCatInput.placeholder = 'যেমন: অনুবাদ, সায়েন্স ফিকশন…'; newSubCatInput.disabled = false; }
     if (addSubCatBtn)   addSubCatBtn.disabled = false;
     populateBookCategoryDropdown();
+    // Load the optional flexible Sub-Category dropdown, scoped to whichever
+    // genre ended up selected above (current value, or the pending value
+    // from openProductModal when editing an existing book).
+    const currentGenre  = document.getElementById('pSubCategory')?.value || '';
+    const bookSubCatEl2 = document.getElementById('pBookSubCategory');
+    const pendingSubVal = bookSubCatEl2?.getAttribute('data-pending-val') || '';
+    loadBookSubCategoriesForGenre(currentGenre, pendingSubVal);
   } else {
     if (publisherField) publisherField.classList.remove('visible');
     if (authorField)    authorField.classList.remove('visible');
@@ -6220,6 +6254,14 @@ function handleProductTypeChange(type) {
     // Hide the book-only optional field, Sub-Category goes back to optional
     if (bookSubCategoryWrap) bookSubCategoryWrap.classList.remove('visible');
     if (subCatRequiredMark)  subCatRequiredMark.style.display = 'none';
+    // Reset the book-only optional Sub-Category dropdown/input so stale
+    // genre-scoped options don't linger if the user switches back to Book mode
+    const bookSubCatSel   = document.getElementById('pBookSubCategory');
+    const newBookSubInput = document.getElementById('newBookSubCatInput');
+    const addBookSubBtn   = document.getElementById('addBookSubCatBtn');
+    if (bookSubCatSel)   { bookSubCatSel.innerHTML = '<option value="">— সিলেক্ট করুন (ঐচ্ছিক) —</option>'; bookSubCatSel.removeAttribute('data-pending-val'); }
+    if (newBookSubInput) { newBookSubInput.disabled = true; newBookSubInput.value = ''; newBookSubInput.placeholder = 'প্রথমে মেইন ক্যাটাগরি সিলেক্ট করুন'; }
+    if (addBookSubBtn)   addBookSubBtn.disabled = true;
     handleCategoryChange(pCategory ? pCategory.value : '');
   }
 }
@@ -6259,6 +6301,18 @@ function handleCategoryChange(cat) {
 
   // Load sub-categories for selected category (works for ALL categories)
   loadSubCategoriesForCategory(cat);
+}
+
+/* ── #pSubCategory onchange (Book mode only) ──
+   For General products this select IS the ordinary sub-category, so nothing
+   extra is needed here. For Book products this select plays the role of the
+   "প্রধান ক্যাটাগরি (Main Category)" (genre) picker — when it changes, reload
+   the optional flexible Sub-Category dropdown scoped to the newly chosen
+   genre (see loadBookSubCategoriesForGenre). ── */
+function handleSubCategorySelectChange(val) {
+  if (getSelectedProductType() === 'book') {
+    loadBookSubCategoriesForGenre(val);
+  }
 }
 
 // ── Admin gallery sortable state ──
@@ -6472,7 +6526,7 @@ async function saveProduct() {
   // handleProductTypeChange). For General products this same select is the
   // ordinary optional Sub-Category of the Main Category dropdown.
   const subSelectVal    = document.getElementById('pSubCategory')?.value || ''; // genre (book) or ordinary sub-category (general)
-  const bookSubCatVal   = document.getElementById('pBookSubCategory')?.value.trim() || '';
+  const bookSubCatVal   = document.getElementById('pBookSubCategory')?.value || ''; // optional sub-category dropdown (book), scoped to the genre above
   // Category: books are grouped by genre (required); General products use
   // the Main Category dropdown (required).
   const category    = isBook ? subSelectVal : document.getElementById('pCategory').value;
@@ -6536,9 +6590,10 @@ async function saveProduct() {
     const brandVal  = !isBook ? (document.getElementById('pBrand').value.trim() || null) : null;
     const colorVal  = document.getElementById('pColor').value || '#AA2C2D';
 
-    // Sub-Category (optional, always) — books: the new flexible tag field
-    // (e.g. "রোমান্টিক উপন্যাস" under Main Category "অনুবাদ"); General: the
-    // ordinary sub-category select under the Main Category dropdown.
+    // Sub-Category (optional, always) — books: the optional Sub-Category
+    // dropdown (e.g. "রোমান্টিক উপন্যাস" under Main Category "অনুবাদ"),
+    // scoped to and stored via the same `sub_categories` table as General
+    // products' ordinary sub-category select under the Main Category dropdown.
     const sub_category = isBook ? (bookSubCatVal || null) : (subSelectVal || null);
 
     const payload = {
@@ -7759,6 +7814,126 @@ async function addSubCategoryInline() {
   const updated = [...(_subCatCache[catName] || []), newItem];
   _subCatCache[catName] = updated;
   _saveLocalSubCats(catName, updated);
+
+  // Add option to dropdown & select it
+  const opt = document.createElement('option');
+  opt.value = name; opt.textContent = name; opt.selected = true;
+  sel?.appendChild(opt);
+
+  if (input) input.value = '';
+  if (btn)   { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add'; }
+  toast('যোগ হয়েছে ✓', `"${name}" সাব-ক্যাটাগরি তৈরি ও সিলেক্ট হয়েছে`, 'success');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOOK SUB-CATEGORY (optional tag) ENGINE
+   — Powers the optional "সাব-ক্যাটাগরি (Sub-Category - Optional)" dropdown
+     shown under a book's Main Category (genre) select (#pSubCategory).
+   — Same Supabase `sub_categories` table as the General-product engine
+     above (category_name = the selected genre), so genres and their
+     sub-categories are shared/consistent across both product types.
+   — Never required; leaving it on the blank option saves `sub_category`
+     as null.
+══════════════════════════════════════════════════════════════ */
+
+/* Load sub-cats for the given genre into #pBookSubCategory. */
+async function loadBookSubCategoriesForGenre(genreName, selectedVal = '') {
+  const sel     = document.getElementById('pBookSubCategory');
+  const input   = document.getElementById('newBookSubCatInput');
+  const addBtn  = document.getElementById('addBookSubCatBtn');
+  const loading = document.getElementById('bookSubCatLoading');
+
+  if (!sel) return;
+
+  if (!genreName) {
+    sel.innerHTML = '<option value="">— প্রথমে মেইন ক্যাটাগরি বেছে নিন —</option>';
+    if (input)  { input.disabled = true; input.value = ''; input.placeholder = 'প্রথমে মেইন ক্যাটাগরি সিলেক্ট করুন'; }
+    if (addBtn) addBtn.disabled = true;
+    return;
+  }
+
+  // Enable inline add
+  if (input)  { input.disabled = false; input.placeholder = 'যেমন: রোমান্টিক উপন্যাস'; }
+  if (addBtn) addBtn.disabled = false;
+
+  if (loading) loading.style.display = 'inline';
+
+  let items = [];
+
+  // Try Supabase `sub_categories` table (shared with the General-product engine)
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('sub_categories')
+        .select('id, name, category_name')
+        .eq('category_name', genreName)
+        .order('name', { ascending: true });
+
+      if (!error && data && data.length) {
+        items = data;
+        _subCatCache[genreName] = items;
+        _saveLocalSubCats(genreName, items);
+      } else {
+        items = _getLocalSubCats(genreName);
+        _subCatCache[genreName] = items;
+      }
+    } catch {
+      items = _getLocalSubCats(genreName);
+      _subCatCache[genreName] = items;
+    }
+  } else {
+    items = _getLocalSubCats(genreName);
+    _subCatCache[genreName] = items;
+  }
+
+  if (loading) loading.style.display = 'none';
+
+  const currentVal = selectedVal || sel.getAttribute('data-pending-val') || '';
+  sel.innerHTML = `<option value="">— সিলেক্ট করুন (ঐচ্ছিক) —</option>` +
+    items.map(s => `<option value="${escHtml(s.name)}" ${s.name === currentVal ? 'selected' : ''}>${escHtml(s.name)}</option>`).join('');
+  sel.removeAttribute('data-pending-val');
+}
+
+/* Add a new optional Sub-Category inline from the Book form, scoped to
+   whichever genre is currently selected in #pSubCategory. Saves to the same
+   Supabase `sub_categories` table as the General-product engine, then
+   auto-selects it in #pBookSubCategory and clears the input. */
+async function addBookSubCategoryInline() {
+  const genreName = document.getElementById('pSubCategory')?.value;
+  const input      = document.getElementById('newBookSubCatInput');
+  const sel        = document.getElementById('pBookSubCategory');
+  if (!genreName) { toast('মেইন ক্যাটাগরি বেছে নিন', 'প্রথমে বইয়ের মেইন ক্যাটাগরি (জনরা) সিলেক্ট করুন', 'warning'); return; }
+  const name = input?.value.trim();
+  if (!name) { toast('নাম দিন', 'সাব-ক্যাটাগরির নাম লিখুন', 'error'); return; }
+
+  // Check duplicate in cache
+  const existing = _subCatCache[genreName] || [];
+  if (existing.find(s => s.name.toLowerCase() === name.toLowerCase())) {
+    toast('ডুপ্লিকেট', `"${name}" আগে থেকেই আছে`, 'error');
+    if (sel) sel.value = name;
+    return;
+  }
+
+  const btn = document.getElementById('addBookSubCatBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+
+  let newItem = { id: Date.now(), name, category_name: genreName };
+
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('sub_categories')
+        .insert({ name, category_name: genreName })
+        .select('id, name, category_name')
+        .single();
+      if (!error && data) newItem = data;
+    } catch {}
+  }
+
+  // Update cache + localStorage
+  const updated = [...(_subCatCache[genreName] || []), newItem];
+  _subCatCache[genreName] = updated;
+  _saveLocalSubCats(genreName, updated);
 
   // Add option to dropdown & select it
   const opt = document.createElement('option');
