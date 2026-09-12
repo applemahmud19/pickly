@@ -2736,11 +2736,13 @@ body {
             </div>
           </div>
 
-          <!-- Sub-category row — shows for ALL categories, populates dynamically on category change -->
+          <!-- Sub-category row — General Product: sub-list of the Main Category above.
+               Book: this select IS the book's "প্রধান ক্যাটাগরি (Main Category)" — genre
+               list (উপন্যাস, গল্প, ইসলামী বই, অনুবাদ, সায়েন্স ফিকশন…), required. -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="subCatRow">
             <div class="form-group" style="gap:3px">
               <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;justify-content:space-between">
-                <span id="subCatLabel">Sub-Category</span>
+                <span><span id="subCatLabel">Sub-Category</span> <span class="required" id="subCatRequiredMark" style="display:none">*</span></span>
                 <span id="subCatLoading" style="display:none;font-size:0.58rem;color:var(--text3);font-weight:400"><i class="fa-solid fa-spinner fa-spin"></i> লোড হচ্ছে…</span>
               </label>
               <select class="form-inp" id="pSubCategory" style="padding:7px 10px;font-size:0.82rem">
@@ -2769,6 +2771,13 @@ body {
             </div>
           </div>
 
+          <!-- Book-only: optional, flexible secondary tag — e.g. Main Category = অনুবাদ,
+               Sub-Category = রোমান্টিক উপন্যাস. Never required; saves as null when empty. -->
+          <div class="form-group conditional-field" id="bookSubCategoryWrap" style="gap:3px">
+            <label class="form-label bn-label" style="font-size:0.68rem">সাব-ক্যাটাগরি (Sub-Category - Optional)</label>
+            <input class="form-inp" type="text" id="pBookSubCategory" placeholder="যেমন: রোমান্টিক উপন্যাস (ঐচ্ছিক — খালি রাখা যাবে)" style="padding:7px 10px;font-size:0.82rem;font-family:var(--font-bn)">
+          </div>
+
           <!-- Row 2: Brand / Author (conditional) + Badge -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="form-group" id="brandField" style="gap:3px">
@@ -2790,25 +2799,13 @@ body {
             </div>
           </div>
 
-          <!-- Row 3: Publisher + Book Type (books only) -->
+          <!-- Row 3: Publisher + Cover Type (books only) -->
           <div class="conditional-field" id="publisherField" style="gap:0">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <div class="form-group" style="gap:3px">
                 <label class="form-label bn-label" style="font-size:0.68rem">প্রকাশনীর নাম</label>
                 <input class="form-inp" type="text" id="pPublisher" placeholder="যেমন: অন্যপ্রকাশ..." style="padding:7px 10px;font-size:0.82rem">
               </div>
-              <div class="form-group" style="gap:3px">
-                <label class="form-label bn-label" style="font-size:0.68rem;display:flex;align-items:center;justify-content:space-between">
-                  বইয়ের ধরণ
-                  <button type="button" onclick="openAddBookTypeModal()" style="font-size:0.58rem;padding:2px 6px;border-radius:4px;border:1px solid rgba(170,44,45,0.3);background:var(--blue-ll);color:var(--blue);cursor:pointer;font-family:var(--font);font-weight:600"><i class="fa-solid fa-plus" style="font-size:0.48rem"></i> নতুন</button>
-                </label>
-                <select class="form-inp" id="pBookType" style="padding:7px 10px;font-size:0.82rem">
-                  <option value="">— ধরণ বেছে নিন —</option>
-                </select>
-              </div>
-            </div>
-            <!-- Binding Type row -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
               <div class="form-group" style="gap:3px">
                 <label class="form-label bn-label" style="font-size:0.68rem">কভার টাইপ (Cover Type)</label>
                 <select class="form-inp" id="pBindingType" style="padding:7px 10px;font-size:0.82rem">
@@ -2818,7 +2815,6 @@ body {
                   <option value="eBook">eBook</option>
                 </select>
               </div>
-              <div></div>
             </div>
             <!-- Optional book specification fields -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
@@ -6064,12 +6060,14 @@ async function openProductModal(product = null) {
   if (loadingEl) loadingEl.style.display = 'none';
 
   populateCategoryDropdown(product?.category || '');
-  populateBookTypeDropdown(product?.book_type || '');
   document.getElementById('editProductId').value = product?.id || '';
   document.getElementById('productModalTitle').textContent = product ? 'পণ্য আপডেট করুন' : 'পণ্য যোগ করুন';
   document.getElementById('pName').value        = product?.name || '';
   document.getElementById('pBrand').value       = product?.brand || '';
-  document.getElementById('pCategory').value    = product?.category || '';
+  // Main Category dropdown only applies to General products — books store
+  // their genre in #pSubCategory instead (see below), so leave this blank
+  // for a book (its `category` column holds the genre, not a dropdown value).
+  document.getElementById('pCategory').value    = (product?.product_type === 'book') ? '' : (product?.category || '');
   document.getElementById('pBadge').value       = product?.badge || '';
   document.getElementById('pPrice').value       = product?.price || '';
   document.getElementById('pOldPrice').value    = product?.old_price || '';
@@ -6077,7 +6075,6 @@ async function openProductModal(product = null) {
   document.getElementById('pColor').value       = product?.color || '#AA2C2D';
   document.getElementById('pDescription').value = product?.description || '';
   document.getElementById('pPublisher').value   = product?.publisher || '';
-  document.getElementById('pBookType') && (document.getElementById('pBookType').value = product?.book_type || '');
   const bindingEl = document.getElementById('pBindingType');
   if (bindingEl) bindingEl.value = product?.cover_type || product?.book_binding || 'Hardcover';
   // Optional book specification fields
@@ -6135,9 +6132,18 @@ async function openProductModal(product = null) {
     prev.innerHTML = `<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>`;
   }
 
-  // Sub-category: store pending value so loadSubCategoriesForCategory picks it up
+  // Sub-category select: for books this holds the genre (stored in the
+  // `category` column); for General products it holds the ordinary
+  // sub-category (stored in `sub_category`). Store as pending-val so
+  // loadSubCategoriesForCategory picks it up once options are loaded.
   const subSel = document.getElementById('pSubCategory');
-  if (subSel) subSel.setAttribute('data-pending-val', product?.sub_category || '');
+  if (subSel) {
+    const pendingVal = productType === 'book' ? (product?.category || '') : (product?.sub_category || '');
+    subSel.setAttribute('data-pending-val', pendingVal);
+  }
+  // New optional flexible Sub-Category tag — books only, stored in `sub_category`
+  const bookSubCatEl = document.getElementById('pBookSubCategory');
+  if (bookSubCatEl) bookSubCatEl.value = productType === 'book' ? (product?.sub_category || '') : '';
 
   handleProductTypeChange(productType);
   openModal('productModal');
@@ -6174,6 +6180,8 @@ function handleProductTypeChange(type) {
   const row1Grid          = document.getElementById('row1Grid');
   const row4Grid          = document.getElementById('row4Grid');
   const pCategory         = document.getElementById('pCategory');
+  const bookSubCategoryWrap = document.getElementById('bookSubCategoryWrap');
+  const subCatRequiredMark  = document.getElementById('subCatRequiredMark');
 
   if (isBook) {
     // Show Book Information section
@@ -6185,8 +6193,12 @@ function handleProductTypeChange(type) {
     if (categoryFieldWrap) categoryFieldWrap.style.display = 'none';
     if (row1Grid)          row1Grid.style.gridTemplateColumns = '1fr';
     if (row4Grid)          row4Grid.style.gridTemplateColumns = '1fr 1fr 1fr';
-    // Category is fixed to বই behind the scenes (storefront groups books by this)
-    if (pCategory) pCategory.value = 'বই';
+    // Show the optional flexible Sub-Category field, mark Main Category (genre) required
+    if (bookSubCategoryWrap) bookSubCategoryWrap.classList.add('visible');
+    if (subCatRequiredMark)  subCatRequiredMark.style.display = 'inline';
+    // The #pSubCategory select now plays the role of "প্রধান ক্যাটাগরি (Main
+    // Category)" for books — always genre options for 'বই', regardless of
+    // whatever Main Category was previously chosen for a General product.
     handleCategoryChange('বই');
   } else {
     if (publisherField) publisherField.classList.remove('visible');
@@ -6196,8 +6208,9 @@ function handleProductTypeChange(type) {
     if (categoryFieldWrap) categoryFieldWrap.style.display = 'flex';
     if (row1Grid)          row1Grid.style.gridTemplateColumns = '1fr 1fr';
     if (row4Grid)          row4Grid.style.gridTemplateColumns = '1fr 1fr 1fr 1fr';
-    // Clear the auto-assigned বই category so the admin must pick a real one
-    if (pCategory && pCategory.value === 'বই') pCategory.value = '';
+    // Hide the book-only optional field, Sub-Category goes back to optional
+    if (bookSubCategoryWrap) bookSubCategoryWrap.classList.remove('visible');
+    if (subCatRequiredMark)  subCatRequiredMark.style.display = 'none';
     handleCategoryChange(pCategory ? pCategory.value : '');
   }
 }
@@ -6211,7 +6224,7 @@ function handleCategoryChange(cat) {
 
   if (cat) {
     // Update dropdown label to show selected category name
-    if (subCatLabel)    subCatLabel.textContent    = isBook ? 'বই এর ক্যাটাগরি / জনরা (Book Category / Genre)' : (cat + ' — Sub-Category');
+    if (subCatLabel)    subCatLabel.textContent    = isBook ? 'প্রধান ক্যাটাগরি (Main Category)' : (cat + ' — Sub-Category');
     if (newSubCatLabel) newSubCatLabel.textContent  = cat + '-এ নতুন যোগ করুন';
 
     // Update input placeholder dynamically based on category
@@ -6445,20 +6458,23 @@ async function saveProduct() {
   const productType = getSelectedProductType(); // 'book' | 'general' — mandatory top-level selector
   const isBook      = productType === 'book';
   const name        = document.getElementById('pName').value.trim();
-  const subCategoryVal = document.getElementById('pSubCategory')?.value || '';
-  // Category: the Main Category dropdown intentionally never contains a 'বই'
-  // option (see populateCategoryDropdown), so `pCategory.value = 'বই'` in
-  // handleProductTypeChange silently no-ops and leaves it blank. Bypass the
-  // dropdown entirely for books — 'বই' is always the category, hardcoded.
-  const category    = isBook ? 'বই' : document.getElementById('pCategory').value;
+  // Genre / "প্রধান ক্যাটাগরি (Main Category)" picker for books (physically the
+  // #pSubCategory select, relabeled for this product type — see
+  // handleProductTypeChange). For General products this same select is the
+  // ordinary optional Sub-Category of the Main Category dropdown.
+  const subSelectVal    = document.getElementById('pSubCategory')?.value || ''; // genre (book) or ordinary sub-category (general)
+  const bookSubCatVal   = document.getElementById('pBookSubCategory')?.value.trim() || '';
+  // Category: books are grouped by genre (required); General products use
+  // the Main Category dropdown (required).
+  const category    = isBook ? subSelectVal : document.getElementById('pCategory').value;
   const price       = parseFloat(document.getElementById('pPrice').value); // Sale Price field (pPrice)
   const stock       = parseInt(document.getElementById('pStock').value) || 0;
 
-  // Books validate against the Book Sub-category/Genre field instead of the
-  // (hidden, inapplicable) Main Category dropdown; General products still
-  // require the Main Category dropdown.
-  if (!name || !price || (isBook ? !subCategoryVal : !category)) {
-    const msg = isBook ? 'Name, Book Category/Genre & price are required' : 'Name, category & price are required';
+  // Main Category (category) is always required. Sub-Category is always
+  // optional — for books it's the new flexible tag field; for General
+  // products it's the ordinary sub-category select.
+  if (!name || !price || !category) {
+    const msg = isBook ? 'Name, Main Category (genre) & price are required' : 'Name, category & price are required';
     toast('Validation Error', msg, 'error');
     return;
   }
@@ -6493,9 +6509,8 @@ async function saveProduct() {
       imageUrl = imageUrls[0]; // primary image
     }
 
-    // Check publisher & book_type
+    // Publisher & Cover Type (books only) — "বইয়ের ধরণ" dropdown removed
     const publisher = isBook ? document.getElementById('pPublisher').value.trim() || null : null;
-    const book_type = isBook ? document.getElementById('pBookType').value || null : null;
     const cover_type = isBook ? (document.getElementById('pBindingType')?.value || 'Hardcover') : null;
 
     // Optional book specification fields (books only)
@@ -6512,8 +6527,10 @@ async function saveProduct() {
     const brandVal  = !isBook ? (document.getElementById('pBrand').value.trim() || null) : null;
     const colorVal  = document.getElementById('pColor').value || '#AA2C2D';
 
-    // Sub-category — doubles as "Book Category / Genre" when Product Type = Book
-    const sub_category = subCategoryVal || null;
+    // Sub-Category (optional, always) — books: the new flexible tag field
+    // (e.g. "রোমান্টিক উপন্যাস" under Main Category "অনুবাদ"); General: the
+    // ordinary sub-category select under the Main Category dropdown.
+    const sub_category = isBook ? (bookSubCatVal || null) : (subSelectVal || null);
 
     const payload = {
       name, category,
@@ -6529,7 +6546,6 @@ async function saveProduct() {
       // Book-specific fields (null for General Product)
       author_name: authorVal,
       publisher,
-      book_type,
       cover_type,
       isbn,
       edition,
