@@ -6197,9 +6197,18 @@ function handleProductTypeChange(type) {
     if (bookSubCategoryWrap) bookSubCategoryWrap.classList.add('visible');
     if (subCatRequiredMark)  subCatRequiredMark.style.display = 'inline';
     // The #pSubCategory select now plays the role of "প্রধান ক্যাটাগরি (Main
-    // Category)" for books — always genre options for 'বই', regardless of
-    // whatever Main Category was previously chosen for a General product.
-    handleCategoryChange('বই');
+    // Category)" for books, sourced from the same `categories` table as
+    // General products (not the per-category sub_categories engine) — see
+    // populateBookCategoryDropdown / addSubCategoryInline.
+    const subCatLabel    = document.getElementById('subCatLabel');
+    const newSubCatLabel = document.getElementById('newSubCatLabel');
+    const newSubCatInput = document.getElementById('newSubCatInput');
+    const addSubCatBtn   = document.getElementById('addSubCatBtn');
+    if (subCatLabel)    subCatLabel.textContent    = 'প্রধান ক্যাটাগরি (Main Category)';
+    if (newSubCatLabel) newSubCatLabel.textContent  = 'নতুন মেইন ক্যাটাগরি যোগ করুন';
+    if (newSubCatInput) { newSubCatInput.placeholder = 'যেমন: অনুবাদ, সায়েন্স ফিকশন…'; newSubCatInput.disabled = false; }
+    if (addSubCatBtn)   addSubCatBtn.disabled = false;
+    populateBookCategoryDropdown();
   } else {
     if (publisherField) publisherField.classList.remove('visible');
     if (authorField)    authorField.classList.remove('visible');
@@ -6216,15 +6225,15 @@ function handleProductTypeChange(type) {
 }
 
 function handleCategoryChange(cat) {
-  // ── Dynamic Sub-Category / Book-Genre labels ──
+  // ── Dynamic Sub-Category labels (General Product only — Book's Main
+  // Category field is handled separately in handleProductTypeChange) ──
   const subCatLabel    = document.getElementById('subCatLabel');
   const newSubCatLabel = document.getElementById('newSubCatLabel');
   const newSubCatInput = document.getElementById('newSubCatInput');
-  const isBook = cat === 'বই';
 
   if (cat) {
     // Update dropdown label to show selected category name
-    if (subCatLabel)    subCatLabel.textContent    = isBook ? 'প্রধান ক্যাটাগরি (Main Category)' : (cat + ' — Sub-Category');
+    if (subCatLabel)    subCatLabel.textContent    = cat + ' — Sub-Category';
     if (newSubCatLabel) newSubCatLabel.textContent  = cat + '-এ নতুন যোগ করুন';
 
     // Update input placeholder dynamically based on category
@@ -7571,6 +7580,22 @@ function populateCategoryDropdown(selectedVal = '') {
     cats.map(c => `<option value="${c.name}" ${c.name === currentVal ? 'selected' : ''}>${c.name}</option>`).join('');
 }
 
+/* ── Populate the Book "প্রধান ক্যাটাগরি (Main Category)" picker ──
+   Physically the #pSubCategory select (relabeled for Product Type = Book —
+   see handleProductTypeChange). Unlike the General-product Sub-Category
+   engine, this reads directly from the same Supabase `categories` table as
+   the Main Category dropdown — so genres created here (e.g. অনুবাদ) become
+   real site-wide categories, and adding one doesn't require any other field
+   to be pre-selected first. ── */
+function populateBookCategoryDropdown(selectedVal = '') {
+  const sel = document.getElementById('pSubCategory');
+  if (!sel) return;
+  const currentVal = selectedVal || sel.getAttribute('data-pending-val') || sel.value || '';
+  const cats = allCategories.filter(c => c.is_active !== false);
+  sel.innerHTML = `<option value="">— প্রধান ক্যাটাগরি বেছে নিন —</option>` +
+    cats.map(c => `<option value="${escHtml(c.name)}" ${c.name === currentVal ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('');
+}
+
 /* ── Populate pBookType dropdown in product modal ── */
 function populateBookTypeDropdown(selectedVal = '') {
   const types = getBookTypes();
@@ -7691,8 +7716,14 @@ async function _seedDefaultSubCats(catName, items) {
   } catch {}
 }
 
-/* Add a new sub-category inline from the product form */
+/* Add a new sub-category inline from the product form.
+   Book mode: the "+" here creates a real, independent Main Category (see
+   addBookMainCategoryInline) — no existing selection required.
+   General mode: unchanged — adds a sub-category scoped to the selected
+   Main Category. */
 async function addSubCategoryInline() {
+  if (getSelectedProductType() === 'book') return addBookMainCategoryInline();
+
   const catName = document.getElementById('pCategory')?.value;
   const input   = document.getElementById('newSubCatInput');
   const sel     = document.getElementById('pSubCategory');
@@ -7737,6 +7768,57 @@ async function addSubCategoryInline() {
   if (input) input.value = '';
   if (btn)   { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add'; }
   toast('যোগ হয়েছে ✓', `"${name}" সাব-ক্যাটাগরি তৈরি ও সিলেক্ট হয়েছে`, 'success');
+}
+
+/* ── Add a new "প্রধান ক্যাটাগরি (Main Category)" directly from the Book
+   form. Unlike addSubCategoryInline, this never requires an existing
+   category to be pre-selected — the typed name is saved straight into the
+   shared Supabase `categories` table (same table the General-product Main
+   Category dropdown uses), so it also appears in the Main Category dropdown
+   and can surface in storefront category filters. ── */
+async function addBookMainCategoryInline() {
+  const input = document.getElementById('newSubCatInput');
+  const name  = input?.value.trim();
+  if (!name) { toast('নাম দিন', 'মেইন ক্যাটাগরির নাম লিখুন', 'error'); return; }
+
+  if (allCategories.find(c => c.name === name)) {
+    toast('ডুপ্লিকেট', `"${name}" আগে থেকেই আছে`, 'error');
+    const sel = document.getElementById('pSubCategory');
+    if (sel) sel.value = name;
+    return;
+  }
+  const slug = slugifyCategoryName(name);
+  if (allCategories.find(c => c.slug === slug)) { toast('ডুপ্লিকেট', 'একই রকম slug-এর ক্যাটাগরি আগে থেকেই আছে', 'error'); return; }
+
+  const btn = document.getElementById('addSubCatBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+
+  let newCat = { name, slug, icon: 'fa-book', color: '#AA2C2D', is_active: true };
+  try {
+    if (sb) {
+      const { data, error } = await sb.from('categories').insert(newCat).select('id, name, slug, icon, color, is_active').single();
+      if (error) throw error;
+      newCat = { id: data.id, name: data.name, slug: data.slug, icon: data.icon, color: data.color, is_active: true, _fromSupabase: true };
+      toast('যোগ হয়েছে ✓', `"${name}" মেইন ক্যাটাগরি Supabase-এ সেভ হয়েছে`, 'success');
+    } else {
+      throw new Error('Supabase client not available');
+    }
+  } catch (e) {
+    console.error('[Categories] Book Main Category quick-add failed, saving locally instead:', e);
+    categoriesTableMissing = true;
+    newCat = { id: Date.now(), ...newCat };
+    toast('Supabase Error', 'ডেটাবেসে সেভ ব্যর্থ, লোকালি সেভ হয়েছে', 'warning');
+  }
+
+  allCategories.push(newCat);
+  if (!newCat._fromSupabase) saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar/filter + other open tabs
+
+  // Refresh the (book) Main Category dropdown and select the new entry
+  populateBookCategoryDropdown(name);
+
+  if (input) input.value = '';
+  if (btn)   { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add'; }
 }
 
 /* ── Populate product category filter dropdown ── */
