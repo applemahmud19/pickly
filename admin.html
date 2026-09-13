@@ -1608,6 +1608,10 @@ body {
         <i class="fa-solid fa-users"></i> Users
         <span class="nav-badge" id="nb-users">—</span>
       </div>
+      <div class="nav-item" data-sec="questions">
+        <i class="fa-solid fa-circle-question"></i> Product Questions
+        <span class="nav-badge" id="nb-questions" style="display:none">—</span>
+      </div>
 
       <div class="sb-section">Insights</div>
       <div class="nav-item" data-sec="analytics">
@@ -2093,6 +2097,78 @@ body {
             </table>
           </div>
           <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="userFooter">Loading...</div>
+        </div>
+      </div>
+
+      <!-- ══ PRODUCT QUESTIONS ══ -->
+      <div class="section" id="sec-questions">
+        <!-- KPI strip -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px" id="pqKPIGrid">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-circle-question"></i></div>
+              <span class="kpi-badge na">Total</span>
+            </div>
+            <div class="kpi-val" id="kpi-total-questions">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">মোট প্রশ্ন</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-hourglass-half"></i></div>
+              <span class="kpi-badge na">Pending</span>
+            </div>
+            <div class="kpi-val" id="kpi-pending-questions">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">উত্তর বাকি</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-circle-check"></i></div>
+              <span class="kpi-badge up">Approved</span>
+            </div>
+            <div class="kpi-val" id="kpi-approved-questions">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">প্রকাশিত উত্তর</div>
+          </div>
+        </div>
+
+        <!-- Questions Table Panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-circle-question"></i></div>
+              Product Questions
+            </div>
+            <div class="panel-actions">
+              <div class="search-bar" style="min-width:200px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="প্রশ্ন, নাম বা পণ্য দিয়ে খুঁজুন..." id="pqSearch" oninput="renderProductQuestions()">
+              </div>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:130px" id="pqStatusFilter" onchange="renderProductQuestions()">
+                <option value="">All Questions</option>
+                <option value="pending">Pending Only</option>
+                <option value="approved">Approved Only</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()">
+                <i class="fa-solid fa-rotate-right"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product / Customer</th>
+                  <th>Question</th>
+                  <th>Answer</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pqTableBody">
+                <tr><td colspan="5" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="pqFooter">Loading...</div>
         </div>
       </div>
 
@@ -2887,6 +2963,77 @@ body {
             <div class="form-group" id="colorField" style="gap:3px">
               <label class="form-label" style="font-size:0.6rem">Color Hex</label>
               <input class="form-inp" type="text" id="pColor" placeholder="#AA2C2D" style="padding:7px 10px;font-size:0.82rem">
+            </div>
+          </div>
+
+          <!-- Row 4.5: Product Variants — dynamic color/price/stock rows, saved to the `variants` JSONB column -->
+          <div class="form-group" style="gap:6px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <label class="form-label" style="font-size:0.62rem;margin-bottom:0">
+                Product Variants
+                <span style="color:var(--text3);font-weight:400;font-family:var(--font-bn);text-transform:none;letter-spacing:0;font-size:0.6rem">(ঐচ্ছিক — কালার ভেদে আলাদা দাম ও স্টক)</span>
+              </label>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="addVariantRow()" style="padding:4px 10px;font-size:0.68rem">
+                <i class="fa-solid fa-circle-plus"></i> Add Variant
+              </button>
+            </div>
+
+            <div id="variantRowsHeader" style="display:none;grid-template-columns:1.3fr 1.3fr 0.85fr 0.85fr 26px;gap:6px;padding:0 2px">
+              <span style="font-size:0.58rem;color:var(--text3);font-weight:600">COLOR NAME</span>
+              <span style="font-size:0.58rem;color:var(--text3);font-weight:600">COLOR HEX</span>
+              <span style="font-size:0.58rem;color:var(--text3);font-weight:600">PRICE (৳)</span>
+              <span style="font-size:0.58rem;color:var(--text3);font-weight:600">STOCK</span>
+              <span></span>
+            </div>
+
+            <div id="variantRows" style="display:flex;flex-direction:column;gap:6px"></div>
+
+            <div id="variantEmptyHint" style="font-size:0.66rem;color:var(--text3);padding:6px 2px;font-family:var(--font-bn)">
+              এখনো কোনো ভ্যারিয়েন্ট যোগ করা হয়নি।
+            </div>
+          </div>
+
+          <!-- Row 4.6: Specifications — dynamic key/value rows, saved to the `specifications` JSONB column -->
+          <div class="form-group" style="gap:6px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <label class="form-label" style="font-size:0.62rem;margin-bottom:0">
+                Specifications
+                <span style="color:var(--text3);font-weight:400;font-family:var(--font-bn);text-transform:none;letter-spacing:0;font-size:0.6rem">(ঐচ্ছিক — যেমন: Warranty → 1 Year)</span>
+              </label>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="addSpecRow()" style="padding:4px 10px;font-size:0.68rem">
+                <i class="fa-solid fa-circle-plus"></i> Add Specification
+              </button>
+            </div>
+
+            <div id="specRowsHeader" style="display:none;grid-template-columns:1fr 1fr 26px;gap:6px;padding:0 2px">
+              <span style="font-size:0.58rem;color:var(--text3);font-weight:600">ATTRIBUTE</span>
+              <span style="font-size:0.58rem;color:var(--text3);font-weight:600">VALUE</span>
+              <span></span>
+            </div>
+
+            <div id="specRows" style="display:flex;flex-direction:column;gap:6px"></div>
+
+            <div id="specEmptyHint" style="font-size:0.66rem;color:var(--text3);padding:6px 2px;font-family:var(--font-bn)">
+              এখনো কোনো স্পেসিফিকেশন যোগ করা হয়নি।
+            </div>
+          </div>
+
+          <!-- Row 4.7: Product FAQs — dynamic Q&A rows, saved to the `faqs` JSONB column -->
+          <div class="form-group" style="gap:6px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <label class="form-label" style="font-size:0.62rem;margin-bottom:0">
+                Product FAQs
+                <span style="color:var(--text3);font-weight:400;font-family:var(--font-bn);text-transform:none;letter-spacing:0;font-size:0.6rem">(ঐচ্ছিক — প্রশ্ন ও উত্তর)</span>
+              </label>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="addFaqRow()" style="padding:4px 10px;font-size:0.68rem">
+                <i class="fa-solid fa-circle-plus"></i> Add FAQ
+              </button>
+            </div>
+
+            <div id="faqRows" style="display:flex;flex-direction:column;gap:8px"></div>
+
+            <div id="faqEmptyHint" style="font-size:0.66rem;color:var(--text3);padding:6px 2px;font-family:var(--font-bn)">
+              এখনো কোনো FAQ যোগ করা হয়নি।
             </div>
           </div>
 
@@ -3844,7 +3991,7 @@ async function doLogout() {
    DATA LOADING
 ══════════════════════════════════════ */
 async function refreshAll() {
-  await Promise.all([loadProducts(), loadOrders(), loadVisitorStats()]);
+  await Promise.all([loadProducts(), loadOrders(), loadVisitorStats(), loadProductQuestionsAdmin()]);
   renderDashboard();
   setupRealtimeSubscription();
   startVisitorPolling(); // auto-refresh live visitor count every 60s
@@ -6074,6 +6221,218 @@ async function saveOrderEdits() {
 /* ══════════════════════════════════════
    PRODUCT CRUD
 ══════════════════════════════════════ */
+// ── Product Variants (Admin Product Modal) ──────────────────────────────
+// Dynamic Color Name / Color Hex / Price / Stock rows, saved as an array
+// into the product's `variants` JSONB column.
+function makeVariantRowEl(v = {}) {
+  const row = document.createElement('div');
+  row.className = 'variant-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1.3fr 1.3fr 0.85fr 0.85fr 26px;gap:6px;align-items:center';
+  const safeName = (v.color_name || '').replace(/"/g, '&quot;');
+  const safeHex  = (v.color_hex  || '').replace(/"/g, '&quot;');
+  row.innerHTML = `
+    <input class="form-inp variant-color-name" type="text" placeholder="e.g. Red / লাল" value="${safeName}" style="padding:6px 8px;font-size:0.78rem">
+    <div style="display:flex;gap:4px;align-items:center">
+      <input class="variant-color-swatch" type="color" value="${v.color_hex || '#AA2C2D'}" style="width:30px;height:30px;padding:0;border:1px solid var(--border);border-radius:6px;cursor:pointer;flex-shrink:0">
+      <input class="form-inp variant-color-hex" type="text" placeholder="#RRGGBB" value="${safeHex}" style="padding:6px 8px;font-size:0.78rem;flex:1">
+    </div>
+    <input class="form-inp variant-price" type="number" placeholder="0" min="0" value="${v.price ?? ''}" style="padding:6px 8px;font-size:0.78rem">
+    <input class="form-inp variant-stock" type="number" placeholder="0" min="0" value="${v.stock ?? ''}" style="padding:6px 8px;font-size:0.78rem">
+    <button type="button" onclick="removeVariantRow(this)" title="মুছুন" style="width:26px;height:26px;border:none;border-radius:6px;background:var(--bg3);color:var(--red,#EF4444);cursor:pointer;display:flex;align-items:center;justify-content:center">
+      <i class="fa-solid fa-trash" style="font-size:0.7rem"></i>
+    </button>
+  `;
+  // Keep the color picker and the hex text field in sync with each other
+  const swatch = row.querySelector('.variant-color-swatch');
+  const hexInput = row.querySelector('.variant-color-hex');
+  swatch.addEventListener('input', () => { hexInput.value = swatch.value; });
+  hexInput.addEventListener('input', () => {
+    const val = hexInput.value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) swatch.value = val;
+  });
+  return row;
+}
+
+function addVariantRow(v = {}) {
+  const container = document.getElementById('variantRows');
+  if (!container) return;
+  container.appendChild(makeVariantRowEl(v));
+  updateVariantEmptyHint();
+}
+
+function removeVariantRow(btn) {
+  const row = btn.closest('.variant-row');
+  if (row) row.remove();
+  updateVariantEmptyHint();
+}
+
+function updateVariantEmptyHint() {
+  const container = document.getElementById('variantRows');
+  const hint = document.getElementById('variantEmptyHint');
+  const header = document.getElementById('variantRowsHeader');
+  const hasRows = !!(container && container.children.length);
+  if (hint) hint.style.display = hasRows ? 'none' : 'block';
+  if (header) header.style.display = hasRows ? 'grid' : 'none';
+}
+
+// Called from openProductModal to populate rows from an existing product's `variants` array
+function renderVariantRows(variants = []) {
+  const container = document.getElementById('variantRows');
+  if (!container) return;
+  container.innerHTML = '';
+  (variants || []).forEach(v => container.appendChild(makeVariantRowEl(v)));
+  updateVariantEmptyHint();
+}
+
+// Called from saveProduct to build the array that gets written to the `variants` JSONB column
+function collectVariants() {
+  const rows = document.querySelectorAll('#variantRows .variant-row');
+  const variants = [];
+  rows.forEach(row => {
+    const color_name = row.querySelector('.variant-color-name').value.trim();
+    const color_hex  = row.querySelector('.variant-color-hex').value.trim();
+    const priceVal   = row.querySelector('.variant-price').value;
+    const stockVal   = row.querySelector('.variant-stock').value;
+    // Skip a row that's entirely empty rather than saving a blank variant
+    if (!color_name && !color_hex && priceVal === '' && stockVal === '') return;
+    variants.push({
+      color_name,
+      color_hex: color_hex || null,
+      price: priceVal === '' ? null : parseFloat(priceVal),
+      stock: stockVal === '' ? 0 : (parseInt(stockVal) || 0),
+    });
+  });
+  return variants;
+}
+
+// ── Specifications (Admin Product Modal) ────────────────────────────────
+// Dynamic Attribute / Value rows, saved as an array into the product's
+// `specifications` JSONB column, e.g. [{ key: "Warranty", value: "1 Year" }].
+function makeSpecRowEl(s = {}) {
+  const row = document.createElement('div');
+  row.className = 'spec-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 26px;gap:6px;align-items:center';
+  const safeKey = (s.key || '').replace(/"/g, '&quot;');
+  const safeVal = (s.value || '').replace(/"/g, '&quot;');
+  row.innerHTML = `
+    <input class="form-inp spec-key" type="text" placeholder="e.g. Warranty" value="${safeKey}" style="padding:6px 8px;font-size:0.78rem">
+    <input class="form-inp spec-value" type="text" placeholder="e.g. 1 Year" value="${safeVal}" style="padding:6px 8px;font-size:0.78rem">
+    <button type="button" onclick="removeSpecRow(this)" title="মুছুন" style="width:26px;height:26px;border:none;border-radius:6px;background:var(--bg3);color:var(--red,#EF4444);cursor:pointer;display:flex;align-items:center;justify-content:center">
+      <i class="fa-solid fa-trash" style="font-size:0.7rem"></i>
+    </button>
+  `;
+  return row;
+}
+
+function addSpecRow(s = {}) {
+  const container = document.getElementById('specRows');
+  if (!container) return;
+  container.appendChild(makeSpecRowEl(s));
+  updateSpecEmptyHint();
+}
+
+function removeSpecRow(btn) {
+  const row = btn.closest('.spec-row');
+  if (row) row.remove();
+  updateSpecEmptyHint();
+}
+
+function updateSpecEmptyHint() {
+  const container = document.getElementById('specRows');
+  const hint = document.getElementById('specEmptyHint');
+  const header = document.getElementById('specRowsHeader');
+  const hasRows = !!(container && container.children.length);
+  if (hint) hint.style.display = hasRows ? 'none' : 'block';
+  if (header) header.style.display = hasRows ? 'grid' : 'none';
+}
+
+// Called from openProductModal to populate rows from an existing product's `specifications` array
+function renderSpecRows(specifications = []) {
+  const container = document.getElementById('specRows');
+  if (!container) return;
+  container.innerHTML = '';
+  (specifications || []).forEach(s => container.appendChild(makeSpecRowEl(s)));
+  updateSpecEmptyHint();
+}
+
+// Called from saveProduct to build the array that gets written to the `specifications` JSONB column
+function collectSpecifications() {
+  const rows = document.querySelectorAll('#specRows .spec-row');
+  const specs = [];
+  rows.forEach(row => {
+    const key   = row.querySelector('.spec-key').value.trim();
+    const value = row.querySelector('.spec-value').value.trim();
+    // Skip a row that's entirely empty rather than saving a blank specification
+    if (!key && !value) return;
+    specs.push({ key, value });
+  });
+  return specs;
+}
+
+// ── Product FAQs (Admin Product Modal) ───────────────────────────────────
+// Dynamic Question / Answer rows, saved as an array into the product's
+// `faqs` JSONB column, e.g. [{ question: "...", answer: "..." }].
+function makeFaqRowEl(f = {}) {
+  const row = document.createElement('div');
+  row.className = 'faq-row';
+  row.style.cssText = 'display:flex;flex-direction:column;gap:5px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg3)';
+  const safeQ = (f.question || '').replace(/"/g, '&quot;');
+  const safeA = (f.answer   || '').replace(/</g, '&lt;');
+  row.innerHTML = `
+    <div style="display:flex;gap:6px;align-items:center">
+      <input class="form-inp faq-question" type="text" placeholder="Question — e.g. এটি কি ওয়াটারপ্রুফ?" value="${safeQ}" style="flex:1;padding:6px 8px;font-size:0.78rem;font-family:var(--font-bn)">
+      <button type="button" onclick="removeFaqRow(this)" title="মুছুন" style="width:26px;height:26px;flex-shrink:0;border:none;border-radius:6px;background:var(--surface);color:var(--red,#EF4444);cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <i class="fa-solid fa-trash" style="font-size:0.7rem"></i>
+      </button>
+    </div>
+    <textarea class="form-inp faq-answer" placeholder="Answer" style="padding:6px 8px;font-size:0.78rem;font-family:var(--font-bn);min-height:44px;resize:vertical">${safeA}</textarea>
+  `;
+  return row;
+}
+
+function addFaqRow(f = {}) {
+  const container = document.getElementById('faqRows');
+  if (!container) return;
+  container.appendChild(makeFaqRowEl(f));
+  updateFaqEmptyHint();
+}
+
+function removeFaqRow(btn) {
+  const row = btn.closest('.faq-row');
+  if (row) row.remove();
+  updateFaqEmptyHint();
+}
+
+function updateFaqEmptyHint() {
+  const container = document.getElementById('faqRows');
+  const hint = document.getElementById('faqEmptyHint');
+  const hasRows = !!(container && container.children.length);
+  if (hint) hint.style.display = hasRows ? 'none' : 'block';
+}
+
+// Called from openProductModal to populate rows from an existing product's `faqs` array
+function renderFaqRows(faqs = []) {
+  const container = document.getElementById('faqRows');
+  if (!container) return;
+  container.innerHTML = '';
+  (faqs || []).forEach(f => container.appendChild(makeFaqRowEl(f)));
+  updateFaqEmptyHint();
+}
+
+// Called from saveProduct to build the array that gets written to the `faqs` JSONB column
+function collectFaqs() {
+  const rows = document.querySelectorAll('#faqRows .faq-row');
+  const faqs = [];
+  rows.forEach(row => {
+    const question = row.querySelector('.faq-question').value.trim();
+    const answer   = row.querySelector('.faq-answer').value.trim();
+    // Skip a row that's entirely empty rather than saving a blank FAQ
+    if (!question && !answer) return;
+    faqs.push({ question, answer });
+  });
+  return faqs;
+}
+
 async function openProductModal(product = null) {
   // Fetch the freshest categories from Supabase every time this modal opens,
   // so a category added just now (here, in the Categories tab, or by another
@@ -6098,6 +6457,9 @@ async function openProductModal(product = null) {
   document.getElementById('pStock').value       = product?.stock || '';
   document.getElementById('pColor').value       = product?.color || '#AA2C2D';
   document.getElementById('pDescription').value = product?.description || '';
+  renderVariantRows(product?.variants || []);
+  renderSpecRows(product?.specifications || []);
+  renderFaqRows(product?.faqs || []);
   document.getElementById('pPublisher').value   = product?.publisher || '';
   const bindingEl = document.getElementById('pBindingType');
   if (bindingEl) bindingEl.value = product?.cover_type || product?.book_binding || 'Hardcover';
@@ -6606,6 +6968,9 @@ async function saveProduct() {
       price,
       old_price:   parseFloat(document.getElementById('pOldPrice').value) || null,
       stock,
+      variants:    collectVariants(),
+      specifications: collectSpecifications(),
+      faqs:        collectFaqs(),
       description: document.getElementById('pDescription').value.trim() || null,
       // Book-specific fields (null for General Product)
       author_name: authorVal,
@@ -6805,7 +7170,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -6815,6 +7180,7 @@ function navTo(sec) {
   if (sec === 'cms')        initCms();
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  loadVisitorStats();
+  if (sec === 'questions')  loadProductQuestionsAdmin();
 }
 
 function navToOrders(statusFilter) {
@@ -8679,6 +9045,231 @@ async function _doToggleBlock(u, newBlocked) {
     clearTimeout(timeoutId);
     if (!timedOut) toast('Error', e.message || 'Update failed', 'error');
   }
+}
+
+/* ══════════════════════════════════════════════════════
+   PRODUCT QUESTIONS — Q&A Moderation
+   (product_questions: id, product_id, user_name, question,
+    answer, status ['pending'|'approved'], created_at)
+══════════════════════════════════════════════════════ */
+let allProductQuestions = [];
+
+async function loadProductQuestionsAdmin(retryCount = 0) {
+  if (!sb) return;
+
+  const tbody = document.getElementById('pqTableBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div><div style="margin-top:10px;font-size:0.78rem;color:var(--text3);font-family:var(--font-bn)">প্রশ্ন লোড হচ্ছে…</div></td></tr>';
+
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--red)">
+      <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;margin-bottom:8px;display:block"></i>
+      <div style="font-family:var(--font-bn);margin-bottom:8px">সংযোগ বিলম্ব — ডাটা লোড হয়নি।</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
+    </td></tr>`;
+    toast('⏳ সংযোগ বিলম্ব', 'প্রশ্ন লোড হচ্ছে না। Retry করুন।', 'warning');
+  }, 12000);
+
+  try {
+    const { data, error } = await sb
+      .from('product_questions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+
+    if (error) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text3)">
+        <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-database"></i></div>
+        <div class="empty-title">টেবিল পাওয়া যায়নি</div>
+        <div class="empty-sub">Supabase-এ <code>product_questions</code> টেবিল নেই</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()" style="margin-top:10px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+        </div>
+      </td></tr>`;
+      toast('⚠️ টেবিল নেই', error.message, 'error');
+      return;
+    }
+
+    allProductQuestions = data || [];
+    if (!allProducts.length) { try { await loadProducts(); } catch(e) {} } // resolve product names
+
+    renderProductQuestionKPIs();
+    renderProductQuestions();
+    updateQuestionsBadge();
+
+  } catch (e) {
+    clearTimeout(timeoutId);
+    if (timedOut) return;
+
+    console.error('[loadProductQuestionsAdmin] Error:', e.message);
+    if (retryCount < 2) {
+      console.warn(`[loadProductQuestionsAdmin] Auto-retry ${retryCount + 1}/2…`);
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text3);font-family:var(--font-bn)">
+        <i class="fa-solid fa-spinner fa-spin" style="margin-right:6px"></i> পুনরায় চেষ্টা হচ্ছে (${retryCount + 1}/2)…
+      </td></tr>`;
+      setTimeout(() => loadProductQuestionsAdmin(retryCount + 1), 2500);
+      return;
+    }
+
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--red)">
+      <i class="fa-solid fa-circle-xmark" style="font-size:1.4rem;margin-bottom:8px;display:block"></i>
+      <div style="font-family:var(--font-bn);margin-bottom:8px">ডাটা লোড ব্যর্থ হয়েছে।</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
+    </td></tr>`;
+    toast('❌ লোড ব্যর্থ', 'প্রশ্ন ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
+  }
+}
+
+function updateQuestionsBadge() {
+  const nbEl = document.getElementById('nb-questions');
+  if (!nbEl) return;
+  const pending = allProductQuestions.filter(q => q.status !== 'approved').length;
+  nbEl.textContent = pending;
+  nbEl.style.display = pending ? 'inline-flex' : 'none';
+}
+
+function renderProductQuestionKPIs() {
+  const total    = allProductQuestions.length;
+  const pending  = allProductQuestions.filter(q => q.status !== 'approved').length;
+  const approved = total - pending;
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setEl('kpi-total-questions', total);
+  setEl('kpi-pending-questions', pending);
+  setEl('kpi-approved-questions', approved);
+}
+
+function pqProductName(productId) {
+  const p = allProducts.find(x => x.id === productId || String(x.id) === String(productId));
+  return p ? (p.name || 'Unnamed Product') : `Product #${String(productId).slice(0, 8)}`;
+}
+
+/* ── Render questions table ── */
+function renderProductQuestions() {
+  const q  = (document.getElementById('pqSearch')?.value || '').toLowerCase();
+  const sf = document.getElementById('pqStatusFilter')?.value || '';
+
+  let filtered = allProductQuestions.filter(item => {
+    const isApproved = item.status === 'approved';
+    return (!sf || (sf === 'pending' ? !isApproved : isApproved)) &&
+      (!q ||
+        (item.question  || '').toLowerCase().includes(q) ||
+        (item.user_name || '').toLowerCase().includes(q) ||
+        pqProductName(item.product_id).toLowerCase().includes(q)
+      );
+  });
+
+  const footerEl = document.getElementById('pqFooter');
+  if (footerEl) footerEl.textContent = `Showing ${filtered.length} of ${allProductQuestions.length} questions`;
+
+  const tbody = document.getElementById('pqTableBody');
+  if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="5">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fa-solid fa-circle-question"></i></div>
+        <div class="empty-title">কোনো প্রশ্ন পাওয়া যায়নি</div>
+        <div class="empty-sub" style="font-family:var(--font-bn)">সার্চ বা ফিল্টার পরিবর্তন করুন</div>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    const isApproved = item.status === 'approved';
+    const statusPill = isApproved
+      ? `<span class="pill pill-active">Approved</span>`
+      : `<span class="pill pill-pending">Pending</span>`;
+
+    return `<tr>
+      <td style="max-width:150px">
+        <div style="font-weight:600;font-size:0.82rem">${escHtml(pqProductName(item.product_id))}</div>
+        <div style="font-size:0.7rem;color:var(--text3)">${escHtml(item.user_name || 'Unknown')}</div>
+        <div style="font-size:0.64rem;color:var(--text3);font-family:var(--mono)">${item.created_at ? fmtDate(item.created_at) : ''}</div>
+      </td>
+      <td style="max-width:220px;font-size:0.8rem;color:var(--text2);line-height:1.5">${escHtml(item.question || '')}</td>
+      <td style="min-width:220px">
+        <textarea class="form-inp" id="pqAnswer-${item.id}" rows="2" placeholder="উত্তর লিখুন..."
+          style="font-size:0.78rem;font-family:var(--font-bn);resize:vertical;width:100%">${escHtml(item.answer || '')}</textarea>
+      </td>
+      <td>${statusPill}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-xs" onclick="saveQuestionAnswer('${item.id}')">
+            <i class="fa-solid fa-floppy-disk"></i> ${isApproved ? 'Update' : 'Save & Approve'}
+          </button>
+          ${isApproved
+            ? `<button class="btn btn-secondary btn-xs" onclick="toggleQuestionStatus('${item.id}','pending')"><i class="fa-solid fa-rotate-left"></i> Unpublish</button>`
+            : `<button class="btn btn-secondary btn-xs" onclick="toggleQuestionStatus('${item.id}','approved')"><i class="fa-solid fa-check"></i> Approve</button>`}
+          <button class="btn btn-danger btn-xs" onclick="deleteProductQuestion('${item.id}')">
+            <i class="fa-solid fa-trash"></i> Delete
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Save/update the admin's answer and mark as approved ── */
+async function saveQuestionAnswer(id) {
+  if (!sb) { toast('সংযোগ নেই', 'Supabase connected নেই', 'error'); return; }
+
+  const ta = document.getElementById(`pqAnswer-${id}`);
+  const answer = (ta?.value || '').trim();
+  if (!answer) { toast('উত্তর দিন', 'অনুগ্রহ করে একটি উত্তর লিখুন', 'warning'); return; }
+
+  const { error } = await sb.from('product_questions')
+    .update({ answer, status: 'approved' })
+    .eq('id', id);
+
+  if (error) { toast('Error', error.message, 'error'); return; }
+
+  const item = allProductQuestions.find(q => q.id === id || String(q.id) === String(id));
+  if (item) { item.answer = answer; item.status = 'approved'; }
+
+  toast('সফল ✓', 'উত্তর সংরক্ষিত ও প্রকাশিত হয়েছে', 'success');
+  renderProductQuestionKPIs();
+  renderProductQuestions();
+  updateQuestionsBadge();
+}
+
+/* ── Toggle status without changing the answer text (approve/unpublish) ── */
+async function toggleQuestionStatus(id, newStatus) {
+  if (!sb) { toast('সংযোগ নেই', 'Supabase connected নেই', 'error'); return; }
+
+  const item = allProductQuestions.find(q => q.id === id || String(q.id) === String(id));
+  if (newStatus === 'approved' && !(item?.answer && item.answer.trim())) {
+    toast('উত্তর প্রয়োজন', 'অনুমোদনের আগে একটি উত্তর লিখুন', 'warning');
+    return;
+  }
+
+  const { error } = await sb.from('product_questions').update({ status: newStatus }).eq('id', id);
+  if (error) { toast('Error', error.message, 'error'); return; }
+
+  if (item) item.status = newStatus;
+  toast(newStatus === 'approved' ? 'অনুমোদিত ✓' : 'আনপাবলিশড',
+    newStatus === 'approved' ? 'প্রশ্নটি সাইটে প্রকাশিত হয়েছে' : 'প্রশ্নটি সাইট থেকে লুকানো হয়েছে', 'info');
+  renderProductQuestionKPIs();
+  renderProductQuestions();
+  updateQuestionsBadge();
+}
+
+/* ── Delete a question permanently ── */
+async function deleteProductQuestion(id) {
+  const item = allProductQuestions.find(q => q.id === id || String(q.id) === String(id));
+  if (!confirm(`এই প্রশ্নটি স্থায়ীভাবে মুছে ফেলবেন?\n\n"${item?.question || ''}"\n\nএই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।`)) return;
+  if (!sb) { toast('সংযোগ নেই', 'Supabase connected নেই', 'error'); return; }
+
+  const { error } = await sb.from('product_questions').delete().eq('id', id);
+  if (error) { toast('Error', error.message, 'error'); return; }
+
+  allProductQuestions = allProductQuestions.filter(q => q.id !== id && String(q.id) !== String(id));
+  toast('Deleted', 'প্রশ্নটি মুছে ফেলা হয়েছে', 'info');
+  renderProductQuestionKPIs();
+  renderProductQuestions();
+  updateQuestionsBadge();
 }
 
 
