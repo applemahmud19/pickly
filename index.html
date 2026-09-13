@@ -8443,15 +8443,20 @@ function openProduct(id, pushUrl = true) {
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
   // ── Stock ──
+  // Only render the green in-stock badge when stock > 0. Never render a red out-of-stock badge.
   const stockEl = document.getElementById('fpStock');
   if (stockEl) {
-    stockEl.innerHTML = p.stock > 0
-      ? `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`
-      : `<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i> <span style="color:var(--red)">স্টক নেই</span>`;
+    if (p.stock > 0) {
+      stockEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`;
+      stockEl.style.display = '';
+    } else {
+      stockEl.innerHTML = '';
+      stockEl.style.display = 'none';
+    }
   }
   // Keep legacy stockTxt if needed elsewhere
   const legacyStock = document.getElementById('stockTxt');
-  if (legacyStock) legacyStock.textContent = p.stock > 0 ? `স্টকে আছে (${p.stock} টি)` : 'স্টক নেই';
+  if (legacyStock) legacyStock.textContent = p.stock > 0 ? `স্টকে আছে (${p.stock} টি)` : '';
 
   // ── Qty reset ──
   const qtyEl = document.getElementById('modalQty');
