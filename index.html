@@ -1099,6 +1099,24 @@ header.scrolled{
 .pd-spec-table td:last-child{color:var(--text)}
 .pd-spec-table tr:last-child td{border-bottom:none}
 
+/* ── FAQ ACCORDION (Product Details page) ── */
+.pd-faq-accordion{display:flex;flex-direction:column;gap:10px}
+.pd-faq-item{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:white}
+.pd-faq-question{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 16px;background:none;border:none;cursor:pointer;text-align:right;
+  font-family:'Hind Siliguri',sans-serif;font-size:.86rem;font-weight:700;color:var(--text);
+}
+.pd-faq-question:hover{background:var(--blue-light)}
+.pd-faq-question span{flex:1;text-align:left}
+.pd-faq-icon{color:var(--blue);transition:transform .2s ease;flex-shrink:0}
+.pd-faq-icon-open{transform:rotate(180deg)}
+.pd-faq-answer{border-top:1px solid var(--border);background:#FAFCFF}
+.pd-faq-answer-inner{
+  padding:14px 16px;font-family:'Hind Siliguri',sans-serif;font-size:.82rem;
+  color:var(--text-mid);line-height:1.7;
+}
+
 /* ── REVIEWS ── */
 .pd-reviews-wrap{background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
 .pd-review-summary{
@@ -5952,6 +5970,14 @@ html, body {
         <div id="fpSavings" class="fp-savings bn"></div>
       </div>
 
+      <!-- ── COLOR VARIANTS ── -->
+      <div id="fpVariantWrap" class="fp-variant-wrap bn" style="display:none;margin-bottom:14px">
+        <div style="font-size:.82rem;color:var(--text-mid);font-weight:600;margin-bottom:8px">
+          কালার: <span id="fpVariantSelectedName" style="color:var(--blue);font-weight:700"></span>
+        </div>
+        <div id="fpVariantSwatches" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      </div>
+
       <!-- Stock + Qty -->
       <div class="fp-stock-qty">
         <div id="fpStock" class="fp-stock bn"><i class="fa-solid fa-circle-check"></i> স্টকে আছে</div>
@@ -5992,18 +6018,24 @@ html, body {
 
   <!-- fp-sticky-cta removed — fp-mobile-cta-bar (position:fixed) handles mobile CTA -->
 
-  <!-- ── TABS: Details | Reviews ── -->
+  <!-- ── TABS: বিবরণী | স্পেসিফিকেশন | FAQ | রিভিউ ── -->
   <div class="fp-tabs-wrap">
     <div class="fp-tabs-nav" id="pdTabNav">
       <button class="pd-modal-tab active" id="pdTabDetails" onclick="switchPdTab('details')">
-        <i class="fa-solid fa-list-ul"></i> পণ্যের বিবরণ
+        <i class="fa-solid fa-list-ul"></i> প্রোডাক্ট বিবরণী
+      </button>
+      <button class="pd-modal-tab" id="pdTabSpecs" onclick="switchPdTab('specs')">
+        <i class="fa-solid fa-table-list"></i> প্রোডাক্ট স্পেসিফিকেশন
+      </button>
+      <button class="pd-modal-tab" id="pdTabFaq" onclick="switchPdTab('faq')">
+        <i class="fa-regular fa-circle-question"></i> সাধারণ কিছু প্রশ্নের উত্তর
       </button>
       <button class="pd-modal-tab" id="pdTabReviews" onclick="switchPdTab('reviews')">
         <i class="fa-regular fa-star"></i> রিভিউ <span id="pdReviewCountBadge" class="pd-tab-badge"></span>
       </button>
     </div>
 
-    <!-- TAB: Details -->
+    <!-- TAB: প্রোডাক্ট বিবরণী (main rich-text description only) -->
     <div id="pdPanelDetails" class="fp-tab-panel">
       <div class="desc-wrapper">
         <div class="bn desc-clamped" id="modalDesc" style="font-size:.9rem;color:var(--text-mid);line-height:1.6;white-space:pre-line"></div>
@@ -6013,8 +6045,44 @@ html, body {
         <i class="fa-solid fa-chevron-down" id="descToggleIcon"></i>
         <span id="descToggleLabel">আরও দেখুন</span>
       </button>
-      <div style="margin-bottom:20px"></div>
-      <table id="pdSpecTable" class="fp-spec-table"></table>
+    </div>
+
+    <!-- TAB: প্রোডাক্ট স্পেসিফিকেশন (Feature | Details table, from product.specifications) -->
+    <div id="pdPanelSpecs" class="fp-tab-panel" style="display:none">
+      <table id="pdSpecTable" class="pd-spec-table"></table>
+    </div>
+
+    <!-- TAB: সাধারণ কিছু প্রশ্নের উত্তর (FAQ) — accordion built from product.faqs -->
+    <div id="pdPanelFaq" class="fp-tab-panel bn" style="display:none">
+      <div id="pdFaqAccordion" class="pd-faq-accordion"></div>
+      <div id="pdFaqEmpty" class="bn" style="display:none;color:var(--text-light);font-size:.85rem;padding:12px 2px">
+        এই পণ্যের জন্য এখনো কোনো প্রশ্ন-উত্তর যোগ করা হয়নি।
+      </div>
+
+      <!-- Customer Q&A -->
+      <div class="pd-qa-section" style="margin-top:26px;padding-top:20px;border-top:1px solid var(--border)">
+        <div style="font-size:.92rem;font-weight:800;color:var(--text);margin-bottom:12px">
+          <i class="fa-regular fa-comments" style="color:var(--blue);margin-right:6px"></i>গ্রাহকের প্রশ্নোত্তর
+        </div>
+
+        <!-- Ask a question form -->
+        <div class="pd-qa-form" style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius);padding:16px;margin-bottom:18px">
+          <div style="font-size:.84rem;font-weight:700;color:var(--text);margin-bottom:10px">একটি প্রশ্ন করুন</div>
+          <div style="display:grid;gap:8px">
+            <input type="text" id="qaName" placeholder="আপনার নাম" class="form-inp">
+            <textarea id="qaQuestion" placeholder="আপনার প্রশ্ন লিখুন..." class="form-inp" style="min-height:70px;resize:vertical"></textarea>
+            <button type="button" onclick="submitProductQuestion()" id="qaSubmitBtn" style="justify-self:start;padding:9px 18px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:700;font-size:.82rem;cursor:pointer">
+              <i class="fa-solid fa-paper-plane" style="margin-right:6px"></i>প্রশ্ন জমা দিন
+            </button>
+          </div>
+        </div>
+
+        <!-- Answered questions -->
+        <div id="pdQaList" class="pd-qa-list" style="display:flex;flex-direction:column;gap:12px"></div>
+        <div id="pdQaEmpty" style="display:none;color:var(--text-light);font-size:.85rem;padding:6px 2px">
+          এখনো কোনো উত্তরিত প্রশ্ন নেই।
+        </div>
+      </div>
     </div>
 
     <!-- TAB: Reviews -->
@@ -7296,6 +7364,10 @@ document.addEventListener('DOMContentLoaded', function _initCartBadge() {
   document.removeEventListener('DOMContentLoaded', _initCartBadge);
 });
 let currentProduct = null;
+// Base (non-variant) pricing snapshot for the product currently open on the
+// details page, and which color variant (if any) the customer has picked.
+let fpBasePricing = { originalPrice: 0, displayPrice: 0, hasOldPrice: false };
+let selectedVariantIdx = -1;
 let modalQty = 1;
 let currentUser = null;
 let isAdmin = false;
@@ -8320,6 +8392,10 @@ function openProduct(id, pushUrl = true) {
   const isBook = isBookProduct(p);
   updateHeaderHeight();
 
+  // Base pricing snapshot, used by selectProductVariant() to recompute the
+  // price row when the customer clicks a different color swatch.
+  fpBasePricing = { originalPrice, displayPrice, hasOldPrice: !!p.old_price };
+
   // ── Breadcrumb ──
   const bcCat  = document.getElementById('fpBreadCat');
   const bcName = document.getElementById('fpBreadName');
@@ -8442,6 +8518,9 @@ function openProduct(id, pushUrl = true) {
     savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
 
+  // ── Color Variants ──
+  renderVariantSwatches(p);
+
   // ── Stock ──
   // Only render the green in-stock badge when stock > 0. Never render a red out-of-stock badge.
   const stockEl = document.getElementById('fpStock');
@@ -8462,11 +8541,23 @@ function openProduct(id, pushUrl = true) {
   const qtyEl = document.getElementById('modalQty');
   if (qtyEl) qtyEl.textContent = 1;
 
+  // ── Customer Q&A form reset ──
+  const qaNameEl = document.getElementById('qaName');
+  const qaQEl    = document.getElementById('qaQuestion');
+  if (qaNameEl) qaNameEl.value = '';
+  if (qaQEl)    qaQEl.value = '';
+
   // ── Description ──
   renderDesc('modalDesc', p.description||'');
 
   // ── Spec table ──
   buildSpecTable(p);
+
+  // ── FAQ accordion ──
+  buildFaqAccordion(p);
+
+  // ── Customer Q&A (answered questions) ──
+  loadProductQuestions(p.id);
 
   // ── Recommendations ──
   loadRecommendations(p);
@@ -8481,6 +8572,87 @@ function openProduct(id, pushUrl = true) {
   if (badge) badge.textContent = '';
 
   openPage('product');
+}
+
+// ── Color Variants (Product Details page) ──────────────────────────────
+// Renders clickable color swatches from product.variants and, on click,
+// updates the displayed price to that variant's price.
+function renderVariantSwatches(p) {
+  const wrap  = document.getElementById('fpVariantWrap');
+  const track = document.getElementById('fpVariantSwatches');
+  const nameEl = document.getElementById('fpVariantSelectedName');
+  if (!wrap || !track) return;
+
+  const variants = Array.isArray(p.variants)
+    ? p.variants.filter(v => v && (v.color_name || v.color_hex))
+    : [];
+
+  if (!variants.length) {
+    wrap.style.display = 'none';
+    track.innerHTML = '';
+    selectedVariantIdx = -1;
+    return;
+  }
+
+  wrap.style.display = 'block';
+  track.innerHTML = variants.map((v, idx) => {
+    const hex  = v.color_hex || '#CCCCCC';
+    const name = (v.color_name || '').replace(/"/g, '&quot;');
+    return `<button type="button" class="fp-variant-swatch" data-idx="${idx}" title="${name}"
+      onclick="selectProductVariant(${idx})"
+      style="width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:${hex};cursor:pointer;padding:0;box-shadow:0 1px 3px rgba(0,0,0,.15)"></button>`;
+  }).join('');
+
+  // Auto-select the first variant so the swatch row and price agree from the start
+  selectProductVariant(0);
+}
+
+function selectProductVariant(idx) {
+  if (!currentProduct || !Array.isArray(currentProduct.variants)) return;
+  const variants = currentProduct.variants.filter(v => v && (v.color_name || v.color_hex));
+  const variant = variants[idx];
+  if (!variant) return;
+  selectedVariantIdx = idx;
+
+  // ── Highlight the active swatch ──
+  document.querySelectorAll('#fpVariantSwatches .fp-variant-swatch').forEach((btn, i) => {
+    btn.style.borderColor = i === idx ? 'var(--blue)' : 'var(--border)';
+    btn.style.boxShadow = i === idx ? '0 0 0 2px var(--blue-light)' : '0 1px 3px rgba(0,0,0,.15)';
+  });
+  const nameEl = document.getElementById('fpVariantSelectedName');
+  if (nameEl) nameEl.textContent = variant.color_name || '';
+
+  // ── Update the displayed price for this variant ──
+  const hasVariantPrice = variant.price !== null && variant.price !== undefined && variant.price !== '';
+  const price = hasVariantPrice ? Number(variant.price) : fpBasePricing.displayPrice;
+
+  setText('fpNewPrice', `৳${fmtPrice(price)}`);
+
+  const oldEl      = document.getElementById('fpOldPrice');
+  const discBadge  = document.getElementById('fpDiscBadge');
+  const savingsEl  = document.getElementById('fpSavings');
+  const showStrike = fpBasePricing.hasOldPrice && fpBasePricing.originalPrice > price;
+
+  if (oldEl) {
+    oldEl.innerHTML = showStrike
+      ? `<span style="text-decoration:line-through;color:var(--text-light)">৳${fmtPrice(fpBasePricing.originalPrice)}</span> <span style="font-size:.72rem;background:#FEF2F2;color:var(--red);padding:1px 6px;border-radius:4px;font-weight:700">মূল দাম</span>`
+      : '';
+  }
+  const discPct = showStrike ? Math.round(((fpBasePricing.originalPrice - price) / fpBasePricing.originalPrice) * 100) : 0;
+  if (discBadge) {
+    if (showStrike && discPct > 0) {
+      discBadge.textContent = `${discPct}% ছাড়`;
+      discBadge.style.display = 'inline-block';
+    } else {
+      discBadge.textContent = '';
+      discBadge.style.display = 'none';
+    }
+  }
+  if (savingsEl) {
+    savingsEl.innerHTML = (showStrike && discPct > 0)
+      ? `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${(fpBasePricing.originalPrice - price).toLocaleString('en-US')} (${discPct}% ছাড়)`
+      : '';
+  }
 }
 
 // ── Gallery thumbnail click: swap main image with fade ──
@@ -10781,21 +10953,25 @@ let pdReviewStar = 0;
 
 function switchPdTab(tab) {
   const detailsPanel = document.getElementById('pdPanelDetails');
+  const specsPanel   = document.getElementById('pdPanelSpecs');
+  const faqPanel     = document.getElementById('pdPanelFaq');
   const reviewsPanel = document.getElementById('pdPanelReviews');
   const tabDetails   = document.getElementById('pdTabDetails');
+  const tabSpecs     = document.getElementById('pdTabSpecs');
+  const tabFaq       = document.getElementById('pdTabFaq');
   const tabReviews   = document.getElementById('pdTabReviews');
-  if (tab === 'details') {
-    detailsPanel.style.display = 'block';
-    reviewsPanel.style.display = 'none';
-    tabDetails.classList.add('active');
-    tabReviews.classList.remove('active');
-  } else {
-    detailsPanel.style.display = 'none';
-    reviewsPanel.style.display = 'block';
-    tabDetails.classList.remove('active');
-    tabReviews.classList.add('active');
-    if (currentProduct) loadProductReviews(currentProduct.id);
-  }
+
+  detailsPanel.style.display = tab === 'details' ? 'block' : 'none';
+  specsPanel.style.display   = tab === 'specs'   ? 'block' : 'none';
+  faqPanel.style.display     = tab === 'faq'     ? 'block' : 'none';
+  reviewsPanel.style.display = tab === 'reviews' ? 'block' : 'none';
+
+  tabDetails.classList.toggle('active', tab === 'details');
+  tabSpecs.classList.toggle('active', tab === 'specs');
+  tabFaq.classList.toggle('active', tab === 'faq');
+  tabReviews.classList.toggle('active', tab === 'reviews');
+
+  if (tab === 'reviews' && currentProduct) loadProductReviews(currentProduct.id);
 }
 
 function buildSpecTable(p) {
@@ -10823,11 +10999,147 @@ function buildSpecTable(p) {
   if (isBook && p.country)  rows.push(['দেশ', p.country]);
   // Author stays under the product title — NOT in spec table
   if (p.rating) rows.push(['রেটিং', `${Number(p.rating).toFixed(1)} / 5.0`]);
+
+  // Admin-entered Feature/Details rows from the `specifications` JSONB column
+  // (added via the Admin Product Modal's Specifications section)
+  const customSpecs = Array.isArray(p.specifications) ? p.specifications : [];
+  customSpecs.forEach(s => {
+    if (s && (s.key || s.value)) rows.push([s.key || '', s.value || '']);
+  });
+
   const table = document.getElementById('pdSpecTable');
   if (!table) return;
   if (!rows.length) { table.innerHTML = ''; return; }
-  table.innerHTML = `<tbody>${rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
-  table.style.cssText = 'width:100%;border-collapse:collapse;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)';
+  const header = `<tr>
+    <td style="font-weight:800;background:var(--blue-mid,var(--blue));color:#fff">বৈশিষ্ট্য</td>
+    <td style="font-weight:800;background:var(--blue-mid,var(--blue));color:#fff">বিবরণ</td>
+  </tr>`;
+  table.innerHTML = `<tbody>${header}${rows.map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
+}
+
+// ── FAQ Accordion (Product Details page, "সাধারণ কিছু প্রশ্নের উত্তর") ──
+// Renders product.faqs as click-to-expand/collapse accordion items.
+function buildFaqAccordion(p) {
+  const wrap  = document.getElementById('pdFaqAccordion');
+  const empty = document.getElementById('pdFaqEmpty');
+  if (!wrap) return;
+
+  const faqs = Array.isArray(p.faqs) ? p.faqs.filter(f => f && (f.question || f.answer)) : [];
+
+  if (!faqs.length) {
+    wrap.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  wrap.innerHTML = faqs.map((f, idx) => `
+    <div class="pd-faq-item" data-idx="${idx}">
+      <button type="button" class="pd-faq-question" onclick="toggleFaqItem(${idx})">
+        <span>${f.question || ''}</span>
+        <i class="fa-solid fa-chevron-down pd-faq-icon" id="pdFaqIcon${idx}"></i>
+      </button>
+      <div class="pd-faq-answer" id="pdFaqAnswer${idx}" style="display:none">
+        <div class="pd-faq-answer-inner">${(f.answer || '').replace(/\n/g, '<br>')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Click-to-expand/collapse: only one FAQ item open at a time
+function toggleFaqItem(idx) {
+  const allAnswers = document.querySelectorAll('.pd-faq-answer');
+  const allIcons    = document.querySelectorAll('.pd-faq-icon');
+  const target = document.getElementById(`pdFaqAnswer${idx}`);
+  const targetIcon = document.getElementById(`pdFaqIcon${idx}`);
+  if (!target) return;
+  const isOpen = target.style.display === 'block';
+
+  allAnswers.forEach(el => { el.style.display = 'none'; });
+  allIcons.forEach(el => { el.classList.remove('pd-faq-icon-open'); });
+
+  if (!isOpen) {
+    target.style.display = 'block';
+    if (targetIcon) targetIcon.classList.add('pd-faq-icon-open');
+  }
+}
+
+// ── Customer Q&A (Product Details page, "গ্রাহকের প্রশ্নোত্তর") ──
+// Submits a new question to the `product_questions` table (status: 'pending'),
+// and displays only questions that have been answered/approved by an admin.
+// (Uses the existing escFe() helper for HTML-escaping.)
+
+async function submitProductQuestion() {
+  if (!currentProduct) return;
+  if (!sb) { toast('সংযোগ নেই', 'একটু পরে আবার চেষ্টা করুন', 'e'); return; }
+
+  const nameEl = document.getElementById('qaName');
+  const qEl    = document.getElementById('qaQuestion');
+  const name   = nameEl.value.trim();
+  const question = qEl.value.trim();
+
+  if (!name)     { toast('নাম দিন', 'অনুগ্রহ করে আপনার নাম লিখুন', 'w'); return; }
+  if (!question) { toast('প্রশ্ন লিখুন', 'অনুগ্রহ করে আপনার প্রশ্ন লিখুন', 'w'); return; }
+
+  const btn = document.getElementById('qaSubmitBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> জমা হচ্ছে...'; }
+
+  try {
+    const { error } = await sb.from('product_questions').insert({
+      product_id: currentProduct.id,
+      user_name: name,
+      question: question,
+      status: 'pending',
+    });
+    if (error) throw error;
+
+    toast('প্রশ্ন জমা হয়েছে!', 'অ্যাডমিন উত্তর দিলে এখানে দেখতে পাবেন', 's');
+    nameEl.value = '';
+    qEl.value = '';
+  } catch (err) {
+    console.error('[submitProductQuestion] Failed to save question:', err);
+    toast('প্রশ্ন জমা হয়নি', 'একটু পরে আবার চেষ্টা করুন', 'e');
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:6px"></i>প্রশ্ন জমা দিন'; }
+}
+
+async function loadProductQuestions(productId) {
+  const list  = document.getElementById('pdQaList');
+  const empty = document.getElementById('pdQaEmpty');
+  if (!list) return;
+
+  if (!sb) { list.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+
+  const { data: questions, error } = await sbQuery(
+    () => sb.from('product_questions')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false }),
+    'প্রশ্নোত্তর লোড'
+  );
+
+  if (error || !questions || !questions.length) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  list.innerHTML = questions.map(q => `
+    <div class="pd-qa-item" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:white">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <i class="fa-solid fa-circle-question" style="color:var(--blue);margin-top:2px"></i>
+        <div style="font-weight:700;font-size:.84rem;color:var(--text)">${escFe(q.question)}</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <i class="fa-solid fa-reply" style="color:var(--text-light);margin-top:2px"></i>
+        <div style="font-size:.82rem;color:var(--text-mid);line-height:1.6">${escFe(q.answer)}</div>
+      </div>
+      <div style="font-size:.68rem;color:var(--text-light);margin-top:8px">— ${escFe(q.user_name)}</div>
+    </div>
+  `).join('');
 }
 
 async function loadProductReviews(productId) {
