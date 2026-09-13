@@ -8240,6 +8240,14 @@ function openPage(name) {
   el.scrollTop = 0;
   document.body.style.overflow = 'hidden'; // prevent body scroll while page open
   updatePageUIVisibility(name);
+  // FIX: social-bar/nav-cats/mobile-search-row just got display:none'd by
+  // updatePageUIVisibility(), which shrinks #mainHeader. Re-measure so
+  // --header-h (and this panel's top offset) reflect the new, shorter
+  // header instead of the stale pre-open height — otherwise a gap the
+  // size of the hidden bars is left above the panel's topbar.
+  if (typeof updateHeaderHeight === 'function') {
+    requestAnimationFrame(updateHeaderHeight);
+  }
   // Show mobile CTA bar only on product page (mobile only)
   const ctaBar = document.getElementById('fpMobileCtaBar');
   if (ctaBar) {
@@ -8254,6 +8262,11 @@ function closePage(name) {
   el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   clearPageUIVisibility(name);
+  // FIX: mirror the re-measure on close, since the bars reappear and
+  // #mainHeader grows back — keeps home page / other panels aligned too.
+  if (typeof updateHeaderHeight === 'function') {
+    requestAnimationFrame(updateHeaderHeight);
+  }
   // Hide mobile CTA bar when leaving product page
   if (name === 'product') {
     const ctaBar = document.getElementById('fpMobileCtaBar');
