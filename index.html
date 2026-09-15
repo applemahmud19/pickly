@@ -670,10 +670,13 @@ header.scrolled{
 .hero-slide:hover .hslide-icon:nth-child(2){transform:translateY(-7px)}
 .hero-slide:hover .hslide-icon:nth-child(3){transform:translateY(-4px)}
 
-/* Slider dots */
-.hslider-dots{display:flex;gap:6px;justify-content:center;margin-top:11px}
-.hslider-dot{width:7px;height:7px;border-radius:4px;background:rgba(170,44,45,.25);cursor:pointer;transition:all .3s}
-.hslider-dot.active{width:22px;background:var(--blue)}
+/* Slider dots — now float ON TOP of the banner (absolute, inside
+   .hero-slider) instead of sitting below it in normal flow, so they
+   never add extra height to the column. A soft dark pill keeps them
+   readable over any banner background (photo, gradient, or solid). */
+.hslider-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;z-index:4;padding:5px 10px;border-radius:20px;background:rgba(0,0,0,.28);backdrop-filter:blur(3px)}
+.hslider-dot{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.5);cursor:pointer;transition:all .3s}
+.hslider-dot.active{width:22px;background:#fff}
 
 /* Slider arrows */
 .hslider-arrow{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.92);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--blue);box-shadow:0 2px 10px rgba(0,0,0,.14);z-index:3;transition:all var(--t);opacity:0}
@@ -701,6 +704,45 @@ header.scrolled{
   .hslide-stat .snum{font-size:.88rem}
   .hslide-stat .slbl{font-size:.56rem}
 }
+
+/* ══════════════════════════════════════════════════════════
+   HERO GRID — main banner + "টপ সেলিং বই" sidebar (Rokomari-style)
+   Desktop (>880px): 2-column grid, banner ~9/12, sidebar ~3/12.
+   Mobile (≤880px): sidebar hidden, banner takes full width.
+══════════════════════════════════════════════════════════ */
+.hero-grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
+@media(min-width:881px){
+  .hero-grid{grid-template-columns:minmax(0,9fr) minmax(230px,3fr)}
+}
+.hero-main-col{min-width:0;display:flex;flex-direction:column}
+.hero-main-col .hero-slider{flex:1}
+
+/* Top Selling Books sidebar card */
+.hero-topsell{
+  display:none;flex-direction:column;box-sizing:border-box;
+  background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--card-shadow);padding:14px;min-height:240px;overflow:hidden;
+}
+@media(min-width:881px){ .hero-topsell{display:flex} }
+.hero-topsell-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-shrink:0}
+.hero-topsell-head i{color:var(--blue);font-size:.85rem}
+.hero-topsell-head h3{font-size:.88rem;font-weight:700;color:var(--text)}
+.hero-topsell-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;min-height:0}
+.hero-topsell-list.is-empty{justify-content:center;align-items:center;text-align:center}
+.hero-topsell-list::-webkit-scrollbar{width:4px}
+.hero-topsell-list::-webkit-scrollbar-thumb{background:var(--blue-mid);border-radius:4px}
+.hts-item{display:flex;align-items:center;gap:8px;padding:6px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--t)}
+.hts-item:hover{background:var(--blue-light)}
+.hts-rank{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.hts-rank.r1{background:var(--gold-dark)}
+.hts-img{flex-shrink:0;width:38px;height:50px;border-radius:5px;overflow:hidden;background:var(--blue-light);display:flex;align-items:center;justify-content:center}
+.hts-img img{width:100%;height:100%;object-fit:cover}
+.hts-info{flex:1;min-width:0}
+.hts-title{font-size:.74rem;font-weight:600;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hts-author{font-size:.66rem;color:var(--text-light);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hts-price{font-size:.72rem;font-weight:700;color:var(--blue);margin-top:2px}
+.hts-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:.75rem;color:var(--text-light);text-align:center;padding:4px}
+.hts-empty i{font-size:1.4rem;color:var(--blue-mid)}
 
 /* Remove old hero-left styles that are no longer used */
 .hero-left{display:none}
@@ -5005,9 +5047,10 @@ html, body {
     display: none !important;
   }
 
-  /* Slider dots — above bottom nav */
+  /* Slider dots — absolute overlay pill, just tune size/offset on mobile */
   .hslider-dots {
-    margin-top: 8px !important;
+    bottom: 8px !important;
+    padding: 4px 8px !important;
   }
   .hslider-dot {
     width: 6px !important;
@@ -5772,16 +5815,32 @@ html, body {
   </div>
 </div>
 <div class="hero">
-  <!-- ── FULL-WIDTH HERO BANNER SLIDER ── -->
-  <div class="hero-right">
-    <div class="hero-slider" id="heroSlider">
-      <div class="hero-slides" id="heroSlides">
-        <div class="hslide-skeleton"></div>
+  <div class="hero-grid">
+    <!-- ── MAIN BANNER (desktop: ~9 cols) ── -->
+    <div class="hero-main-col hero-right">
+      <div class="hero-slider" id="heroSlider">
+        <div class="hero-slides" id="heroSlides">
+          <div class="hslide-skeleton"></div>
+        </div>
+        <button class="hslider-arrow prev" onclick="heroSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="hslider-arrow next" onclick="heroSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        <!-- Dots float over the banner itself now — they no longer add
+             extra height below the slider, so the column's height is
+             exactly the banner's visual height. -->
+        <div class="hslider-dots" id="heroSliderDots"></div>
       </div>
-      <button class="hslider-arrow prev" onclick="heroSlide(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-      <button class="hslider-arrow next" onclick="heroSlide(1)"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
-    <div class="hslider-dots" id="heroSliderDots"></div>
+
+    <!-- ── TOP SELLING BOOKS SIDEBAR (desktop only: ~3 cols) ── -->
+    <aside class="hero-topsell" id="heroTopSell">
+      <div class="hero-topsell-head">
+        <i class="fa-solid fa-ranking-star"></i>
+        <h3 class="bn">টপ সেলিং বই</h3>
+      </div>
+      <div class="hero-topsell-list" id="heroTopSellList">
+        <div class="hts-empty bn">লোড হচ্ছে...</div>
+      </div>
+    </aside>
   </div>
 </div>
 
@@ -7606,6 +7665,8 @@ async function init() {
   await Promise.all([loadCategories(), loadProducts()]);
   subscribeRealtimeUpdates();
   await loadHeroBanners();
+  loadTopSellingBooks(); // hero sidebar — non-blocking
+  syncHeroTopsellHeight();
 
   // Measure header height for full-page offset
   updateHeaderHeight();
@@ -8120,6 +8181,88 @@ async function loadProducts() {
   }
   renderProducts(getFiltered());
 }
+
+// ══════════════════════════════════════════════════
+// TOP SELLING BOOKS — Hero sidebar (Rokomari-style)
+// Aggregates quantities from orders.items (JSONB) to find the
+// 5 best-selling books, dynamically, then renders them in the
+// hero sidebar. Clicking an item opens that book's details page.
+// ══════════════════════════════════════════════════
+async function loadTopSellingBooks() {
+  const listEl = document.getElementById('heroTopSellList');
+  if (!listEl) return;
+  try {
+    const { data: orders, error } = await sbQuery(
+      () => sb.from('orders').select('items').neq('status', 'cancelled'),
+      'টপ সেলিং বই লোড'
+    );
+    if (error || !orders) { renderTopSellingBooks([]); return; }
+
+    // Sum quantities sold per product id across all orders
+    const qtyMap = {};
+    orders.forEach(o => {
+      (o.items || []).forEach(it => {
+        if (!it || !it.id) return;
+        qtyMap[it.id] = (qtyMap[it.id] || 0) + (Number(it.qty) || 0);
+      });
+    });
+
+    // Keep only currently active book products, ranked by units sold
+    const ranked = Object.keys(qtyMap)
+      .map(id => ({ product: products.find(p => p.id === id), sold: qtyMap[id] }))
+      .filter(r => r.product && isBookProduct(r.product))
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 5);
+
+    renderTopSellingBooks(ranked.map(r => r.product));
+  } catch (e) {
+    renderTopSellingBooks([]);
+  }
+}
+
+function renderTopSellingBooks(books) {
+  const listEl = document.getElementById('heroTopSellList');
+  if (!listEl) return;
+  if (!books.length) {
+    listEl.classList.add('is-empty');
+    listEl.innerHTML = '<div class="hts-empty bn"><i class="fa-solid fa-chart-line"></i>এখনো কোনো বিক্রি ডেটা নেই</div>';
+    syncHeroTopsellHeight();
+    return;
+  }
+  listEl.classList.remove('is-empty');
+  listEl.innerHTML = books.map((p, i) => {
+    const { displayPrice } = getEffectiveSalePrice(p);
+    const author = p.author || p.brand || '';
+    const imgHtml = p.image_url
+      ? `<img src="${p.image_url}" alt="${(p.name||'').replace(/"/g,'')}" onerror="this.style.display='none'">`
+      : `<i class="fa-solid fa-book" style="color:var(--blue);font-size:1rem"></i>`;
+    return `
+      <div class="hts-item" onclick="openProduct('${p.id}')">
+        <div class="hts-rank${i===0?' r1':''} bn">#${i+1}</div>
+        <div class="hts-img">${imgHtml}</div>
+        <div class="hts-info">
+          <div class="hts-title bn">${p.name||''}</div>
+          ${author ? `<div class="hts-author bn">${author}</div>` : ''}
+          <div class="hts-price bn">৳${fmtPrice(displayPrice)}</div>
+        </div>
+      </div>`;
+  }).join('');
+  syncHeroTopsellHeight();
+}
+
+/* ── Keep the Top Selling sidebar's height locked to the main banner's
+   rendered height (desktop only). Re-run whenever the banner content
+   could change size: after render, on window resize, and once images
+   finish loading (banner images load async and can change the height). ── */
+function syncHeroTopsellHeight() {
+  const mainCol = document.querySelector('.hero-main-col');
+  const topsell = document.getElementById('heroTopSell');
+  if (!mainCol || !topsell) return;
+  if (window.innerWidth <= 880) { topsell.style.height = ''; topsell.style.maxHeight = ''; return; }
+  const h = mainCol.offsetHeight;
+  if (h > 0) { topsell.style.height = h + 'px'; topsell.style.maxHeight = h + 'px'; }
+}
+window.addEventListener('resize', syncHeroTopsellHeight);
 
 function updateCounts() {
   const allEl = document.getElementById('cnt-all');
@@ -11491,7 +11634,7 @@ function renderHeroBanners() {
         <div class="hero-slide hero-slide--photo" style="background:#0a0f1e;cursor:pointer;min-height:160px;position:relative;overflow:hidden" onclick="${b.button_link||b.link ? `window.open('${b.button_link||b.link}','_self')` : 'void(0)'}">
           <img src="${b.image_url}" alt="${b.main_title||b.title||'Banner'}"
             style="width:100%;height:100%;min-height:160px;max-height:260px;object-fit:cover;object-position:center center;display:block;border-radius:0"
-            onerror="this.style.display='none'">
+            onload="syncHeroTopsellHeight()" onerror="this.style.display='none'">
         </div>`;
     }
 
@@ -11578,6 +11721,11 @@ function renderHeroBanners() {
 
   heroGoTo(0);
   startHeroAuto();
+
+  // Height of a text/dynamic-builder slide is known immediately, but let the
+  // browser finish layout first (and cover the async photo-banner case too).
+  requestAnimationFrame(syncHeroTopsellHeight);
+  setTimeout(syncHeroTopsellHeight, 300);
 }
 
 function heroGoTo(idx) {
