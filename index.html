@@ -1370,6 +1370,10 @@ header.scrolled{
 .cart-total-row .amt{font-size:1.3rem;font-weight:700}
 .cod-note{background:var(--blue-light);border-radius:var(--radius-sm);padding:7px 11px;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-mid);display:flex;align-items:center;gap:6px;margin-bottom:11px}
 .checkout-btn{width:100%;padding:13px 16px;border-radius:var(--radius);background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em;box-shadow:0 4px 16px rgba(170,44,45,.28)}
+
+/* Checkout saved-address card + edit button (Rokomari-style) */
+#checkoutSaveAddressBtn:hover{background:var(--blue-dark)}
+#checkoutSavedCard button:hover{background:var(--blue-mid)}
 .checkout-btn:hover{background:linear-gradient(135deg,var(--blue-dark),#003DA6);box-shadow:0 8px 28px rgba(170,44,45,.38);transform:translateY(-1px)}
 
 /* ── CHECKOUT MODAL ── */
@@ -6448,65 +6452,99 @@ html, body {
   <!-- Page body -->
   <div style="max-width:1000px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start" id="checkoutPageBody">
 
-    <!-- ── LEFT COLUMN: Form ── -->
+    <!-- ── LEFT COLUMN: Saved Address Card + Form ── -->
     <div>
 
-      <!-- Customer Info -->
-      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-          <span class="step-circle" style="background:var(--blue);color:white">১</span>
-          ব্যক্তিগত তথ্য
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div class="form-group">
-            <label class="bn">আপনার নাম *</label>
-            <input class="form-inp bn" type="text" id="cName" placeholder="সম্পূর্ণ নাম">
+      <!-- ── SAVED ADDRESS CARD (Rokomari-style summary — shown when a
+           usable saved address exists for this logged-in user) ── -->
+      <div id="checkoutSavedCard" style="display:none;background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.94rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px">
+            <i class="fa-solid fa-location-dot" style="color:var(--blue)"></i> ডেলিভারি ঠিকানা
           </div>
-          <div class="form-group">
-            <label class="bn">মোবাইল নম্বর *</label>
-            <input class="form-inp" type="tel" id="cPhone" placeholder="01XXXXXXXXX">
-          </div>
+          <button type="button" class="bn" onclick="showCheckoutAddressForm()"
+            style="flex-shrink:0;background:var(--blue-light);color:var(--blue);border:none;padding:6px 12px;border-radius:100px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap">
+            <i class="fa-solid fa-pen" style="font-size:.66rem"></i> পরিবর্তন করুন
+          </button>
         </div>
-        <div class="form-group">
-          <label class="bn">ইমেইল <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক)</span></label>
-          <input class="form-inp" type="email" id="cEmail" placeholder="email@example.com">
-        </div>
+        <div id="checkoutSavedCardBody" style="font-family:'Hind Siliguri',sans-serif;font-size:.85rem;color:var(--text-mid);line-height:1.75"></div>
       </div>
 
-      <!-- Delivery Location -->
-      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;overflow:visible">
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px">
-          <span class="step-circle" style="background:var(--blue);color:white">২</span>
-          ডেলিভারি ঠিকানা
+      <!-- ── FORM / EDIT MODE (default for first-time users, or after
+           clicking "পরিবর্তন করুন" above) ── -->
+      <div id="checkoutFormSection">
+
+        <!-- Customer Info -->
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px">
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+            <span class="step-circle" style="background:var(--blue);color:white">১</span>
+            ব্যক্তিগত তথ্য
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="bn">আপনার নাম *</label>
+              <input class="form-inp bn" type="text" id="cName" placeholder="সম্পূর্ণ নাম">
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="bn">মোবাইল নম্বর *</label>
+              <input class="form-inp" type="tel" id="cPhone" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="bn">বিকল্প ফোন <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক)</span></label>
+              <input class="form-inp" type="tel" id="cAltPhone" placeholder="01XXXXXXXXX">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="bn">ইমেইল <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক)</span></label>
+              <input class="form-inp" type="email" id="cEmail" placeholder="email@example.com">
+            </div>
+          </div>
         </div>
-        <div class="location-fields-grid" style="display:grid;gap:14px;margin-bottom:14px;overflow:visible">
-          <div class="form-group" style="margin-bottom:0">
-            <label class="bn">জেলা *</label>
-            <select class="form-sel bn" id="cDistrict" onchange="onDistrictChange()">
-              <option value="">— জেলা —</option>
-            </select>
+
+        <!-- Delivery Location -->
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;overflow:visible">
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+            <span class="step-circle" style="background:var(--blue);color:white">২</span>
+            ডেলিভারি ঠিকানা
+          </div>
+          <div class="location-fields-grid" style="display:grid;gap:12px;margin-bottom:12px;overflow:visible">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="bn">জেলা *</label>
+              <select class="form-sel bn" id="cDistrict" onchange="onDistrictChange()">
+                <option value="">— জেলা —</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="bn">উপজেলা *</label>
+              <select class="form-sel bn" id="cUpazila" onchange="onUpazilaChange()" disabled>
+                <option value="">— উপজেলা —</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0" id="thanaFieldGroup">
+              <label class="bn" id="thanaFieldLabel">ইউনিয়ন / পৌরসভা *</label>
+              <!-- Hidden real input used by form submission -->
+              <input type="hidden" id="cThana">
+            </div>
           </div>
           <div class="form-group" style="margin-bottom:0">
-            <label class="bn">উপজেলা *</label>
-            <select class="form-sel bn" id="cUpazila" onchange="onUpazilaChange()" disabled>
-              <option value="">— উপজেলা —</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0" id="thanaFieldGroup">
-            <label class="bn" id="thanaFieldLabel">ইউনিয়ন / পৌরসভা *</label>
-            <!-- Hidden real input used by form submission -->
-            <input type="hidden" id="cThana">
+            <label class="bn">বিস্তারিত ঠিকানা *</label>
+            <textarea class="form-inp bn" id="cAddress" rows="3" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রাস্তা, মহল্লা / এলাকার নাম..." style="resize:vertical;min-height:80px"></textarea>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="bn">বিস্তারিত ঠিকানা *</label>
-          <textarea class="form-inp bn" id="cAddress" rows="3" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রাস্তা, মহল্লা / এলাকার নাম..." style="resize:vertical;min-height:80px"></textarea>
-        </div>
+
+        <!-- Save & Continue — validates and collapses back to the compact
+             summary card above; the actual order is still placed via the
+             "অর্ডার নিশ্চিত করুন" button in the summary column. -->
+        <button type="button" class="bn" onclick="saveCheckoutAddress()" id="checkoutSaveAddressBtn"
+          style="width:100%;padding:12px;border-radius:var(--radius);background:var(--blue);color:white;border:none;font-weight:700;font-size:.86rem;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all var(--t)">
+          <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন / Save &amp; Continue
+        </button>
       </div>
 
       <!-- Delivery Notice -->
-      <div style="background:linear-gradient(135deg,#FFF8E1,#FFFBF0);border:1px solid #FFE082;border-radius:var(--radius);padding:18px 20px;margin-bottom:18px">
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:#7C4E00;margin-bottom:12px;display:flex;align-items:center;gap:7px">
+      <div style="background:linear-gradient(135deg,#FFF8E1,#FFFBF0);border:1px solid #FFE082;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px">
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:#7C4E00;margin-bottom:10px;display:flex;align-items:center;gap:7px">
           <i class="fa-solid fa-truck-fast" style="color:#F59E0B;font-size:1rem"></i> ডেলিভারি সময়সীমা
         </div>
         <div style="display:flex;flex-direction:column;gap:10px">
@@ -9292,6 +9330,7 @@ function openCheckout() {
     }
   }
   populateDistricts();
+  loadCheckoutAddress(); // Rokomari-style saved address card (non-blocking)
   const ccInput = document.getElementById('checkoutCouponInput');
   const ccBtn   = document.getElementById('checkoutCouponBtn');
   const ccMsg   = document.getElementById('checkoutPromoMsg');
@@ -9315,6 +9354,143 @@ function closeCheckoutPage() {
   if (nav) nav.style.display = '';
 }
 
+// ══════════════════════════════════════════════════════════
+// CHECKOUT ADDRESS — Saved Address Card ↔ Edit Form (Rokomari-style)
+// Returning users with a saved address see a compact summary card
+// instead of the full form; first-time users (or anyone who clicks
+// "পরিবর্তন করুন") see the editable form. Both views share the same
+// underlying #cName/#cPhone/.../#cAddress fields that placeOrder()
+// reads from, so nothing about order placement itself changes.
+// ══════════════════════════════════════════════════════════
+async function loadCheckoutAddress() {
+  const cardEl = document.getElementById('checkoutSavedCard');
+  const formEl = document.getElementById('checkoutFormSection');
+  if (!cardEl || !formEl) return;
+
+  // Hide both while we check — avoids flashing the full form for a
+  // returning user who actually has a saved address.
+  cardEl.style.display = 'none';
+  formEl.style.display = 'none';
+
+  if (!currentUser) { formEl.style.display = ''; return; }
+
+  const { data: prof } = await sb.from('profiles')
+    .select('full_name,phone,alternate_phone,email,district,upazila,union_area,full_address')
+    .eq('id', currentUser.id).single();
+
+  const hasSaved = !!(prof && prof.full_name && prof.phone && prof.district && prof.upazila && prof.union_area && prof.full_address);
+  if (!hasSaved) { formEl.style.display = ''; return; }
+
+  await _applyCheckoutAddressToForm(prof);
+  renderCheckoutSavedCard(prof);
+  cardEl.style.display = '';
+}
+
+async function _applyCheckoutAddressToForm(prof) {
+  document.getElementById('cName').value  = prof.full_name || '';
+  document.getElementById('cPhone').value = prof.phone || '';
+  const altEl = document.getElementById('cAltPhone');
+  if (altEl) altEl.value = prof.alternate_phone || '';
+  document.getElementById('cEmail').value = prof.email || currentUser?.email || '';
+  await prefillCheckoutLocation(prof.district, prof.upazila, prof.union_area);
+  document.getElementById('cAddress').value = prof.full_address || '';
+  calcDelivery();
+}
+
+// Sets district → upazila → union (thana) in sequence on the existing
+// custom searchable dropdowns, respecting the cascading rebuild each
+// level triggers (choosing a district rebuilds the upazila list, etc.),
+// so each step's fake-input text is written AFTER that rebuild resets it.
+async function prefillCheckoutLocation(district, upazila, union) {
+  const distSel = document.getElementById('cDistrict');
+  if (!distSel || !district) return;
+  distSel.value = district;
+  const distValEl = document.querySelector('.district-search-wrap .dfi-val');
+  if (distValEl) { distValEl.textContent = district; distValEl.classList.remove('dfi-placeholder'); }
+  onDistrictChange();
+
+  if (!upazila) return;
+  const upSel = document.getElementById('cUpazila');
+  if (!upSel) return;
+  upSel.value = upazila;
+  const upValEl = document.querySelector('.upazila-search-wrap .ufi-val');
+  if (upValEl) { upValEl.textContent = upazila; upValEl.classList.remove('ufi-placeholder'); }
+  const upFake = document.querySelector('.upazila-fake-input');
+  if (upFake) upFake.classList.remove('disabled');
+  onUpazilaChange();
+
+  if (!union) return;
+  // onUpazilaChange() just (re)built the union/thana dropdown for this
+  // upazila — selectUnion() is the same helper the dropdown's own click
+  // handler uses, so it sets #cThana and its visible label together.
+  if (typeof selectUnion === 'function') selectUnion(union);
+}
+
+function renderCheckoutSavedCard(prof) {
+  const body = document.getElementById('checkoutSavedCardBody');
+  if (!body) return;
+  const locLine = [prof.union_area, prof.upazila, prof.district].filter(Boolean).join(', ');
+  body.innerHTML = `
+    <div style="font-weight:700;color:var(--text);margin-bottom:3px">${prof.full_name || ''}</div>
+    <div style="margin-bottom:3px"><i class="fa-solid fa-phone" style="width:14px;color:var(--text-light)"></i> ${prof.phone || ''}${prof.alternate_phone ? ` <span style="color:var(--text-light)">/ ${prof.alternate_phone}</span>` : ''}</div>
+    <div><i class="fa-solid fa-location-dot" style="width:14px;color:var(--text-light)"></i> ${prof.full_address || ''}${locLine ? `, ${locLine}` : ''}</div>`;
+}
+
+function showCheckoutAddressForm() {
+  const cardEl = document.getElementById('checkoutSavedCard');
+  const formEl = document.getElementById('checkoutFormSection');
+  if (cardEl) cardEl.style.display = 'none';
+  if (formEl) formEl.style.display = '';
+}
+
+// "সংরক্ষণ করুন / Save & Continue" — validates the form, collapses it
+// back into the compact card, and persists to `profiles` immediately for
+// logged-in users (placeOrder() upserts again after a successful order
+// as a safety net, in case the values were re-edited afterward).
+function saveCheckoutAddress() {
+  const name     = document.getElementById('cName').value.trim();
+  const phone    = document.getElementById('cPhone').value.trim();
+  const altPhone = document.getElementById('cAltPhone')?.value.trim() || '';
+  const email    = document.getElementById('cEmail').value.trim();
+  const address  = document.getElementById('cAddress').value.trim();
+  const district = document.getElementById('cDistrict').value;
+  const upazila  = document.getElementById('cUpazila').value;
+  const union    = document.getElementById('cThana').value;
+
+  if (!name || !phone || !address || !district || !upazila || !union) {
+    toast('অসম্পূর্ণ তথ্য', 'নাম, ফোন, ঠিকানা এবং জেলা/উপজেলা/ইউনিয়ন পূরণ করুন', 'w');
+    return;
+  }
+  if (!/^01[3-9]\d{8}$/.test(phone)) {
+    toast('ফোন নম্বর ভুল', 'সঠিক বাংলাদেশি নম্বর দিন (01XXXXXXXXX)', 'w');
+    return;
+  }
+  if (altPhone && !/^01[3-9]\d{8}$/.test(altPhone)) {
+    toast('বিকল্প ফোন নম্বর ভুল', 'সঠিক বাংলাদেশি নম্বর দিন বা ফাঁকা রাখুন', 'w');
+    return;
+  }
+
+  const prof = { full_name: name, phone, alternate_phone: altPhone, email, district, upazila, union_area: union, full_address: address };
+  renderCheckoutSavedCard(prof);
+  showSavedCheckoutCard();
+  toast('সংরক্ষিত হয়েছে', 'ঠিকানা সংরক্ষণ করা হয়েছে', 's');
+
+  if (currentUser) {
+    sb.from('profiles').upsert({
+      id: currentUser.id, ...prof, updated_at: new Date().toISOString()
+    }).then(({ error }) => {
+      if (error) console.warn('[checkout_address_save] failed (non-critical):', error.message);
+    });
+  }
+}
+
+function showSavedCheckoutCard() {
+  const cardEl = document.getElementById('checkoutSavedCard');
+  const formEl = document.getElementById('checkoutFormSection');
+  if (formEl) formEl.style.display = 'none';
+  if (cardEl) cardEl.style.display = '';
+}
+
 async function placeOrder() {
   // ── AUTH GATE (double-check) — লগইন না থাকলে কোনো DB call নয় ──
   if (!currentUser) {
@@ -9326,6 +9502,7 @@ async function placeOrder() {
   }
   const name = document.getElementById('cName').value.trim();
   const phone = document.getElementById('cPhone').value.trim();
+  const altPhone = document.getElementById('cAltPhone')?.value.trim() || '';
   const address = document.getElementById('cAddress').value.trim();
   const district = document.getElementById('cDistrict').value;
   const upazila = document.getElementById('cUpazila').value;
@@ -9335,6 +9512,7 @@ async function placeOrder() {
   if(!name||!phone||!address||!district||!upazila||!thana){ toast('অসম্পূর্ণ তথ্য','নাম, ফোন, ঠিকানা এবং জেলা পূরণ করুন','w'); return; }
   // BD phone format validation (01XXXXXXXXX)
   if(!/^01[3-9]\d{8}$/.test(phone)){ toast('ফোন নম্বর ভুল','সঠিক বাংলাদেশি নম্বর দিন (01XXXXXXXXX)','w'); return; }
+  if(altPhone && !/^01[3-9]\d{8}$/.test(altPhone)){ toast('বিকল্প ফোন নম্বর ভুল','সঠিক বাংলাদেশি নম্বর দিন বা ফাঁকা রাখুন','w'); return; }
   // Name length
   if(name.length < 3){ toast('নাম ছোট','কমপক্ষে ৩ অক্ষরের নাম দিন','w'); return; }
   // Prevent empty cart order
@@ -9372,6 +9550,23 @@ async function placeOrder() {
   sb.from('order_status_history').insert({order_id:data.id, status:'pending', note:'অর্ডার নিশ্চিত হয়েছে'}).then(({error:he}) => {
     if(he) console.warn('[order_history] insert failed (non-critical):', he.message);
   });
+  // ── Auto-save checkout address to the user's profile so it's ready to
+  //    reuse next time (Rokomari-style "remembered address"). Best-effort —
+  //    never blocks the success toast/redirect below. ──
+  if (currentUser) {
+    sb.from('profiles').upsert({
+      id: currentUser.id,
+      full_name: name,
+      phone: phone,
+      alternate_phone: altPhone || null,
+      email: email || null,
+      district, upazila, union_area: thana,
+      full_address: address,
+      updated_at: new Date().toISOString()
+    }).then(({error:pe}) => {
+      if (pe) console.warn('[profile_autosave] failed (non-critical):', pe.message);
+    });
+  }
   cart = []; discount = 0; updateCartBadge(); renderCartItems();
   try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
   closePage('checkout');
