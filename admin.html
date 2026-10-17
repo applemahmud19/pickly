@@ -3973,6 +3973,7 @@ function enterDashboard() {
   else { avEl.textContent = name.charAt(0).toUpperCase(); }
 
   toast('Welcome back!', name + ' — বুক গ্যালাক্সি Admin', 'success');
+  _adminRouteFromHash();   // লগইনের পর URL অনুযায়ী সেকশন খোলো
   refreshAll();
 }
 
@@ -7181,7 +7182,20 @@ function navTo(sec) {
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  loadVisitorStats();
   if (sec === 'questions')  loadProductQuestionsAdmin();
+  // ✅ URL: admin.html#/products, #/orders ...
+  if (location.hash !== '#/' + sec) history.pushState({ sec }, '', '#/' + sec);
+  document.title = (titles[sec] || sec) + ' — বুক গ্যালাক্সি Admin';
 }
+
+// URL hash দেখে সঠিক সেকশন খোলে (refresh / back / forward / সরাসরি লিঙ্ক)
+function _adminRouteFromHash() {
+  const sec = (location.hash || '').replace(/^#\/?/, '').split('/')[0];
+  if (!sec) return;
+  const el = document.getElementById('sec-' + sec);
+  if (el && !el.classList.contains('active')) navTo(sec);
+}
+window.addEventListener('popstate',   _adminRouteFromHash);
+window.addEventListener('hashchange', _adminRouteFromHash);
 
 function navToOrders(statusFilter) {
   navTo('orders');
