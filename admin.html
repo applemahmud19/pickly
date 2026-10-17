@@ -1628,6 +1628,9 @@ body {
       <div class="nav-item" data-sec="banners">
         <i class="fa-solid fa-images"></i> Banners
       </div>
+      <div class="nav-item" data-sec="finder">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Book Finder
+      </div>
       <div class="nav-item" data-sec="promos">
         <i class="fa-solid fa-ticket"></i> Promo Codes
       </div>
@@ -2454,6 +2457,81 @@ body {
       </div>
 
       <!-- ══ PROMO CODES ══ -->
+      <!-- ═══ MAGICAL BOOK FINDER — মুড ও ট্যাগ ম্যানেজমেন্ট ═══ -->
+      <div class="section" id="sec-finder">
+        <div id="finderSetupNotice"></div>
+        <div class="fz-grid">
+          <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(175,82,222,0.12);color:var(--purple)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                  <span style="font-family:var(--font-bn)">ফাইন্ডার মুড লিস্ট</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button class="btn btn-secondary btn-sm" id="fSeedBtn" style="display:none" onclick="fSeedDefaults()"><i class="fa-solid fa-seedling"></i> ডিফল্ট মুড যোগ করুন</button>
+                  <span id="fCountBadge" style="font-size:0.68rem;font-family:var(--mono);color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:100px">— মুড</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th style="width:90px"></th><th style="font-family:var(--font-bn)">মুড</th><th>URL Slug</th><th style="font-family:var(--font-bn)">বই</th><th style="font-family:var(--font-bn)">অন</th><th style="text-align:right">অ্যাকশন</th></tr></thead>
+                  <tbody id="fMoodBody"><tr><td colspan="6" style="text-align:center;padding:24px"><div class="spinner" style="margin:auto"></div></td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(50,173,230,0.12);color:var(--cyan)"><i class="fa-solid fa-tags"></i></div>
+                  <span style="font-family:var(--font-bn)">বইয়ে মুড ট্যাগ করুন</span>
+                </div>
+                <span style="font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">চিপে ক্লিক করলেই সাথে সাথে সেভ হবে</span>
+              </div>
+              <div style="padding:12px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border)">
+                <input class="form-inp" id="fSearch" type="text" placeholder="বইয়ের নাম / লেখক খুঁজুন…" oninput="fShown=30;fRenderBooks()" style="flex:1;min-width:200px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-family:var(--font-bn);cursor:pointer;white-space:nowrap"><input type="checkbox" id="fUntagged" onchange="fShown=30;fRenderBooks()"> শুধু ট্যাগ-বিহীন বই</label>
+              </div>
+              <div id="fBookList"></div>
+            </div>
+          </div>
+
+          <div class="panel" style="align-self:start">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-plus-circle"></i></div>
+                <span style="font-family:var(--font-bn)" id="fFormTitle">নতুন মুড</span>
+              </div>
+            </div>
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+              <div class="form-group">
+                <label class="form-label bn-label">মুডের নাম (বাংলা) <span class="required">*</span></label>
+                <input class="form-inp" id="fName" type="text" placeholder="যেমন: রোমান্টিক" oninput="fSlugAuto()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">URL Slug (ইংরেজি, অটো)</label>
+                <input class="form-inp" id="fSlug" type="text" placeholder="auto-english-slug" style="font-family:var(--mono);font-size:0.78rem" oninput="this.dataset.manual='1';fSlugPreview()" onblur="this.value=makeSlug(this.value);fSlugPreview()">
+                <div id="fSlugPreview" style="font-size:0.68rem;color:var(--text3);font-family:var(--mono);margin-top:4px;word-break:break-all"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:90px 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">ইমোজি</label><input class="form-inp" id="fEmoji" type="text" value="✨" maxlength="4" style="text-align:center;font-size:1.2rem"></div>
+                <div class="form-group"><label class="form-label bn-label">ছোট ট্যাগলাইন</label><input class="form-inp" id="fTagline" type="text" placeholder="ভালোবাসার গল্পে ডুব দিন"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label bn-label">অটো-ম্যাচ শব্দ (কমা দিয়ে, ঐচ্ছিক)</label>
+                <input class="form-inp" id="fKeywords" type="text" placeholder="প্রেম, ভালোবাসা, romance">
+                <div style="font-size:0.68rem;color:var(--text3);margin-top:4px;font-family:var(--font-bn)">ট্যাগ না করা বইয়ের নাম/ক্যাটাগরি/বিবরণে এই শব্দ থাকলেও বইটি রেকমেন্ড হবে।</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" id="fSaveBtn" onclick="fSaveMood()" style="flex:1"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
+                <button class="btn btn-ghost" id="fCancelBtn" onclick="fResetForm()" style="display:none">বাতিল</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="section" id="sec-promos">
         <div class="panel" style="margin-bottom:18px">
           <div class="panel-header">
@@ -7232,7 +7310,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', finder:'Magical Book Finder' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -7243,6 +7321,7 @@ function navTo(sec) {
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  loadVisitorStats();
   if (sec === 'questions')  loadProductQuestionsAdmin();
+  if (sec === 'finder')     loadFinder();
   // ✅ URL: admin.html#/products, #/orders ...
   if (location.hash !== '#/' + sec) history.pushState({ sec }, '', '#/' + sec);
   document.title = (titles[sec] || sec) + ' — বুক গ্যালাক্সি Admin';
@@ -9815,6 +9894,232 @@ document.addEventListener('DOMContentLoaded', () => {
   populateBookTypeDropdown();
   populateProductCatFilter();
 });
+</script>
+<style>
+/* ── Magical Book Finder (admin) ── */
+.fz-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
+@media(max-width:1100px){.fz-grid{grid-template-columns:1fr}}
+.f-chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-bn);font-size:0.76rem;padding:3px 11px;border-radius:99px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;user-select:none}
+.f-chip:hover{border-color:var(--blue)}
+.f-chip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.f-book{display:flex;gap:12px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--border)}
+.f-book:last-child{border-bottom:0}
+.f-thumb{width:38px;height:50px;border-radius:6px;object-fit:cover;background:var(--bg3);flex-shrink:0}
+.f-info{width:220px;min-width:0;flex-shrink:0}
+.f-info b{display:block;font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-info small{color:var(--text3);font-size:0.72rem}
+.f-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+@media(max-width:700px){.f-book{flex-wrap:wrap}.f-info{width:calc(100% - 60px)}.f-chips{width:100%}}
+.f-sql{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:var(--mono);font-size:0.7rem;white-space:pre-wrap;max-height:260px;overflow:auto;margin-top:10px;color:var(--text)}
+</style>
+<script>
+
+/* ═══════════ MAGICAL BOOK FINDER — Admin ═══════════ */
+let fMoods = [], fTags = {}, fShown = 30, fEditId = null;
+const F_SQL = `-- Magical Book Finder: Supabase SQL Editor-এ একবার রান করুন
+create table if not exists finder_moods (
+  id bigint generated always as identity primary key,
+  name text not null,
+  slug text not null unique,
+  emoji text default '✨',
+  tagline text,
+  keywords text,
+  sort_order int default 0,
+  is_active boolean default true,
+  created_at timestamptz default now()
+);
+create table if not exists finder_book_tags (
+  product_id text not null,
+  mood_slug text not null,
+  created_at timestamptz default now(),
+  primary key (product_id, mood_slug)
+);
+alter table finder_moods enable row level security;
+alter table finder_book_tags enable row level security;
+create policy "finder_moods_read" on finder_moods for select using (true);
+create policy "finder_tags_read"  on finder_book_tags for select using (true);
+create policy "finder_moods_admin" on finder_moods for all to authenticated
+  using (exists (select 1 from admin_users a where a.id = auth.uid()))
+  with check (exists (select 1 from admin_users a where a.id = auth.uid()));
+create policy "finder_tags_admin" on finder_book_tags for all to authenticated
+  using (exists (select 1 from admin_users a where a.id = auth.uid()))
+  with check (exists (select 1 from admin_users a where a.id = auth.uid()));`;
+const F_DEFAULTS = [
+  ['রোমান্টিক','💘','ভালোবাসার গল্পে ডুব দিন','প্রেম, ভালোবাসা, রোমান্স, love, romance'],
+  ['রহস্য-রোমাঞ্চ','🕵️','টানটান উত্তেজনা চাই','রহস্য, গোয়েন্দা, থ্রিলার, খুন, thriller'],
+  ['অনুপ্রেরণা','🔥','নিজেকে বদলাতে চাই','অনুপ্রেরণা, সফল, ক্যারিয়ার, অভ্যাস, motivation'],
+  ['হাসি-মজা','😄','মন হালকা করতে চাই','হাসি, মজা, কৌতুক, রম্য, humor'],
+  ['জ্ঞান ও ইতিহাস','🧠','নতুন কিছু জানতে চাই','ইতিহাস, বিজ্ঞান, জ্ঞান, history, science'],
+  ['আধ্যাত্মিক শান্তি','🕌','মনের প্রশান্তি খুঁজছি','ইসলাম, ইসলামী, আত্মা, শান্তি, নবী'],
+  ['কল্পনা ও সায়েন্স ফিকশন','🚀','অন্য জগতে হারাতে চাই','সায়েন্স ফিকশন, কল্পবিজ্ঞান, ফ্যান্টাসি, মহাকাশ'],
+  ['নস্টালজিয়া','🌧️','পুরনো দিনের স্মৃতিতে','স্মৃতি, শৈশব, কবিতা, গ্রাম']
+];
+function fIsBook(p){ return p.product_type ? p.product_type === 'book' : p.category === 'বই'; }
+function fTableMissing(e){ return e && (e.code === '42P01' || e.code === 'PGRST205' || /does not exist|schema cache/i.test(e.message || '')); }
+
+async function loadFinder() {
+  const notice = document.getElementById('finderSetupNotice');
+  const { data: m, error: e1 } = await sb.from('finder_moods').select('*').order('sort_order', { ascending: true }).order('id', { ascending: true });
+  if (e1) {
+    if (fTableMissing(e1)) {
+      notice.innerHTML = `<div class="panel" style="margin-bottom:18px;border-color:var(--amber)"><div style="padding:16px 20px"><b style="font-family:var(--font-bn)">⚠️ প্রথমবার সেটআপ দরকার</b><div style="font-size:0.82rem;color:var(--text2);margin-top:4px;font-family:var(--font-bn)">নিচের SQL টি Supabase → SQL Editor-এ রান করুন, তারপর এই পেজ রিফ্রেশ করুন।</div><div class="f-sql" id="fSqlBox">${escHtml(F_SQL)}</div><button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="navigator.clipboard.writeText(F_SQL).then(()=>toast('কপি হয়েছে','SQL Editor-এ পেস্ট করুন'))"><i class="fa-solid fa-copy"></i> SQL কপি করুন</button></div></div>`;
+      document.getElementById('fMoodBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">টেবিল তৈরি হয়নি</td></tr>';
+    } else { toast('ত্রুটি', e1.message, 'error'); }
+    return;
+  }
+  notice.innerHTML = '';
+  fMoods = m || [];
+  const { data: t } = await sb.from('finder_book_tags').select('product_id,mood_slug').limit(10000);
+  fTags = {};
+  (t || []).forEach(r => { (fTags[String(r.product_id)] = fTags[String(r.product_id)] || new Set()).add(r.mood_slug); });
+  if (!allProducts.length) {
+    const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
+    allProducts = data || [];
+  }
+  fRenderMoods(); fRenderBooks();
+}
+
+function fRenderMoods() {
+  document.getElementById('fCountBadge').textContent = fMoods.length + ' টি মুড';
+  document.getElementById('fSeedBtn').style.display = fMoods.length ? 'none' : '';
+  const count = slug => Object.values(fTags).filter(s => s.has(slug)).length;
+  document.getElementById('fMoodBody').innerHTML = fMoods.length ? fMoods.map((m, i) => `
+    <tr>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-xs" ${i === 0 ? 'disabled' : ''} onclick="fMove(${m.id},-1)" title="উপরে"><i class="fa-solid fa-arrow-up"></i></button>
+        <button class="btn btn-ghost btn-xs" ${i === fMoods.length - 1 ? 'disabled' : ''} onclick="fMove(${m.id},1)" title="নিচে"><i class="fa-solid fa-arrow-down"></i></button>
+      </td>
+      <td><span style="font-size:1.2rem">${escHtml(m.emoji || '✨')}</span> <b style="font-family:var(--font-bn)">${escHtml(m.name)}</b><div style="font-size:0.72rem;color:var(--text3);font-family:var(--font-bn)">${escHtml(m.tagline || '')}</div></td>
+      <td style="font-family:var(--mono);font-size:0.72rem;color:var(--text3)">/book-finder/${escHtml(m.slug)}</td>
+      <td><span class="badge" style="font-family:var(--mono)">${count(m.slug)}</span></td>
+      <td><input type="checkbox" ${m.is_active ? 'checked' : ''} onchange="fToggleActive(${m.id},this.checked)"></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick="fEditMood(${m.id})"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="fDeleteMood(${m.id})"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3);font-family:var(--font-bn)">এখনো কোনো মুড নেই। ডান পাশের ফর্ম থেকে যোগ করুন, অথবা “ডিফল্ট মুড যোগ করুন” বাটনে ক্লিক করুন।</td></tr>';
+}
+
+function fRenderBooks() {
+  const q = (document.getElementById('fSearch').value || '').trim().toLowerCase();
+  const only = document.getElementById('fUntagged').checked;
+  const active = fMoods.filter(m => m.is_active);
+  let list = allProducts.filter(fIsBook).filter(p => !q || ((p.name || '') + ' ' + (p.author || '')).toLowerCase().includes(q));
+  if (only) list = list.filter(p => !(fTags[String(p.id)] && fTags[String(p.id)].size));
+  const box = document.getElementById('fBookList');
+  if (!active.length) { box.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3);font-family:var(--font-bn)">আগে অন্তত একটি মুড তৈরি করুন।</div>'; return; }
+  if (!list.length) { box.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3);font-family:var(--font-bn)">কোনো বই পাওয়া যায়নি।</div>'; return; }
+  box.innerHTML = list.slice(0, fShown).map(p => {
+    const set = fTags[String(p.id)] || new Set();
+    return `<div class="f-book">
+      ${p.image_url ? `<img class="f-thumb" src="${escHtml(p.image_url)}" alt="" loading="lazy">` : '<div class="f-thumb"></div>'}
+      <div class="f-info"><b style="font-family:var(--font-bn)">${escHtml(p.name)}</b><small style="font-family:var(--font-bn)">${escHtml(p.author || p.category || '')}</small></div>
+      <div class="f-chips">${active.map(m => `<span class="f-chip ${set.has(m.slug) ? 'on' : ''}" data-pid="${escHtml(String(p.id))}" data-slug="${escHtml(m.slug)}">${escHtml(m.emoji || '')} ${escHtml(m.name)}</span>`).join('')}</div>
+    </div>`;
+  }).join('') + (list.length > fShown ? `<div style="padding:14px;text-align:center"><button class="btn btn-secondary btn-sm" onclick="fShown+=30;fRenderBooks()">আরও দেখুন (${list.length - fShown} টি বাকি)</button></div>` : '');
+}
+
+document.addEventListener('click', async e => {
+  const chip = e.target.closest && e.target.closest('.f-chip[data-pid]');
+  if (!chip) return;
+  const pid = chip.dataset.pid, slug = chip.dataset.slug;
+  const set = fTags[pid] = fTags[pid] || new Set();
+  const had = set.has(slug);
+  had ? set.delete(slug) : set.add(slug);
+  chip.classList.toggle('on', !had);                      // instant UI
+  const { error } = had
+    ? await sb.from('finder_book_tags').delete().eq('product_id', pid).eq('mood_slug', slug)
+    : await sb.from('finder_book_tags').insert({ product_id: pid, mood_slug: slug });
+  if (error) {                                            // rollback
+    had ? set.add(slug) : set.delete(slug);
+    chip.classList.toggle('on', had);
+    toast('সেভ হয়নি', error.message, 'error');
+  } else { fRenderMoods(); }
+});
+
+/* ── Form: English slug auto-generate ── */
+function fSlugAuto() {
+  const sl = document.getElementById('fSlug');
+  if (!sl.dataset.manual) sl.value = makeSlug(document.getElementById('fName').value);
+  fSlugPreview();
+}
+function fSlugPreview() {
+  const v = document.getElementById('fSlug').value;
+  document.getElementById('fSlugPreview').textContent = v ? '/book-finder/' + v : '';
+}
+function fResetForm() {
+  fEditId = null;
+  ['fName', 'fSlug', 'fTagline', 'fKeywords'].forEach(id => { const el = document.getElementById(id); el.value = ''; });
+  document.getElementById('fSlug').dataset.manual = '';
+  document.getElementById('fEmoji').value = '✨';
+  document.getElementById('fFormTitle').textContent = 'নতুন মুড';
+  document.getElementById('fCancelBtn').style.display = 'none';
+  fSlugPreview();
+}
+function fEditMood(id) {
+  const m = fMoods.find(x => x.id === id); if (!m) return;
+  fEditId = id;
+  document.getElementById('fName').value = m.name;
+  document.getElementById('fSlug').value = m.slug; document.getElementById('fSlug').dataset.manual = '1';
+  document.getElementById('fEmoji').value = m.emoji || '✨';
+  document.getElementById('fTagline').value = m.tagline || '';
+  document.getElementById('fKeywords').value = m.keywords || '';
+  document.getElementById('fFormTitle').textContent = 'মুড এডিট করুন';
+  document.getElementById('fCancelBtn').style.display = '';
+  fSlugPreview();
+  document.getElementById('fName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+async function fSaveMood() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { toast('নাম দিন', 'মুডের নাম লিখুন', 'error'); return; }
+  let slug = makeSlug(document.getElementById('fSlug').value || name) || 'mood';
+  const base = slug; let n = 2;
+  while (fMoods.some(m => m.slug === slug && m.id !== fEditId)) slug = base + '-' + (n++);
+  const row = {
+    name, slug,
+    emoji: document.getElementById('fEmoji').value.trim() || '✨',
+    tagline: document.getElementById('fTagline').value.trim(),
+    keywords: document.getElementById('fKeywords').value.trim()
+  };
+  const btn = document.getElementById('fSaveBtn'); btn.disabled = true;
+  let error;
+  if (fEditId) {
+    const old = fMoods.find(m => m.id === fEditId);
+    ({ error } = await sb.from('finder_moods').update(row).eq('id', fEditId));
+    if (!error && old && old.slug !== slug) await sb.from('finder_book_tags').update({ mood_slug: slug }).eq('mood_slug', old.slug);
+  } else {
+    row.sort_order = fMoods.length ? Math.max(...fMoods.map(m => m.sort_order || 0)) + 1 : 1;
+    ({ error } = await sb.from('finder_moods').insert(row));
+  }
+  btn.disabled = false;
+  if (error) { toast('সেভ হয়নি', error.message, 'error'); return; }
+  toast('সেভ হয়েছে ✓', `"${name}" → /book-finder/${slug}`);
+  fResetForm(); loadFinder();
+}
+async function fToggleActive(id, on) {
+  const { error } = await sb.from('finder_moods').update({ is_active: on }).eq('id', id);
+  if (error) toast('ত্রুটি', error.message, 'error'); else { const m = fMoods.find(x => x.id === id); if (m) m.is_active = on; fRenderBooks(); }
+}
+async function fDeleteMood(id) {
+  const m = fMoods.find(x => x.id === id); if (!m) return;
+  if (!confirm(`"${m.name}" মুড ও এর সব বইয়ের ট্যাগ মুছে ফেলবেন?`)) return;
+  await sb.from('finder_book_tags').delete().eq('mood_slug', m.slug);
+  const { error } = await sb.from('finder_moods').delete().eq('id', id);
+  if (error) { toast('ত্রুটি', error.message, 'error'); return; }
+  toast('মুছে ফেলা হয়েছে', m.name); loadFinder();
+}
+async function fMove(id, dir) {
+  const i = fMoods.findIndex(m => m.id === id), j = i + dir;
+  if (i < 0 || j < 0 || j >= fMoods.length) return;
+  [fMoods[i], fMoods[j]] = [fMoods[j], fMoods[i]];
+  fRenderMoods();
+  await Promise.all(fMoods.map((m, k) => sb.from('finder_moods').update({ sort_order: k + 1 }).eq('id', m.id)));
+}
+async function fSeedDefaults() {
+  const rows = F_DEFAULTS.map((d, i) => ({ name: d[0], slug: makeSlug(d[0]), emoji: d[1], tagline: d[2], keywords: d[3], sort_order: i + 1 }));
+  const { error } = await sb.from('finder_moods').insert(rows);
+  if (error) toast('ত্রুটি', error.message, 'error'); else { toast('যোগ হয়েছে ✓', '৮টি ডিফল্ট মুড তৈরি হয়েছে'); loadFinder(); }
+}
 </script>
 </body>
 </html>
