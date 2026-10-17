@@ -5853,12 +5853,12 @@ html, body {
   <section class="bf-strip" aria-label="Magical Book Finder">
     <span class="bf-orb bf-orb1" aria-hidden="true"></span>
     <span class="bf-orb bf-orb2" aria-hidden="true"></span>
-    <div class="bf-floaters" aria-hidden="true"><span>📖</span><span>✨</span><span>🔮</span><span>📚</span><span>🌙</span></div>
+    <div class="bf-floaters" aria-hidden="true"><i class="fa-solid fa-book-open"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-hat-wizard"></i><i class="fa-solid fa-book-bookmark"></i><i class="fa-solid fa-moon"></i></div>
     <div class="bf-strip-text">
       <div class="bf-kicker"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">স্মার্ট বুক ম্যাচমেকার</span></div>
       <h2 class="bf-h">Magical Book Finder</h2>
       <p class="bf-sub bn">কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!</p>
-      <div class="bf-pills bn"><span>🎭 মুড বাছুন</span><span>🗂️ ধরন বাছুন</span><span>💰 বাজেট বাছুন</span></div>
+      <div class="bf-pills bn"><span><i class="fa-solid fa-masks-theater"></i> মুড বাছুন</span><span><i class="fa-solid fa-layer-group"></i> ধরন বাছুন</span><span><i class="fa-solid fa-wallet"></i> বাজেট বাছুন</span></div>
     </div>
     <div class="bf-strip-cta">
       <button type="button" class="bf-cta" onclick="openBookFinder()"><i class="fa-solid fa-wand-sparkles"></i><span class="bn">জাদুর বই খুঁজুন</span></button>
@@ -15416,10 +15416,10 @@ window.addEventListener('popstate', function(e) {
 .bf-orb1{width:220px;height:220px;background:#8b5cf6;left:-60px;top:-80px}
 .bf-orb2{width:200px;height:200px;background:#ff5d73;right:8%;bottom:-100px;animation-delay:-3s}
 @keyframes bfPulse{50%{transform:scale(1.25);opacity:.8}}
-.bf-floaters span{position:absolute;font-size:1.5rem;opacity:.5;animation:bfFloat 7s ease-in-out infinite;pointer-events:none}
-.bf-floaters span:nth-child(1){right:34%;top:12%}.bf-floaters span:nth-child(2){right:26%;bottom:14%;animation-delay:-2s;font-size:1.1rem}
-.bf-floaters span:nth-child(3){right:44%;bottom:10%;animation-delay:-4s}.bf-floaters span:nth-child(4){left:46%;top:8%;animation-delay:-1s;font-size:1.2rem}
-.bf-floaters span:nth-child(5){right:6%;top:10%;animation-delay:-5s;font-size:1.2rem}
+.bf-floaters i{position:absolute;font-size:1.5rem;color:#e9d5ff;opacity:.5;animation:bfFloat 7s ease-in-out infinite;pointer-events:none}
+.bf-floaters i:nth-child(1){right:34%;top:12%}.bf-floaters i:nth-child(2){right:26%;bottom:14%;animation-delay:-2s;font-size:1.1rem}
+.bf-floaters i:nth-child(3){right:44%;bottom:10%;animation-delay:-4s}.bf-floaters i:nth-child(4){left:46%;top:8%;animation-delay:-1s;font-size:1.2rem}
+.bf-floaters i:nth-child(5){right:6%;top:10%;animation-delay:-5s;font-size:1.2rem}
 @keyframes bfFloat{50%{transform:translateY(-12px) rotate(8deg)}}
 .bf-strip-text{flex:1 1 340px;min-width:0}
 .bf-kicker{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:600;color:#fcd9ff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);padding:3px 12px;border-radius:99px;margin-bottom:8px}
@@ -15428,6 +15428,7 @@ window.addEventListener('popstate', function(e) {
   background:linear-gradient(90deg,#fff,#ffc2cc 40%,#c4b5fd 75%,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
 .bf-sub{margin:0 0 10px;font-size:1.05rem;color:#f1e7ff;line-height:1.6}
 .bf-pills{display:flex;flex-wrap:wrap;gap:8px}
+.bf-pills span i{color:#F5A623;margin-right:4px}
 .bf-pills span{font-size:.8rem;padding:2px 12px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#f3eaff;line-height:1.7}
 .bf-strip-cta{display:flex;flex-direction:column;align-items:center;gap:8px}
 .bf-cta{position:relative;display:inline-flex;align-items:center;gap:10px;border:0;cursor:pointer;color:#fff;font-weight:700;font-size:1.05rem;padding:14px 28px;border-radius:99px;
@@ -15435,7 +15436,7 @@ window.addEventListener('popstate', function(e) {
 .bf-cta:hover{transform:translateY(-2px) scale(1.03)}
 @keyframes bfRing{70%{box-shadow:0 0 0 16px rgba(255,93,115,0),0 10px 26px rgba(192,38,211,.4)}100%{box-shadow:0 0 0 0 rgba(255,93,115,0),0 10px 26px rgba(192,38,211,.4)}}
 .bf-micro{font-size:.78rem;color:#d8c7f5}
-@media(max-width:640px){.bf-strip-wrap{padding:0 12px 12px}.bf-strip{padding:18px 16px;text-align:center;justify-content:center}.bf-pills{justify-content:center}.bf-strip-cta{width:100%}.bf-cta{width:100%;justify-content:center}.bf-floaters span:nth-child(n+3){display:none}}
+@media(max-width:640px){.bf-strip-wrap{padding:0 12px 12px}.bf-strip{padding:18px 16px;text-align:center;justify-content:center}.bf-pills{justify-content:center}.bf-strip-cta{width:100%}.bf-cta{width:100%;justify-content:center}.bf-floaters i:nth-child(n+3){display:none}}
 
 /* Floating button */
 .bf-fab{position:fixed;right:25px;bottom:100px;z-index:9998;display:flex;align-items:center;gap:9px;border:0;cursor:pointer;color:#fff;font-weight:700;font-size:.9rem;
@@ -15514,9 +15515,22 @@ window.addEventListener('popstate', function(e) {
 .bf-empty{text-align:center;padding:50px 10px;color:#e9d5ff}.bf-empty .big{font-size:3rem}
 @media(max-width:560px){.bf-res{grid-template-columns:100px 1fr;gap:12px;padding:12px}.bf-grid{grid-template-columns:1fr 1fr;gap:10px}.bf-opt{padding:12px}.bf-opt .e{font-size:1.6rem}.bf-brand span{display:none}}
 @media(prefers-reduced-motion:reduce){.bf-strip *,.bf-strip::before,.bf-cta,.bf-fab,.bf-fab i,.bf-stars,.bf-orb{animation:none!important}}
+
+.bf-sum span i{color:#c4b5fd;margin-right:4px}
+.bf-opt .e i{font-size:1.7rem;background:linear-gradient(135deg,#ff5d73,#c084fc,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bf-rank i{margin-right:4px}
+.bf-crit{list-style:none;margin:6px 0 8px;padding:0;display:grid;gap:3px;font-size:.88rem}
+.bf-crit li small{color:#a99bd0}
+.bf-crit .ok i{color:#34d399}.bf-crit .part i{color:#fbbf24}.bf-crit .no i{color:#f87171}
+.bf-why span i{margin-right:4px}
+.bf-why span.warn{background:rgba(245,166,35,.14);border-color:rgba(245,166,35,.45);color:#fde7b0}
+.bf-empty .big i{font-size:2.6rem;color:#c4b5fd}
+.bf-cover .ph i{font-size:2.2rem}
+.bf-auth i{margin-right:4px;color:#c4b5fd}
+.bf-fab i{font-size:1.1rem}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
-<button type="button" class="bf-fab" onclick="openBookFinder()" aria-label="Magical Book Finder খুলুন" title="কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">বই খুঁজুন ✨</span></button>
+<button type="button" class="bf-fab" onclick="openBookFinder()" aria-label="Magical Book Finder খুলুন" title="কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">বই খুঁজুন</span></button>
 <div id="bfOv" class="bf-ov" role="dialog" aria-modal="true" aria-labelledby="bfTitle" aria-hidden="true">
   <div class="bf-stars" aria-hidden="true"></div>
   <div class="bf-shell">
@@ -15531,35 +15545,38 @@ window.addEventListener('popstate', function(e) {
 <script>
 (function(){
 'use strict';
+var DEF_ICON='fa-wand-magic-sparkles';
 var BUDGETS=[
- {key:'under-200',label:'২০০ টাকার নিচে',sub:'পকেট-ফ্রেন্ডলি',emoji:'🪙',min:0,max:200},
- {key:'200-400',label:'২০০ – ৪০০ টাকা',sub:'সবচেয়ে জনপ্রিয় রেঞ্জ',emoji:'💵',min:200,max:400},
- {key:'400-700',label:'৪০০ – ৭০০ টাকা',sub:'প্রিমিয়াম পছন্দ',emoji:'💎',min:400,max:700},
- {key:'700-plus',label:'৭০০ টাকার বেশি',sub:'কালেকশন / স্পেশাল এডিশন',emoji:'👑',min:700,max:Infinity},
- {key:'any',label:'বাজেট নিয়ে চিন্তা নেই',sub:'সেরা বইটাই চাই',emoji:'♾️',min:0,max:Infinity}
+ {key:'under-200',label:'২০০ টাকার নিচে',sub:'পকেট-ফ্রেন্ডলি',icon:'fa-coins',min:0,max:200},
+ {key:'200-400',label:'২০০ – ৪০০ টাকা',sub:'সবচেয়ে জনপ্রিয় রেঞ্জ',icon:'fa-money-bill-wave',min:200,max:400},
+ {key:'400-700',label:'৪০০ – ৭০০ টাকা',sub:'প্রিমিয়াম পছন্দ',icon:'fa-gem',min:400,max:700},
+ {key:'700-plus',label:'৭০০ টাকার বেশি',sub:'কালেকশন / স্পেশাল এডিশন',icon:'fa-crown',min:700,max:Infinity},
+ {key:'any',label:'বাজেট নিয়ে চিন্তা নেই',sub:'সেরা বইটাই চাই',icon:'fa-infinity',min:0,max:Infinity}
 ];
-// অ্যাডমিনে এখনো কোনো মুড সেট না করা থাকলে এই ডিফল্টগুলো দেখাবে
 var DEFAULT_MOODS=[
- {slug:'romantic',name:'রোমান্টিক',emoji:'💘',tagline:'ভালোবাসার গল্পে ডুব দিন',keywords:'প্রেম,ভালোবাসা,রোমান্স,love,romance'},
- {slug:'thriller',name:'রহস্য-রোমাঞ্চ',emoji:'🕵️',tagline:'টানটান উত্তেজনা চাই',keywords:'রহস্য,গোয়েন্দা,থ্রিলার,খুন,thriller,mystery'},
- {slug:'motivation',name:'অনুপ্রেরণা',emoji:'🔥',tagline:'নিজেকে বদলাতে চাই',keywords:'অনুপ্রেরণা,সফল,ক্যারিয়ার,অভ্যাস,motivation,habit'},
- {slug:'fun',name:'হাসি-মজা',emoji:'😄',tagline:'মন হালকা করতে চাই',keywords:'হাসি,মজা,কৌতুক,রম্য,humor'},
- {slug:'knowledge',name:'জ্ঞান ও ইতিহাস',emoji:'🧠',tagline:'নতুন কিছু জানতে চাই',keywords:'ইতিহাস,বিজ্ঞান,জ্ঞান,history,science'},
- {slug:'peace',name:'আধ্যাত্মিক শান্তি',emoji:'🕌',tagline:'মনের প্রশান্তি খুঁজছি',keywords:'ইসলাম,ইসলামী,আত্মা,শান্তি,নবী,কুরআন'},
- {slug:'fantasy',name:'কল্পনা ও সায়েন্স ফিকশন',emoji:'🚀',tagline:'অন্য জগতে হারাতে চাই',keywords:'সায়েন্স ফিকশন,কল্পবিজ্ঞান,ফ্যান্টাসি,মহাকাশ,fantasy'},
- {slug:'nostalgia',name:'নস্টালজিয়া',emoji:'🌧️',tagline:'পুরনো দিনের স্মৃতিতে',keywords:'স্মৃতি,শৈশব,কবিতা,গ্রাম,nostalgia'}
+ {slug:'romantic',name:'রোমান্টিক',icon:'fa-heart',tagline:'ভালোবাসার গল্পে ডুব দিন',keywords:'প্রেম,ভালোবাসা,রোমান্স,love,romance'},
+ {slug:'thriller',name:'রহস্য-রোমাঞ্চ',icon:'fa-user-secret',tagline:'টানটান উত্তেজনা চাই',keywords:'রহস্য,গোয়েন্দা,থ্রিলার,খুন,thriller,mystery'},
+ {slug:'motivation',name:'অনুপ্রেরণা',icon:'fa-fire',tagline:'নিজেকে বদলাতে চাই',keywords:'অনুপ্রেরণা,সফল,ক্যারিয়ার,অভ্যাস,motivation,habit'},
+ {slug:'fun',name:'হাসি-মজা',icon:'fa-face-laugh-beam',tagline:'মন হালকা করতে চাই',keywords:'হাসি,মজা,কৌতুক,রম্য,humor'},
+ {slug:'knowledge',name:'জ্ঞান ও ইতিহাস',icon:'fa-brain',tagline:'নতুন কিছু জানতে চাই',keywords:'ইতিহাস,বিজ্ঞান,জ্ঞান,history,science'},
+ {slug:'peace',name:'আধ্যাত্মিক শান্তি',icon:'fa-mosque',tagline:'মনের প্রশান্তি খুঁজছি',keywords:'ইসলাম,ইসলামী,আত্মা,শান্তি,নবী,কুরআন'},
+ {slug:'fantasy',name:'কল্পনা ও সায়েন্স ফিকশন',icon:'fa-rocket',tagline:'অন্য জগতে হারাতে চাই',keywords:'সায়েন্স ফিকশন,কল্পবিজ্ঞান,ফ্যান্টাসি,মহাকাশ,fantasy'},
+ {slug:'nostalgia',name:'নস্টালজিয়া',icon:'fa-cloud-rain',tagline:'পুরনো দিনের স্মৃতিতে',keywords:'স্মৃতি,শৈশব,কবিতা,গ্রাম,nostalgia'}
 ];
-var S={open:false,step:0,moods:[],tags:{},loadedAt:0,a:{mood:null,cat:'any',budget:'any'},cats:[]};
+var TIER_LABEL={'budget-near':'বাজেটের সামান্য বেশি','cat':'ধরন আলাদা, কিন্তু মুড মিলেছে','budget-out':'বাজেটের বাইরে'};
+var S={open:false,step:0,moods:[],tags:{},loadedAt:0,a:{mood:null,cat:'any',budget:'any'},noMood:false,cats:[]};
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function books(){return (window.products||products||[]).filter(function(p){return isBookProduct(p)&&p.is_active!==false})}
+function ic(c,def){c=/^fa-[a-z0-9-]+$/.test(c||'')?c:(def||DEF_ICON);return '<i class="fa-solid '+c+'"></i>'}
+function lc(s){return String(s==null?'':s).toLowerCase()}
+function books(){return (products||[]).filter(function(p){return isBookProduct(p)&&p.is_active!==false})}
 function inStock(p){return p.stock==null||Number(p.stock)>0}
 function bookCatSlug(p){
   var c=(allCategories||[]).find(function(x){return x.name===p.category});
   return (c&&catSlug(c))||makeSlug(p.category||'')||'other';
 }
 function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
-async function waitProducts(){var t=0;while(!(window.products||products||[]).length&&t<8000){await wait(250);t+=250}}
+async function waitProducts(){var t=0;while(!(products||[]).length&&t<8000){await wait(250);t+=250}}
 
 async function loadMoods(){
   if(S.moods.length&&Date.now()-S.loadedAt<120000)return;
@@ -15567,13 +15584,13 @@ async function loadMoods(){
   try{
     var r=await sb.from('finder_moods').select('*').eq('is_active',true).order('sort_order',{ascending:true});
     if(!r.error&&r.data&&r.data.length){
-      moods=r.data.map(function(m){return {slug:m.slug,name:m.name,emoji:m.emoji||'✨',tagline:m.tagline||'',keywords:m.keywords||''}});
+      moods=r.data.map(function(m){return {slug:m.slug,name:m.name,icon:m.icon,tagline:m.tagline||'',keywords:m.keywords||''}});
       var t=await sb.from('finder_book_tags').select('product_id,mood_slug').limit(10000);
       (t.data||[]).forEach(function(x){(tags[String(x.product_id)]=tags[String(x.product_id)]||{})[x.mood_slug]=1});
     }
   }catch(e){console.warn('[BookFinder] moods load failed',e)}
-  if(!moods.length)moods=DEFAULT_MOODS;
-  moods.forEach(function(m){m.kw=String(m.keywords||'').split(/[,،]/).map(function(k){return k.trim().toLowerCase()}).filter(Boolean)});
+  if(!moods.length)moods=DEFAULT_MOODS.map(function(m){return Object.assign({},m)});
+  moods.forEach(function(m){m.kw=String(m.keywords||'').split(/[,،]/).map(function(k){return k.trim().toLowerCase()}).filter(function(k){return k.length>=2})});
   S.moods=moods;S.tags=tags;S.loadedAt=Date.now();
 }
 function buildCats(){
@@ -15584,45 +15601,62 @@ function buildCats(){
 function moodBy(slug){return S.moods.find(function(m){return m.slug===slug})}
 function budgetBy(k){return BUDGETS.find(function(b){return b.key===k})||BUDGETS[4]}
 
-/* ───── Scoring ───── */
-function score(p,a,mood,bud){
-  var pe=getEffectiveSalePrice(p),price=pe.displayPrice,s=0,why=[],moodHit=false,max=10;
-  if(mood){
-    max+=55;
-    var tg=S.tags[String(p.id)];
-    if(tg&&tg[mood.slug]){s+=55;moodHit=true;why.push(mood.emoji+' '+mood.name+' মুডের জন্য বাছাই করা')}
-    else if(mood.kw.length){
-      var hay=((p.name||'')+' '+(p.category||'')+' '+(p.description||'')+' '+(p.author||'')).toLowerCase();
-      var hits=mood.kw.filter(function(k){return hay.indexOf(k)>-1}).length;
-      if(hits){s+=Math.min(36,16+hits*10);moodHit=true;why.push(mood.emoji+' বিষয়বস্তু আপনার মুডের সাথে মেলে')}
-    }
-  }
-  if(a.cat!=='any'){max+=25;if(bookCatSlug(p)===a.cat){s+=25;why.push('🗂️ পছন্দের ধরন: '+p.category)}}
-  max+=20;
-  var ok=true;
-  if(bud.key==='any'){s+=10}
-  else if(price>=bud.min&&price<=bud.max){s+=20;why.push('💰 আপনার বাজেটের মধ্যে')}
-  else if(price<bud.min){s+=12;why.push('💰 বাজেটের চেয়েও সাশ্রয়ী')}
-  else if(isFinite(bud.max)&&price<=bud.max*1.25){s+=7;why.push('💰 বাজেটের খুব কাছাকাছি')}
-  else ok=false;
-  var disc=Math.round(pe.totalDiscPct||0);
-  if(disc>0){s+=Math.min(6,disc/5);if(disc>=15)why.push('🏷️ '+disc+'% ছাড়ে পাচ্ছেন')}
-  if(inStock(p))s+=2;
-  return {p:p,s:s,max:max,why:why,moodHit:moodHit,ok:ok&&inStock(p),disc:disc,price:price,pe:pe};
+/* ───── Matching engine ─────
+   মুড-প্রমাণ (সবচেয়ে নির্ভরযোগ্য → কম):
+   1) অ্যাডমিনের ট্যাগ করা বই            → পূর্ণ মিল
+   2) নাম/ক্যাটাগরিতে মুডের কীওয়ার্ড       → ৬০%
+   3) বিবরণে কমপক্ষে ২টি আলাদা কীওয়ার্ড   → ৪০%
+   এর কোনোটাই না থাকলে বইটি ওই মুডে কখনোই রেকমেন্ড হয় না। */
+function kwHit(hay,k){
+  if(/^[a-z0-9 ]+$/.test(k))return new RegExp('(^|[^a-z0-9])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z0-9]|$)').test(hay);
+  return hay.indexOf(k)>-1;
 }
-function recommend(a){
-  var mood=a.mood?moodBy(a.mood):null,bud=budgetBy(a.budget);
-  var all=books().map(function(p){return score(p,a,mood,bud)}).filter(function(r){return r.ok});
-  var sorter=function(x,y){return y.s-x.s||y.disc-x.disc};
-  var exact=all.filter(function(r){return !mood||r.moodHit}).sort(sorter);
-  var relaxed=false,out=exact.slice(0,3);
-  if(out.length<3){
-    relaxed=true;
-    var ids={};out.forEach(function(r){ids[r.p.id]=1});
-    all.filter(function(r){return !ids[r.p.id]}).sort(sorter).slice(0,3-out.length).forEach(function(r){out.push(r)});
+function moodEvidence(p,mood){
+  var tg=S.tags[String(p.id)];
+  if(tg&&tg[mood.slug])return {type:'tag',w:1};
+  if(!mood.kw.length)return null;
+  var head=lc(p.name)+' '+lc(p.category)+' '+lc(p.sub_category);
+  if(mood.kw.some(function(k){return kwHit(head,k)}))return {type:'kw',w:.6};
+  var d=lc(p.description);
+  if(mood.kw.filter(function(k){return kwHit(d,k)}).length>=2)return {type:'kw',w:.4};
+  return null;
+}
+function evaluate(p,a,mood,bud){
+  var pe=getEffectiveSalePrice(p),price=pe.displayPrice;
+  var ev=mood?moodEvidence(p,mood):null;
+  var catOk=a.cat==='any'?null:(bookCatSlug(p)===a.cat);
+  var b=null;
+  if(bud.key!=='any'){
+    if(price>=bud.min&&price<=bud.max)b='in';
+    else if(price<bud.min)b='under';
+    else if(isFinite(bud.max)&&price<=bud.max*1.25)b='near';
+    else b='out';
   }
-  out.forEach(function(r){r.pct=Math.max(58,Math.min(99,Math.round(100*r.s/r.max)))});
-  return {list:out,relaxed:relaxed&&!!mood,mood:mood,bud:bud};
+  var max=0,s=0;
+  if(mood){max+=50;if(ev)s+=50*ev.w}
+  if(catOk!==null){max+=25;if(catOk)s+=25}
+  if(b!==null){max+=25;s+={in:25,under:18,near:10,out:0}[b]}
+  var pct=max?Math.min(99,Math.round(100*s/max)):90;
+  var disc=Math.round(pe.totalDiscPct||0),rating=Number(p.rating)||0;
+  var quality=Math.min(rating,5)/5*.5+Math.min(disc,40)/100;
+  return {p:p,pe:pe,price:price,ev:ev,catOk:catOk,b:b,pct:pct,disc:disc,rating:rating,quality:quality,tier:''};
+}
+function cmp(x,y){return y.pct-x.pct||y.quality-x.quality}
+function recommend(a,noMood){
+  var mood=(a.mood&&!noMood)?moodBy(a.mood):null,bud=budgetBy(a.budget);
+  var pool=books().filter(inStock).map(function(p){return evaluate(p,a,mood,bud)});
+  var picked=[],ids={};
+  function take(fn,tier){
+    pool.filter(function(r){return !ids[r.p.id]&&fn(r)}).sort(cmp).forEach(function(r){
+      if(picked.length<3){r.tier=tier;picked.push(r);ids[r.p.id]=1}
+    });
+  }
+  var mOk=function(r){return !mood||!!r.ev};
+  take(function(r){return mOk(r)&&r.catOk!==false&&(r.b===null||r.b==='in'||r.b==='under')},'');
+  take(function(r){return mOk(r)&&r.catOk!==false&&r.b==='near'},'budget-near');
+  take(function(r){return mOk(r)&&r.catOk===false&&r.b!=='out'},'cat');
+  take(function(r){return mOk(r)&&r.catOk!==false&&r.b==='out'},'budget-out');
+  return {list:picked,mood:mood,bud:bud,relaxed:picked.some(function(r){return r.tier}),moodHasBooks:!mood||pool.some(function(r){return r.ev})};
 }
 
 /* ───── Rendering ───── */
@@ -15630,63 +15664,85 @@ function setBar(i){var b=$('bfBar');if(b)b.style.width=([8,38,68,100][i]||100)+'
 function stage(html){var st=$('bfStage');st.innerHTML=html;st.style.animation='none';void st.offsetWidth;st.style.animation='';$('bfOv').scrollTop=0}
 function renderStep(){
   setBar(S.step);
-  if(!books().length){stage('<div class="bf-empty"><div class="big">📚</div><p class="bn">এই মুহূর্তে রেকমেন্ড করার মতো বই পাওয়া যায়নি। একটু পরে আবার চেষ্টা করুন।</p></div>');return}
-  var back=S.step>0?'<div class="bf-nav"><button class="bf-link bn" data-act="back">← আগের প্রশ্ন</button></div>':'';
+  if(!books().length){stage('<div class="bf-empty"><div class="big"><i class="fa-solid fa-book-open"></i></div><p class="bn">এই মুহূর্তে রেকমেন্ড করার মতো বই পাওয়া যায়নি। একটু পরে আবার চেষ্টা করুন।</p></div>');return}
+  var back=S.step>0?'<div class="bf-nav"><button class="bf-link bn" data-act="back"><i class="fa-solid fa-arrow-left"></i> আগের প্রশ্ন</button></div>':'';
   if(S.step===0){
-    stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ আপনার মনের অবস্থা কেমন?</h2><p class="bf-qs bn">যে মুডটা সবচেয়ে কাছের মনে হয়, সেটায় ক্লিক করুন ✨</p><div class="bf-grid">'+
-      S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+esc(m.emoji)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>');
+    stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ আপনার মনের অবস্থা কেমন?</h2><p class="bf-qs bn">যে মুডটা সবচেয়ে কাছের মনে হয়, সেটায় ক্লিক করুন</p><div class="bf-grid">'+
+      S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>');
   }else if(S.step===1){
     stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">কোন ধরনের বই পড়তে ইচ্ছে করছে?</h2><p class="bf-qs bn">নির্দিষ্ট কিছু মাথায় না থাকলে “যেকোনো ধরন” বেছে নিন</p><div class="bf-grid">'+
-      '<button class="bf-opt'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><span class="e">🌌</span><b class="bn">যেকোনো ধরন</b><small class="bn">সারপ্রাইজ করুন!</small></button>'+
-      S.cats.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e"><i class="fa-solid '+esc(c.icon)+'"></i></span><b class="bn">'+esc(c.name)+'</b><span class="n">'+c.n+' books</span></button>'}).join('')+'</div>'+back);
+      '<button class="bf-opt'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><span class="e">'+ic('fa-compass')+'</span><b class="bn">যেকোনো ধরন</b><small class="bn">সব ক্যাটাগরি থেকে খুঁজুন</small></button>'+
+      S.cats.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b><span class="n">'+c.n+' books</span></button>'}).join('')+'</div>'+back);
   }else{
     stage('<span class="bf-step-tag bn">প্রশ্ন ৩ / ৩</span><h2 class="bf-q bn" id="bfTitle">আপনার বাজেট কত?</h2><p class="bf-qs bn">একটা বইয়ের জন্য কতটা খরচ করতে চান?</p><div class="bf-grid">'+
-      BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+b.emoji+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+back);
+      BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+ic(b.icon)+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+back);
   }
 }
 function catName(slug){if(slug==='any')return 'যেকোনো ধরন';var c=S.cats.find(function(x){return x.slug===slug});if(c)return c.name;var cc=(allCategories||[]).find(function(x){return catSlug(x)===slug});return cc?cc.name:slug}
-function resultCard(r,i){
+function crit(r,res){
+  var li=[];
+  if(res.mood){
+    li.push(r.ev?'<li class="ok">'+ic('fa-circle-check')+' মুড: '+esc(res.mood.name)+' <small>('+(r.ev.type==='tag'?'বিশেষভাবে বাছাই করা':'বিষয়বস্তু মিলেছে')+')</small></li>':'<li class="no">'+ic('fa-circle-xmark')+' মুড মেলেনি</li>');
+  }
+  if(r.catOk!==null)li.push(r.catOk?'<li class="ok">'+ic('fa-circle-check')+' ধরন: '+esc(r.p.category)+'</li>':'<li class="part">'+ic('fa-circle-half-stroke')+' ধরন: '+esc(r.p.category)+'</li>');
+  if(r.b!==null){
+    var m={in:['ok','fa-circle-check','বাজেটের মধ্যে'],under:['ok','fa-circle-check','বাজেটের চেয়েও সাশ্রয়ী'],near:['part','fa-circle-half-stroke','বাজেটের সামান্য বেশি'],out:['no','fa-circle-xmark','বাজেটের বাইরে']}[r.b];
+    li.push('<li class="'+m[0]+'">'+ic(m[1])+' '+m[2]+'</li>');
+  }
+  return '<ul class="bf-crit bn">'+li.join('')+'</ul>';
+}
+function resultCard(r,i,res){
   var p=r.p,url='/product/'+encodeURIComponent(productSlug(p)),img=p.image_url||(Array.isArray(p.images)&&p.images[0]&&(p.images[0].url||p.images[0]))||'';
   var auth=p.author||p.brand||'';
-  return '<article class="bf-res'+(i===0?' bf-res--top':'')+'"><a class="bf-cover" href="'+url+'" data-go="'+esc(p.id)+'">'+(img?'<img src="'+esc(img)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=ph>📖</div>\'">':'<div class="ph">📖</div>')+'</a>'+
-   '<div class="bf-info"><div class="bf-badge"><span class="bf-rank bn'+(i?' alt':'')+'">'+(i===0?'🏆 সেরা মিল':'✨ আরেকটি দারুণ পছন্দ')+'</span><span class="bf-pct">'+r.pct+'% match</span></div>'+
-   '<h3 class="bn">'+esc(p.name)+'</h3>'+(auth?'<div class="bf-auth bn">✍️ '+esc(auth)+'</div>':'')+
-   '<div class="bf-why bn">'+r.why.slice(0,4).map(function(w){return '<span>'+esc(w)+'</span>'}).join('')+'</div>'+
-   '<div class="bf-price"><b>৳ '+fmtPrice(r.price)+'</b>'+(r.pe.originalPrice>r.price?'<s>৳ '+fmtPrice(r.pe.originalPrice)+'</s>':'')+(r.disc>0?'<em>-'+r.disc+'%</em>':'')+'</div>'+
+  var extra=[];
+  if(r.disc>0)extra.push('<span>'+ic('fa-tag')+' '+r.disc+'% ছাড়</span>');
+  if(r.rating>0)extra.push('<span>'+ic('fa-star')+' '+r.rating.toFixed(1)+'</span>');
+  if(r.tier)extra.push('<span class="warn">'+ic('fa-circle-info')+' '+TIER_LABEL[r.tier]+'</span>');
+  return '<article class="bf-res'+(i===0&&!r.tier?' bf-res--top':'')+'"><a class="bf-cover" href="'+url+'" data-go="'+esc(p.id)+'">'+(img?'<img src="'+esc(img)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=ph><i class=\\\'fa-solid fa-book\\\'></i></div>\'">':'<div class="ph"><i class="fa-solid fa-book"></i></div>')+'</a>'+
+   '<div class="bf-info"><div class="bf-badge"><span class="bf-rank bn'+(i===0&&!r.tier?'':' alt')+'">'+(i===0&&!r.tier?ic('fa-trophy')+' সেরা মিল':ic('fa-wand-magic-sparkles')+' পছন্দ #'+(i+1))+'</span><span class="bf-pct">'+r.pct+'% match</span></div>'+
+   '<h3 class="bn">'+esc(p.name)+'</h3>'+(auth?'<div class="bf-auth bn">'+ic('fa-pen-nib')+' '+esc(auth)+'</div>':'')+
+   crit(r,res)+(extra.length?'<div class="bf-why bn">'+extra.join('')+'</div>':'')+
+   '<div class="bf-price"><b>৳ '+fmtPrice(r.price)+'</b>'+(r.pe.originalPrice>r.price?'<s>৳ '+fmtPrice(r.pe.originalPrice)+'</s>':'')+'</div>'+
    '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i> কার্টে যোগ করুন</button></div></div></article>';
 }
 function renderResults(push){
   setBar(3);
-  var res=recommend(S.a);
-  var sum='<div class="bf-sum bn">'+(res.mood?'<span>'+esc(res.mood.emoji+' '+res.mood.name)+'</span>':'')+'<span>🗂️ '+esc(catName(S.a.cat))+'</span><span>💰 '+res.bud.label+'</span></div>';
+  var res=recommend(S.a,S.noMood);
+  var sum='<div class="bf-sum bn">'+(res.mood?'<span>'+ic(res.mood.icon)+' '+esc(res.mood.name)+'</span>':'')+'<span>'+ic('fa-layer-group')+' '+esc(catName(S.a.cat))+'</span><span>'+ic('fa-wallet')+' '+res.bud.label+'</span></div>';
   var foot='<div class="bf-foot"><button class="bf-btn2 bn" data-act="restart"><i class="fa-solid fa-rotate-right"></i> আবার খুঁজুন</button><button class="bf-btn2 bn" data-act="share"><i class="fa-solid fa-link"></i> লিংক কপি করুন</button></div>';
   if(!res.list.length){
-    stage('<h2 class="bf-q bn" id="bfTitle">দুঃখিত, মিলিয়ে দিতে পারলাম না 😔</h2>'+sum+'<div class="bf-empty"><div class="big">🔭</div><p class="bn">এই কম্বিনেশনে কোনো বই পাওয়া যায়নি। বাজেট বা ধরন বদলে আবার চেষ্টা করুন।</p></div>'+foot);
+    var msg,btn='';
+    if(!res.moodHasBooks){
+      msg='“'+esc(res.mood.name)+'” মুডে এখনো কোনো বই ট্যাগ করা নেই, তাই ভুল বই দেখানোর বদলে সত্যিটাই জানাচ্ছি।';
+      btn='<button class="bf-btn2 bn" data-act="nomood"><i class="fa-solid fa-filter"></i> মুড বাদ দিয়ে ধরন ও বাজেট অনুযায়ী দেখুন</button> ';
+    }else msg='এই কম্বিনেশনে কোনো বই নেই। ধরন বা বাজেট একটু বদলে আবার চেষ্টা করুন।';
+    stage('<h2 class="bf-q bn" id="bfTitle">মিলিয়ে দিতে পারলাম না</h2>'+sum+'<div class="bf-empty"><div class="big"><i class="fa-solid fa-magnifying-glass"></i></div><p class="bn">'+msg+'</p><div style="margin-top:14px">'+btn+'</div></div>'+foot);
   }else{
-    stage('<h2 class="bf-q bn" id="bfTitle">🎉 আপনার জন্য জাদুর বাছাই!</h2><p class="bf-qs bn">আপনার উত্তরের সাথে সবচেয়ে মিলে যাওয়া বইগুলো</p>'+sum+
-      (res.relaxed?'<div class="bf-note bn">এই মুডে হুবহু মিলে যাওয়া বই কম, তাই কাছাকাছি সেরা বইগুলো দেখানো হচ্ছে।</div>':'')+
-      '<div class="bf-list">'+res.list.map(resultCard).join('')+'</div>'+foot);
+    stage('<h2 class="bf-q bn" id="bfTitle"><i class="fa-solid fa-wand-magic-sparkles" style="color:#F5A623"></i> আপনার জন্য বাছাই করা বই</h2><p class="bf-qs bn">আপনার উত্তরের সাথে সবচেয়ে মিলে যাওয়া বইগুলো</p>'+sum+
+      (S.noMood?'<div class="bf-note bn">মুড বাদ দিয়ে শুধু ধরন ও বাজেট অনুযায়ী দেখানো হচ্ছে।</div>':'')+
+      (res.relaxed?'<div class="bf-note bn">সব শর্ত হুবহু মেলে এমন বই কম, তাই কিছু বই সামান্য আলাদা শর্তে দেখানো হয়েছে। কোনটা কেন আলাদা, প্রতিটি কার্ডে লেখা আছে।</div>':'')+
+      '<div class="bf-list">'+res.list.map(function(r,i){return resultCard(r,i,res)}).join('')+'</div>'+foot);
   }
   if(push){var u='/book-finder/'+(S.a.mood||'any')+'/'+S.a.cat+'/'+S.a.budget;try{history.pushState({page:'finder'},'Magical Book Finder — বুক গ্যালাক্সি',u)}catch(e){}}
 }
 function showMagic(){
   setBar(3);
-  stage('<div class="bf-magic"><div class="orb"></div><p class="bn">✨ আপনার জন্য জাদু বুনছি… ✨</p></div>');
-  setTimeout(function(){if(S.open)renderResults(true)},1300);
+  stage('<div class="bf-magic"><div class="orb"></div><p class="bn">আপনার জন্য সেরা বই বাছাই করছি…</p></div>');
+  setTimeout(function(){if(S.open)renderResults(true)},1100);
 }
 
 /* ───── Open / Close / Routing ───── */
 async function openBF(push,preset){
   var ov=$('bfOv');if(!ov)return;
-  S.open=true;S.step=0;S.a={mood:null,cat:'any',budget:'any'};
+  S.open=true;S.step=0;S.noMood=false;S.a={mood:null,cat:'any',budget:'any'};
   ov.classList.add('open');ov.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
   stage('<div class="bf-magic"><div class="orb"></div><p class="bn">লোড হচ্ছে…</p></div>');setBar(0);
   if(push!==false){try{history.pushState({page:'finder'},'Magical Book Finder — বুক গ্যালাক্সি','/book-finder')}catch(e){}}
   document.title='Magical Book Finder — বুক গ্যালাক্সি';
   await waitProducts();await loadMoods();buildCats();
   if(preset&&preset.mood){
-    S.a.mood=preset.mood;S.a.cat=preset.cat||'any';S.a.budget=preset.budget||'any';
-    if(!moodBy(S.a.mood)&&S.a.mood!=='any')S.a.mood=null;if(S.a.mood==='any')S.a.mood=null;
+    S.a.mood=(preset.mood==='any'||!moodBy(preset.mood))?null:preset.mood;
+    S.a.cat=preset.cat||'any';S.a.budget=preset.budget||'any';
     showMagic();return;
   }
   renderStep();
@@ -15710,30 +15766,30 @@ document.addEventListener('click',function(e){
   var t=e.target;if(!t.closest)return;
   var opt=t.closest('#bfStage .bf-opt');
   if(opt){
-    var k=opt.getAttribute('data-k'),v=opt.getAttribute('data-v');
-    S.a[k]=v;opt.classList.add('sel');
+    S.a[opt.getAttribute('data-k')]=opt.getAttribute('data-v');opt.classList.add('sel');
     setTimeout(function(){if(S.step<2){S.step++;renderStep()}else showMagic()},230);return;
   }
   var go=t.closest('#bfStage [data-go]');
   if(go){
     if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1)return;
     e.preventDefault();
-    var p=(window.products||products).find(function(x){return String(x.id)===go.getAttribute('data-go')});
+    var p=products.find(function(x){return String(x.id)===go.getAttribute('data-go')});
     if(p){closeBF(false);openProduct(p.id)}return;
   }
   var cart=t.closest('#bfStage [data-cart]');
   if(cart){
-    var q=(window.products||products).find(function(x){return String(x.id)===cart.getAttribute('data-cart')});
+    var q=products.find(function(x){return String(x.id)===cart.getAttribute('data-cart')});
     if(q){addToCart(q,1);cart.innerHTML='<i class="fa-solid fa-check"></i> যোগ হয়েছে'}return;
   }
   var act=t.closest('#bfStage [data-act]');
   if(act){
     var a=act.getAttribute('data-act');
     if(a==='back'){S.step=Math.max(0,S.step-1);renderStep()}
-    if(a==='restart'){S.step=0;S.a={mood:null,cat:'any',budget:'any'};try{history.replaceState({page:'finder'},'','/book-finder')}catch(x){}renderStep()}
+    if(a==='restart'){S.step=0;S.noMood=false;S.a={mood:null,cat:'any',budget:'any'};try{history.replaceState({page:'finder'},'','/book-finder')}catch(x){}renderStep()}
+    if(a==='nomood'){S.noMood=true;renderResults(false)}
     if(a==='share'){
       var link=location.origin+location.pathname;
-      (navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(function(){toast('লিংক কপি হয়েছে!','বন্ধুকে পাঠিয়ে দিন 💌','s')}).catch(function(){prompt('লিংকটি কপি করুন:',link)});
+      (navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(function(){toast('লিংক কপি হয়েছে!','বন্ধুকে পাঠিয়ে দিন','s')}).catch(function(){prompt('লিংকটি কপি করুন:',link)});
     }
   }
 });
