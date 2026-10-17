@@ -7725,8 +7725,9 @@ async function init() {
 async function _restorePageFromUrl() {
   // ── ১. Query param: ?page=order-detail&id=GM-XXXX ──
   const urlParams = new URLSearchParams(window.location.search);
-  const pageParam = urlParams.get('page');
-  const idParam   = urlParams.get('id');
+  const _om = window.location.pathname.match(/^\/order\/(.+)$/);       // /order/GM-XXXX
+  const pageParam = urlParams.get('page') || (_om ? 'order-detail' : null);
+  const idParam   = urlParams.get('id')   || (_om ? _safeDecode(_om[1]).replace(/\/+$/, '') : null);
 
   if (pageParam === 'order-detail' && idParam) {
     try {
@@ -7747,7 +7748,7 @@ async function _restorePageFromUrl() {
   }
 
   // ── ২. Pathname routing ──
-  const path = window.location.pathname;
+  const path = _safeDecode(window.location.pathname).replace(/\/+$/, '') || '/';
 
   if (path === '/track-order') {
     // Track page সবসময় open করো — login check page নিজেই করবে
@@ -7773,9 +7774,28 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path === '/checkout') {
+    if (cart.length > 0 && currentUser) openCheckout();
+    else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+    return;
+  }
+
+  if (path.startsWith('/info/')) {
+    const t = path.replace('/info/', '');
+    if (typeof INFO_CONTENT !== 'undefined' && INFO_CONTENT[t]) openInfoModal(t, false);
+    else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+    return;
+  }
+
+  if (path.startsWith('/category/')) {
+    const c = findCategoryBySlug(path.replace('/category/', ''));
+    if (c) openCatPage(c.name, null, false);
+    else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+    return;
+  }
+
   if (path.startsWith('/product/')) {
-    const slug = path.replace('/product/', '').split('?')[0];
-    const p = products.find(x => slugify(x.name) === slug || x.id === slug);
+    const p = findProductBySlug(path.replace('/product/', ''));
     if (p) {
       openProduct(p.id, false);
     } else {
@@ -8452,17 +8472,50 @@ function slugify(text) {
     .replace(/^-|-$/g, '');
 }
 
-function pushProductUrl(p) {
-  const slug = slugify(p.name) || p.id;
-  const url = `/product/${slug}`;
-  history.pushState({ productId: p.id, slug, page: 'product' }, p.name, url);
-  document.title = `${p.name} — বুক গ্যালাক্সি`;
-  let metaDesc = document.querySelector('meta[name="description"]');
-  if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name='description'; document.head.appendChild(metaDesc); }
-  metaDesc.content = p.description ? p.description.slice(0,155) : `${p.name} কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`;
-  let metaCan = document.querySelector('link[rel="canonical"]');
-  if (!metaCan) { metaCan = document.createElement('link'); metaCan.rel='canonical'; document.head.appendChild(metaCan); }
-  metaCan.href = window.location.origin + url;
+/* ══════════ ROUTER HELPERS (SEO-friendly clean URLs) ══════════ */
+function _safeDecode(s) { try { return decodeURIComponent(s); } catch (e) { return s; } }
+
+// URL বদলায় — আগের URL থেকে আলাদা হলে pushState, একই হলে replaceState
+// (এতে popstate/restore-এর সময় history-তে duplicate entry তৈরি হয় না)
+function _navTo(state, title, url, push = true) {
+  const current = _safeDecode(location.pathname) + location.search;
+  if (push && current !== url) history.pushState(state, title, url);
+  else history.replaceState(state, title, url);
+  if (title) document.title = title;
+}
+
+function _setMeta(desc, canonicalPath) {
+  let m = document.querySelector('meta[name="description"]');
+  if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); }
+  m.content = desc;
+  let c = document.querySelector('link[rel="canonical"]');
+  if (!c) { c = document.createElement('link'); c.rel = 'canonical'; document.head.appendChild(c); }
+  c.href = window.location.origin + encodeURI(canonicalPath);
+}
+
+// প্রোডাক্ট slug — একই নামের দুটো প্রোডাক্ট থাকলে id-এর অংশ যোগ হয়
+function productSlug(p) {
+  const base = slugify(p.name) || String(p.id);
+  const dup = products.some(x => x.id !== p.id && slugify(x.name) === base);
+  return dup ? base + '-' + String(p.id).slice(0, 8) : base;
+}
+function findProductBySlug(raw) {
+  const s = _safeDecode(String(raw || '')).split('?')[0].replace(/\/+$/, '').toLowerCase();
+  return products.find(x => productSlug(x).toLowerCase() === s)
+      || products.find(x => String(x.id).toLowerCase() === s)
+      || products.find(x => slugify(x.name) === s);
+}
+function catSlug(c) { return (c && (c.slug || slugify(c.name))) || ''; }
+function findCategoryBySlug(raw) {
+  const s = _safeDecode(String(raw || '')).replace(/\/+$/, '').toLowerCase();
+  return allCategories.find(c => catSlug(c).toLowerCase() === s || slugify(c.name) === s);
+}
+
+function pushProductUrl(p, push = true) {
+  const url = `/product/${productSlug(p)}`;
+  _navTo({ productId: p.id, slug: productSlug(p), page: 'product' }, `${p.name} — বুক গ্যালাক্সি`, url, push);
+  _setMeta(p.description ? String(p.description).slice(0, 155)
+                         : `${p.name} কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`, url);
 }
 
 function restoreHomeUrl() {
@@ -8526,11 +8579,14 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
+  if (name === 'category' && _safeDecode(location.pathname).startsWith('/category/')) restoreHomeUrl();
+  if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
   if (name === 'wishlist') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
   if (name === 'order-detail') {
     // Re-open track page when going back from order detail
+    history.replaceState({ page: 'track' }, '', '/track-order');
     openPage('track');
     // Clear the tracked order id so BroadcastChannel doesn't re-render a closed page
     window._currentOrderDetailId = null;
@@ -8752,6 +8808,7 @@ function openProduct(id, pushUrl = true) {
   const badge = document.getElementById('pdReviewCountBadge');
   if (badge) badge.textContent = '';
 
+  pushProductUrl(p, pushUrl);   // ✅ URL: /product/<slug>
   openPage('product');
 }
 
@@ -8963,8 +9020,7 @@ function quickAddToCart(id) { const p = products.find(x=>x.id===id); if(p) addTo
 
 function copyProductUrl() {
   if (!currentProduct) return;
-  const slug = slugify(currentProduct.name) || currentProduct.id;
-  const url = window.location.origin + '/product/' + slug;
+  const url = window.location.origin + '/product/' + encodeURIComponent(productSlug(currentProduct));
   navigator.clipboard.writeText(url).then(() => {
     const btn = document.getElementById('fpShareBtn');
     if (btn) {
@@ -10327,7 +10383,7 @@ function closeCart() {
   document.body.style.overflow = '';
 }
 function openTrack(pushUrl = true) {
-  if (pushUrl) history.pushState({ page: 'track' }, 'অর্ডার ট্র্যাক — বুক গ্যালাক্সি', '/track-order');
+  _navTo({ page: 'track' }, 'অর্ডার ট্র্যাক — বুক গ্যালাক্সি', '/track-order', pushUrl);
   document.title = 'অর্ডার ট্র্যাক — বুক গ্যালাক্সি';
   updateHeaderHeight();
 
@@ -11245,9 +11301,10 @@ const INFO_CONTENT = {
   }
 };
 
-function openInfoModal(type) {
+function openInfoModal(type, pushUrl = true) {
   const config = INFO_CONTENT[type];
   if (!config) return;
+  _navTo({ page: 'info', type }, `${config.title} — বুক গ্যালাক্সি`, '/info/' + type, pushUrl);
   const modal = document.getElementById('infoModal');
   const icon  = document.getElementById('infoModalIcon');
   const title = document.getElementById('infoModalTitle');
@@ -11265,6 +11322,7 @@ function closeInfoModal() {
   const modal = document.getElementById('infoModal');
   if (!modal) return;
   modal.classList.remove('open');
+  if (location.pathname.startsWith('/info/')) { history.replaceState({ page: 'home' }, '', '/'); document.title = 'বুক গ্যালাক্সি'; }
   const anyOpen = ['cartOverlay','authModal','adminOverlay'].some(id => {
     const el = document.getElementById(id);
     return el && el.classList.contains('open');
@@ -13802,7 +13860,7 @@ function getCatMeta(cat) {
 // ══════════════════════════════════════════════════
 let currentCatPage = 'সব';
 
-function openCatPage(cat, el) {
+function openCatPage(cat, el, pushUrl = true) {
   // For 'সব' category on home, just filter in place (home behaviour preserved)
   // For any specific cat, open full page
   if (cat === 'সব') {
@@ -13826,6 +13884,10 @@ function openCatPage(cat, el) {
   document.getElementById('catPageSort').value = 'popular';
 
   renderCatPageProducts();
+  const _co = allCategories.find(c => c.name === cat);
+  const _cu = '/category/' + (_co ? catSlug(_co) : slugify(cat));
+  _navTo({ page: 'category', cat }, `${cat} — বুক গ্যালাক্সি`, _cu, pushUrl);
+  _setMeta(`${cat} ক্যাটাগরির বই কিনুন বুক গ্যালাক্সি-তে। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।`, _cu);
   openPage('category');
 }
 
@@ -13906,10 +13968,9 @@ async function openOrderDetailPage(orderData, historyData) {
   document.getElementById('odPageOrderNum').textContent = o.order_number || 'বিস্তারিত';
 
   // Push URL so reload works
-  const url = new URL(window.location.href);
-  url.searchParams.set('page', 'order-detail');
-  url.searchParams.set('id', o.order_number || o.id);
-  history.replaceState({page:'order-detail', id: o.order_number||o.id}, '', url.toString());
+  const _oid = o.order_number || o.id;
+  history.replaceState({page:'order-detail', id: _oid}, '', '/order/' + encodeURIComponent(_oid));
+  document.title = 'অর্ডার ' + _oid + ' — বুক গ্যালাক্সি';
 
   // Hero strip with status + Copy ID button
   document.getElementById('odPageHero').innerHTML = `
@@ -13977,7 +14038,7 @@ function copyOrderIdToast(id, btn) {
 // ══════════════════════════════════════════════════
 async function openProfilePage() {
   if (!currentUser) { openAuth(); return; }
-  history.pushState({ page: 'profile' }, 'আমার প্রোফাইল — বুক গ্যালাক্সি', '/profile');
+  _navTo({ page: 'profile' }, 'আমার প্রোফাইল — বুক গ্যালাক্সি', '/profile');
   document.title = 'আমার প্রোফাইল — বুক গ্যালাক্সি';
   openPage('profile');
 
@@ -14104,7 +14165,7 @@ function updateFpWishBtn() {
 }
 
 function openWishlistPage() {
-  history.pushState({ page: 'wishlist' }, 'উইশলিস্ট — বুক গ্যালাক্সি', '/wishlist');
+  _navTo({ page: 'wishlist' }, 'উইশলিস্ট — বুক গ্যালাক্সি', '/wishlist');
   document.title = 'উইশলিস্ট — বুক গ্যালাক্সি';
   renderWishlistGrid();
   openPage('wishlist');
@@ -14823,11 +14884,11 @@ window.__router = { closeAllPages, closeAllModals, closeAllUI };
 (function patchOpenCatPage() {
   const _orig = window.openCatPage;
   if (!_orig) return;
-  window.openCatPage = function(cat, el) {
+  window.openCatPage = function(cat, el, pushUrl) {
     closeAllModals();
     closeNotifPanel();
     if (typeof window.closeDropdown === 'function') window.closeDropdown();
-    _orig.call(this, cat, el);
+    _orig.call(this, cat, el, pushUrl);
   };
 })();
 
@@ -14840,6 +14901,12 @@ window.__router = { closeAllPages, closeAllModals, closeAllUI };
     closeNotifPanel();
     if (typeof window.closeDropdown === 'function') window.closeDropdown();
     _orig.call(this);
+    const _cp = document.getElementById('page-checkout');
+    if (_cp && _cp.classList.contains('open')) {
+      if (location.pathname !== '/checkout') history.pushState({ page: 'checkout' }, 'চেকআউট — বুক গ্যালাক্সি', '/checkout');
+      else history.replaceState({ page: 'checkout' }, 'চেকআউট — বুক গ্যালাক্সি', '/checkout');
+      document.title = 'চেকআউট — বুক গ্যালাক্সি';
+    }
     // Hide bottom nav on mobile when checkout opens
     const nav = document.getElementById('mobBottomNav');
     if (nav) nav.style.display = 'none';
@@ -14990,6 +15057,8 @@ window.addEventListener('popstate', function(e) {
     if (el) el.classList.remove('open');
   });
   document.body.style.overflow = '';
+  const _im = document.getElementById('infoModal'); if (_im) _im.classList.remove('open');
+  const _nav = document.getElementById('mobBottomNav'); if (_nav) _nav.style.display = '';
 
   const state = e.state || {};
 
@@ -15013,8 +15082,21 @@ window.addEventListener('popstate', function(e) {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
     else document.title = 'বুক গ্যালাক্সি';
 
+  } else if (state.page === 'category' && state.cat) {
+    window.openCatPage(state.cat, null, false);
+
+  } else if (state.page === 'checkout') {
+    if (cart.length && currentUser) window.openCheckout(); else document.title = 'বুক গ্যালাক্সি';
+
+  } else if (state.page === 'info' && state.type) {
+    openInfoModal(state.type, false);
+
+  } else if (location.pathname !== '/') {
+    // state নেই কিন্তু URL আছে (যেমন সরাসরি লিঙ্ক) — URL দেখে page খোলো
+    _restorePageFromUrl();
+
   } else {
-    // Home (state.page === 'home' বা state === {}) — সব বন্ধ, home দেখাও
+    // Home — সব বন্ধ, home দেখাও
     document.title = 'বুক গ্যালাক্সি';
   }
 }, { capture: true });
