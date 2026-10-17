@@ -1,9 +1,6 @@
 {
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/track-order", "destination": "/index.html" },
-    { "source": "/profile",     "destination": "/index.html" },
-    { "source": "/wishlist",    "destination": "/index.html" },
-    { "source": "/product/:slug", "destination": "/index.html" },
-    { "source": "/(.*)",        "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

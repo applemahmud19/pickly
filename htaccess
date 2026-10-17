@@ -1,0 +1,8 @@
+# Apache / cPanel হোস্টিং
+RewriteEngine On
+RewriteBase /
+RewriteRule ^admin/?$ /admin.html [L]
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+RewriteRule ^ /index.html [L]
