@@ -5567,6 +5567,29 @@ html, body {
 </script>
 </head>
 <body>
+<!-- ═══ RELOAD SPLASH: /product/... ইত্যাদি লিংকে রিলোড করলে হোম পেজ ঝলকে না উঠে লোডিং স্ক্রিন দেখাবে ═══ -->
+<style>
+#gmSplash{display:none;position:fixed;inset:0;z-index:2147483000;background:#F6DEDE;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:opacity .35s ease}
+html.gm-boot #gmSplash{display:flex}
+#gmSplash.out{opacity:0;pointer-events:none}
+#gmSplash .gm-sp-ring{width:54px;height:54px;border-radius:50%;border:5px solid #F5D6D6;border-top-color:#AA2C2D;border-right-color:#F5A623;animation:gmSpin .8s linear infinite}
+#gmSplash b{font-family:'Hind Siliguri',sans-serif;color:#AA2C2D;font-size:1.2rem;margin-top:6px}
+#gmSplash small{font-family:'Hind Siliguri',sans-serif;color:#711D1E;opacity:.75}
+@keyframes gmSpin{to{transform:rotate(360deg)}}
+</style>
+<div id="gmSplash" role="status" aria-label="লোড হচ্ছে"><div class="gm-sp-ring"></div><b>বুক গ্যালাক্সি</b><small>লোড হচ্ছে…</small></div>
+<script>
+(function(){
+  var p=location.pathname.replace(/\/+$/,'');
+  if((p&&p!=='/index.html')||/[?&]page=/.test(location.search)) document.documentElement.classList.add('gm-boot');
+  window.__gmHideSplash=function(){
+    var s=document.getElementById('gmSplash'); if(!s) return;
+    s.classList.add('out');
+    setTimeout(function(){document.documentElement.classList.remove('gm-boot'); if(s.parentNode) s.parentNode.removeChild(s);},400);
+  };
+  setTimeout(function(){window.__gmHideSplash();},9000); // safety: কিছু আটকে গেলেও স্ক্রিন যেন চিরকাল না থাকে
+})();
+</script>
 <!--
 =================================================================
   GALAXY MART BD — DATA INTEGRITY AUDIT v5.1
@@ -7715,18 +7738,22 @@ async function init() {
 
   await Promise.all([loadCategories(), loadProducts()]);
   subscribeRealtimeUpdates();
-  await loadHeroBanners();
-  loadTopSellingBooks(); // hero sidebar — non-blocking
-  syncHeroTopsellHeight();
 
   // Measure header height for full-page offset
   updateHeaderHeight();
   window.addEventListener('resize', updateHeaderHeight);
 
-  // ── URL RESTORE: auth + products সব load হওয়ার পরে চলে ──
-  // এটা আলাদা ফাংশনে রাখা হয়েছে যাতে race condition না হয়
-  await _restorePageFromUrl();
+  // Hero banners হোম পেজের জন্য — আলাদাভাবে লোড হোক, প্রোডাক্ট/পেজ খোলা যেন এর জন্য না আটকায়
+  const _heroDone = loadHeroBanners().then(() => {
+    loadTopSellingBooks(); // hero sidebar — non-blocking
+    syncHeroTopsellHeight();
+  }).catch(e => console.warn('[hero]', e));
 
+  // ── URL RESTORE: auth + products load হওয়ার সাথে সাথেই চলে (hero-র জন্য অপেক্ষা নেই) ──
+  try { await _restorePageFromUrl(); }
+  finally { if (window.__gmHideSplash) window.__gmHideSplash(); }
+
+  await _heroDone;
   _initDone = true;
 }
 
