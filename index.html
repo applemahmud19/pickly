@@ -5539,6 +5539,23 @@ html, body {
   }
 }
 </style>
+<style id="navMoreStyles">
+/* Category navbar — "আরও" dropdown (managed from Admin → Categories → নেভবার সাজান) */
+.nav-cats.nav-managed .ncat{flex-shrink:0 !important}
+@media (min-width:881px){ .nav-cats.nav-managed{overflow:hidden !important} }
+.ncat-more-btn .ncat-chev{font-size:.62rem !important;min-width:0 !important;transition:transform .18s}
+.ncat-more-btn.open .ncat-chev{transform:rotate(180deg)}
+.ncat-more-btn.open{color:var(--blue) !important}
+#ncatMorePanel{position:fixed;z-index:99999;display:none;min-width:230px;max-width:min(340px,92vw);max-height:min(70vh,520px);overflow-y:auto;
+  background:#fff;border:1px solid var(--border,#eee);border-radius:14px;padding:6px;box-shadow:0 16px 44px rgba(0,0,0,.18)}
+#ncatMorePanel.open{display:block;animation:ncatMoreIn .14s ease-out}
+@keyframes ncatMoreIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.ncat-more-head{padding:8px 12px 6px;font-size:.66rem;font-weight:700;letter-spacing:.04em;color:var(--text-light,#999);font-family:'Hind Siliguri',sans-serif}
+.ncat-more-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:none;background:transparent;border-radius:10px;cursor:pointer;
+  font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:500;color:var(--text-mid,#444);text-align:left;transition:background .12s,color .12s}
+.ncat-more-item:hover{background:#FBEDED;color:var(--blue,#AA2C2D)}
+.ncat-more-item .ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:.78rem;flex-shrink:0}
+</style>
 <!-- Early header-height fix: sets --header-h as soon as DOM is interactive,
      before main JS fires, to prevent white-space flash on mobile -->
 <script>
@@ -14348,7 +14365,7 @@ async function loadCategories() {
       localStorage.setItem(CAT_KEY, JSON.stringify(data));
       allCategories = data
         .filter(c => c.is_active !== false)
-        .map(c => ({ id: c.id, name: c.name, slug: c.slug, icon: c.icon || 'fa-box', color: c.color || '#AA2C2D' }));
+        .map(c => ({ id: c.id, name: c.name, slug: c.slug, icon: c.icon || 'fa-box', color: c.color || '#AA2C2D', show_in_nav: c.show_in_nav !== false, nav_order: c.nav_order }));
       renderCategoryNav();
       renderSidebarCatChips();
       updateCounts();
@@ -14358,21 +14375,170 @@ async function loadCategories() {
   } catch (e) { /* offline — cached/default categories already rendered */ }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   CATEGORY NAVBAR — pinned order from Admin + "আরও" (More) dropdown
+   • Admin → Categories → "নেভবার সাজান" decides which categories sit in the
+     bar (show_in_nav) and their order (nav_order).
+   • Anything that is not pinned, or does not fit on one line, moves into the
+     "আরও" dropdown (opens on hover on desktop, on tap on touch screens).
+   ══════════════════════════════════════════════════════════════ */
+let _ncatMoreTimer = null;
+let _ncatRO = null;
+function _ncatEsc(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function _ncatColor(c) { return /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '#AA2C2D'; }
+
+function splitNavCats() {
+  const key = c => (Number(c.nav_order) > 0 ? Number(c.nav_order) : 9999);
+  const sorted = allCategories.slice().sort((a, b) => key(a) - key(b)); // stable: ties keep id order
+  return {
+    pinned:   sorted.filter(c => c.show_in_nav !== false),
+    unpinned: sorted.filter(c => c.show_in_nav === false)
+  };
+}
+
+function getNcatPanel() {
+  let p = document.getElementById('ncatMorePanel');
+  if (p) return p;
+  p = document.createElement('div');
+  p.id = 'ncatMorePanel';
+  p.setAttribute('role', 'menu');
+  p.addEventListener('mouseenter', () => clearTimeout(_ncatMoreTimer));
+  p.addEventListener('mouseleave', scheduleCloseNcatMore);
+  p.addEventListener('click', e => {
+    const b = e.target.closest('.ncat-more-item');
+    if (!b) return;
+    closeNcatMore();
+    openCatPage(b.dataset.cat, null);
+  });
+  document.body.appendChild(p);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#ncatMorePanel') && !e.target.closest('#ncatMoreBtn')) closeNcatMore();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNcatMore(); });
+  window.addEventListener('scroll', closeNcatMore, { passive: true });
+  return p;
+}
+function openNcatMore() {
+  const btn = document.getElementById('ncatMoreBtn');
+  const p = getNcatPanel();
+  if (!btn || btn.style.display === 'none' || !p.querySelector('.ncat-more-item')) return;
+  clearTimeout(_ncatMoreTimer);
+  p.classList.add('open');
+  const r = btn.getBoundingClientRect();
+  p.style.top = (r.bottom - 1) + 'px';
+  p.style.left = Math.max(8, Math.min(r.left, window.innerWidth - p.offsetWidth - 8)) + 'px';
+  btn.classList.add('open');
+  btn.setAttribute('aria-expanded', 'true');
+}
+function closeNcatMore() {
+  clearTimeout(_ncatMoreTimer);
+  const p = document.getElementById('ncatMorePanel');
+  const btn = document.getElementById('ncatMoreBtn');
+  if (p) p.classList.remove('open');
+  if (btn) { btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+}
+function scheduleCloseNcatMore() {
+  clearTimeout(_ncatMoreTimer);
+  _ncatMoreTimer = setTimeout(closeNcatMore, 160);
+}
+
+function layoutNavCats() {
+  const bar  = document.getElementById('navCatsBar');
+  const more = document.getElementById('ncatMoreBtn');
+  if (!bar || !more) return;
+  if (!bar.clientWidth) return; // bar is hidden on this page — keep previous layout
+
+  const { pinned, unpinned } = splitNavCats();
+  const items  = [...bar.querySelectorAll('.ncat[data-cat]')];
+  const allBtn = bar.querySelector('.ncat:not([data-cat]):not(.ncat-more-btn)');
+  const desktop = window.matchMedia('(min-width:881px)').matches;
+
+  items.forEach(b => { b.style.display = ''; });
+  more.style.display = '';
+
+  const w = el => el.offsetWidth + (parseFloat(getComputedStyle(el).marginLeft) || 0) + (parseFloat(getComputedStyle(el).marginRight) || 0);
+  let cut = items.length; // how many pinned items stay visible in the bar
+
+  if (desktop) {
+    const cs = getComputedStyle(bar);
+    const avail = bar.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    const base = allBtn ? w(allBtn) : 0;
+    const widths = items.map(w);
+    const sumAll = base + widths.reduce((a, b) => a + b, 0);
+    if (sumAll > avail || unpinned.length) {
+      let t = base + w(more);
+      for (cut = 0; cut < items.length; cut++) {
+        if (t + widths[cut] > avail) break;
+        t += widths[cut];
+      }
+    }
+  }
+  items.forEach((b, i) => { b.style.display = i < cut ? '' : 'none'; });
+
+  const hidden = [...pinned.slice(cut), ...unpinned];
+  const p = getNcatPanel();
+  if (!hidden.length) {
+    more.style.display = 'none';
+    p.innerHTML = '';
+    closeNcatMore();
+    return;
+  }
+  more.style.display = '';
+  p.innerHTML = '<div class="ncat-more-head">আরও ক্যাটাগরি</div>' + hidden.map(c => {
+    const col = _ncatColor(c.color);
+    return `<button type="button" class="ncat-more-item" role="menuitem" data-cat="${_ncatEsc(c.name)}">
+      <span class="ico" style="background:${col}1a;color:${col}"><i class="fa-solid ${_ncatEsc(c.icon || 'fa-box')}"></i></span>
+      <span class="bn">${_ncatEsc(c.name)}</span></button>`;
+  }).join('');
+}
+
 function renderCategoryNav() {
   const bar = document.getElementById('navCatsBar');
   if (!bar) return;
-  const allBtn = bar.querySelector('.ncat'); // preserve the static "সব" (All) button + its active state
+  const allBtn = bar.querySelector('.ncat:not([data-cat]):not(.ncat-more-btn)'); // preserve the static "সব" (All) button + its active state
   bar.innerHTML = '';
   if (allBtn) bar.appendChild(allBtn);
-  allCategories.forEach(c => {
+  bar.classList.add('nav-managed');
+
+  splitNavCats().pinned.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'ncat';
+    btn.dataset.cat = c.name;
     btn.setAttribute('onclick', `openCatPage(${JSON.stringify(c.name)},this)`);
     btn.innerHTML = `<i class="fa-solid ${c.icon || 'fa-box'}"></i>
       <svg class="svg-icon mob-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${catIconSvg(c.icon)}</svg>
       ${c.name}`;
     bar.appendChild(btn);
   });
+
+  // "আরও" (More) button — hover on desktop, tap on touch screens
+  const more = document.createElement('button');
+  more.type = 'button';
+  more.id = 'ncatMoreBtn';
+  more.className = 'ncat ncat-more-btn';
+  more.style.display = 'none';
+  more.setAttribute('aria-haspopup', 'true');
+  more.setAttribute('aria-expanded', 'false');
+  more.innerHTML = `<i class="fa-solid fa-ellipsis"></i>
+    <svg class="svg-icon mob-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+    <span>আরও</span><i class="fa-solid fa-angle-down ncat-chev"></i>`;
+  const canHover = () => window.matchMedia('(hover:hover)').matches;
+  more.addEventListener('mouseenter', () => { if (canHover()) openNcatMore(); });
+  more.addEventListener('mouseleave', () => { if (canHover()) scheduleCloseNcatMore(); });
+  more.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = document.getElementById('ncatMorePanel')?.classList.contains('open');
+    if (isOpen && !canHover()) closeNcatMore(); else openNcatMore();
+  });
+  bar.appendChild(more);
+
+  layoutNavCats();
+  if (!_ncatRO && 'ResizeObserver' in window) {
+    let raf = 0;
+    _ncatRO = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(layoutNavCats); });
+    _ncatRO.observe(bar);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutNavCats);
 }
 
 function renderSidebarCatChips() {
