@@ -6327,7 +6327,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
       <span class="bc-current" id="catPageBreadcrumb">ক্যাটাগরি</span>
     </nav>
     <div style="margin-left:auto;display:flex;align-items:center;flex-shrink:0">
-      <select class="sort-sel bn" id="catPageSort" onchange="renderCatPageProducts()" style="font-size:.72rem;padding:6px 10px;max-width:160px">
+      <select class="sort-sel bn" id="catPageSort" onchange="catSortChanged()" style="font-size:.72rem;padding:6px 10px;max-width:160px">
         <option value="popular">জনপ্রিয়</option>
         <option value="low">দাম: কম → বেশি</option>
         <option value="high">দাম: বেশি → কম</option>
@@ -6370,6 +6370,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   <!-- Products grid -->
   <div style="max-width:1100px;margin:24px auto;padding:0 22px 40px">
     <div class="pgrid" id="catPageGrid"></div>
+    <div class="pgn" id="catPagePager"></div>
     <div id="catPageEmpty" style="display:none;text-align:center;padding:60px 20px">
       <i class="fa-solid fa-box-open" style="font-size:3rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
       <div class="bn" style="font-size:.95rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কোনো পণ্য নেই</div>
@@ -8250,6 +8251,11 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path === '/all-products') {
+    openAllBooksPage(parseInt(new URLSearchParams(location.search).get('page')) || 1, false);
+    return;
+  }
+
   if (path.startsWith('/budget/')) {
     const br = parseBudgetKey(_safeDecode(path.replace('/budget/', '')).replace(/\/+$/, ''));
     if (br) openBudgetPage(br, false);
@@ -8907,7 +8913,7 @@ function _paintGrid(list, append) {
   else grid.innerHTML = shown.map(p => buildProductCard(p)).join('');
   const remaining = list.length - shown.length;
   if (moreWrap) moreWrap.innerHTML = remaining > 0
-    ? `<button type="button" class="grid-more-btn bn" onclick="showMoreProducts()"><i class="fa-solid fa-angles-down"></i> আরও দেখুন <span>(${remaining} টি বাকি)</span></button>`
+    ? `<button type="button" class="grid-more-btn bn" onclick="onGridMoreClick()"><i class="fa-solid fa-angles-down"></i> আরও দেখুন <span>(${remaining} টি বাকি)</span></button>`
     : '';
   renderNewReleases();
 }
@@ -9087,6 +9093,8 @@ const BUDGET_RANGES = [            // এখানের সংখ্যা ব�
   { min: 600, max: 800  },
   { min: 800, max: 1000 }
 ];
+let currentAllMode = false;       // true = "আরও দেখুন" থেকে খোলা সব-পণ্যের পেজ (পেজিনেশন সহ)
+let currentAllPage = 1;
 let currentBudget = 0;             // 0 = বাজেট মোড বন্ধ, নইলে { min, max }
 let currentBudgetCat = 'সব';
 function _bnDigits(n) { return String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
@@ -9122,7 +9130,7 @@ function renderBudgetButtons(show) {
 function openBudgetPage(key, pushUrl = true) {
   const r = typeof key === 'object' && key ? key : parseBudgetKey(key);
   if (!r) return;
-  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব';
+  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব'; currentAllMode = false;
   const title = r.min === 0 ? `${budgetLabel(r)} সেরা বই` : `${budgetLabel(r)} দামের সেরা বই`;
   document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
   document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-wallet" style="color:white;font-size:1.4rem"></i>';
@@ -9136,7 +9144,7 @@ function openBudgetPage(key, pushUrl = true) {
   openPage('category');
 }
 function resetBudgetMode() {
-  currentBudget = 0; currentBudgetCat = 'সব';
+  currentBudget = 0; currentBudgetCat = 'সব'; currentAllMode = false;
   const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = 'none';
   const top = document.getElementById('catPageSort')?.parentElement; if (top) top.style.display = '';
 }
@@ -9190,6 +9198,73 @@ document.addEventListener('click', e => {
   const b = t.closest('.bud-btn');       if (b) { openBudgetPage(b.dataset.budget); return; }
   const st = t.closest('.bud-chip[data-step]'); if (st) { openBudgetPage(st.dataset.step); return; }
   const bc = t.closest('.bud-chip[data-bcat]'); if (bc) { currentBudgetCat = bc.dataset.bcat; renderBudgetPageProducts(); }
+});
+
+/* ══════════════════════════════════════════════════
+   "আরও দেখুন" → সব পণ্যের আলাদা পেজ (/all-products?page=N), পেজিনেশন সহ।
+   • এক পেজে ALL_PAGE_SIZE টা পণ্য; বেশি হলে ১, ২, ৩… পেজ বাটন আসে
+   • সাজানো (জনপ্রিয়, দাম, রেটিং, ছাড়) আগের মতোই কাজ করে
+   ══════════════════════════════════════════════════ */
+const ALL_PAGE_SIZE = 20;          // এক পেজে কতগুলো পণ্য (এখানে বদলালেই হবে)
+function onGridMoreClick() {
+  if (isHomeDefaultView()) openAllBooksPage(1);   // ডিফল্ট হোম ভিউ → আলাদা পেজ
+  else showMoreProducts();                        // সার্চ/ফিল্টার চললে আগের মতো নিচে বাড়বে
+}
+function catSortChanged() {
+  if (currentAllMode) openAllBooksPage(1, false, true);   // সাজানো বদলালে ১ নম্বর পেজ থেকে
+  else renderCatPageProducts();
+}
+function openAllBooksPage(page = 1, pushUrl = true, keepSort = false) {
+  resetBudgetMode();
+  currentAllMode = true; currentCatPage = 'সব';
+  currentAllPage = Math.max(1, parseInt(page) || 1);
+  document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
+  document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-book-open" style="color:white;font-size:1.4rem"></i>';
+  document.getElementById('catPageTitle').textContent = 'সব পণ্য';
+  document.getElementById('catPageBreadcrumb').textContent = 'সব পণ্য';
+  if (!keepSort) document.getElementById('catPageSort').value = 'popular';
+  renderCatPageProducts();                       // এখানেই currentAllPage শেষ পেজ ছাড়িয়ে গেলে ঠিক করে নেয়
+  const url = '/all-products' + (currentAllPage > 1 ? '?page=' + currentAllPage : '');
+  _navTo({ page: 'category', cat: 'সব', all: currentAllPage }, 'সব পণ্য — বুক গ্যালাক্সি', url, pushUrl);
+  _setMeta('বুক গ্যালাক্সি-র সব বই ও পণ্য এক জায়গায়। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।', '/all-products' + (currentAllPage > 1 ? '?page=' + currentAllPage : ''));
+  openPage('category');
+  const pg = document.getElementById('page-category'); if (pg) pg.scrollTop = 0;
+}
+function renderAllPageProducts() {
+  const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
+  const pager = document.getElementById('catPagePager');
+  const sort = document.getElementById('catPageSort')?.value || 'popular';
+  const price = p => getEffectiveSalePrice(p).displayPrice;
+  const list = [...products];
+  if (sort === 'low') list.sort((a, b) => price(a) - price(b));
+  else if (sort === 'high') list.sort((a, b) => price(b) - price(a));
+  else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4) || popularCmp(a, b));
+  else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
+  else list.sort(popularCmp);
+
+  const total = Math.max(1, Math.ceil(list.length / ALL_PAGE_SIZE));
+  if (currentAllPage > total) currentAllPage = total;
+  const subtitle = document.getElementById('catPageSubtitle');
+  if (subtitle) subtitle.textContent = `${list.length} টি পণ্য` + (total > 1 ? ` · পেজ ${_bnDigits(currentAllPage)} / ${_bnDigits(total)}` : '');
+  if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; if (pager) pager.innerHTML = ''; return; }
+  empty.style.display = 'none';
+  const start = (currentAllPage - 1) * ALL_PAGE_SIZE;
+  grid.innerHTML = list.slice(start, start + ALL_PAGE_SIZE).map(p => buildProductCard(p)).join('');
+  if (!pager) return;
+  if (total <= 1) { pager.innerHTML = ''; return; }
+  const nums = [];
+  for (let i = 1; i <= total; i++) if (i === 1 || i === total || Math.abs(i - currentAllPage) <= 1) nums.push(i);
+  const items = [];
+  nums.forEach((n, i) => { if (i && n - nums[i - 1] > 1) items.push('…'); items.push(n); });
+  pager.innerHTML =
+    `<button type="button" class="pgbtn" data-allpage="${currentAllPage - 1}" ${currentAllPage === 1 ? 'disabled style="opacity:.4;cursor:default"' : ''} aria-label="আগের পেজ"><i class="fa-solid fa-chevron-left"></i></button>` +
+    items.map(n => n === '…' ? '<span class="bn" style="padding:0 4px;color:var(--text-light)">…</span>'
+      : `<button type="button" class="pgbtn bn${n === currentAllPage ? ' active' : ''}" data-allpage="${n}">${_bnDigits(n)}</button>`).join('') +
+    `<button type="button" class="pgbtn" data-allpage="${currentAllPage + 1}" ${currentAllPage === total ? 'disabled style="opacity:.4;cursor:default"' : ''} aria-label="পরের পেজ"><i class="fa-solid fa-chevron-right"></i></button>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('#catPagePager .pgbtn[data-allpage]');
+  if (b && !b.disabled && currentAllMode) openAllBooksPage(parseInt(b.dataset.allpage), true, true);
 });
 
 function getFiltered() {
@@ -9545,7 +9620,7 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
-  if (name === 'category' && /^\/(category|budget)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
+  if (name === 'category' && /^\/(category|budget|all-products)(\/|$)/.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'author' && /^\/(author|publisher|subcategory)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
@@ -15081,7 +15156,9 @@ function closeCatPage() {
 }
 
 function renderCatPageProducts() {
+  const _pgr = document.getElementById('catPagePager'); if (_pgr) _pgr.innerHTML = '';
   if (currentBudget) return renderBudgetPageProducts();
+  if (currentAllMode) return renderAllPageProducts();
   const grid  = document.getElementById('catPageGrid');
   const empty = document.getElementById('catPageEmpty');
   if (empty && empty.lastElementChild) empty.lastElementChild.textContent = 'এই ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি';
@@ -16273,6 +16350,9 @@ window.addEventListener('popstate', function(e) {
   } else if (state.page === 'wishlist') {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
     else document.title = 'বুক গ্যালাক্সি';
+
+  } else if (state.page === 'category' && state.all) {
+    openAllBooksPage(state.all, false, true);
 
   } else if (state.page === 'category' && state.budget) {
     openBudgetPage(state.budget, false);
