@@ -15435,40 +15435,71 @@ window.addEventListener('popstate', function(e) {
 
 /* Overlay (light, brand-matched) */
 .bf-ov{position:fixed;inset:0;z-index:10050;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;color:var(--text,#1E293B);
-  background:radial-gradient(80% 50% at 85% 0%,rgba(245,166,35,.14),transparent 60%),linear-gradient(180deg,#FBF1F1,#F6DEDE)}
+  background:radial-gradient(70% 45% at 85% 0%,rgba(245,166,35,.18),transparent 65%),radial-gradient(60% 50% at 0% 100%,rgba(170,44,45,.12),transparent 65%),linear-gradient(180deg,#FDF6F6,#F6DEDE)}
 .bf-ov.open{display:block;animation:bfIn .3s ease both}
 @keyframes bfIn{from{opacity:0;transform:translateY(10px)}}
-.bf-shell{position:relative;max-width:980px;margin:0 auto;padding:16px 18px 60px;min-height:100%}
-.bf-top{display:flex;align-items:center;gap:14px;margin-bottom:24px}
-.bf-brand{font-family:'Sora',sans-serif;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px;white-space:nowrap;color:var(--blue,#AA2C2D)}
+.bf-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.bf-bg i{position:absolute;color:var(--blue,#AA2C2D);opacity:.07}
+.bf-bg .k1{font-size:11rem;left:-2%;bottom:6%;transform:rotate(-14deg)}
+.bf-bg .k2{font-size:8rem;right:3%;top:16%;transform:rotate(18deg)}
+.bf-bg .k3{font-size:7rem;right:10%;bottom:8%;transform:rotate(10deg)}
+.bf-bg .k4{font-size:3.2rem;left:9%;top:22%;color:var(--gold,#F5A623);opacity:.25;animation:bfTw 4s ease-in-out infinite}
+@keyframes bfTw{50%{opacity:.08;transform:scale(.8)}}
+.bf-shell{position:relative;max-width:1060px;margin:0 auto;padding:14px 20px 40px;min-height:100%;display:flex;flex-direction:column}
+/* top bar */
+.bf-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}
+.bf-brand{font-family:'Sora',sans-serif;font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:8px;white-space:nowrap;color:var(--blue,#AA2C2D);background:#fff;border:1px solid var(--blue-mid,#F5D6D6);padding:7px 16px;border-radius:99px;box-shadow:0 2px 10px rgba(170,44,45,.1)}
 .bf-brand i{color:var(--gold,#F5A623)}
-.bf-progress{flex:1;height:7px;border-radius:99px;background:rgba(170,44,45,.15);overflow:hidden}
-.bf-progress i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--blue,#AA2C2D),var(--gold,#F5A623));transition:width .45s ease}
-.bf-x{width:38px;height:38px;border-radius:50%;border:1px solid var(--blue-mid,#F5D6D6);background:#fff;color:var(--blue,#AA2C2D);font-size:1rem;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(170,44,45,.12)}
-.bf-x:hover{background:var(--blue,#AA2C2D);color:#fff}
-.bf-stage{animation:bfStep .35s ease both}
+.bf-x{width:40px;height:40px;border-radius:50%;border:1px solid var(--blue-mid,#F5D6D6);background:#fff;color:var(--blue,#AA2C2D);font-size:1rem;cursor:pointer;flex-shrink:0;box-shadow:0 2px 10px rgba(170,44,45,.12);transition:all .2s}
+.bf-x:hover{background:var(--blue,#AA2C2D);color:#fff;transform:rotate(90deg)}
+/* stepper */
+.bf-steps{display:flex;align-items:center;gap:8px}
+.bf-st{display:flex;align-items:center;gap:8px;color:var(--text-light,#94A3B8)}
+.bf-st span{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;background:#fff;border:1.5px solid var(--blue-mid,#F5D6D6);transition:all .3s}
+.bf-st em{font-style:normal;font-size:.85rem;font-weight:600;line-height:1}
+.bf-st.act{color:var(--blue,#AA2C2D)}
+.bf-st.act span{background:var(--blue,#AA2C2D);border-color:var(--blue,#AA2C2D);color:#fff;box-shadow:0 0 0 5px rgba(170,44,45,.15)}
+.bf-st.done{color:#059669;cursor:pointer}
+.bf-st.done span{background:#10B981;border-color:#10B981;color:#fff}
+.bf-st.done:hover span{transform:scale(1.1)}
+.bf-line{display:block;width:44px;height:3px;border-radius:3px;background:var(--blue-mid,#F5D6D6);position:relative;overflow:hidden}
+.bf-line::after{content:"";position:absolute;inset:0;background:#10B981;transform:scaleX(0);transform-origin:left;transition:transform .45s}
+.bf-line.done::after{transform:scaleX(1)}
+/* stage */
+.bf-stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 0 20px;animation:bfStep .35s ease both}
 @keyframes bfStep{from{opacity:0;transform:translateY(12px)}}
-.bf-step-tag{display:inline-block;font-size:.8rem;color:var(--blue,#AA2C2D);background:#fff;border:1px solid var(--blue-mid,#F5D6D6);padding:1px 12px;border-radius:99px;margin-bottom:10px;font-weight:600}
-.bf-q{font-size:clamp(1.35rem,3.4vw,2rem);font-weight:700;line-height:1.45;margin:0 0 4px;color:#2b1516}
-.bf-qs{color:var(--text-mid,#475569);margin:0 0 20px;font-size:1rem}
-.bf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-.bf-opt{position:relative;text-align:left;cursor:pointer;color:var(--text,#1E293B);font-family:inherit;padding:16px 16px 14px;border-radius:16px;background:#fff;border:1.5px solid var(--blue-mid,#F5D6D6);box-shadow:0 2px 10px rgba(170,44,45,.07);transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
-.bf-opt:hover,.bf-opt:focus-visible{transform:translateY(-3px);border-color:var(--blue,#AA2C2D);box-shadow:0 10px 24px rgba(170,44,45,.18);outline:none}
-.bf-opt.sel{border-color:var(--blue,#AA2C2D);background:var(--blue-light,#FBF1F1)}
-.bf-opt .e{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;background:var(--blue-light,#FBF1F1);margin-bottom:8px}
-.bf-opt .e i{font-size:1.35rem;color:var(--blue,#AA2C2D)}
-.bf-opt b{display:block;font-size:1.02rem;line-height:1.5;color:#2b1516}
-.bf-opt small{display:block;color:var(--text-mid,#475569);font-size:.85rem;line-height:1.5;margin-top:2px}
-.bf-opt .n{position:absolute;top:12px;right:14px;font-size:.72rem;color:var(--text-light,#94A3B8);font-family:'Inter',sans-serif}
-.bf-nav{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
-.bf-link{background:none;border:0;color:var(--blue,#AA2C2D);cursor:pointer;font-size:.95rem;padding:8px 4px;font-family:inherit;font-weight:600}
-.bf-link:hover{text-decoration:underline}
-.bf-magic{text-align:center;padding:70px 10px}
-.bf-magic .orb{width:70px;height:70px;margin:0 auto 20px;border-radius:50%;border:6px solid var(--blue-mid,#F5D6D6);border-top-color:var(--blue,#AA2C2D);border-right-color:var(--gold,#F5A623);animation:bfSpin .9s linear infinite}
+.bf-center{text-align:center;align-items:center}
+.bf-step-tag{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--blue,#AA2C2D);background:#fff;border:1px solid var(--blue-mid,#F5D6D6);padding:1px 14px;border-radius:99px;margin-bottom:12px;font-weight:600;box-shadow:0 2px 8px rgba(170,44,45,.08)}
+.bf-q{font-size:clamp(1.5rem,3.6vw,2.3rem);font-weight:700;line-height:1.4;margin:0 0 6px;color:#2b1516}
+.bf-qs{color:var(--text-mid,#475569);margin:0 0 28px;font-size:1.02rem}
+.bf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:14px;width:100%;max-width:980px;margin:0 auto;text-align:left}
+.bf-opt{position:relative;cursor:pointer;color:var(--text,#1E293B);font-family:inherit;padding:18px 18px 16px;border-radius:18px;background:#fff;border:1.5px solid var(--blue-mid,#F5D6D6);box-shadow:0 3px 12px rgba(170,44,45,.08);transition:transform .22s,border-color .22s,box-shadow .22s,background .22s;animation:bfPop .45s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes bfPop{from{opacity:0;transform:translateY(16px) scale(.96)}}
+.bf-opt:nth-child(2){animation-delay:.04s}.bf-opt:nth-child(3){animation-delay:.08s}.bf-opt:nth-child(4){animation-delay:.12s}.bf-opt:nth-child(5){animation-delay:.16s}.bf-opt:nth-child(6){animation-delay:.2s}.bf-opt:nth-child(7){animation-delay:.24s}.bf-opt:nth-child(8){animation-delay:.28s}.bf-opt:nth-child(n+9){animation-delay:.32s}
+.bf-opt::after{content:"\f061";font-family:"Font Awesome 6 Free";font-weight:900;position:absolute;right:16px;bottom:14px;font-size:.85rem;color:var(--blue,#AA2C2D);opacity:0;transform:translateX(-8px);transition:all .22s}
+.bf-opt:hover,.bf-opt:focus-visible{transform:translateY(-5px);border-color:var(--blue,#AA2C2D);box-shadow:0 14px 30px rgba(170,44,45,.2);outline:none}
+.bf-opt:hover::after,.bf-opt:focus-visible::after{opacity:1;transform:none}
+.bf-opt.sel{border-color:var(--blue,#AA2C2D);background:var(--blue-light,#FBF1F1);box-shadow:0 0 0 3px rgba(170,44,45,.15)}
+.bf-opt .e{display:flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:15px;margin-bottom:12px;background:linear-gradient(135deg,var(--blue,#AA2C2D),#D9585A);box-shadow:0 6px 14px rgba(170,44,45,.3);transition:transform .25s}
+.bf-opt:hover .e{transform:rotate(-8deg) scale(1.08)}
+.bf-opt .e i{font-size:1.4rem;color:#fff}
+.bf-opt b{display:block;font-size:1.04rem;line-height:1.5;color:#2b1516}
+.bf-opt small{display:block;color:var(--text-mid,#475569);font-size:.86rem;line-height:1.5;margin-top:2px;padding-right:18px}
+.bf-opt .n{position:absolute;top:14px;right:14px;font-size:.7rem;color:var(--blue,#AA2C2D);background:var(--blue-light,#FBF1F1);border-radius:99px;padding:0 8px;font-family:'Inter',sans-serif;font-weight:600}
+.bf-hint{margin:26px 0 0;font-size:.88rem;color:var(--text-mid,#475569);opacity:.85}
+.bf-hint i{color:var(--blue,#AA2C2D);margin-right:6px}
+.bf-nav{display:flex;gap:10px;margin-top:14px;justify-content:center}
+.bf-link{background:#fff;border:1px solid var(--blue-mid,#F5D6D6);color:var(--blue,#AA2C2D);cursor:pointer;font-size:.92rem;padding:5px 18px;border-radius:99px;font-family:inherit;font-weight:600}
+.bf-link:hover{background:var(--blue-light,#FBF1F1)}
+.bf-magic{text-align:center;padding:60px 10px}
+.bf-magic .orb{width:72px;height:72px;margin:0 auto 20px;border-radius:50%;border:6px solid var(--blue-mid,#F5D6D6);border-top-color:var(--blue,#AA2C2D);border-right-color:var(--gold,#F5A623);animation:bfSpin .9s linear infinite}
 @keyframes bfSpin{to{transform:rotate(360deg)}}
 .bf-magic p{font-size:1.1rem;color:var(--blue-dark,#711D1E)}
-.bf-sum{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 20px}
-.bf-sum span{font-size:.85rem;background:#fff;border:1px solid var(--blue-mid,#F5D6D6);color:var(--text-mid,#475569);padding:1px 12px;border-radius:99px;line-height:1.9}
+/* results */
+.bf-wide{width:100%;max-width:860px;margin:0 auto;justify-content:flex-start;padding-top:8px}
+.bf-wide .bf-q,.bf-wide .bf-qs{text-align:center}
+.bf-sum{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px;justify-content:center}
+.bf-sum span{font-size:.85rem;background:#fff;border:1px solid var(--blue-mid,#F5D6D6);color:var(--text-mid,#475569);padding:1px 14px;border-radius:99px;line-height:1.9}
 .bf-sum span i{color:var(--blue,#AA2C2D);margin-right:4px}
 .bf-note{background:var(--gold-light,#FEF3C7);border:1px solid #FCD34D;color:#92400E;padding:10px 14px;border-radius:12px;margin-bottom:16px;font-size:.92rem}
 .bf-list{display:grid;gap:16px}
@@ -15505,24 +15536,40 @@ window.addEventListener('popstate', function(e) {
 .bf-cart:hover{background:var(--blue-light,#FBF1F1)}
 .bf-buy:hover,.bf-cart:hover{transform:translateY(-2px)}
 .bf-buy .bn,.bf-cart .bn{line-height:1.5}
-.bf-foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.bf-foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;justify-content:center}
 .bf-btn2{font-family:inherit;font-size:.95rem;font-weight:600;color:var(--blue,#AA2C2D);background:#fff;border:1.5px solid var(--blue-mid,#F5D6D6);border-radius:99px;padding:9px 20px;cursor:pointer}
 .bf-btn2:hover{border-color:var(--blue,#AA2C2D);background:var(--blue-light,#FBF1F1)}
-.bf-empty{text-align:center;padding:46px 10px;color:var(--text-mid,#475569)}
+.bf-empty{text-align:center;padding:30px 10px;color:var(--text-mid,#475569)}
 .bf-empty .big i{font-size:2.6rem;color:var(--blue,#AA2C2D);opacity:.7;margin-bottom:8px}
-@media(max-width:560px){.bf-res{grid-template-columns:100px 1fr;gap:12px;padding:12px}.bf-grid{grid-template-columns:1fr 1fr;gap:10px}.bf-opt{padding:12px}.bf-opt .e{width:38px;height:38px}.bf-brand span{display:none}}
-@media(prefers-reduced-motion:reduce){.bf-shine,.bf-strip-ic i,.bf-cta,.bf-fab,.bf-fab i{animation:none!important}}
+@media(max-width:700px){
+  .bf-shell{padding:12px 14px 30px}
+  .bf-brand span{display:none}.bf-brand{padding:9px 12px}
+  .bf-st em{display:none}.bf-line{width:26px}
+  .bf-stage{justify-content:flex-start;padding-top:18px}
+  .bf-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .bf-opt{padding:14px 12px 12px}.bf-opt .e{width:40px;height:40px;border-radius:12px;margin-bottom:8px}.bf-opt .e i{font-size:1.15rem}
+  .bf-opt b{font-size:.95rem}.bf-opt small{font-size:.78rem;padding-right:0}.bf-opt::after{display:none}
+  .bf-res{grid-template-columns:100px 1fr;gap:12px;padding:12px}
+}
+@media(prefers-reduced-motion:reduce){.bf-shine,.bf-strip-ic i,.bf-cta,.bf-fab,.bf-fab i,.bf-bg .k4,.bf-opt{animation:none!important}}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
 <button type="button" class="bf-fab" onclick="openBookFinder()" aria-label="Magical Book Finder খুলুন" title="কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">বই খুঁজুন</span></button>
 <div id="bfOv" class="bf-ov" role="dialog" aria-modal="true" aria-labelledby="bfTitle" aria-hidden="true">
+  <div class="bf-bg" aria-hidden="true"><i class="fa-solid fa-book-open k1"></i><i class="fa-solid fa-feather-pointed k2"></i><i class="fa-solid fa-book-bookmark k3"></i><i class="fa-solid fa-star k4"></i></div>
   <div class="bf-shell">
-    <header class="bf-top">
+    <div class="bf-top">
       <div class="bf-brand"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Magical Book Finder</span></div>
-      <div class="bf-progress" aria-hidden="true"><i id="bfBar"></i></div>
+      <div class="bf-steps" id="bfSteps" aria-label="ধাপ">
+        <div class="bf-st act" data-i="0"><span><i class="fa-solid fa-masks-theater"></i></span><em class="bn">মুড</em></div>
+        <i class="bf-line"></i>
+        <div class="bf-st" data-i="1"><span><i class="fa-solid fa-layer-group"></i></span><em class="bn">ধরন</em></div>
+        <i class="bf-line"></i>
+        <div class="bf-st" data-i="2"><span><i class="fa-solid fa-wallet"></i></span><em class="bn">বাজেট</em></div>
+      </div>
       <button type="button" class="bf-x" onclick="closeBookFinder()" aria-label="বন্ধ করুন"><i class="fa-solid fa-xmark"></i></button>
-    </header>
-    <main id="bfStage" class="bf-stage" aria-live="polite"></main>
+    </div>
+    <div id="bfStage" class="bf-stage bf-center" role="region" aria-live="polite"></div>
   </div>
 </div>
 <script>
@@ -15643,22 +15690,30 @@ function recommend(a,noMood){
 }
 
 /* ───── Rendering ───── */
-function setBar(i){var b=$('bfBar');if(b)b.style.width=([8,38,68,100][i]||100)+'%'}
-function stage(html){var st=$('bfStage');st.innerHTML=html;st.style.animation='none';void st.offsetWidth;st.style.animation='';$('bfOv').scrollTop=0}
+var ST_ICONS=['fa-masks-theater','fa-layer-group','fa-wallet'];
+function setBar(i){
+  var nodes=document.querySelectorAll('#bfSteps .bf-st'),lines=document.querySelectorAll('#bfSteps .bf-line');
+  nodes.forEach(function(n,k){
+    var done=k<i;n.className='bf-st'+(done?' done':'')+(k===i?' act':'');
+    n.querySelector('span').innerHTML='<i class="fa-solid '+(done?'fa-check':ST_ICONS[k])+'"></i>';
+  });
+  lines.forEach(function(l,k){l.classList.toggle('done',k<i)});
+}
+function stage(html){var st=$('bfStage');st.className='bf-stage '+(html.indexOf('class="bf-list"')>-1?'bf-wide':'bf-center');st.innerHTML=html;st.style.animation='none';void st.offsetWidth;st.style.animation='';$('bfOv').scrollTop=0}
 function renderStep(){
   setBar(S.step);
   if(!books().length){stage('<div class="bf-empty"><div class="big"><i class="fa-solid fa-book-open"></i></div><p class="bn">এই মুহূর্তে রেকমেন্ড করার মতো বই পাওয়া যায়নি। একটু পরে আবার চেষ্টা করুন।</p></div>');return}
   var back=S.step>0?'<div class="bf-nav"><button class="bf-link bn" data-act="back"><i class="fa-solid fa-arrow-left"></i> আগের প্রশ্ন</button></div>':'';
   if(S.step===0){
     stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ আপনার মনের অবস্থা কেমন?</h2><p class="bf-qs bn">যে মুডটা সবচেয়ে কাছের মনে হয়, সেটায় ক্লিক করুন</p><div class="bf-grid">'+
-      S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>');
+      S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>');
   }else if(S.step===1){
     stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">কোন ধরনের বই পড়তে ইচ্ছে করছে?</h2><p class="bf-qs bn">নির্দিষ্ট কিছু মাথায় না থাকলে “যেকোনো ধরন” বেছে নিন</p><div class="bf-grid">'+
       '<button class="bf-opt'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><span class="e">'+ic('fa-compass')+'</span><b class="bn">যেকোনো ধরন</b><small class="bn">সব ক্যাটাগরি থেকে খুঁজুন</small></button>'+
-      S.cats.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b><span class="n">'+c.n+' books</span></button>'}).join('')+'</div>'+back);
+      S.cats.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b><span class="n">'+c.n+' books</span></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }else{
     stage('<span class="bf-step-tag bn">প্রশ্ন ৩ / ৩</span><h2 class="bf-q bn" id="bfTitle">আপনার বাজেট কত?</h2><p class="bf-qs bn">একটা বইয়ের জন্য কতটা খরচ করতে চান?</p><div class="bf-grid">'+
-      BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+ic(b.icon)+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+back);
+      BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+ic(b.icon)+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }
 }
 function catName(slug){if(slug==='any')return 'যেকোনো ধরন';var c=S.cats.find(function(x){return x.slug===slug});if(c)return c.name;var cc=(allCategories||[]).find(function(x){return catSlug(x)===slug});return cc?cc.name:slug}
@@ -15747,6 +15802,8 @@ window.bfRouteFromPath=function(path){
 /* ───── Events ───── */
 document.addEventListener('click',function(e){
   var t=e.target;if(!t.closest)return;
+  var st=t.closest('#bfSteps .bf-st.done');
+  if(st){S.noMood=false;S.step=+st.getAttribute('data-i');renderStep();return}
   var opt=t.closest('#bfStage .bf-opt');
   if(opt){
     S.a[opt.getAttribute('data-k')]=opt.getAttribute('data-v');opt.classList.add('sel');
