@@ -6086,6 +6086,7 @@ html.gm-boot #gmSplash{display:flex}
 .bg-wrap{max-width:1180px;margin:0 auto;padding:18px 16px 60px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
 body.page-blog-open #mainHeader,body.page-blog-post-open #mainHeader{display:none!important}
 body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-open .mobile-search-row,body.page-blog-post-open .social-bar,body.page-blog-post-open .nav-cats,body.page-blog-post-open .mobile-search-row{display:none!important}
+.bg-logo{height:34px;width:auto;margin-left:auto;cursor:pointer;object-fit:contain}
 .bg-hero{background:linear-gradient(135deg,#711D1E,#AA2C2D);color:#fff;padding:12px 16px;text-align:center}
 .bg-hero h1{font-size:1.25rem;margin:0 0 2px;line-height:1.5;font-family:'Hind Siliguri',sans-serif}
 .bg-hero p{margin:0 0 8px;opacity:.9;font-size:.78rem;line-height:1.4}
@@ -6146,6 +6147,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   <div class="fp-topbar">
     <button class="fp-back-btn" onclick="BG.home()"><i class="fa-solid fa-arrow-left"></i> ফিরে যান</button>
     <nav class="fp-breadcrumb"><span class="bc-link" onclick="BG.home()"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span><i class="fa-solid fa-chevron-right bc-sep"></i><span class="bc-current">ব্লগ কর্নার</span></nav>
+    <img class="bg-logo" src="/Logo.png" alt="বুক গ্যালাক্সি" onclick="BG.home()">
   </div>
   <div class="bg-hero"><h1><i class="fa-solid fa-pen-nib"></i> ব্লগ কর্নার</h1><p>বই, জ্ঞান ও ভাবনার গল্প</p>
     <div class="bg-search"><input id="bgSearch" placeholder="ব্লগ খুঁজুন..." oninput="BG.render()"></div></div>
@@ -6159,6 +6161,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   <div class="fp-topbar">
     <button class="fp-back-btn" onclick="BG.list()"><i class="fa-solid fa-arrow-left"></i> সব ব্লগ</button>
     <nav class="fp-breadcrumb"><span class="bc-link" onclick="BG.home()"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span><i class="fa-solid fa-chevron-right bc-sep"></i><span class="bc-link" onclick="BG.list()">ব্লগ কর্নার</span></nav>
+    <img class="bg-logo" src="/Logo.png" alt="বুক গ্যালাক্সি" onclick="BG.home()">
   </div>
   <div class="bg-wrap">
     <main><article class="bg-art" id="bgArt"></article></main>
@@ -16501,7 +16504,7 @@ function render(){
  document.getElementById('bgGrid').innerHTML=l.length?l.map(p=>`<div class="bg-card" onclick="BG.open('${E(p.slug)}')"><div class="bg-cover" style="${p.cover_image?`background-image:url('${E(p.cover_image)}')`:''}">${p.cover_image?'':'<i class="fa-solid fa-book-open"></i>'}</div><div class="bg-card-b"><span class="bg-cat">${E(p.category)}</span><h3>${E(p.title)}</h3><p>${E((p.excerpt||'').slice(0,110))}</p><div class="bg-meta"><span>${D(p.published_at)}</span><span><i class="fa-regular fa-eye"></i> ${N(p.views)}</span></div></div></div>`).join(''):'<div style="grid-column:1/-1;text-align:center;padding:50px;color:#94A3B8">কোনো ব্লগ পাওয়া যায়নি</div>'}
 async function list(push=true){
  _navTo({page:'blog'},'ব্লগ কর্নার — বুক গ্যালাক্সি','/blog',push);
- openPage('blog');await load();render();trend()}
+ logo();openPage('blog');await load();render();trend()}
 async function open(slug,push=true){
  await load();
  let {data:p}=await sb.from('blog_posts').select('*').eq('status','published').or(`slug.eq.${slug},short_code.eq.${slug}`).maybeSingle();
@@ -16524,7 +16527,7 @@ async function open(slug,push=true){
   <button style="background:#111" onclick="window.open('https://twitter.com/intent/tweet?url='+encodeURIComponent('${link}')+'&text='+encodeURIComponent('${E(p.title)}'))"><i class="fa-brands fa-x-twitter"></i></button>
   <div class="bg-short"><input readonly value="${link}" id="bgLink"><button onclick="BG.copy()"><i class="fa-regular fa-copy"></i> কপি</button></div></div>
  <h3 style="margin:20px 0 6px">মতামত (<span id="bgCmN">0</span>)</h3><div id="bgCm"></div>`;
- openPage('blog-post');trend();loadCm();
+ logo();openPage('blog-post');trend();loadCm();
  sb.rpc('blog_inc_views',{pid:p.id}).then(()=>{});
  document.getElementById('page-blog-post').scrollTop=0}
 async function loadCm(){
@@ -16539,6 +16542,7 @@ async function send(){
  const {error}=await sb.from('blog_comments').insert({post_id:cur.id,user_id:currentUser.id,user_name:nm,body:t});
  if(error)return T('মতামত পাঠানো যায়নি');T('মতামত যোগ হয়েছে');loadCm()}
 function copy(){const i=document.getElementById('bgLink');i.select();(navigator.clipboard?navigator.clipboard.writeText(i.value):Promise.resolve(document.execCommand('copy'))).then(()=>T('লিংক কপি হয়েছে'))}
+function logo(){const h=document.getElementById('headerLogo');if(h&&h.src)document.querySelectorAll('.bg-logo').forEach(i=>i.src=h.src)}
 function home(){closePage('blog');closePage('blog-post');history.replaceState({page:'home'},'বুক গ্যালাক্সি','/');document.title='বুক গ্যালাক্সি'}
 window.BG={list,open,home,render,send,copy,cat:c=>{cat=c;render()}};
 window.openBlogList=list;window.openBlogPost=open;
