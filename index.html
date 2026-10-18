@@ -7976,8 +7976,8 @@ async function _restorePageFromUrl() {
     return;
   }
 
-  if (path.startsWith('/author/') || path.startsWith('/publisher/')) {
-    const _kind = path.startsWith('/publisher/') ? 'publisher' : 'author';
+  if (path.startsWith('/author/') || path.startsWith('/publisher/') || path.startsWith('/subcategory/')) {
+    const _kind = path.startsWith('/publisher/') ? 'publisher' : path.startsWith('/subcategory/') ? 'subcategory' : 'author';
     const _ae = typeof window.findAuthorBySlug === 'function' ? window.findAuthorBySlug(path.replace('/' + _kind + '/', ''), _kind) : null;
     if (_ae) openAuthorPage(_ae.name, false, _kind);
     else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
@@ -8949,7 +8949,7 @@ function closePage(name) {
   }
   if (name === 'product') restoreHomeUrl();
   if (name === 'category' && _safeDecode(location.pathname).startsWith('/category/')) restoreHomeUrl();
-  if (name === 'author' && /^\/(author|publisher)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
+  if (name === 'author' && /^\/(author|publisher|subcategory)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
@@ -11769,10 +11769,13 @@ function switchPdTab(tab) {
 function buildSpecTable(p) {
   const isBook = isBookProduct(p);
   const rows = [];
-  if (p.category) rows.push(['ক্যাটাগরি', p.category]);
+  const _sx = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  if (p.category) rows.push(['ক্যাটাগরি', p.category === 'সব' ? _sx(p.category) :
+    `<span class="ap-link" role="link" tabindex="0" title="${_sx(p.category)} — সব বই দেখুন" data-a="${encodeURIComponent(p.category)}" onclick="openCatFromProduct(decodeURIComponent(this.dataset.a))" onkeydown="if(event.key==='Enter'){openCatFromProduct(decodeURIComponent(this.dataset.a))}">${_sx(p.category)}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`]);
   // Optional Sub-Category — books: the flexible tag under the genre (e.g.
   // "রোমান্টিক উপন্যাস"); General products: the ordinary sub-category select.
-  if (p.sub_category) rows.push(['সাব-ক্যাটাগরি', p.sub_category]);
+  if (p.sub_category) rows.push(['সাব-ক্যাটাগরি',
+    `<span class="ap-link" role="link" tabindex="0" title="${_sx(p.sub_category)} — সব বই দেখুন" data-a="${encodeURIComponent(p.sub_category)}" onclick="openAuthorPage(decodeURIComponent(this.dataset.a),true,'subcategory')" onkeydown="if(event.key==='Enter'){openAuthorPage(decodeURIComponent(this.dataset.a),true,'subcategory')}">${_sx(p.sub_category)}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`]);
   // Books: publisher from publisher column (separate from author/brand)
   // Others: brand column
   if (isBook && p.publisher) {
@@ -16221,11 +16224,13 @@ window.addEventListener('popstate',function(){
 
   const KIND = {
     author:    { label: 'লেখক',    icon: 'fa-pen-nib',          bookWord: 'লেখকের',    emptySub: 'এই লেখকের বই এখনো যোগ হয়নি',    titleSfx: 'লেখক' },
-    publisher: { label: 'প্রকাশনী', icon: 'fa-building-columns', bookWord: 'প্রকাশনীর', emptySub: 'এই প্রকাশনীর বই এখনো যোগ হয়নি', titleSfx: 'প্রকাশনী' }
+    publisher: { label: 'প্রকাশনী', icon: 'fa-building-columns', bookWord: 'প্রকাশনীর', emptySub: 'এই প্রকাশনীর বই এখনো যোগ হয়নি', titleSfx: 'প্রকাশনী' },
+    subcategory: { label: 'সাব-ক্যাটাগরি', icon: 'fa-bookmark', bookWord: 'সাব-ক্যাটাগরির', emptySub: 'এই সাব-ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি', titleSfx: 'সাব-ক্যাটাগরি' }
   };
 
   // একটি বইয়ের লেখক / প্রকাশনীর নামগুলো
   function namesOf(p, kind) {
+    if (kind === 'subcategory') return p && p.sub_category ? [_norm(p.sub_category)].filter(Boolean) : [];
     if (!p || !isBookProduct(p)) return [];
     if (kind === 'publisher') return p.publisher ? [_norm(p.publisher)].filter(Boolean) : [];
     return String(p.author || p.brand || '').split(/[,،]/).map(_norm).filter(Boolean);
@@ -16273,8 +16278,8 @@ window.addEventListener('popstate',function(){
 
     // Hero
     const av = document.getElementById('apAvatar');
-    if (kind === 'publisher') {
-      av.innerHTML = '<i class="fa-solid fa-building-columns" style="font-size:.78em"></i>';
+    if (kind !== 'author') {
+      av.innerHTML = '<i class="fa-solid ' + K.icon + '" style="font-size:.78em"></i>';
     } else {
       av.textContent = (typeof Intl !== 'undefined' && Intl.Segmenter)
         ? (([...new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(display)][0] || {}).segment || '')
@@ -16324,7 +16329,7 @@ window.addEventListener('popstate',function(){
         <div><div class="ap-stat-val">${s.val}</div><div class="ap-stat-lbl">${s.lbl}</div></div>
       </div>`).join('');
 
-    document.getElementById('apBooksTitle').textContent = `${_cur.name}-এর সব বই`;
+    document.getElementById('apBooksTitle').textContent = _cur.kind === 'subcategory' ? `${_cur.name}-এর সব পণ্য` : `${_cur.name}-এর সব বই`;
     document.getElementById('apBooksCount').textContent = `(${_digits(list.length)} টি)`;
 
     const grid = document.getElementById('apGrid'), empty = document.getElementById('apEmpty');
@@ -16349,7 +16354,7 @@ window.addEventListener('popstate',function(){
 
   window.copyAuthorUrl = function () {
     if (!_cur) return;
-    const url = window.location.origin + '/' + _cur.kind + '/' + encodeURIComponent(_cur.slug);
+    const url = window.location.origin + '/' + _cur.kind + '/' + _cur.slug;
     const done = () => {
       const btn = document.getElementById('apShareBtn');
       if (btn) {
