@@ -2624,9 +2624,14 @@ body {
         <div id="blList" class="panel">
           <div class="panel-header">
             <div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-pen-nib"></i></div>Blog Posts</div>
-            <button class="btn btn-primary btn-sm" onclick="BL.edit()"><i class="fa-solid fa-plus"></i> নতুন ব্লগ লিখুন</button>
+            <div style="display:flex;gap:8px"><button class="btn btn-sm" onclick="BL.cms()"><i class="fa-regular fa-comments"></i> মতামত ম্যানেজ</button><button class="btn btn-primary btn-sm" onclick="BL.edit()"><i class="fa-solid fa-plus"></i> নতুন ব্লগ লিখুন</button></div>
           </div>
           <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Link</th><th>Actions</th></tr></thead><tbody id="blBody"></tbody></table></div>
+        </div>
+        <div id="blCms" class="panel" style="display:none">
+          <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-regular fa-comments"></i></div>Blog Comments</div>
+            <button class="btn btn-sm" onclick="BL.back()"><i class="fa-solid fa-arrow-left"></i> ব্লগ লিস্ট</button></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>ব্যবহারকারী</th><th>মতামত</th><th>কোন ব্লগে</th><th>তারিখ</th><th>Actions</th></tr></thead><tbody id="blCmBody"></tbody></table></div>
         </div>
         <div id="blEditor" class="panel" style="display:none;padding:18px">
           <div style="display:flex;justify-content:space-between;margin-bottom:14px">
@@ -10687,7 +10692,20 @@ async function edit(id){
  $('blTitle').value=p.title;$('blSlug').value=p.slug;$('blCat').value=p.category;$('blAuthor').value=p.author_name||'';$('blStatus').value=p.status;$('blEx').value=p.excerpt;$('blCover').value=p.cover_image;
  $('blEd').innerHTML=p.content;src=false;$('blSrc').style.display='none';$('blEd').style.display='';
  $('blList').style.display='none';$('blEditor').style.display=''}
-function back(){$('blEditor').style.display='none';$('blList').style.display='';load()}
+function back(){$('blEditor').style.display='none';$('blCms').style.display='none';$('blList').style.display='';load()}
+let cmRows=[];
+async function cms(){$('blList').style.display='none';$('blCms').style.display='';
+ const {data,error}=await sb.from('blog_comments').select('id,user_name,body,created_at,edited_at,blog_posts(title,slug)').order('created_at',{ascending:false});
+ if(error){$('blCmBody').innerHTML=`<tr><td colspan="5" style="padding:30px;text-align:center">${E(error.message)}</td></tr>`;return}
+ cmRows=data||[];
+ $('blCmBody').innerHTML=cmRows.map(c=>`<tr><td>${E(c.user_name)}</td><td style="max-width:360px;white-space:pre-wrap;font-family:var(--font-bn)">${E(c.body)}${c.edited_at?' <small>(সম্পাদিত)</small>':''}</td><td>${c.blog_posts?`<a href="/blog/${E(c.blog_posts.slug)}" target="_blank">${E(c.blog_posts.title)}</a>`:'—'}</td><td>${new Date(c.created_at).toLocaleDateString('bn-BD')}</td>
+ <td><button class="btn btn-sm" onclick="BL.cmEdit('${c.id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm" onclick="BL.cmDel('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="5" style="padding:30px;text-align:center">কোনো মতামত নেই</td></tr>'}
+async function cmEdit(id){const c=cmRows.find(x=>x.id===id);const t=prompt('মতামত এডিট করুন:',c.body);if(t==null||!t.trim())return;
+ const {error}=await sb.from('blog_comments').update({body:t.trim(),edited_at:new Date().toISOString()}).eq('id',id);
+ if(error)toast('Failed',error.message,'error');else{toast('Updated');cms()}}
+async function cmDel(id){if(!confirm('মতামতটি ডিলিট করবেন?'))return;
+ const {error}=await sb.from('blog_comments').delete().eq('id',id);
+ if(error)toast('Failed',error.message,'error');else{toast('Deleted');cms()}}
 async function save(status){
  if(src)cmd('source');
  const title=$('blTitle').value.trim();if(!title){toast('Validation','শিরোনাম দিন','error');return}
@@ -10703,7 +10721,7 @@ async function save(status){
  if(r.error){toast('Save failed',r.error.message,'error');return}
  $('blId').value=r.data.id;toast(status==='published'?'Published ✅':'Draft saved')}
 async function del(id){if(!confirm('এই ব্লগ ডিলিট করবেন?'))return;await sb.from('blog_posts').delete().eq('id',id);load()}
-window.BL={cmd,img,cover,edit,back,save,del,load};
+window.BL={cmd,img,cover,edit,back,save,del,load,cms,cmEdit,cmDel};
 })();
 </script>
 
