@@ -2388,22 +2388,56 @@ body {
               ⚠ Settings are saved in localStorage. After rotating Supabase keys, paste the new key here and save.
             </div>
             <div style="font-size:0.7rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.9;margin-top:6px">
-              📋 <b style="color:var(--cyan)">visitor_logs</b> table SQL — Supabase SQL Editor-এ একবার রান করো:<br><br>
-              <span style="color:var(--purple)">CREATE TABLE IF NOT EXISTS</span> visitor_logs (<br>
-              &nbsp;&nbsp;id uuid DEFAULT gen_random_uuid() PRIMARY KEY,<br>
-              &nbsp;&nbsp;session_id text UNIQUE NOT NULL,<br>
-              &nbsp;&nbsp;created_at timestamptz DEFAULT now(),<br>
-              &nbsp;&nbsp;last_seen timestamptz DEFAULT now(),<br>
-              &nbsp;&nbsp;page text,<br>
-              &nbsp;&nbsp;is_active boolean DEFAULT true<br>
-              );<br>
-              <span style="color:var(--purple)">CREATE INDEX IF NOT EXISTS</span> idx_vl_created ON visitor_logs(created_at);<br>
-              <span style="color:var(--purple)">CREATE INDEX IF NOT EXISTS</span> idx_vl_lastseen ON visitor_logs(last_seen);<br>
-              <span style="color:var(--purple)">ALTER TABLE</span> visitor_logs <span style="color:var(--purple)">ENABLE ROW LEVEL SECURITY</span>;<br>
-              <span style="color:var(--green)">-- anon ইউজার insert/update করতে পারবে (ভিজিটর ট্র্যাকিং)</span><br>
-              <span style="color:var(--purple)">CREATE POLICY</span> "anon_insert" ON visitor_logs FOR INSERT TO anon WITH CHECK (true);<br>
-              <span style="color:var(--purple)">CREATE POLICY</span> "anon_update" ON visitor_logs FOR UPDATE TO anon USING (true);<br>
-              <span style="color:var(--purple)">CREATE POLICY</span> "auth_read" ON visitor_logs FOR SELECT TO authenticated USING (true);
+              📋 <b style="color:var(--cyan)">visitor_logs</b> table SQL — Supabase SQL Editor-এ একবার রান করো (বারবার রান করলেও সমস্যা নেই):<pre style="white-space:pre-wrap;margin:10px 0 0;font-family:var(--mono);font-size:0.7rem;line-height:1.7;user-select:all">-- ============================================================
+-- visitor_logs: pura setup (safe — bar bar run korleo error dibe na)
+-- Supabase → SQL Editor → paste → Run
+-- ============================================================
+
+create table if not exists public.visitor_logs (
+  id          uuid primary key default gen_random_uuid(),
+  session_id  text unique not null,
+  created_at  timestamptz default now(),
+  last_seen   timestamptz default now(),
+  page        text,
+  is_active   boolean default true
+);
+
+create index if not exists idx_vl_created  on public.visitor_logs (created_at);
+create index if not exists idx_vl_lastseen on public.visitor_logs (last_seen);
+
+alter table public.visitor_logs enable row level security;
+
+-- ager (bhul) policy gulo muche fela
+drop policy if exists &quot;anon_insert&quot; on public.visitor_logs;
+drop policy if exists &quot;anon_update&quot; on public.visitor_logs;
+drop policy if exists &quot;auth_read&quot;   on public.visitor_logs;
+drop policy if exists &quot;vl_insert&quot;   on public.visitor_logs;
+drop policy if exists &quot;vl_select&quot;   on public.visitor_logs;
+drop policy if exists &quot;vl_update&quot;   on public.visitor_logs;
+
+-- anon (login chhara) AND authenticated (login kora customer) duijon-i track hobe
+create policy &quot;vl_insert&quot; on public.visitor_logs
+  for insert to anon, authenticated with check (true);
+
+-- UPDATE ... WHERE session_id = ... cholte SELECT policy lage; eta chhara heartbeat/live count kaj kore na
+create policy &quot;vl_select&quot; on public.visitor_logs
+  for select to anon, authenticated using (true);
+
+create policy &quot;vl_update&quot; on public.visitor_logs
+  for update to anon, authenticated using (true) with check (true);
+
+-- shudhu last_seen ar is_active update kora jabe, onno kono column na
+revoke update on public.visitor_logs from anon, authenticated;
+grant  update (last_seen, is_active) on public.visitor_logs to anon, authenticated;
+grant  select, insert on public.visitor_logs to anon, authenticated;
+
+-- admin dashboard-er realtime (naya visitor ashle auto update) cholar jonno
+do $$
+begin
+  alter publication supabase_realtime add table public.visitor_logs;
+exception when duplicate_object then null;
+end $$;
+</pre>
             </div>
           </div>
         </div>
