@@ -15626,6 +15626,28 @@ window.addEventListener('popstate', function(e) {
   .bf-opt b{font-size:.95rem}.bf-opt small{font-size:.78rem;padding-right:0}.bf-opt::after{display:none}
   .bf-res{grid-template-columns:100px 1fr;gap:12px;padding:12px}
 }
+
+/* ── Finder v2: 'নিশ্চিত নই' অপশন, স্কিপ বাটন, মোবাইল গ্রিড ── */
+.bf-litewrap{text-align:center;margin-top:16px}
+.bf-lite{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-weight:600;font-size:.92rem;color:var(--blue,#AA2C2D);background:rgba(255,255,255,.8);border:1.5px dashed var(--blue,#AA2C2D);border-radius:99px;padding:9px 22px;cursor:pointer;transition:transform .2s,background .2s}
+.bf-lite:hover,.bf-lite:focus-visible,.bf-lite.sel{background:var(--blue-light,#FBF1F1);transform:translateY(-2px);outline:none}
+.bf-lite .bn{line-height:1.5}
+.bf-skip{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-weight:600;font-size:.85rem;padding:8px 14px;border-radius:99px;cursor:pointer;color:#64748B;background:#fff;border:1.5px dashed #CBD5E1;transition:transform .2s,color .2s,border-color .2s}
+.bf-skip:hover{color:var(--blue,#AA2C2D);border-color:var(--blue,#AA2C2D);transform:translateY(-2px)}
+.bf-skipnote{max-width:640px;margin:14px auto 0;text-align:center;font-size:.82rem;line-height:1.6;color:var(--text-mid,#475569)}
+.bf-skipnote i{color:var(--blue,#AA2C2D);margin-right:5px}
+@media(min-width:1000px){.bf-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){
+  .bf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .bf-grid .bf-opt:last-child:nth-child(odd){grid-column:1/-1}
+  .bf-opt .n{top:8px;right:8px;font-size:.62rem;padding:0 6px}
+  .bf-opt b{overflow-wrap:anywhere}
+  .bf-lite{width:100%;justify-content:center;padding:11px 14px;font-size:.88rem}
+  .bf-res{grid-template-columns:92px 1fr}
+  .bf-actions{gap:8px}.bf-buy,.bf-cart,.bf-skip{padding:8px 13px;font-size:.82rem}
+  .bf-skip{width:100%;justify-content:center}
+}
+@media(max-width:380px){.bf-opt{padding:12px 10px 10px}.bf-opt b{font-size:.86rem}.bf-opt small{font-size:.72rem}}
 @media(prefers-reduced-motion:reduce){.bf-shine,.bf-strip-ic i,.bf-cta,.bf-fab,.bf-fab i,.bf-bg .k4,.bf-opt{animation:none!important}}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
@@ -15669,7 +15691,7 @@ var DEFAULT_MOODS=[
  {slug:'nostalgia',name:'নস্টালজিয়া',icon:'fa-cloud-rain',tagline:'পুরনো দিনের স্মৃতিতে',keywords:'স্মৃতি,শৈশব,কবিতা,গ্রাম,nostalgia'}
 ];
 var TIER_LABEL={'budget-near':'বাজেটের সামান্য বেশি','cat':'ধরন আলাদা, কিন্তু মুড মিলেছে','budget-out':'বাজেটের বাইরে'};
-var S={open:false,step:0,moods:[],tags:{},loadedAt:0,a:{mood:null,cat:'any',budget:'any'},noMood:false,cats:[]};
+var S={open:false,step:0,moods:[],tags:{},loadedAt:0,a:{mood:null,cat:'any',budget:'any'},noMood:false,cats:[],skipped:[]};
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function ic(c,def){c=/^fa-[a-z0-9-]+$/.test(c||'')?c:(def||DEF_ICON);return '<i class="fa-solid '+c+'"></i>'}
@@ -15705,6 +15727,38 @@ function buildCats(){
 }
 function moodBy(slug){return S.moods.find(function(m){return m.slug===slug})}
 function budgetBy(k){return BUDGETS.find(function(b){return b.key===k})||BUDGETS[4]}
+var SKIP_KEY='bf_skipped_v1';
+function loadSkipped(){try{return (JSON.parse(localStorage.getItem(SKIP_KEY)||'[]')||[]).map(String)}catch(e){return []}}
+function saveSkipped(){try{localStorage.setItem(SKIP_KEY,JSON.stringify(S.skipped))}catch(e){}}
+function isSkipped(p){return S.skipped.indexOf(String(p.id))>-1}
+function bnNum(n){return String(n).replace(/\d/g,function(d){return '০১২৩৪৫৬৭৮৯'[d]})}
+function subSlug(p){return p.sub_category?(makeSlug(p.sub_category)||lc(p.sub_category)):''}
+/* ধরন মেলানো: 'any' | মূল ক্যাটাগরি slug | 'sub:<সাব-ক্যাটাগরি slug>' */
+function genreMatch(p,cat){
+  if(!cat||cat==='any')return null;
+  if(cat.indexOf('sub:')===0)return subSlug(p)===cat.slice(4);
+  return bookCatSlug(p)===cat;
+}
+/* ধাপ ২-এর অপশন: নির্বাচিত মুডের বইগুলো যে যে মূল ও সাব-ক্যাটাগরিতে আছে, শুধু সেগুলো */
+function genreOptions(){
+  var mood=(S.a.mood&&S.a.mood!=='any')?moodBy(S.a.mood):null;
+  var pool=books().filter(inStock).filter(function(p){return !isSkipped(p)});
+  var fromMood=false;
+  if(mood){var mp=pool.filter(function(p){return moodEvidence(p,mood)});if(mp.length){pool=mp;fromMood=true}}
+  var map={};
+  function add(key,name,icon,p){
+    if(!map[key])map[key]={slug:key,name:name,icon:icon,n:0};
+    map[key].n++;
+  }
+  pool.forEach(function(p){
+    var ck=bookCatSlug(p),c=(allCategories||[]).find(function(x){return x.name===p.category});
+    if(p.category)add(ck,p.category,(c&&c.icon)||'fa-book',p);
+    var ss=subSlug(p);
+    if(ss&&ss!==ck&&lc(p.sub_category)!==lc(p.category))add('sub:'+ss,p.sub_category,'fa-bookmark',p);
+  });
+  var opts=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return b.n-a.n}).slice(0,11);
+  return {opts:opts,mood:mood,fromMood:fromMood};
+}
 
 /* ───── Matching engine ─────
    মুড-প্রমাণ (সবচেয়ে নির্ভরযোগ্য → কম):
@@ -15729,7 +15783,7 @@ function moodEvidence(p,mood){
 function evaluate(p,a,mood,bud){
   var pe=getEffectiveSalePrice(p),price=pe.displayPrice;
   var ev=mood?moodEvidence(p,mood):null;
-  var catOk=a.cat==='any'?null:(bookCatSlug(p)===a.cat);
+  var catOk=genreMatch(p,a.cat);
   var b=null;
   if(bud.key!=='any'){
     if(price>=bud.min&&price<=bud.max)b='in';
@@ -15746,10 +15800,12 @@ function evaluate(p,a,mood,bud){
   var quality=Math.min(rating,5)/5*.5+Math.min(disc,40)/100;
   return {p:p,pe:pe,price:price,ev:ev,catOk:catOk,b:b,pct:pct,disc:disc,rating:rating,quality:quality,tier:''};
 }
-function cmp(x,y){return y.pct-x.pct||y.quality-x.quality}
+/* সাজানোর নিয়ম: আগে ক্যাটাগরি+মুড+বাজেট ফিল্টার, তারপর রেটিং (বেশি → কম), সমান হলে ম্যাচ% ও ছাড় */
+function cmp(x,y){return (y.rating-x.rating)||(y.pct-x.pct)||(y.quality-x.quality)}
 function recommend(a,noMood){
-  var mood=(a.mood&&!noMood)?moodBy(a.mood):null,bud=budgetBy(a.budget);
-  var pool=books().filter(inStock).map(function(p){return evaluate(p,a,mood,bud)});
+  var mood=(a.mood&&a.mood!=='any'&&!noMood)?moodBy(a.mood):null,bud=budgetBy(a.budget);
+  var all=books().filter(inStock).map(function(p){return evaluate(p,a,mood,bud)});
+  var pool=all.filter(function(r){return !isSkipped(r.p)});   // আগেই পড়া/স্কিপ করা বই বাদ
   var picked=[],ids={};
   function take(fn,tier){
     pool.filter(function(r){return !ids[r.p.id]&&fn(r)}).sort(cmp).forEach(function(r){
@@ -15761,7 +15817,7 @@ function recommend(a,noMood){
   take(function(r){return mOk(r)&&r.catOk!==false&&r.b==='near'},'budget-near');
   take(function(r){return mOk(r)&&r.catOk===false&&r.b!=='out'},'cat');
   take(function(r){return mOk(r)&&r.catOk!==false&&r.b==='out'},'budget-out');
-  return {list:picked,mood:mood,bud:bud,relaxed:picked.some(function(r){return r.tier}),moodHasBooks:!mood||pool.some(function(r){return r.ev})};
+  return {list:picked,mood:mood,bud:bud,relaxed:picked.some(function(r){return r.tier}),moodHasBooks:!mood||all.some(function(r){return r.ev})};
 }
 
 /* ───── Rendering ───── */
@@ -15781,23 +15837,29 @@ function renderStep(){
   var back=S.step>0?'<div class="bf-nav"><button class="bf-link bn" data-act="back"><i class="fa-solid fa-arrow-left"></i> আগের প্রশ্ন</button></div>':'';
   if(S.step===0){
     stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ আপনার মনের অবস্থা কেমন?</h2><p class="bf-qs bn">যে মুডটা সবচেয়ে কাছের মনে হয়, সেটায় ক্লিক করুন</p><div class="bf-grid">'+
-      S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>');
+      S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>'+
+      '<div class="bf-litewrap"><button type="button" class="bf-lite bn'+(S.a.mood==='any'?' sel':'')+'" data-k="mood" data-v="any"><i class="fa-solid fa-shuffle"></i> আমি নিশ্চিত নই / সবগুলো দেখান</button></div>'+
+      '<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>');
   }else if(S.step===1){
-    stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">কোন ধরনের বই পড়তে ইচ্ছে করছে?</h2><p class="bf-qs bn">নির্দিষ্ট কিছু মাথায় না থাকলে “যেকোনো ধরন” বেছে নিন</p><div class="bf-grid">'+
-      '<button class="bf-opt'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><span class="e">'+ic('fa-compass')+'</span><b class="bn">যেকোনো ধরন</b><small class="bn">সব ক্যাটাগরি থেকে খুঁজুন</small></button>'+
-      S.cats.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b><span class="n">'+c.n+' books</span></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
+    var go=genreOptions();
+    var sub=go.mood
+      ?(go.fromMood?'“'+esc(go.mood.name)+'” মুডের বইগুলো যে যে ধরনে আছে, শুধু সেগুলোই দেখানো হচ্ছে':'“'+esc(go.mood.name)+'” মুডে এখনো আলাদা করে বই বাছাই করা নেই, তাই সব ধরন দেখানো হচ্ছে')
+      :'নির্দিষ্ট কিছু মাথায় না থাকলে “যেকোনো ধরন” বেছে নিন';
+    stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">কোন ধরনের বই পড়তে ইচ্ছে করছে?</h2><p class="bf-qs bn">'+sub+'</p><div class="bf-grid">'+
+      '<button class="bf-opt'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><span class="e">'+ic('fa-compass')+'</span><b class="bn">যেকোনো ধরন</b><small class="bn">'+(go.fromMood?'এই মুডের সব বই':'সব ক্যাটাগরি থেকে খুঁজুন')+'</small></button>'+
+      go.opts.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b><span class="n bn">'+bnNum(c.n)+'টি বই</span></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }else{
     stage('<span class="bf-step-tag bn">প্রশ্ন ৩ / ৩</span><h2 class="bf-q bn" id="bfTitle">আপনার বাজেট কত?</h2><p class="bf-qs bn">একটা বইয়ের জন্য কতটা খরচ করতে চান?</p><div class="bf-grid">'+
       BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+ic(b.icon)+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }
 }
-function catName(slug){if(slug==='any')return 'যেকোনো ধরন';var c=S.cats.find(function(x){return x.slug===slug});if(c)return c.name;var cc=(allCategories||[]).find(function(x){return catSlug(x)===slug});return cc?cc.name:slug}
+function catName(slug){if(slug==='any')return 'যেকোনো ধরন';if(slug.indexOf('sub:')===0){var sb0=books().find(function(p){return subSlug(p)===slug.slice(4)});return sb0?sb0.sub_category:slug.slice(4)}var c=S.cats.find(function(x){return x.slug===slug});if(c)return c.name;var cc=(allCategories||[]).find(function(x){return catSlug(x)===slug});return cc?cc.name:slug}
 function crit(r,res){
   var li=[];
   if(res.mood){
     li.push(r.ev?'<li class="ok">'+ic('fa-circle-check')+' মুড: '+esc(res.mood.name)+' <small>('+(r.ev.type==='tag'?'বিশেষভাবে বাছাই করা':'বিষয়বস্তু মিলেছে')+')</small></li>':'<li class="no">'+ic('fa-circle-xmark')+' মুড মেলেনি</li>');
   }
-  if(r.catOk!==null)li.push(r.catOk?'<li class="ok">'+ic('fa-circle-check')+' ধরন: '+esc(r.p.category)+'</li>':'<li class="part">'+ic('fa-circle-half-stroke')+' ধরন: '+esc(r.p.category)+'</li>');
+  if(r.catOk!==null)li.push(r.catOk?'<li class="ok">'+ic('fa-circle-check')+' ধরন: '+esc(S.a.cat.indexOf('sub:')===0?(r.p.sub_category||r.p.category):r.p.category)+'</li>':'<li class="part">'+ic('fa-circle-half-stroke')+' ধরন: '+esc(r.p.category)+'</li>');
   if(r.b!==null){
     var m={in:['ok','fa-circle-check','বাজেটের মধ্যে'],under:['ok','fa-circle-check','বাজেটের চেয়েও সাশ্রয়ী'],near:['part','fa-circle-half-stroke','বাজেটের সামান্য বেশি'],out:['no','fa-circle-xmark','বাজেটের বাইরে']}[r.b];
     li.push('<li class="'+m[0]+'">'+ic(m[1])+' '+m[2]+'</li>');
@@ -15816,25 +15878,26 @@ function resultCard(r,i,res){
    '<h3 class="bn">'+esc(p.name)+'</h3>'+(auth?'<div class="bf-auth bn">'+ic('fa-pen-nib')+' '+esc(auth)+'</div>':'')+
    crit(r,res)+(extra.length?'<div class="bf-why bn">'+extra.join('')+'</div>':'')+
    '<div class="bf-price"><b>৳ '+fmtPrice(r.price)+'</b>'+(r.pe.originalPrice>r.price?'<s>৳ '+fmtPrice(r.pe.originalPrice)+'</s>':'')+'</div>'+
-   '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i> কার্টে যোগ করুন</button></div></div></article>';
+   '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i> কার্টে যোগ করুন</button><button class="bf-skip bn" data-skip="'+esc(p.id)+'" title="এই বইটা আগে পড়ে ফেলেছি — অন্য বই দেখান"><i class="fa-solid fa-forward"></i> পড়া হয়েছে / স্কিপ</button></div></div></article>';
 }
 function renderResults(push){
   setBar(3);
   var res=recommend(S.a,S.noMood);
   var sum='<div class="bf-sum bn">'+(res.mood?'<span>'+ic(res.mood.icon)+' '+esc(res.mood.name)+'</span>':'')+'<span>'+ic('fa-layer-group')+' '+esc(catName(S.a.cat))+'</span><span>'+ic('fa-wallet')+' '+res.bud.label+'</span></div>';
   var foot='<div class="bf-foot"><button class="bf-btn2 bn" data-act="restart"><i class="fa-solid fa-rotate-right"></i> আবার খুঁজুন</button><button class="bf-btn2 bn" data-act="share"><i class="fa-solid fa-link"></i> লিংক কপি করুন</button></div>';
+  if(S.skipped.length){foot=foot.slice(0,-6)+'<button class="bf-btn2 bn" data-act="resetskip"><i class="fa-solid fa-eye"></i> স্কিপ করা '+bnNum(S.skipped.length)+'টি বই আবার দেখান</button></div>'}
   if(!res.list.length){
     var msg,btn='';
     if(!res.moodHasBooks){
       msg='“'+esc(res.mood.name)+'” মুডে এখনো কোনো বই ট্যাগ করা নেই, তাই ভুল বই দেখানোর বদলে সত্যিটাই জানাচ্ছি।';
       btn='<button class="bf-btn2 bn" data-act="nomood"><i class="fa-solid fa-filter"></i> মুড বাদ দিয়ে ধরন ও বাজেট অনুযায়ী দেখুন</button> ';
-    }else msg='এই কম্বিনেশনে কোনো বই নেই। ধরন বা বাজেট একটু বদলে আবার চেষ্টা করুন।';
+    }else msg=S.skipped.length?'এই পছন্দে আর কোনো নতুন বই নেই — বাকিগুলো আপনি স্কিপ করেছেন। ধরন/বাজেট বদলান অথবা স্কিপ করা বই আবার দেখুন।':'এই কম্বিনেশনে কোনো বই নেই। ধরন বা বাজেট একটু বদলে আবার চেষ্টা করুন।';
     stage('<h2 class="bf-q bn" id="bfTitle">মিলিয়ে দিতে পারলাম না</h2>'+sum+'<div class="bf-empty"><div class="big"><i class="fa-solid fa-magnifying-glass"></i></div><p class="bn">'+msg+'</p><div style="margin-top:14px">'+btn+'</div></div>'+foot);
   }else{
     stage('<h2 class="bf-q bn" id="bfTitle"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold,#F5A623)"></i> আপনার জন্য বাছাই করা বই</h2><p class="bf-qs bn">আপনার উত্তরের সাথে সবচেয়ে মিলে যাওয়া বইগুলো</p>'+sum+
       (S.noMood?'<div class="bf-note bn">মুড বাদ দিয়ে শুধু ধরন ও বাজেট অনুযায়ী দেখানো হচ্ছে।</div>':'')+
       (res.relaxed?'<div class="bf-note bn">সব শর্ত হুবহু মেলে এমন বই কম, তাই কিছু বই সামান্য আলাদা শর্তে দেখানো হয়েছে। কোনটা কেন আলাদা, প্রতিটি কার্ডে লেখা আছে।</div>':'')+
-      '<div class="bf-list">'+res.list.map(function(r,i){return resultCard(r,i,res)}).join('')+'</div>'+foot);
+      '<div class="bf-list">'+res.list.map(function(r,i){return resultCard(r,i,res)}).join('')+'</div><p class="bf-skipnote bn"><i class="fa-solid fa-circle-info"></i> যে বই আগেই পড়া হয়ে গেছে সেটায় “স্কিপ” চাপুন — আপনার পছন্দ অনুযায়ী আরেকটি বই দেখানো হবে।</p>'+foot);
   }
   if(push){var u='/book-finder/'+(S.a.mood||'any')+'/'+S.a.cat+'/'+S.a.budget;try{history.pushState({page:'finder'},'Magical Book Finder — বুক গ্যালাক্সি',u)}catch(e){}}
 }
@@ -15847,7 +15910,7 @@ function showMagic(){
 /* ───── Open / Close / Routing ───── */
 async function openBF(push,preset){
   var ov=$('bfOv');if(!ov)return;
-  S.open=true;S.step=0;S.noMood=false;S.a={mood:null,cat:'any',budget:'any'};
+  S.open=true;S.step=0;S.noMood=false;S.a={mood:null,cat:'any',budget:'any'};S.skipped=loadSkipped();
   ov.classList.add('open');ov.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
   stage('<div class="bf-magic"><div class="orb"></div><p class="bn">লোড হচ্ছে…</p></div>');setBar(0);
   if(push!==false){try{history.pushState({page:'finder'},'Magical Book Finder — বুক গ্যালাক্সি','/book-finder')}catch(e){}}
@@ -15879,9 +15942,17 @@ document.addEventListener('click',function(e){
   var t=e.target;if(!t.closest)return;
   var st=t.closest('#bfSteps .bf-st.done');
   if(st){S.noMood=false;S.step=+st.getAttribute('data-i');renderStep();return}
-  var opt=t.closest('#bfStage .bf-opt');
+  var sk=t.closest('#bfStage [data-skip]');
+  if(sk){
+    var sid=String(sk.getAttribute('data-skip'));
+    if(S.skipped.indexOf(sid)<0){S.skipped.push(sid);saveSkipped()}
+    toast('স্কিপ করা হয়েছে','আপনার পছন্দ অনুযায়ী অন্য বই দেখাচ্ছি','s');
+    renderResults(false);return;
+  }
+  var opt=t.closest('#bfStage .bf-opt, #bfStage .bf-lite');
   if(opt){
-    S.a[opt.getAttribute('data-k')]=opt.getAttribute('data-v');opt.classList.add('sel');
+    var ok=opt.getAttribute('data-k');
+    S.a[ok]=opt.getAttribute('data-v');if(ok==='mood')S.a.cat='any';opt.classList.add('sel');
     setTimeout(function(){if(S.step<2){S.step++;renderStep()}else showMagic()},230);return;
   }
   var go=t.closest('#bfStage [data-go]');
@@ -15902,6 +15973,7 @@ document.addEventListener('click',function(e){
     if(a==='back'){S.step=Math.max(0,S.step-1);renderStep()}
     if(a==='restart'){S.step=0;S.noMood=false;S.a={mood:null,cat:'any',budget:'any'};try{history.replaceState({page:'finder'},'','/book-finder')}catch(x){}renderStep()}
     if(a==='nomood'){S.noMood=true;renderResults(false)}
+    if(a==='resetskip'){S.skipped=[];saveSkipped();renderResults(false)}
     if(a==='share'){
       var link=location.origin+location.pathname;
       (navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(function(){toast('লিংক কপি হয়েছে!','বন্ধুকে পাঠিয়ে দিন','s')}).catch(function(){prompt('লিংকটি কপি করুন:',link)});
