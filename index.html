@@ -5559,6 +5559,23 @@ html, body {
 .tp-name{font-size:.84rem;font-weight:700;line-height:1.3;color:var(--text,#222);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .tp-meta{font-size:.68rem;color:var(--text-mid,#666);margin-top:2px;white-space:nowrap}
 .tp-meta i{color:#F5A623;font-size:.62rem}
+.bud-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@container (min-width:900px){ .bud-row{grid-template-columns:repeat(5,minmax(0,1fr))} }
+#budgetSec{container-type:inline-size}
+.bud-btn{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:linear-gradient(135deg,#fff,#FBEDED);border:1.5px solid rgba(170,44,45,.22);border-radius:14px;cursor:pointer;text-align:left;font-family:'Hind Siliguri',sans-serif;transition:all .18s}
+.bud-btn:hover{border-color:var(--blue,#AA2C2D);box-shadow:0 8px 22px rgba(170,44,45,.18);transform:translateY(-2px)}
+.bud-ico{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;display:grid;place-items:center;font-size:.9rem;flex-shrink:0}
+.bud-txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.bud-main{font-size:.92rem;font-weight:800;color:var(--blue,#AA2C2D);white-space:nowrap}
+.bud-sub{font-size:.68rem;color:var(--text-mid,#666)}
+.bud-arr{font-size:.7rem;color:var(--blue,#AA2C2D);opacity:.6;transition:transform .18s}
+.bud-btn:hover .bud-arr{transform:translateX(3px);opacity:1}
+.bud-label{font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;color:var(--text-mid,#666);margin-bottom:7px}
+.bud-chips{display:flex;flex-wrap:wrap;gap:8px}
+.bud-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border,#e5e7eb);background:#fff;color:var(--text-mid,#555);font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s}
+.bud-chip:hover{border-color:var(--blue,#AA2C2D);color:var(--blue,#AA2C2D)}
+.bud-chip.on{background:var(--blue,#AA2C2D);border-color:var(--blue,#AA2C2D);color:#fff}
+@media (max-width:880px){ #budgetBars{padding:0 12px !important} }
 #homeReviewsSec{container-type:inline-size}
 .rv-row{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 @container (min-width:640px){ .rv-row{grid-template-columns:repeat(2,minmax(0,1fr))} }
@@ -6086,6 +6103,14 @@ html.gm-boot #gmSplash{display:flex}
       <div class="pgrid" id="newReleaseGrid"></div>
     </section>
 
+    <!-- বাজেট অনুযায়ী সেরা বই — বাটনে ক্লিক করলে আলাদা পেজে ওই দামের মধ্যে সব বই -->
+    <section id="budgetSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-wallet" style="color:var(--blue);margin-right:6px"></i>বাজেট অনুযায়ী সেরা বই</h2>
+      </div>
+      <div class="bud-row" id="budgetRow"></div>
+    </section>
+
     <!-- জনপ্রিয় লেখক / জনপ্রিয় প্রকাশনী — রেটিং (ও বিক্রি) হিসাব করে সাজানো -->
     <section id="topAuthorsSec" class="nr-sec" style="display:none">
       <div class="parea-header">
@@ -6286,6 +6311,13 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         <div id="catPageSubtitle" style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;opacity:.85;margin-top:3px"></div>
       </div>
     </div>
+  </div>
+  <!-- বাজেট ফিল্টার (শুধু /budget/<টাকা> পেজে দেখায়) -->
+  <div id="budgetBars" style="display:none;max-width:1100px;margin:18px auto 0;padding:0 22px">
+    <div class="bud-label bn">দামের সীমা</div>
+    <div class="bud-chips" id="budgetStepChips"></div>
+    <div class="bud-label bn" style="margin-top:12px">ক্যাটাগরি</div>
+    <div class="bud-chips" id="budgetCatChips"></div>
   </div>
   <!-- Products grid -->
   <div style="max-width:1100px;margin:24px auto;padding:0 22px 40px">
@@ -8170,6 +8202,13 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path.startsWith('/budget/')) {
+    const b = parseInt(path.replace('/budget/', ''), 10);
+    if (b > 0) openBudgetPage(b, false);
+    else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+    return;
+  }
+
   if (path.startsWith('/category/')) {
     const c = findCategoryBySlug(path.replace('/category/', ''));
     if (c) openCatPage(c.name, null, false);
@@ -8831,6 +8870,7 @@ function renderNewReleases() {
   // শুধু ডিফল্ট হোম ভিউতে (সব পণ্য, কোনো ফিল্টার/সার্চ নেই) দেখাবে
   const _onHome = !!(isHomeDefaultView() && _gridList && _gridList === _lastFiltered);
   renderTopPeople(_onHome);
+  renderBudgetButtons(_onHome);
   renderHomeReviews(_onHome);
   if (!_onHome) { sec.style.display = 'none'; return; }
   const aboveIds = new Set(_gridList.slice(0, HOME_PAGE_SIZE).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
@@ -8901,21 +8941,29 @@ document.addEventListener('click', e => {
 
 /* ══════════════════════════════════════════════════
    গ্রাহকদের মতামত (হোম) — Supabase `reviews` টেবিলের approved রিভিউ থেকে।
-   নির্বাচন: রেটিং ৪+ , লেখা আছে, একই বই দুইবার নয়; যাচাইকৃত ক্রেতা আগে, তারপর বেশি রেটিং, তারপর নতুন।
+   অ্যাডমিন Reviews পেজে "হোমে দেখাও" দিলে শুধু সেগুলো দেখায়; না দিলে অটো: রেটিং ৪+ , লেখা আছে, একই বই দুইবার নয়; যাচাইকৃত ক্রেতা আগে, তারপর বেশি রেটিং, তারপর নতুন।
    ══════════════════════════════════════════════════ */
 const HOME_REVIEW_COUNT = 6;
-let _homeReviews = null, _homeReviewsLoading = false;
+let _homeReviews = null, _homeReviewsLoading = false, _homeFeatured = [];
+const HOME_REVIEW_COLS = 'id,product_id,reviewer_name,rating,review_text,verified,created_at';
 async function loadHomeReviews() {
   if (_homeReviews || _homeReviewsLoading) return;
   _homeReviewsLoading = true;
   try {
-    const { data, error } = await sbQuery(
-      () => sb.from('reviews').select('id,product_id,reviewer_name,rating,review_text,verified,created_at')
-              .eq('status', 'approved').order('created_at', { ascending: false }).limit(80),
+    // ১) অ্যাডমিনের বেছে দেওয়া (featured) রিভিউ — কলাম না থাকলে চুপচাপ বাদ
+    const featP = sbQuery(
+      () => sb.from('reviews').select(HOME_REVIEW_COLS).eq('status', 'approved').eq('featured', true).order('created_at', { ascending: false }).limit(20),
+      'ফিচার্ড রিভিউ'
+    ).catch(() => ({ error: true }));
+    // ২) অটো সিলেকশনের জন্য সর্বশেষ approved রিভিউ
+    const autoP = sbQuery(
+      () => sb.from('reviews').select(HOME_REVIEW_COLS).eq('status', 'approved').order('created_at', { ascending: false }).limit(80),
       'হোম রিভিউ লোড'
     );
-    _homeReviews = error ? [] : (data || []);
-  } catch (e) { _homeReviews = []; }
+    const [f, a] = await Promise.all([featP, autoP]);
+    _homeFeatured = (!f.error && f.data) ? f.data : [];
+    _homeReviews = a.error ? [] : (a.data || []);
+  } catch (e) { _homeReviews = []; _homeFeatured = []; }
   _homeReviewsLoading = false;
   renderHomeReviews(isHomeDefaultView() && _gridList === _lastFiltered);
 }
@@ -8924,8 +8972,11 @@ function renderHomeReviews(show) {
   if (!sec || !row) return;
   if (!show) { sec.style.display = 'none'; return; }
   if (_homeReviews === null) { loadHomeReviews(); return; }
+  const byProduct = r => ({ r, p: products.find(p => String(p.id) === String(r.product_id)) });
+  // অ্যাডমিন নিজে বেছে দিলে শুধু সেগুলোই দেখাবে (সর্বোচ্চ ৬টি, নতুন আগে)
+  const featured = _homeFeatured.filter(r => String(r.review_text || '').trim()).map(byProduct).filter(x => x.p).slice(0, HOME_REVIEW_COUNT);
   const seen = new Set();
-  const picked = _homeReviews
+  const picked = featured.length ? featured : _homeReviews
     .filter(r => Number(r.rating) >= 4 && String(r.review_text || '').trim().length >= 15)
     .map(r => ({ r, p: products.find(p => String(p.id) === String(r.product_id)) }))
     .filter(x => x.p)
@@ -8957,6 +9008,96 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const c = e.target.closest && e.target.closest('.rv-card');
   if (c) openProduct(c.dataset.pid);
+});
+
+
+/* ══════════════════════════════════════════════════
+   বাজেট অনুযায়ী সেরা বই — হোমে বাটন, ক্লিকে /budget/<টাকা> পেজ।
+   • শুধু বই (isBookProduct), দাম = বাস্তব বিক্রয়মূল্য (ছাড়/বাল্ক সহ)
+   • "সেরা" আগে: বেশি বিক্রি → ভালো রেটিং
+   • পেজে ক্যাটাগরি অনুযায়ী ফিল্টার + অন্য বাজেটে যাওয়ার বাটন
+   ══════════════════════════════════════════════════ */
+const BUDGET_STEPS = [100, 200, 300, 400, 500];   // এখানের সংখ্যা বদলালেই বাটন বদলে যাবে
+let currentBudget = 0;
+let currentBudgetCat = 'সব';
+function _bnDigits(n) { return String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
+function booksUnderBudget(max) {
+  return products.filter(p => isBookProduct(p) && getEffectiveSalePrice(p).displayPrice <= max);
+}
+function renderBudgetButtons(show) {
+  const sec = document.getElementById('budgetSec'), row = document.getElementById('budgetRow');
+  if (!sec || !row) return;
+  if (!show) { sec.style.display = 'none'; return; }
+  const items = BUDGET_STEPS.map(b => ({ b, n: booksUnderBudget(b).length })).filter(x => x.n > 0);
+  if (!items.length) { sec.style.display = 'none'; return; }
+  row.innerHTML = items.map(({ b, n }) => `<button type="button" class="bud-btn" data-budget="${b}">
+      <span class="bud-ico"><i class="fa-solid fa-wallet"></i></span>
+      <span class="bud-txt"><span class="bud-main bn">৳${_bnDigits(b)} এর মধ্যে</span><span class="bud-sub bn">${n} টি বই</span></span>
+      <i class="fa-solid fa-arrow-right bud-arr"></i></button>`).join('');
+  sec.style.display = '';
+}
+function openBudgetPage(max, pushUrl = true) {
+  max = Number(max);
+  if (!(max > 0)) return;
+  currentBudget = max; currentBudgetCat = 'সব'; currentCatPage = 'সব';
+  const title = `৳${_bnDigits(max)} এর মধ্যে সেরা বই`;
+  document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
+  document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-wallet" style="color:white;font-size:1.4rem"></i>';
+  document.getElementById('catPageTitle').textContent = title;
+  document.getElementById('catPageBreadcrumb').textContent = `৳${_bnDigits(max)} এর মধ্যে`;
+  document.getElementById('catPageSort').value = 'popular';
+  renderCatPageProducts();
+  const url = '/budget/' + max;
+  _navTo({ page: 'category', cat: 'সব', budget: max }, `${title} — বুক গ্যালাক্সি`, url, pushUrl);
+  _setMeta(`${_bnDigits(max)} টাকার মধ্যে সেরা বই কিনুন বুক গ্যালাক্সি-তে। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।`, url);
+  openPage('category');
+}
+function resetBudgetMode() {
+  currentBudget = 0; currentBudgetCat = 'সব';
+  const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = 'none';
+}
+function renderBudgetPageProducts() {
+  const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
+  const sort = document.getElementById('catPageSort')?.value || 'popular';
+  const under = booksUnderBudget(currentBudget);
+
+  // ফিল্টার বার
+  const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = '';
+  document.getElementById('budgetStepChips').innerHTML = BUDGET_STEPS.map(b =>
+    `<button type="button" class="bud-chip${b === currentBudget ? ' on' : ''}" data-step="${b}">৳${_bnDigits(b)} এর মধ্যে</button>`).join('');
+  const counts = new Map();
+  under.forEach(p => counts.set(p.category, (counts.get(p.category) || 0) + 1));
+  const order = [...allCategories.map(c => c.name), ...counts.keys()].filter((n, i, a) => a.indexOf(n) === i && counts.get(n));
+  if (currentBudgetCat !== 'সব' && !counts.has(currentBudgetCat)) currentBudgetCat = 'সব';
+  document.getElementById('budgetCatChips').innerHTML =
+    `<button type="button" class="bud-chip${currentBudgetCat === 'সব' ? ' on' : ''}" data-bcat="সব">সব (${under.length})</button>` +
+    order.map(n => `<button type="button" class="bud-chip${currentBudgetCat === n ? ' on' : ''}" data-bcat="${_tpEsc(n)}">${_tpEsc(n)} (${counts.get(n)})</button>`).join('');
+
+  let list = currentBudgetCat === 'সব' ? [...under] : under.filter(p => p.category === currentBudgetCat);
+  const price = p => getEffectiveSalePrice(p).displayPrice;
+  if (sort === 'low') list.sort((a, b) => price(a) - price(b));
+  else if (sort === 'high') list.sort((a, b) => price(b) - price(a));
+  else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4));
+  else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
+  else list.sort(popularCmp);   // সেরা আগে
+
+  const subtitle = document.getElementById('catPageSubtitle');
+  if (subtitle) subtitle.textContent = `${list.length} টি বই পাওয়া গেছে`;
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    if (empty.lastElementChild) empty.lastElementChild.textContent = 'এই দামের মধ্যে কোনো বই নেই';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+}
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (!t.closest) return;
+  const b = t.closest('.bud-btn');       if (b) { openBudgetPage(b.dataset.budget); return; }
+  const st = t.closest('.bud-chip[data-step]'); if (st) { openBudgetPage(st.dataset.step); return; }
+  const bc = t.closest('.bud-chip[data-bcat]'); if (bc) { currentBudgetCat = bc.dataset.bcat; renderBudgetPageProducts(); }
 });
 
 function getFiltered() {
@@ -9312,7 +9453,7 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
-  if (name === 'category' && _safeDecode(location.pathname).startsWith('/category/')) restoreHomeUrl();
+  if (name === 'category' && /^\/(category|budget)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'author' && /^\/(author|publisher|subcategory)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
@@ -14812,6 +14953,7 @@ function getCatMeta(cat) {
 let currentCatPage = 'সব';
 
 function openCatPage(cat, el, pushUrl = true) {
+  resetBudgetMode();
   // For 'সব' category on home, just filter in place (home behaviour preserved)
   // For any specific cat, open full page
   if (cat === 'সব') {
@@ -14847,8 +14989,10 @@ function closeCatPage() {
 }
 
 function renderCatPageProducts() {
+  if (currentBudget) return renderBudgetPageProducts();
   const grid  = document.getElementById('catPageGrid');
   const empty = document.getElementById('catPageEmpty');
+  if (empty && empty.lastElementChild) empty.lastElementChild.textContent = 'এই ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি';
   const sort  = document.getElementById('catPageSort')?.value || 'popular';
 
   let list = currentCatPage === 'সব'
@@ -16037,6 +16181,9 @@ window.addEventListener('popstate', function(e) {
   } else if (state.page === 'wishlist') {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
     else document.title = 'বুক গ্যালাক্সি';
+
+  } else if (state.page === 'category' && state.budget) {
+    openBudgetPage(state.budget, false);
 
   } else if (state.page === 'category' && state.cat) {
     window.openCatPage(state.cat, null, false);
