@@ -5539,6 +5539,16 @@ html, body {
   }
 }
 </style>
+<style id="homeGridStyles">
+.grid-more-wrap{display:flex;justify-content:center;margin:22px 0 4px}
+.grid-more-wrap:empty{display:none}
+.grid-more-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 26px;border-radius:999px;border:1.5px solid var(--blue,#AA2C2D);background:#fff;color:var(--blue,#AA2C2D);
+  font-family:'Hind Siliguri',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .18s}
+.grid-more-btn span{font-weight:500;opacity:.75;font-size:.76rem}
+.grid-more-btn:hover{background:var(--blue,#AA2C2D);color:#fff;box-shadow:0 8px 22px rgba(170,44,45,.25)}
+.nr-sec{margin-top:34px;padding-top:22px;border-top:1px dashed var(--border,#e5e7eb)}
+.nr-sec .parea-header h2{font-size:1.05rem}
+</style>
 <style id="navMoreStyles">
 /* Category navbar — "আরও" dropdown (managed from Admin → Categories → নেভবার সাজান) */
 .nav-cats.nav-managed .ncat{flex-shrink:0 !important}
@@ -6038,7 +6048,16 @@ html.gm-boot #gmSplash{display:flex}
       </select>
     </div>
     <div class="pgrid" id="productGrid"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>পণ্য লোড হচ্ছে...</p></div></div>
+    <div id="gridMoreWrap" class="grid-more-wrap"></div>
     <div class="pgn" id="pagination"></div>
+
+    <!-- নতুন প্রকাশিত বই — shown under the popular grid on the default home view -->
+    <section id="newReleaseSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue);margin-right:6px"></i>নতুন প্রকাশিত বই</h2>
+      </div>
+      <div class="pgrid" id="newReleaseGrid"></div>
+    </section>
   </div>
 </div>
 
@@ -8580,6 +8599,10 @@ async function loadTopSellingBooks() {
       });
     });
 
+    // জনপ্রিয়তা র‍্যাংকিং-এর জন্য বিক্রির হিসাব সেভ করে হোম গ্রিড আবার সাজাই
+    _soldMap = qtyMap;
+    try { if (products.length && isHomeDefaultView() && (document.querySelector('.sort-sel')?.value || 'popular') === 'popular') _paintGrid(getFiltered(), false); } catch (e) {}
+
     // Keep only currently active book products, ranked by units sold
     const ranked = Object.keys(qtyMap)
       .map(id => ({ product: products.find(p => p.id === id), sold: qtyMap[id] }))
@@ -8703,18 +8726,73 @@ function buildProductCard(p) {
   </div>`;
 }
 
+/* ══════════════════════════════════════════════════
+   HOME GRID — প্রথমে ১৫টি জনপ্রিয় পণ্য, "আরও দেখুন" এ আরও ১৫টি করে।
+   তার নিচে "নতুন প্রকাশিত বই" সেকশন (শুধু ডিফল্ট হোম ভিউতে)।
+   ══════════════════════════════════════════════════ */
+const HOME_PAGE_SIZE = 15;      // একবারে কতগুলো পণ্য দেখাবে
+const NEW_RELEASE_COUNT = 10;   // "নতুন প্রকাশিত বই" সেকশনে কতগুলো বই
+let _gridLimit = HOME_PAGE_SIZE;
+let _gridList = [];
+let _lastFiltered = null;
+let _soldMap = {};              // product id → মোট বিক্রি (orders থেকে, loadTopSellingBooks ভরে দেয়)
+
+function isHomeDefaultView() {
+  return activeFilter.cat === 'সব' && !activeFilter.search && activeFilter.minPrice === 0 &&
+         activeFilter.maxPrice === 999999 && activeFilter.rating === 0;
+}
+function popularCmp(a, b) {
+  return ((_soldMap[b.id] || 0) - (_soldMap[a.id] || 0)) || ((b.rating || 4) - (a.rating || 4));
+}
+
 function renderProducts(list) {
+  _gridLimit = HOME_PAGE_SIZE;
+  _paintGrid(list, false);
+}
+function showMoreProducts() {
+  _gridLimit += HOME_PAGE_SIZE;
+  _paintGrid(_gridList, true);
+}
+function _paintGrid(list, append) {
   const grid = document.getElementById('productGrid');
   document.getElementById('productCount').textContent = `(${list.length} টি পণ্য)`;
+  const moreWrap = document.getElementById('gridMoreWrap');
   if (!list.length) {
     grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i><p class="bn">কোনো পণ্য পাওয়া যায়নি</p></div>';
+    if (moreWrap) moreWrap.innerHTML = '';
+    _gridList = list;
+    renderNewReleases();
     return;
   }
-  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+  const prevCount = append && _gridList === list ? grid.querySelectorAll(':scope > .pcard').length : 0;
+  _gridList = list;
+  const shown = list.slice(0, _gridLimit);
+  if (append && prevCount > 0) grid.insertAdjacentHTML('beforeend', shown.slice(prevCount).map(p => buildProductCard(p)).join(''));
+  else grid.innerHTML = shown.map(p => buildProductCard(p)).join('');
+  const remaining = list.length - shown.length;
+  if (moreWrap) moreWrap.innerHTML = remaining > 0
+    ? `<button type="button" class="grid-more-btn bn" onclick="showMoreProducts()"><i class="fa-solid fa-angles-down"></i> আরও দেখুন <span>(${remaining} টি বাকি)</span></button>`
+    : '';
+  renderNewReleases();
+}
+function renderNewReleases() {
+  const sec = document.getElementById('newReleaseSec');
+  const grid = document.getElementById('newReleaseGrid');
+  if (!sec || !grid) return;
+  // শুধু ডিফল্ট হোম ভিউতে (সব পণ্য, কোনো ফিল্টার/সার্চ নেই) দেখাবে
+  if (!(isHomeDefaultView() && _gridList && _gridList === _lastFiltered)) { sec.style.display = 'none'; return; }
+  const aboveIds = new Set(_gridList.slice(0, HOME_PAGE_SIZE).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
+  const ts = p => new Date(p.created_at || 0).getTime() || 0;
+  const books = products.filter(p => isBookProduct(p) && !aboveIds.has(p.id))
+    .sort((a, b) => ((b.badge === 'new') - (a.badge === 'new')) || (ts(b) - ts(a)))   // "New" ব্যাজ দেওয়া বই আগে, তারপর সর্বশেষ যোগ হওয়া
+    .slice(0, NEW_RELEASE_COUNT);
+  if (!books.length) { sec.style.display = 'none'; return; }
+  grid.innerHTML = books.map(p => buildProductCard(p)).join('');
+  sec.style.display = '';
 }
 
 function getFiltered() {
-  return products.filter(p => {
+  return _lastFiltered = products.filter(p => {
     const catOk = activeFilter.cat === 'সব' || p.category === activeFilter.cat;
     // price range filter: bulk-aware displayPrice ব্যবহার করো
     const dp = getEffectiveSalePrice(p).displayPrice;
@@ -8723,7 +8801,7 @@ function getFiltered() {
     const srch = activeFilter.search.toLowerCase();
     const searchOk = !srch || p.name.toLowerCase().includes(srch) || (p.brand||'').toLowerCase().includes(srch) || p.category.includes(srch);
     return catOk && priceOk && ratingOk && searchOk;
-  });
+  }).sort(popularCmp);   // জনপ্রিয় (বেশি বিক্রি → ভালো রেটিং) আগে; সমান হলে নতুনটা আগে (sort stable)
 }
 
 function filterCat(cat, el) {
@@ -8772,7 +8850,7 @@ function clearFilters() {
   document.querySelectorAll('.fchip').forEach((e,i)=>e.classList.toggle('active',i===0));
   document.querySelectorAll('.ncat').forEach((e,i)=>e.classList.toggle('active',i===0));
   document.querySelectorAll('.star-row').forEach(e=>e.classList.remove('active'));
-  renderProducts(products);
+  renderProducts(getFiltered());
 }
 
 // ══════════════════════════════════════════════════
