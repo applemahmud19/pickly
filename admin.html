@@ -9835,6 +9835,7 @@ function renderReviewsAdmin() {
       </td>
       <td>${pill}</td>
       <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+        ${r.status === 'approved' ? `<button class="btn ${r.featured ? 'btn-primary' : 'btn-secondary'} btn-xs" onclick="toggleReviewFeatured('${r.id}')" title="হোম পেজের 'গ্রাহকদের মতামত' এ দেখাবে কিনা"><i class="fa-solid fa-star"></i> ${r.featured ? 'হোমে আছে' : 'হোমে দেখাও'}</button>` : ''}
         <button class="btn btn-secondary btn-xs" onclick="openReviewModal('${r.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
         ${r.status === 'approved'
           ? `<button class="btn btn-secondary btn-xs" onclick="setReviewStatus('${r.id}','hidden')"><i class="fa-solid fa-eye-slash"></i> Hide</button>`
@@ -9843,6 +9844,25 @@ function renderReviewsAdmin() {
       </div></td>
     </tr>`;
   }).join('');
+}
+
+const REVIEW_FEATURED_SQL = "ALTER TABLE reviews ADD COLUMN IF NOT EXISTS featured boolean DEFAULT false;";
+const HOME_REVIEW_MAX = 6;
+async function toggleReviewFeatured(id) {
+  const r = allReviews.find(x => String(x.id) === String(id));
+  if (!r) return;
+  const next = !r.featured;
+  if (next && allReviews.filter(x => x.featured && x.status === 'approved').length >= HOME_REVIEW_MAX) {
+    toast('সর্বোচ্চ ' + HOME_REVIEW_MAX + 'টি', 'হোমে একসাথে ' + HOME_REVIEW_MAX + 'টির বেশি দেখানো যায় না — আগে একটা সরান', 'warning'); return;
+  }
+  const { error } = await sb.from('reviews').update({ featured: next }).eq('id', id);
+  if (error) {
+    const missing = /featured/i.test(error.message || '');
+    toast(missing ? 'আগে SQL চালান' : 'Failed', missing ? 'Supabase → SQL Editor এ চালান: ' + REVIEW_FEATURED_SQL : error.message, missing ? 'warning' : 'error');
+    return;
+  }
+  toast('Updated', next ? 'হোম পেজে দেখানো হবে' : 'হোম পেজ থেকে সরানো হয়েছে', 'success');
+  await loadReviewsAdmin();
 }
 
 async function setReviewStatus(id, status) {
