@@ -5572,6 +5572,12 @@ html, body {
 .bud-btn:hover .bud-arr{transform:translateX(3px);opacity:1}
 .bud-label{font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;color:var(--text-mid,#666);margin-bottom:7px}
 .bud-chips{display:flex;flex-wrap:wrap;gap:8px}
+.bud-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.bud-top-l{flex:1;min-width:260px}
+.bud-sortbox{display:flex;flex-direction:column;align-items:flex-end;min-width:190px}
+.bud-sortbox .bud-label i{margin-right:4px;color:var(--blue,#AA2C2D)}
+.bud-sortbox .sort-sel{font-size:.78rem !important;padding:8px 12px !important;min-width:190px;border-radius:10px}
+@media (max-width:880px){ .bud-sortbox{align-items:stretch;width:100%} .bud-sortbox .sort-sel{width:100%;max-width:none !important} }
 .bud-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border,#e5e7eb);background:#fff;color:var(--text-mid,#555);font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s}
 .bud-chip:hover{border-color:var(--blue,#AA2C2D);color:var(--blue,#AA2C2D)}
 .bud-chip.on{background:var(--blue,#AA2C2D);border-color:var(--blue,#AA2C2D);color:#fff}
@@ -6314,8 +6320,22 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   </div>
   <!-- বাজেট ফিল্টার (শুধু /budget/<টাকা> পেজে দেখায়) -->
   <div id="budgetBars" style="display:none;max-width:1100px;margin:18px auto 0;padding:0 22px">
-    <div class="bud-label bn">দামের সীমা</div>
-    <div class="bud-chips" id="budgetStepChips"></div>
+    <div class="bud-top">
+      <div class="bud-top-l">
+        <div class="bud-label bn">দামের সীমা</div>
+        <div class="bud-chips" id="budgetStepChips"></div>
+      </div>
+      <div class="bud-sortbox">
+        <div class="bud-label bn"><i class="fa-solid fa-arrow-down-wide-short"></i> সাজান</div>
+        <select class="sort-sel bn" id="budgetSortSel" onchange="setBudgetSort(this.value)">
+          <option value="popular">সেরা (জনপ্রিয়)</option>
+          <option value="low">দাম: কম থেকে বেশি</option>
+          <option value="high">দাম: বেশি থেকে কম</option>
+          <option value="rating">সেরা রেটিং</option>
+          <option value="discount">সর্বোচ্চ ছাড়</option>
+        </select>
+      </div>
+    </div>
     <div class="bud-label bn" style="margin-top:12px">ক্যাটাগরি</div>
     <div class="bud-chips" id="budgetCatChips"></div>
   </div>
@@ -8203,8 +8223,8 @@ async function _restorePageFromUrl() {
   }
 
   if (path.startsWith('/budget/')) {
-    const b = parseInt(path.replace('/budget/', ''), 10);
-    if (b > 0) openBudgetPage(b, false);
+    const br = parseBudgetKey(_safeDecode(path.replace('/budget/', '')).replace(/\/+$/, ''));
+    if (br) openBudgetPage(br, false);
     else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
     return;
   }
@@ -9012,74 +9032,101 @@ document.addEventListener('keydown', e => {
 
 
 /* ══════════════════════════════════════════════════
-   বাজেট অনুযায়ী সেরা বই — হোমে বাটন, ক্লিকে /budget/<টাকা> পেজ।
+   বাজেট অনুযায়ী সেরা বই — হোমে বাটন, ক্লিকে /budget/<min>-<max> পেজ।
    • শুধু বই (isBookProduct), দাম = বাস্তব বিক্রয়মূল্য (ছাড়/বাল্ক সহ)
-   • "সেরা" আগে: বেশি বিক্রি → ভালো রেটিং
-   • পেজে ক্যাটাগরি অনুযায়ী ফিল্টার + অন্য বাজেটে যাওয়ার বাটন
+   • রেঞ্জ: (min, max] — যেমন ২০০-৪০০ মানে ২০১ থেকে ৪০০ পর্যন্ত; প্রথমটা ০ থেকে ২০০ পর্যন্ত
+   • পেজে: দামের রেঞ্জ বদলানো, ক্যাটাগরি ফিল্টার, এবং সাজানো (কম→বেশি, বেশি→কম, সেরা রেটিং…)
    ══════════════════════════════════════════════════ */
-const BUDGET_STEPS = [100, 200, 300, 400, 500];   // এখানের সংখ্যা বদলালেই বাটন বদলে যাবে
-let currentBudget = 0;
+const BUDGET_RANGES = [            // এখানের সংখ্যা বদলালেই বাটন ও পেজ বদলে যাবে
+  { min: 0,   max: 200  },
+  { min: 200, max: 400  },
+  { min: 400, max: 600  },
+  { min: 600, max: 800  },
+  { min: 800, max: 1000 }
+];
+let currentBudget = 0;             // 0 = বাজেট মোড বন্ধ, নইলে { min, max }
 let currentBudgetCat = 'সব';
 function _bnDigits(n) { return String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
-function booksUnderBudget(max) {
-  return products.filter(p => isBookProduct(p) && getEffectiveSalePrice(p).displayPrice <= max);
+function budgetKey(r) { return r.min + '-' + r.max; }
+function parseBudgetKey(k) {
+  const m = String(k).match(/^(\d+)(?:-(\d+))?$/);
+  if (!m) return null;
+  const r = m[2] === undefined ? { min: 0, max: Number(m[1]) } : { min: Number(m[1]), max: Number(m[2]) };
+  return r.max > r.min ? r : null;
+}
+function budgetLabel(r) { return r.min === 0 ? `৳${_bnDigits(r.max)} এর নিচে` : `৳${_bnDigits(r.min)} - ৳${_bnDigits(r.max)}`; }
+function booksInRange(r) {
+  return products.filter(p => {
+    if (!isBookProduct(p)) return false;
+    const d = getEffectiveSalePrice(p).displayPrice;
+    return d <= r.max && (r.min === 0 || d > r.min);
+  });
 }
 function renderBudgetButtons(show) {
   const sec = document.getElementById('budgetSec'), row = document.getElementById('budgetRow');
   if (!sec || !row) return;
   if (!show) { sec.style.display = 'none'; return; }
-  const items = BUDGET_STEPS.map(b => ({ b, n: booksUnderBudget(b).length })).filter(x => x.n > 0);
+  const items = BUDGET_RANGES.map(r => ({ r, n: booksInRange(r).length })).filter(x => x.n > 0);
   if (!items.length) { sec.style.display = 'none'; return; }
-  row.innerHTML = items.map(({ b, n }) => `<button type="button" class="bud-btn" data-budget="${b}">
+  row.innerHTML = items.map(({ r, n }) => `<button type="button" class="bud-btn" data-budget="${budgetKey(r)}">
       <span class="bud-ico"><i class="fa-solid fa-wallet"></i></span>
-      <span class="bud-txt"><span class="bud-main bn">৳${_bnDigits(b)} এর মধ্যে</span><span class="bud-sub bn">${n} টি বই</span></span>
+      <span class="bud-txt"><span class="bud-main bn">${budgetLabel(r)}</span><span class="bud-sub bn">${n} টি বই</span></span>
       <i class="fa-solid fa-arrow-right bud-arr"></i></button>`).join('');
   sec.style.display = '';
 }
-function openBudgetPage(max, pushUrl = true) {
-  max = Number(max);
-  if (!(max > 0)) return;
-  currentBudget = max; currentBudgetCat = 'সব'; currentCatPage = 'সব';
-  const title = `৳${_bnDigits(max)} এর মধ্যে সেরা বই`;
+function openBudgetPage(key, pushUrl = true) {
+  const r = typeof key === 'object' && key ? key : parseBudgetKey(key);
+  if (!r) return;
+  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব';
+  const title = r.min === 0 ? `${budgetLabel(r)} সেরা বই` : `${budgetLabel(r)} দামের সেরা বই`;
   document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
   document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-wallet" style="color:white;font-size:1.4rem"></i>';
   document.getElementById('catPageTitle').textContent = title;
-  document.getElementById('catPageBreadcrumb').textContent = `৳${_bnDigits(max)} এর মধ্যে`;
+  document.getElementById('catPageBreadcrumb').textContent = budgetLabel(r);
   document.getElementById('catPageSort').value = 'popular';
   renderCatPageProducts();
-  const url = '/budget/' + max;
-  _navTo({ page: 'category', cat: 'সব', budget: max }, `${title} — বুক গ্যালাক্সি`, url, pushUrl);
-  _setMeta(`${_bnDigits(max)} টাকার মধ্যে সেরা বই কিনুন বুক গ্যালাক্সি-তে। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।`, url);
+  const url = '/budget/' + budgetKey(r);
+  _navTo({ page: 'category', cat: 'সব', budget: budgetKey(r) }, `${title} — বুক গ্যালাক্সি`, url, pushUrl);
+  _setMeta(`${budgetLabel(r)} দামের সেরা বই কিনুন বুক গ্যালাক্সি-তে। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।`, url);
   openPage('category');
 }
 function resetBudgetMode() {
   currentBudget = 0; currentBudgetCat = 'সব';
   const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = 'none';
+  const top = document.getElementById('catPageSort')?.parentElement; if (top) top.style.display = '';
+}
+function setBudgetSort(v) {
+  const sel = document.getElementById('catPageSort');
+  if (sel) sel.value = v;
+  renderCatPageProducts();
 }
 function renderBudgetPageProducts() {
   const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
   const sort = document.getElementById('catPageSort')?.value || 'popular';
-  const under = booksUnderBudget(currentBudget);
+  const inRange = booksInRange(currentBudget);
 
-  // ফিল্টার বার
+  // ফিল্টার বার (দামের রেঞ্জ + সাজান + ক্যাটাগরি)
   const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = '';
-  document.getElementById('budgetStepChips').innerHTML = BUDGET_STEPS.map(b =>
-    `<button type="button" class="bud-chip${b === currentBudget ? ' on' : ''}" data-step="${b}">৳${_bnDigits(b)} এর মধ্যে</button>`).join('');
+  const topSort = document.getElementById('catPageSort')?.parentElement; if (topSort) topSort.style.display = 'none'; // সাজানোর অপশন এখন বারের ভেতরে
+  const bs = document.getElementById('budgetSortSel'); if (bs) bs.value = sort;
+  const curKey = budgetKey(currentBudget);
+  document.getElementById('budgetStepChips').innerHTML = BUDGET_RANGES.map(r =>
+    `<button type="button" class="bud-chip${budgetKey(r) === curKey ? ' on' : ''}" data-step="${budgetKey(r)}">${budgetLabel(r)}</button>`).join('');
   const counts = new Map();
-  under.forEach(p => counts.set(p.category, (counts.get(p.category) || 0) + 1));
+  inRange.forEach(p => counts.set(p.category, (counts.get(p.category) || 0) + 1));
   const order = [...allCategories.map(c => c.name), ...counts.keys()].filter((n, i, a) => a.indexOf(n) === i && counts.get(n));
   if (currentBudgetCat !== 'সব' && !counts.has(currentBudgetCat)) currentBudgetCat = 'সব';
   document.getElementById('budgetCatChips').innerHTML =
-    `<button type="button" class="bud-chip${currentBudgetCat === 'সব' ? ' on' : ''}" data-bcat="সব">সব (${under.length})</button>` +
+    `<button type="button" class="bud-chip${currentBudgetCat === 'সব' ? ' on' : ''}" data-bcat="সব">সব (${inRange.length})</button>` +
     order.map(n => `<button type="button" class="bud-chip${currentBudgetCat === n ? ' on' : ''}" data-bcat="${_tpEsc(n)}">${_tpEsc(n)} (${counts.get(n)})</button>`).join('');
 
-  let list = currentBudgetCat === 'সব' ? [...under] : under.filter(p => p.category === currentBudgetCat);
+  let list = currentBudgetCat === 'সব' ? [...inRange] : inRange.filter(p => p.category === currentBudgetCat);
   const price = p => getEffectiveSalePrice(p).displayPrice;
   if (sort === 'low') list.sort((a, b) => price(a) - price(b));
   else if (sort === 'high') list.sort((a, b) => price(b) - price(a));
-  else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4));
+  else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4) || popularCmp(a, b));
   else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
-  else list.sort(popularCmp);   // সেরা আগে
+  else list.sort(popularCmp);   // সেরা (জনপ্রিয়) আগে
 
   const subtitle = document.getElementById('catPageSubtitle');
   if (subtitle) subtitle.textContent = `${list.length} টি বই পাওয়া গেছে`;
