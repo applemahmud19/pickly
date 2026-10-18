@@ -5639,6 +5639,12 @@ body.page-author-open .mobile-search-row{display:none!important}
   .pm-item + .pm-item{border-left:0;border-top:1px solid var(--border)}
 }
 </style>
+<style id="cat-chip-css">
+.fp-cat-chip.fp-cat-click{cursor:pointer;transition:background .18s,color .18s,border-color .18s,box-shadow .18s;outline:none}
+.fp-cat-chip.fp-cat-click:hover,.fp-cat-chip.fp-cat-click:focus-visible{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 4px 12px rgba(170,44,45,.25)}
+.fp-cat-arrow{font-size:.6rem;margin-left:3px;transition:transform .18s}
+.fp-cat-chip.fp-cat-click:hover .fp-cat-arrow{transform:translateX(3px)}
+</style>
 </head>
 <body>
 <!-- ═══ RELOAD SPLASH: /product/... ইত্যাদি লিংকে রিলোড করলে হোম পেজ ঝলকে না উঠে লোডিং স্ক্রিন দেখাবে ═══ -->
@@ -9000,11 +9006,29 @@ function openProduct(id, pushUrl = true) {
   // ── Breadcrumb ──
   const bcCat  = document.getElementById('fpBreadCat');
   const bcName = document.getElementById('fpBreadName');
-  if (bcCat)  bcCat.textContent  = p.category;
+  if (bcCat)  {
+    bcCat.textContent = p.category;
+    bcCat.onclick = (p.category && p.category !== 'সব') ? () => openCatFromProduct(p.category) : () => closePage('product');
+  }
   if (bcName) bcName.textContent = p.name;
 
   // ── Category chip + name ──
-  setText('fpCatChip', p.category);
+  {
+    const _chip = document.getElementById('fpCatChip');
+    if (_chip) {
+      if (p.category && p.category !== 'সব') {
+        _chip.innerHTML = String(p.category).replace(/&/g,'&amp;').replace(/</g,'&lt;') + ' <i class="fa-solid fa-angle-right fp-cat-arrow"></i>';
+        _chip.classList.add('fp-cat-click');
+        _chip.setAttribute('role', 'link'); _chip.setAttribute('tabindex', '0');
+        _chip.title = p.category + ' — সব বই দেখুন';
+        _chip.onclick = () => openCatFromProduct(p.category);
+        _chip.onkeydown = ev => { if (ev.key === 'Enter') openCatFromProduct(p.category); };
+      } else {
+        _chip.textContent = p.category || '';
+        _chip.classList.remove('fp-cat-click'); _chip.onclick = null; _chip.onkeydown = null;
+      }
+    }
+  }
   setText('fpName', p.name);
 
   // ── Binding Type badge (books only) ──
@@ -16307,6 +16331,15 @@ window.addEventListener('popstate',function(){
     if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
     empty.style.display = 'none';
     grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+  };
+
+  // product page → ক্যাটাগরি পেজ (/category/<slug>)
+  window.openCatFromProduct = function (cat) {
+    if (!cat) return;
+    ['product','track','order-detail','checkout','profile','wishlist'].forEach(n => clearPageUIVisibility(n));
+    const ctaBar = document.getElementById('fpMobileCtaBar'); if (ctaBar) ctaBar.classList.remove('active');
+    window._catFromApp = true;
+    openCatPage(cat, null, true);
   };
 
   window.closeAuthorPage = function (forceHome) {
