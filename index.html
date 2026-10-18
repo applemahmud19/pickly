@@ -5548,6 +5548,20 @@ html, body {
 .grid-more-btn:hover{background:var(--blue,#AA2C2D);color:#fff;box-shadow:0 8px 22px rgba(170,44,45,.25)}
 .nr-sec{margin-top:34px;padding-top:22px;border-top:1px dashed var(--border,#e5e7eb)}
 .nr-sec .parea-header h2{font-size:1.05rem}
+.tp-row{display:flex;flex-wrap:wrap;gap:12px}
+.tp-card{display:flex;align-items:center;gap:11px;padding:10px 16px 10px 10px;min-width:210px;max-width:290px;background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:14px;cursor:pointer;text-align:left;transition:all .18s;font-family:'Hind Siliguri',sans-serif}
+.tp-card:hover{border-color:rgba(170,44,45,.35);box-shadow:0 8px 22px rgba(170,44,45,.14);transform:translateY(-2px)}
+.tp-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;font-size:1.05rem;font-weight:700}
+.tp-av i{font-size:.95rem}
+.tp-info{display:flex;flex-direction:column;min-width:0}
+.tp-name{font-size:.88rem;font-weight:700;color:var(--text,#222);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-meta{font-size:.7rem;color:var(--text-mid,#666);margin-top:1px}
+.tp-meta i{color:#F5A623;font-size:.64rem}
+@media (max-width:880px){
+  .tp-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .tp-row::-webkit-scrollbar{display:none}
+  .tp-card{flex-shrink:0;min-width:180px}
+}
 </style>
 <style id="navMoreStyles">
 /* Category navbar — "আরও" dropdown (managed from Admin → Categories → নেভবার সাজান) */
@@ -6057,6 +6071,20 @@ html.gm-boot #gmSplash{display:flex}
         <h2 class="bn"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue);margin-right:6px"></i>নতুন প্রকাশিত বই</h2>
       </div>
       <div class="pgrid" id="newReleaseGrid"></div>
+    </section>
+
+    <!-- জনপ্রিয় লেখক / জনপ্রিয় প্রকাশনী — রেটিং (ও বিক্রি) হিসাব করে সাজানো -->
+    <section id="topAuthorsSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-pen-nib" style="color:var(--blue);margin-right:6px"></i>জনপ্রিয় লেখক</h2>
+      </div>
+      <div class="tp-row" id="topAuthorsRow"></div>
+    </section>
+    <section id="topPublishersSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-building-columns" style="color:var(--blue);margin-right:6px"></i>জনপ্রিয় প্রকাশনী</h2>
+      </div>
+      <div class="tp-row" id="topPublishersRow"></div>
     </section>
   </div>
 </div>
@@ -8780,7 +8808,9 @@ function renderNewReleases() {
   const grid = document.getElementById('newReleaseGrid');
   if (!sec || !grid) return;
   // শুধু ডিফল্ট হোম ভিউতে (সব পণ্য, কোনো ফিল্টার/সার্চ নেই) দেখাবে
-  if (!(isHomeDefaultView() && _gridList && _gridList === _lastFiltered)) { sec.style.display = 'none'; return; }
+  const _onHome = !!(isHomeDefaultView() && _gridList && _gridList === _lastFiltered);
+  renderTopPeople(_onHome);
+  if (!_onHome) { sec.style.display = 'none'; return; }
   const aboveIds = new Set(_gridList.slice(0, HOME_PAGE_SIZE).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
   const ts = p => new Date(p.created_at || 0).getTime() || 0;
   const books = products.filter(p => isBookProduct(p) && !aboveIds.has(p.id))
@@ -8790,6 +8820,59 @@ function renderNewReleases() {
   grid.innerHTML = books.map(p => buildProductCard(p)).join('');
   sec.style.display = '';
 }
+
+
+/* ══════════════════════════════════════════════════
+   জনপ্রিয় লেখক / প্রকাশনী — রেটিং হিসাব করে র‍্যাংক।
+   স্কোর = বইগুলোর গড় রেটিং (কম বইয়ের ক্ষেত্রে ৪.০ এর দিকে একটু টেনে — ১টা বইয়ে ৫ স্টার পেয়ে
+   ২০টা বইয়ের লেখকের উপরে উঠে যাবে না)। স্কোর সমান হলে বেশি বিক্রি, তারপর বেশি বই আগে।
+   ══════════════════════════════════════════════════ */
+const TOP_PEOPLE_COUNT = 10;    // প্রতি লাইনে কতজন
+function _tpEsc(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function rankTopPeople(kind) {
+  const map = new Map();
+  products.forEach(p => {
+    if (!isBookProduct(p)) return;
+    const names = kind === 'publisher'
+      ? (p.publisher ? [String(p.publisher).trim().replace(/\s+/g, ' ')] : [])
+      : String(p.author || p.brand || '').split(/[,،]/).map(x => x.trim().replace(/\s+/g, ' '));
+    names.filter(Boolean).forEach(n => {
+      const k = n.toLowerCase();
+      if (!map.has(k)) map.set(k, { name: n, n: 0, sum: 0, sold: 0 });
+      const e = map.get(k);
+      e.n++; e.sum += Number(p.rating) || 4; e.sold += _soldMap[p.id] || 0;
+    });
+  });
+  const PRIOR = 4, W = 2;
+  return [...map.values()]
+    .map(e => ({ ...e, avg: e.sum / e.n, score: (e.sum + PRIOR * W) / (e.n + W) }))
+    .sort((a, b) => (b.score - a.score) || (b.sold - a.sold) || (b.n - a.n))
+    .slice(0, TOP_PEOPLE_COUNT);
+}
+function renderTopPeople(show) {
+  [['author', 'topAuthorsSec', 'topAuthorsRow'], ['publisher', 'topPublishersSec', 'topPublishersRow']].forEach(([kind, secId, rowId]) => {
+    const sec = document.getElementById(secId), row = document.getElementById(rowId);
+    if (!sec || !row) return;
+    const list = show ? rankTopPeople(kind) : [];
+    if (!list.length) { sec.style.display = 'none'; row.innerHTML = ''; return; }
+    row.innerHTML = list.map(e => {
+      const first = (typeof Intl !== 'undefined' && Intl.Segmenter)
+        ? (([...new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(e.name)][0] || {}).segment || '')
+        : (Array.from(e.name)[0] || '');
+      const av = kind === 'publisher' ? '<i class="fa-solid fa-building-columns"></i>' : _tpEsc(first);
+      return `<button type="button" class="tp-card" data-kind="${kind}" data-name="${_tpEsc(e.name)}" title="${_tpEsc(e.name)} — সব বই দেখুন">
+        <span class="tp-av">${av}</span>
+        <span class="tp-info"><span class="tp-name bn">${_tpEsc(e.name)}</span>
+        <span class="tp-meta bn"><i class="fa-solid fa-star"></i> ${e.avg.toFixed(1)} · ${e.n} টি বই</span></span>
+      </button>`;
+    }).join('');
+    sec.style.display = '';
+  });
+}
+document.addEventListener('click', e => {
+  const c = e.target.closest && e.target.closest('.tp-card');
+  if (c) openAuthorPage(c.dataset.name, true, c.dataset.kind);
+});
 
 function getFiltered() {
   return _lastFiltered = products.filter(p => {
