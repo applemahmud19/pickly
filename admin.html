@@ -1612,6 +1612,10 @@ body {
         <i class="fa-solid fa-circle-question"></i> Product Questions
         <span class="nav-badge" id="nb-questions" style="display:none">—</span>
       </div>
+      <div class="nav-item" data-sec="reviews">
+        <i class="fa-solid fa-star"></i> Reviews &amp; Ratings
+        <span class="nav-badge" id="nb-reviews" style="display:none">—</span>
+      </div>
 
       <div class="sb-section">Insights</div>
       <div class="nav-item" data-sec="analytics">
@@ -2178,6 +2182,54 @@ body {
             </table>
           </div>
           <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="pqFooter">Loading...</div>
+        </div>
+      </div>
+
+      <!-- ══ REVIEWS & RATINGS ══ -->
+      <div class="section" id="sec-reviews">
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-comments"></i></div><span class="kpi-badge na">Total</span></div>
+            <div class="kpi-val" id="kpi-rv-total">—</div><div class="kpi-label" style="font-family:var(--font-bn)">মোট রিভিউ</div></div>
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-star"></i></div><span class="kpi-badge na">Avg</span></div>
+            <div class="kpi-val" id="kpi-rv-avg">—</div><div class="kpi-label" style="font-family:var(--font-bn)">গড় রেটিং</div></div>
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-eye"></i></div><span class="kpi-badge up">Live</span></div>
+            <div class="kpi-val" id="kpi-rv-live">—</div><div class="kpi-label" style="font-family:var(--font-bn)">সাইটে দেখা যাচ্ছে</div></div>
+          <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-eye-slash"></i></div><span class="kpi-badge na">Hidden</span></div>
+            <div class="kpi-val" id="kpi-rv-hidden">—</div><div class="kpi-label" style="font-family:var(--font-bn)">লুকানো / অপেক্ষমাণ</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-star"></i></div>
+              Reviews &amp; Ratings
+            </div>
+            <div class="panel-actions">
+              <div class="search-bar" style="min-width:200px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="পণ্য, নাম বা রিভিউ খুঁজুন..." id="rvSearch" oninput="renderReviewsAdmin()">
+              </div>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:120px" id="rvStatusFilter" onchange="renderReviewsAdmin()">
+                <option value="">সব স্ট্যাটাস</option>
+                <option value="approved">Approved</option>
+                <option value="hidden">Hidden</option>
+                <option value="pending">Pending</option>
+              </select>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:100px" id="rvStarFilter" onchange="renderReviewsAdmin()">
+                <option value="">সব রেটিং</option>
+                <option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="loadReviewsAdmin()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+              <button class="btn btn-primary btn-sm" onclick="openReviewModal()"><i class="fa-solid fa-plus"></i> রিভিউ যোগ করুন</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Product / Reviewer</th><th>Rating</th><th>Review</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="rvTableBody"><tr><td colspan="5" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr></tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="rvFooter">Loading...</div>
         </div>
       </div>
 
@@ -3132,6 +3184,26 @@ body {
             </div>
           </div>
 
+          <!-- Row 4.8: Rating & Reviews (admin) -->
+          <div class="form-group" style="gap:6px;border:1.5px dashed var(--border);border-radius:10px;padding:10px 12px;background:var(--bg3)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <label class="form-label" style="font-size:0.62rem;margin-bottom:0">
+                <i class="fa-solid fa-star" style="color:var(--amber)"></i> Rating &amp; Reviews
+                <span style="color:var(--text3);font-weight:400;font-family:var(--font-bn);text-transform:none;letter-spacing:0;font-size:0.6rem">(ঐচ্ছিক)</span>
+              </label>
+              <button type="button" class="btn btn-secondary btn-xs" onclick="addQuickReviewRow()" style="padding:4px 10px;font-size:0.68rem">
+                <i class="fa-solid fa-circle-plus"></i> রিভিউ যোগ করুন
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:0.72rem;font-family:var(--font-bn);color:var(--text2)">শুরুর রেটিং (০–৫):</span>
+              <input class="form-inp" type="number" id="pRating" min="0" max="5" step="0.1" placeholder="যেমন 4.5" style="width:90px;padding:5px 8px;font-size:0.8rem">
+              <span style="font-size:0.64rem;color:var(--text3);font-family:var(--font-bn)">রিভিউ এলে গড় রেটিং নিজে নিজে হিসাব হবে</span>
+            </div>
+            <div id="quickReviewRows" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div id="existingReviewHint" style="font-size:0.66rem;color:var(--text3);font-family:var(--font-bn)"></div>
+          </div>
+
           <!-- Row 5: Description — rich text with bullet + line-break support -->
           <div class="form-group" style="gap:3px">
             <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;gap:6px">
@@ -3456,6 +3528,65 @@ body {
 <!-- ══════════════════════════════════════
      BANNER MODAL
 ══════════════════════════════════════ -->
+<div class="modal-overlay" id="reviewModal" onclick="if(event.target===this)closeModal('reviewModal')">
+  <div class="modal-box" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title" id="reviewModalTitle">রিভিউ যোগ করুন</div>
+      <button class="modal-close" onclick="closeModal('reviewModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rvEditId">
+      <div style="display:grid;gap:13px">
+        <div class="form-group">
+          <label class="form-label">পণ্য <span class="required">*</span></label>
+          <select class="form-inp" id="rvProduct" style="padding:8px 10px;font-size:0.84rem"></select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">রিভিউয়ারের নাম <span class="required">*</span></label>
+            <input class="form-inp" type="text" id="rvName" placeholder="যেমন: রাহেলা বেগম" style="font-family:var(--font-bn)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">তারিখ <span style="font-weight:400;text-transform:none">(ঐচ্ছিক)</span></label>
+            <input class="form-inp" type="date" id="rvDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">রেটিং <span class="required">*</span></label>
+          <div id="rvStarPick" style="display:flex;gap:4px;font-size:1.7rem;cursor:pointer;user-select:none"></div>
+          <input type="hidden" id="rvRating" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">রিভিউ লেখা</label>
+          <textarea class="form-inp" id="rvText" rows="4" style="font-family:var(--font-bn);resize:vertical" placeholder="রিভিউ লিখুন..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ছবি <span style="font-weight:400;text-transform:none">(সর্বোচ্চ ৩টি)</span></label>
+          <div id="rvPhotoList" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+          <input type="file" id="rvPhotoInput" accept="image/*" multiple onchange="rvAddPhotos(this)" style="font-size:0.78rem">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end">
+          <div class="form-group">
+            <label class="form-label">স্ট্যাটাস</label>
+            <select class="form-inp" id="rvStatus" style="padding:8px 10px;font-size:0.84rem">
+              <option value="approved">Approved (সাইটে দেখাবে)</option>
+              <option value="hidden">Hidden (লুকানো)</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          <label style="display:flex;align-items:center;gap:7px;font-size:0.78rem;font-family:var(--font-bn);padding-bottom:9px;cursor:pointer">
+            <input type="checkbox" id="rvVerified"> “যাচাইকৃত ক্রেতা” ব্যাজ দেখান
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost" onclick="closeModal('reviewModal')">বাতিল</button>
+      <button class="btn btn-primary" id="rvSaveBtn" onclick="saveReviewAdmin()"><i class="fa-solid fa-floppy-disk"></i> Save Review</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="bannerModal" onclick="if(event.target===this)closeModal('bannerModal')">
   <div class="modal-box" style="max-width:520px">
     <div class="modal-header">
@@ -6560,6 +6691,14 @@ async function openProductModal(product = null) {
   renderVariantRows(product?.variants || []);
   renderSpecRows(product?.specifications || []);
   renderFaqRows(product?.faqs || []);
+  { // Rating & quick reviews
+    const rEl = document.getElementById('pRating');
+    if (rEl) rEl.value = (product?.rating != null && product?.rating !== '') ? product.rating : '';
+    const qr = document.getElementById('quickReviewRows'); if (qr) qr.innerHTML = '';
+    const hint = document.getElementById('existingReviewHint');
+    if (hint) hint.innerHTML = (product && product.id && (product.review_count || 0) > 0)
+      ? `এই পণ্যে ইতিমধ্যে ${product.review_count}টি রিভিউ আছে — <a href="#/reviews" onclick="closeModal('productModal');navTo('reviews')" style="color:var(--blue)">সব রিভিউ ম্যানেজ করুন</a>` : '';
+  }
   document.getElementById('pPublisher').value   = product?.publisher || '';
   const bindingEl = document.getElementById('pBindingType');
   if (bindingEl) bindingEl.value = product?.cover_type || product?.book_binding || 'Hardcover';
@@ -7114,6 +7253,7 @@ async function saveProduct() {
       variants:    collectVariants(),
       specifications: collectSpecifications(),
       faqs:        collectFaqs(),
+      ...(function(){ const v = parseFloat(document.getElementById('pRating')?.value); return (!isNaN(v) && v >= 0 && v <= 5) ? { rating: Math.round(v*10)/10 } : {}; })(),
       description: document.getElementById('pDescription').value.trim() || null,
       // Book-specific fields (null for General Product)
       author_name: authorVal,
@@ -7133,12 +7273,12 @@ async function saveProduct() {
     };
 
     // ── STEP 2: Write to DB only after upload confirmed ──
-    const _write = (pl) => id ? sb.from('products').update(pl).eq('id', id) : sb.from('products').insert(pl);
-    let { error } = await _write(payload);
+    const _write = (pl) => id ? sb.from('products').update(pl).eq('id', id) : sb.from('products').insert(pl).select('id').single();
+    let { data: _saved, error } = await _write(payload);
     if (error && /slug/i.test(error.message || '')) {
       // products টেবিলে slug কলাম এখনো নেই — slug ছাড়া সেভ করো (storefront নাম থেকে অটো slug বানাবে)
       const { slug: _omit, ...withoutSlug } = payload;
-      ({ error } = await _write(withoutSlug));
+      ({ data: _saved, error } = await _write(withoutSlug));
       if (!error) toast('Slug কলাম নেই', 'পণ্য সেভ হয়েছে, কিন্তু slug সংরক্ষণ করতে SQL চালান (supabase_slug_migration.sql)', 'info');
     }
 
@@ -7152,6 +7292,7 @@ async function saveProduct() {
       return;
     }
 
+    try { await saveQuickReviews(id || _saved?.id); } catch (e) { console.error('[saveProduct] quick reviews:', e); toast('রিভিউ সেভ হয়নি', e.message || '', 'warning'); }
     toast('Success!', id ? 'পণ্য আপডেট হয়েছে' : 'নতুন পণ্য যোগ হয়েছে', 'success');
     closeModal('productModal');
     selectedImageFiles = [];
@@ -7315,7 +7456,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', finder:'Magical Book Finder' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -7326,6 +7467,7 @@ function navTo(sec) {
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  loadVisitorStats();
   if (sec === 'questions')  loadProductQuestionsAdmin();
+  if (sec === 'reviews')    loadReviewsAdmin();
   if (sec === 'finder')     loadFinder();
   // ✅ URL: admin.html#/products, #/orders ...
   if (location.hash !== '#/' + sec) history.pushState({ sec }, '', '#/' + sec);
@@ -9390,6 +9532,272 @@ async function _doToggleBlock(u, newBlocked) {
     clearTimeout(timeoutId);
     if (!timedOut) toast('Error', e.message || 'Update failed', 'error');
   }
+}
+
+/* ══════════════════════════════════════════════════════
+   REVIEWS & RATINGS — Admin management
+   reviews: id, product_id, user_id, reviewer_name, rating, review_text,
+            photos(jsonb), verified, status [approved|hidden|pending],
+            is_admin_added, created_at
+   (SQL: reviews_setup.sql)
+══════════════════════════════════════════════════════ */
+let allReviews = [];
+let rvPhotos = [];        // existing URLs kept in the modal
+let rvNewFiles = [];      // new File objects to upload
+const REVIEW_BUCKET = 'review-photos';
+
+function rvProductName(pid) {
+  const p = allProducts.find(x => String(x.id) === String(pid));
+  return p ? (p.name || 'Unnamed') : `Product #${String(pid).slice(0, 8)}`;
+}
+function rvStars(n) { n = Math.round(Number(n) || 0); return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+async function loadReviewsAdmin() {
+  if (!sb) return;
+  const tbody = document.getElementById('rvTableBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>';
+  try {
+    if (!allProducts.length) { try { await loadProducts(); } catch (e) {} }
+    const { data, error } = await sb.from('reviews').select('*').order('created_at', { ascending: false });
+    if (error) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-database"></i></div>
+        <div class="empty-title">রিভিউ লোড হয়নি</div>
+        <div class="empty-sub" style="font-family:var(--font-bn)">Supabase-এ <code>reviews_setup.sql</code> চালিয়েছেন? (${escHtml(error.message)})</div></div></td></tr>`;
+      return;
+    }
+    allReviews = data || [];
+    renderReviewKPIs(); renderReviewsAdmin(); updateReviewsBadge();
+  } catch (e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:28px;color:var(--red)">লোড ব্যর্থ — আবার চেষ্টা করুন।</td></tr>';
+  }
+}
+
+function updateReviewsBadge() {
+  const el = document.getElementById('nb-reviews'); if (!el) return;
+  const n = allReviews.filter(r => r.status === 'pending').length;
+  el.textContent = n; el.style.display = n ? 'inline-flex' : 'none';
+}
+
+function renderReviewKPIs() {
+  const live = allReviews.filter(r => r.status === 'approved');
+  const avg = live.length ? (live.reduce((s, r) => s + Number(r.rating), 0) / live.length).toFixed(1) : '—';
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('kpi-rv-total', allReviews.length); set('kpi-rv-avg', avg);
+  set('kpi-rv-live', live.length); set('kpi-rv-hidden', allReviews.length - live.length);
+}
+
+function renderReviewsAdmin() {
+  const q = (document.getElementById('rvSearch')?.value || '').toLowerCase();
+  const sf = document.getElementById('rvStatusFilter')?.value || '';
+  const st = document.getElementById('rvStarFilter')?.value || '';
+  const list = allReviews.filter(r =>
+    (!sf || r.status === sf) && (!st || String(r.rating) === st) &&
+    (!q || (r.review_text || '').toLowerCase().includes(q) || (r.reviewer_name || '').toLowerCase().includes(q) || rvProductName(r.product_id).toLowerCase().includes(q)));
+  const foot = document.getElementById('rvFooter');
+  if (foot) foot.textContent = `Showing ${list.length} of ${allReviews.length} reviews`;
+  const tbody = document.getElementById('rvTableBody'); if (!tbody) return;
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i class="fa-regular fa-star"></i></div>
+      <div class="empty-title">কোনো রিভিউ নেই</div><div class="empty-sub" style="font-family:var(--font-bn)">“রিভিউ যোগ করুন” বাটনে ক্লিক করুন</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(r => {
+    const pill = r.status === 'approved' ? '<span class="pill pill-delivered">Approved</span>'
+               : r.status === 'hidden'   ? '<span class="pill pill-cancelled">Hidden</span>'
+                                         : '<span class="pill pill-pending">Pending</span>';
+    const photos = (Array.isArray(r.photos) ? r.photos : []).map(u =>
+      `<a href="${escHtml(u)}" target="_blank"><img src="${escHtml(u)}" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"></a>`).join('');
+    const tag = r.is_admin_added ? '<span style="font-size:0.6rem;color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:0 5px;margin-left:5px">Admin</span>'
+                                 : '<span style="font-size:0.6rem;color:var(--green);border:1px solid rgba(52,199,89,.3);border-radius:4px;padding:0 5px;margin-left:5px">Customer</span>';
+    return `<tr>
+      <td style="max-width:170px">
+        <div style="font-weight:600;font-size:0.82rem">${escHtml(rvProductName(r.product_id))}</div>
+        <div style="font-size:0.72rem;color:var(--text3)">${escHtml(r.reviewer_name || 'Unknown')}${tag}</div>
+        <div style="font-size:0.64rem;color:var(--text3);font-family:var(--mono)">${fmtDate(r.created_at)}</div>
+      </td>
+      <td style="color:var(--amber);white-space:nowrap;font-size:0.9rem">${rvStars(r.rating)}</td>
+      <td style="max-width:280px;font-size:0.8rem;color:var(--text2);line-height:1.5;font-family:var(--font-bn)">
+        ${escHtml(r.review_text || '')}
+        ${photos ? `<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">${photos}</div>` : ''}
+      </td>
+      <td>${pill}</td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-xs" onclick="openReviewModal('${r.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+        ${r.status === 'approved'
+          ? `<button class="btn btn-secondary btn-xs" onclick="setReviewStatus('${r.id}','hidden')"><i class="fa-solid fa-eye-slash"></i> Hide</button>`
+          : `<button class="btn btn-primary btn-xs" onclick="setReviewStatus('${r.id}','approved')"><i class="fa-solid fa-check"></i> Approve</button>`}
+        <button class="btn btn-danger btn-xs" onclick="deleteReviewAdmin('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function setReviewStatus(id, status) {
+  const { error } = await sb.from('reviews').update({ status }).eq('id', id);
+  if (error) { toast('Failed', error.message, 'error'); return; }
+  toast('Updated', status === 'approved' ? 'রিভিউ সাইটে দেখা যাচ্ছে' : 'রিভিউ লুকানো হয়েছে', 'success');
+  await loadReviewsAdmin();
+}
+
+async function deleteReviewAdmin(id) {
+  const r = allReviews.find(x => String(x.id) === String(id));
+  if (!confirm('এই রিভিউ স্থায়ীভাবে মুছে ফেলবেন?')) return;
+  const { error } = await sb.from('reviews').delete().eq('id', id);
+  if (error) { toast('Delete Failed', error.message, 'error'); return; }
+  // best-effort: remove the photo files too
+  try {
+    const paths = (r?.photos || []).map(u => (u.split('/' + REVIEW_BUCKET + '/')[1] || '').split('?')[0]).filter(Boolean);
+    if (paths.length) await sb.storage.from(REVIEW_BUCKET).remove(paths);
+  } catch (e) {}
+  toast('Deleted', 'রিভিউ মুছে গেছে', 'success');
+  await loadReviewsAdmin();
+}
+
+/* ── Modal ── */
+function rvSetStars(n) {
+  document.getElementById('rvRating').value = n;
+  const box = document.getElementById('rvStarPick');
+  box.innerHTML = [1,2,3,4,5].map(i =>
+    `<span onclick="rvSetStars(${i})" style="color:${i <= n ? 'var(--amber)' : 'var(--border)'}">★</span>`).join('');
+}
+
+function rvRenderPhotoList() {
+  const box = document.getElementById('rvPhotoList');
+  const old = rvPhotos.map((u, i) => `<div style="position:relative"><img src="${escHtml(u)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+    <button type="button" onclick="rvPhotos.splice(${i},1);rvRenderPhotoList()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:10px;cursor:pointer">✕</button></div>`);
+  const neu = rvNewFiles.map((f, i) => `<div style="position:relative"><img src="${URL.createObjectURL(f)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1.5px dashed var(--blue)">
+    <button type="button" onclick="rvNewFiles.splice(${i},1);rvRenderPhotoList()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:10px;cursor:pointer">✕</button></div>`);
+  box.innerHTML = old.concat(neu).join('');
+}
+
+function rvAddPhotos(input) {
+  const files = Array.from(input.files || []);
+  for (const f of files) {
+    if (rvPhotos.length + rvNewFiles.length >= 3) { toast('সর্বোচ্চ ৩টি ছবি', '', 'warning'); break; }
+    if (f.size > 8 * 1024 * 1024) { toast('ফাইল বড়', 'সর্বোচ্চ 8MB', 'warning'); continue; }
+    rvNewFiles.push(f);
+  }
+  input.value = ''; rvRenderPhotoList();
+}
+
+async function openReviewModal(id = null, presetProductId = null) {
+  if (!allProducts.length) { try { await loadProducts(); } catch (e) {} }
+  const sel = document.getElementById('rvProduct');
+  sel.innerHTML = allProducts.map(p => `<option value="${escHtml(String(p.id))}">${escHtml(p.name || 'Unnamed')}</option>`).join('');
+  const r = id ? allReviews.find(x => String(x.id) === String(id)) : null;
+  document.getElementById('reviewModalTitle').textContent = r ? 'রিভিউ এডিট করুন' : 'রিভিউ যোগ করুন';
+  document.getElementById('rvEditId').value = r?.id || '';
+  if (r) sel.value = String(r.product_id); else if (presetProductId) sel.value = String(presetProductId);
+  document.getElementById('rvName').value = r?.reviewer_name || '';
+  document.getElementById('rvDate').value = r?.created_at ? new Date(r.created_at).toISOString().slice(0, 10) : '';
+  document.getElementById('rvText').value = r?.review_text || '';
+  document.getElementById('rvStatus').value = r?.status || 'approved';
+  document.getElementById('rvVerified').checked = !!r?.verified;
+  rvPhotos = Array.isArray(r?.photos) ? [...r.photos] : [];
+  rvNewFiles = [];
+  rvSetStars(r ? Number(r.rating) : 0);
+  rvRenderPhotoList();
+  openModal('reviewModal');
+}
+
+/* Resize big photos before upload (saves storage + loads faster) */
+function rvCompress(file, maxSide = 1400, quality = 0.82) {
+  return new Promise(resolve => {
+    if (!/^image\/(jpe?g|png|webp)$/i.test(file.type)) return resolve(file);
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => { URL.revokeObjectURL(url); resolve(b || file); }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function rvUploadFiles(files) {
+  const urls = [];
+  for (const f of files) {
+    const blob = await rvCompress(f);
+    const path = `admin/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+    const { error } = await sb.storage.from(REVIEW_BUCKET).upload(path, blob, { contentType: 'image/jpeg', cacheControl: '3600' });
+    if (error) throw new Error('ছবি আপলোড ব্যর্থ: ' + error.message);
+    urls.push(sb.storage.from(REVIEW_BUCKET).getPublicUrl(path).data.publicUrl);
+  }
+  return urls;
+}
+
+async function saveReviewAdmin() {
+  const id = document.getElementById('rvEditId').value;
+  const product_id = document.getElementById('rvProduct').value;
+  const name = document.getElementById('rvName').value.trim();
+  const rating = parseInt(document.getElementById('rvRating').value) || 0;
+  if (!product_id) { toast('পণ্য নির্বাচন করুন', '', 'warning'); return; }
+  if (!name)       { toast('নাম দিন', '', 'warning'); return; }
+  if (rating < 1)  { toast('রেটিং দিন', 'স্টার সিলেক্ট করুন', 'warning'); return; }
+  const btn = document.getElementById('rvSaveBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+  try {
+    const newUrls = rvNewFiles.length ? await rvUploadFiles(rvNewFiles) : [];
+    const dateVal = document.getElementById('rvDate').value;
+    const row = {
+      product_id, reviewer_name: name, rating,
+      review_text: document.getElementById('rvText').value.trim() || null,
+      photos: [...rvPhotos, ...newUrls],
+      status: document.getElementById('rvStatus').value,
+      verified: document.getElementById('rvVerified').checked,
+      ...(dateVal ? { created_at: new Date(dateVal + 'T12:00:00').toISOString() } : {}),
+    };
+    const { error } = id
+      ? await sb.from('reviews').update(row).eq('id', id)
+      : await sb.from('reviews').insert({ ...row, is_admin_added: true, user_id: null });
+    if (error) throw error;
+    toast('Saved', 'রিভিউ সেভ হয়েছে', 'success');
+    closeModal('reviewModal');
+    await loadReviewsAdmin();
+    try { await loadProducts(); } catch (e) {}
+  } catch (e) {
+    toast('Save Failed', e.message || 'সমস্যা হয়েছে', 'error');
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Review';
+}
+
+/* ── Quick reviews inside the Product form ── */
+function addQuickReviewRow() {
+  const wrap = document.getElementById('quickReviewRows'); if (!wrap) return;
+  const row = document.createElement('div');
+  row.className = 'qr-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 78px 26px;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px';
+  row.innerHTML = `
+    <input class="form-inp qr-name" type="text" placeholder="রিভিউয়ারের নাম" style="padding:6px 8px;font-size:0.78rem;font-family:var(--font-bn)">
+    <select class="form-inp qr-rating" style="padding:6px 6px;font-size:0.78rem">
+      <option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option>
+    </select>
+    <button type="button" onclick="this.closest('.qr-row').remove()" title="মুছুন" style="width:26px;height:30px;border:none;border-radius:6px;background:var(--bg3);color:var(--red);cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+    <textarea class="form-inp qr-text" placeholder="রিভিউ লিখুন..." style="grid-column:1/-1;padding:6px 8px;font-size:0.78rem;font-family:var(--font-bn);min-height:44px;resize:vertical"></textarea>`;
+  wrap.appendChild(row);
+}
+
+async function saveQuickReviews(productId) {
+  if (!productId) return;
+  const rows = [];
+  document.querySelectorAll('#quickReviewRows .qr-row').forEach(r => {
+    const name = r.querySelector('.qr-name').value.trim();
+    const text = r.querySelector('.qr-text').value.trim();
+    if (!name && !text) return;
+    rows.push({
+      product_id: String(productId), reviewer_name: name || 'গ্রাহক',
+      rating: parseInt(r.querySelector('.qr-rating').value) || 5,
+      review_text: text || null, photos: [], status: 'approved',
+      verified: false, is_admin_added: true, user_id: null,
+    });
+  });
+  if (!rows.length) return;
+  const { error } = await sb.from('reviews').insert(rows);
+  if (error) throw error;
+  toast('রিভিউ যোগ হয়েছে', `${rows.length}টি রিভিউ সেভ হয়েছে`, 'success');
 }
 
 /* ══════════════════════════════════════════════════════
