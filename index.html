@@ -6000,7 +6000,7 @@ html.gm-boot #gmSplash{display:flex}
     <nav class="fp-breadcrumb" aria-label="breadcrumb">
       <span class="bc-link" onclick="closeAuthorPage(true)"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
-      <span class="bc-link" style="cursor:default">লেখক</span>
+      <span class="bc-link" style="cursor:default" id="apBreadKind">লেখক</span>
       <i class="fa-solid fa-chevron-right bc-sep"></i>
       <span class="bc-current" id="apBreadName"></span>
     </nav>
@@ -6014,7 +6014,7 @@ html.gm-boot #gmSplash{display:flex}
     <div class="ap-hero-inner">
       <div class="ap-avatar" id="apAvatar"></div>
       <div class="ap-info">
-        <span class="ap-role"><i class="fa-solid fa-pen-nib"></i> লেখক</span>
+        <span class="ap-role"><i class="fa-solid fa-pen-nib" id="apRoleIco"></i> <span id="apRoleTxt">লেখক</span></span>
         <h1 class="ap-name" id="apName"></h1>
         <div class="ap-cats" id="apCats"></div>
       </div>
@@ -6038,7 +6038,7 @@ html.gm-boot #gmSplash{display:flex}
     <div id="apEmpty" style="display:none;text-align:center;padding:60px 20px">
       <i class="fa-solid fa-book-open" style="font-size:3rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
       <div class="bn" style="font-size:.95rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কোনো বই পাওয়া যায়নি</div>
-      <div class="bn" style="font-size:.78rem;color:var(--text-light)">এই লেখকের বই এখনো যোগ হয়নি</div>
+      <div class="bn" id="apEmptySub" style="font-size:.78rem;color:var(--text-light)">এই লেখকের বই এখনো যোগ হয়নি</div>
     </div>
   </div>
 </div><!-- /#page-author -->
@@ -6156,6 +6156,7 @@ html.gm-boot #gmSplash{display:flex}
       </div>
       <div id="fpBrandRow" class="fp-brand-row"></div>
       <div id="fpAuthorRow"></div>
+      <div id="fpPublisherRow"></div>
 
       <!-- Rating row -->
       <div class="fp-rating-row">
@@ -7946,9 +7947,10 @@ async function _restorePageFromUrl() {
     return;
   }
 
-  if (path.startsWith('/author/')) {
-    const _ae = typeof window.findAuthorBySlug === 'function' ? window.findAuthorBySlug(path.replace('/author/', '')) : null;
-    if (_ae) openAuthorPage(_ae.name, false);
+  if (path.startsWith('/author/') || path.startsWith('/publisher/')) {
+    const _kind = path.startsWith('/publisher/') ? 'publisher' : 'author';
+    const _ae = typeof window.findAuthorBySlug === 'function' ? window.findAuthorBySlug(path.replace('/' + _kind + '/', ''), _kind) : null;
+    if (_ae) openAuthorPage(_ae.name, false, _kind);
     else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
     return;
   }
@@ -8918,7 +8920,7 @@ function closePage(name) {
   }
   if (name === 'product') restoreHomeUrl();
   if (name === 'category' && _safeDecode(location.pathname).startsWith('/category/')) restoreHomeUrl();
-  if (name === 'author' && _safeDecode(location.pathname).startsWith('/author/')) restoreHomeUrl();
+  if (name === 'author' && /^\/(author|publisher)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
@@ -9019,6 +9021,20 @@ function openProduct(id, pushUrl = true) {
           }</span>
         </div>`;
     } else { authorEl.innerHTML = ''; }
+  }
+
+  // ── Publisher (books only) — ক্লিকযোগ্য, প্রকাশনীর সব বই দেখাবে ──
+  const pubEl = document.getElementById('fpPublisherRow');
+  if (pubEl) {
+    const pubName = isBook && p.publisher ? String(p.publisher).trim() : '';
+    if (pubName) {
+      pubEl.innerHTML = `
+        <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(170,44,45,.15);border-radius:20px;padding:4px 12px 4px 10px;margin-bottom:6px;flex-wrap:wrap;max-width:100%">
+          <i class="fa-solid fa-building-columns" style="color:var(--blue);font-size:.75rem"></i>
+          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text-mid)">প্রকাশনী:</span>
+          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;word-break:break-word"><span class="ap-link" role="link" tabindex="0" title="${pubName.replace(/"/g,'&quot;')} — সব বই দেখুন" data-a="${encodeURIComponent(pubName)}" onclick="openAuthorPage(decodeURIComponent(this.dataset.a),true,'publisher')" onkeydown="if(event.key==='Enter'){openAuthorPage(decodeURIComponent(this.dataset.a),true,'publisher')}">${pubName.replace(/</g,'&lt;')}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span></span>
+        </div>`;
+    } else { pubEl.innerHTML = ''; }
   }
 
   // ── Icon / Image ──
@@ -11724,7 +11740,7 @@ function buildSpecTable(p) {
   // Books: publisher from publisher column (separate from author/brand)
   // Others: brand column
   if (isBook && p.publisher) {
-    rows.push(['প্রকাশনী', p.publisher]);
+    rows.push(['প্রকাশনী', `<span class="ap-link" role="link" tabindex="0" data-a="${encodeURIComponent(String(p.publisher).trim())}" onclick="openAuthorPage(decodeURIComponent(this.dataset.a),true,'publisher')">${String(p.publisher).replace(/</g,'&lt;')}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`]);
   } else if (!isBook && p.brand) {
     rows.push(['ব্র্যান্ড', p.brand]);
   }
@@ -15469,7 +15485,7 @@ window.addEventListener('popstate', function(e) {
     window.openCatPage(state.cat, null, false);
 
   } else if (state.page === 'author' && state.author) {
-    if (typeof window.openAuthorPage === 'function') window.openAuthorPage(state.author, false);
+    if (typeof window.openAuthorPage === 'function') window.openAuthorPage(state.author, false, state.kind || 'author');
 
   } else if (state.page === 'checkout') {
     if (cart.length && currentUser) window.openCheckout(); else document.title = 'বুক গ্যালাক্সি';
@@ -16158,8 +16174,8 @@ window.addEventListener('popstate',function(){
 </a>
 <script>
 /* ══════════════════════════════════════════════════
-   AUTHOR PROFILE PAGE — লেখকের আলাদা পেজ + সব বই
-   URL: /author/<slug>   (বই-এর author / brand ফিল্ড থেকে অটো তৈরি)
+   AUTHOR / PUBLISHER PROFILE PAGE — লেখক ও প্রকাশনীর আলাদা পেজ + সব বই
+   URL: /author/<slug>  এবং  /publisher/<slug>
 ══════════════════════════════════════════════════ */
 (function () {
   const _digits = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
@@ -16167,73 +16183,87 @@ window.addEventListener('popstate',function(){
   const _key    = s => _norm(s).toLowerCase();
   const _esc    = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  // একটি বইয়ের সব লেখক (কমা দিয়ে একাধিক লেখক থাকলে আলাদা করে)
-  function authorsOf(p) {
+  const KIND = {
+    author:    { label: 'লেখক',    icon: 'fa-pen-nib',          bookWord: 'লেখকের',    emptySub: 'এই লেখকের বই এখনো যোগ হয়নি',    titleSfx: 'লেখক' },
+    publisher: { label: 'প্রকাশনী', icon: 'fa-building-columns', bookWord: 'প্রকাশনীর', emptySub: 'এই প্রকাশনীর বই এখনো যোগ হয়নি', titleSfx: 'প্রকাশনী' }
+  };
+
+  // একটি বইয়ের লেখক / প্রকাশনীর নামগুলো
+  function namesOf(p, kind) {
     if (!p || !isBookProduct(p)) return [];
+    if (kind === 'publisher') return p.publisher ? [_norm(p.publisher)].filter(Boolean) : [];
     return String(p.author || p.brand || '').split(/[,،]/).map(_norm).filter(Boolean);
   }
 
-  // সব লেখকের ইনডেক্স: key → { name, slug, books[] }
-  function authorIndex() {
+  // ইনডেক্স: key → { name, slug, books[] }
+  function buildIndex(kind) {
     const map = new Map();
     products.forEach(p => {
-      authorsOf(p).forEach(n => {
+      namesOf(p, kind).forEach(n => {
         const k = _key(n);
         if (!map.has(k)) map.set(k, { key: k, name: n, slug: '', books: [] });
         map.get(k).books.push(p);
       });
     });
-    // slug — নাম অনুযায়ী সাজিয়ে দিই যাতে একই নামের জন্য সবসময় একই slug হয়
     const used = new Set();
     [...map.values()].sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0).forEach((e, i) => {
-      let base = makeSlug(e.name) || ('author-' + (i + 1)), s = base, n = 2;
+      let base = makeSlug(e.name) || (kind + '-' + (i + 1)), s = base, n = 2;
       while (used.has(s)) s = base + '-' + (n++);
       used.add(s); e.slug = s;
     });
     return map;
   }
 
-  window.findAuthorBySlug = function (raw) {
+  window.findAuthorBySlug = function (raw, kind) {
+    kind = kind || 'author';
     const s = _safeDecode(String(raw || '')).split('?')[0].replace(/\/+$/, '').toLowerCase();
-    return [...authorIndex().values()].find(e => e.slug.toLowerCase() === s)
-        || [...authorIndex().values()].find(e => e.key === _key(s));
+    const list = [...buildIndex(kind).values()];
+    return list.find(e => e.slug.toLowerCase() === s) || list.find(e => e.key === _key(s));
   };
 
-  let _cur = null;   // { key, name, slug }
+  let _cur = null;   // { kind, key, name, slug }
 
-  window.openAuthorPage = function (name, pushUrl) {
+  window.openAuthorPage = function (name, pushUrl, kind) {
     if (pushUrl === undefined) pushUrl = true;
-    const idx = authorIndex();
-    const ent = idx.get(_key(name));
+    kind = KIND[kind] ? kind : 'author';
+    const K = KIND[kind];
+    const ent = buildIndex(kind).get(_key(name));
     const display = ent ? ent.name : _norm(name);
-    const slug = ent ? ent.slug : (makeSlug(display) || 'author');
-    _cur = { key: _key(display), name: display, slug };
-    if (pushUrl) window._authorFromApp = true;     // অ্যাপের ভেতর থেকে এসেছে → ব্যাক বাটনে আগের পেজে ফিরবে
+    const slug = ent ? ent.slug : (makeSlug(display) || kind);
+    _cur = { kind, key: _key(display), name: display, slug };
+    if (pushUrl) window._authorFromApp = true;
 
-    // আগের পেজগুলোর body-class সাফ (যেমন product)
     ['product','track','order-detail','checkout','category','profile','wishlist'].forEach(n => clearPageUIVisibility(n));
 
     // Hero
-    const first = (typeof Intl !== 'undefined' && Intl.Segmenter)
-      ? (([...new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(display)][0] || {}).segment || '')
-      : Array.from(display)[0] || '';
-    document.getElementById('apAvatar').textContent = first;
+    const av = document.getElementById('apAvatar');
+    if (kind === 'publisher') {
+      av.innerHTML = '<i class="fa-solid fa-building-columns" style="font-size:.78em"></i>';
+    } else {
+      av.textContent = (typeof Intl !== 'undefined' && Intl.Segmenter)
+        ? (([...new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(display)][0] || {}).segment || '')
+        : Array.from(display)[0] || '';
+    }
+    document.getElementById('apRoleTxt').textContent = K.label;
+    document.getElementById('apRoleIco').className = 'fa-solid ' + K.icon;
+    document.getElementById('apBreadKind').textContent = K.label;
+    document.getElementById('apEmptySub').textContent = K.emptySub;
     document.getElementById('apName').textContent = display;
     document.getElementById('apBreadName').textContent = display;
     document.getElementById('apSort').value = 'popular';
 
     renderAuthorBooks();
 
-    const url = '/author/' + slug;
-    const n = (ent ? ent.books.length : 0);
-    _navTo({ page: 'author', author: display }, `${display} — লেখক | বুক গ্যালাক্সি`, url, pushUrl);
+    const url = '/' + kind + '/' + slug;
+    const n = ent ? ent.books.length : 0;
+    _navTo({ page: 'author', author: display, kind }, `${display} — ${K.titleSfx} | বুক গ্যালাক্সি`, url, pushUrl);
     _setMeta(`${display}-এর সব বই (${_digits(n)}টি) কিনুন বুক গ্যালাক্সি-তে। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।`, url);
     openPage('author');
   };
 
   window.renderAuthorBooks = function () {
     if (!_cur) return;
-    const ent = authorIndex().get(_cur.key);
+    const ent = buildIndex(_cur.kind).get(_cur.key);
     let list = ent ? [...ent.books] : [];
     const sort = (document.getElementById('apSort') || {}).value || 'popular';
     if (sort === 'low')           list.sort((a, b) => getEffectiveSalePrice(a).displayPrice - getEffectiveSalePrice(b).displayPrice);
@@ -16241,18 +16271,16 @@ window.addEventListener('popstate',function(){
     else if (sort === 'rating')   list.sort((a, b) => (b.rating || 4) - (a.rating || 4));
     else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
 
-    // ক্যাটাগরি চিপ
     const cats = [...new Set(list.map(p => p.category).filter(Boolean))];
     document.getElementById('apCats').innerHTML = cats.map(c => `<span class="ap-cat">${_esc(c)}</span>`).join('');
 
-    // Stats
     const avg = list.length ? list.reduce((s, p) => s + (p.rating || 4), 0) / list.length : 0;
     const maxDisc = list.length ? Math.max(...list.map(p => Math.round(getEffectiveSalePrice(p).totalDiscPct))) : 0;
     const stats = [
-      { ico: 'fa-book',        val: _digits(list.length),         lbl: 'মোট বই' },
-      { ico: 'fa-layer-group', val: _digits(cats.length),         lbl: 'ক্যাটাগরি' },
-      { ico: 'fa-star',        val: _digits(avg.toFixed(1)),      lbl: 'গড় রেটিং' },
-      { ico: 'fa-tags',        val: _digits(maxDisc) + '%',       lbl: 'সর্বোচ্চ ছাড়' }
+      { ico: 'fa-book',        val: _digits(list.length),    lbl: 'মোট বই' },
+      { ico: 'fa-layer-group', val: _digits(cats.length),    lbl: 'ক্যাটাগরি' },
+      { ico: 'fa-star',        val: _digits(avg.toFixed(1)), lbl: 'গড় রেটিং' },
+      { ico: 'fa-tags',        val: _digits(maxDisc) + '%',  lbl: 'সর্বোচ্চ ছাড়' }
     ];
     document.getElementById('apStats').innerHTML = stats.map(s => `
       <div class="ap-stat">
@@ -16276,7 +16304,7 @@ window.addEventListener('popstate',function(){
 
   window.copyAuthorUrl = function () {
     if (!_cur) return;
-    const url = window.location.origin + '/author/' + encodeURIComponent(_cur.slug);
+    const url = window.location.origin + '/' + _cur.kind + '/' + encodeURIComponent(_cur.slug);
     const done = () => {
       const btn = document.getElementById('apShareBtn');
       if (btn) {
