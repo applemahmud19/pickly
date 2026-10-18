@@ -5746,6 +5746,13 @@ html.gm-boot #gmSplash{display:flex}
     <!-- Action Buttons -->
     <div class="hactions">
 
+      <!-- Blog Corner -->
+      <button class="hbtn" onclick="openBlogList()" style="padding:7px 11px">
+        <i class="fa-solid fa-pen-nib"></i>
+        <svg class="svg-icon mob-icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <span style="font-size:.58rem;white-space:nowrap">ব্লগ কর্নার</span>
+      </button>
+
       <!-- Track Order -->
       <button class="hbtn" onclick="openTrack()" style="padding:7px 11px">
         <i class="fa-solid fa-location-dot"></i>
@@ -6075,6 +6082,88 @@ html.gm-boot #gmSplash{display:flex}
 <!-- ══════════════════════════════════════════════════
      FULL-PAGE: CATEGORY VIEW
 ══════════════════════════════════════════════════ -->
+<style>
+.bg-wrap{max-width:1180px;margin:0 auto;padding:18px 16px 60px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+.bg-hero{background:linear-gradient(135deg,#711D1E,#AA2C2D);color:#fff;padding:30px 16px;text-align:center}
+.bg-hero h1{font-size:1.7rem;margin:0 0 6px;font-family:'Hind Siliguri',sans-serif}
+.bg-hero p{margin:0 0 14px;opacity:.9;font-size:.88rem}
+.bg-search{max-width:460px;margin:0 auto;display:flex;background:#fff;border-radius:10px;overflow:hidden}
+.bg-search input{flex:1;border:0;padding:11px 14px;font:inherit;outline:0}
+.bg-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.bg-chip{border:1px solid var(--border);background:#fff;padding:6px 14px;border-radius:99px;cursor:pointer;font-size:.8rem;font-family:inherit}
+.bg-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.bg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.bg-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:.2s}
+.bg-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.bg-cover{height:150px;background:linear-gradient(135deg,var(--blue-mid),var(--blue-light)) center/cover;display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:2rem}
+.bg-card-b{padding:14px}
+.bg-cat{font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase}
+.bg-card h3{font-size:1rem;margin:5px 0;line-height:1.5;color:var(--text)}
+.bg-card p{font-size:.78rem;color:var(--text-mid);margin:0 0 8px;line-height:1.7}
+.bg-meta{font-size:.7rem;color:var(--text-light);display:flex;gap:10px;flex-wrap:wrap}
+.bg-side{position:sticky;top:12px;display:flex;flex-direction:column;gap:16px}
+.bg-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px}
+.bg-box h4{margin:0 0 12px;font-size:.95rem;color:var(--text)}
+.bg-tr{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--border);cursor:pointer}
+.bg-tr:first-of-type{border-top:0}
+.bg-tr b{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0}
+.bg-tr span{font-size:.82rem;line-height:1.5;color:var(--text)}
+.bg-tr small{display:block;color:var(--text-light);font-size:.68rem}
+.bg-art{background:#fff;border:1px solid var(--border);border-radius:12px;padding:26px 28px}
+.bg-art h1{font-size:1.9rem;line-height:1.4;margin:6px 0 10px;color:var(--text)}
+.bg-art .bg-hero-img{width:100%;border-radius:10px;margin:14px 0}
+.bg-toc{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px 18px;margin:16px 0;font-size:.85rem;display:inline-block;min-width:240px}
+.bg-toc b{display:block;margin-bottom:6px}
+.bg-toc a{display:block;color:var(--blue);padding:2px 0;cursor:pointer;text-decoration:none}
+.bg-toc a.l3{padding-left:16px;font-size:.8rem}
+.bg-body{font-size:1rem;line-height:2;color:var(--text);word-wrap:break-word}
+.bg-body h2{font-size:1.45rem;border-bottom:1px solid var(--border);padding-bottom:6px;margin:28px 0 12px}
+.bg-body h3{font-size:1.15rem;margin:22px 0 8px}
+.bg-body a{color:var(--blue);text-decoration:underline}
+.bg-body img{max-width:100%;border-radius:8px}
+.bg-body figure{margin:16px 0;text-align:center}.bg-body figcaption{font-size:.78rem;color:var(--text-light)}
+.bg-body blockquote{border-left:4px solid var(--blue);background:var(--blue-light);margin:14px 0;padding:10px 16px;border-radius:0 8px 8px 0}
+.bg-body table{border-collapse:collapse;width:100%;margin:14px 0;display:block;overflow-x:auto}
+.bg-body td,.bg-body th{border:1px solid var(--border);padding:8px 10px}.bg-body th{background:#F1F5F9}
+.bg-body .infobox{float:right;width:250px;margin:0 0 14px 18px;background:#F8FAFC;border:1px solid var(--border);font-size:.85rem;line-height:1.6}
+.bg-body .infobox th{text-align:center;background:var(--blue-mid)}
+.bg-body .callout{background:#FFF8E1;border-left:4px solid #F59E0B;padding:10px 14px;border-radius:6px;margin:14px 0}
+.bg-body pre,.bg-body code{background:#F1F5F9;border-radius:6px;padding:2px 6px;font-size:.88rem}.bg-body pre{padding:12px;overflow-x:auto}
+.bg-share{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.bg-share button{border:0;border-radius:8px;padding:8px 13px;color:#fff;cursor:pointer;font:inherit;font-size:.8rem}
+.bg-short{flex:1;min-width:200px;display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:.82rem}
+.bg-short input{flex:1;border:0;padding:8px 10px;background:#F8FAFC;font:inherit;outline:0}
+.bg-short button{border-radius:0;background:var(--blue)}
+.bg-cm{padding:12px 0;border-top:1px solid var(--border)}.bg-cm b{font-size:.85rem}.bg-cm small{color:var(--text-light);margin-left:8px}
+.bg-cm p{margin:4px 0 0;font-size:.88rem;white-space:pre-wrap}
+.bg-ta{width:100%;min-height:80px;border:1px solid var(--border);border-radius:8px;padding:10px;font:inherit;box-sizing:border-box}
+@media(max-width:900px){.bg-wrap{grid-template-columns:1fr}.bg-side{position:static}.bg-art{padding:16px}.bg-art h1{font-size:1.4rem}.bg-body .infobox{float:none;width:100%;margin:0 0 14px}}
+</style>
+
+<div id="page-blog" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn" onclick="BG.home()"><i class="fa-solid fa-arrow-left"></i> ফিরে যান</button>
+    <nav class="fp-breadcrumb"><span class="bc-link" onclick="BG.home()"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span><i class="fa-solid fa-chevron-right bc-sep"></i><span class="bc-current">ব্লগ কর্নার</span></nav>
+  </div>
+  <div class="bg-hero"><h1><i class="fa-solid fa-pen-nib"></i> ব্লগ কর্নার</h1><p>বই, জ্ঞান ও ভাবনার গল্প</p>
+    <div class="bg-search"><input id="bgSearch" placeholder="ব্লগ খুঁজুন..." oninput="BG.render()"></div></div>
+  <div class="bg-wrap">
+    <main><div class="bg-chips" id="bgChips"></div><div class="bg-grid" id="bgGrid"></div></main>
+    <aside class="bg-side"><div class="bg-box"><h4><i class="fa-solid fa-fire" style="color:var(--blue)"></i> ট্রেন্ডিং ব্লগ</h4><div id="bgTrend"></div></div></aside>
+  </div>
+</div>
+
+<div id="page-blog-post" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn" onclick="BG.list()"><i class="fa-solid fa-arrow-left"></i> সব ব্লগ</button>
+    <nav class="fp-breadcrumb"><span class="bc-link" onclick="BG.home()"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span><i class="fa-solid fa-chevron-right bc-sep"></i><span class="bc-link" onclick="BG.list()">ব্লগ কর্নার</span></nav>
+  </div>
+  <div class="bg-wrap">
+    <main><article class="bg-art" id="bgArt"></article></main>
+    <aside class="bg-side"><div class="bg-box"><h4><i class="fa-solid fa-fire" style="color:var(--blue)"></i> ট্রেন্ডিং ব্লগ</h4><div id="bgTrend2"></div></div></aside>
+  </div>
+</div>
+
 <div id="page-category" class="full-page" aria-hidden="true">
   <div class="fp-topbar">
     <button class="fp-back-btn" onclick="closeCatPage()">
@@ -7938,6 +8027,10 @@ async function _restorePageFromUrl() {
     if (typeof window.bfRouteFromPath === 'function') window.bfRouteFromPath(path);
     return;
   }
+
+  if (path === '/blog') { openBlogList(false); return; }
+  if (path.startsWith('/blog/')) { openBlogPost(_safeDecode(path.slice(6)), false); return; }
+  if (path.startsWith('/b/'))    { openBlogPost(_safeDecode(path.slice(3)), false); return; }
 
   if (path === '/track-order') {
     // Track page সবসময় open করো — login check page নিজেই করবে
@@ -15161,7 +15254,7 @@ window.addEventListener('scroll', onScroll, { passive: true });
 
 // ── 1. REGISTRY ──────────────────────────────────────────────────
 // All known full-pages (matches id="page-{name}")
-const ALL_PAGES   = ['product','track','order-detail','checkout','category','profile','wishlist','author'];
+const ALL_PAGES   = ['blog','blog-post','product','track','order-detail','checkout','category','profile','wishlist','author'];
 // All overlay modals (matches id)
 const ALL_MODALS  = ['cartOverlay','authModal','adminOverlay'];
 // Notif panel id
@@ -16367,5 +16460,88 @@ window.addEventListener('popstate',function(){
   };
 })();
 </script>
+<script>
+(function(){
+const F=['id','title','slug','short_code','excerpt','cover_image','category','author_name','published_at','views'].join(',');
+let posts=[],cat='',cur=null;
+const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const D=d=>d?new Date(d).toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric'}):'';
+const N=n=>Number(n||0).toLocaleString('bn-BD');
+const T=(m)=>{try{toast(m,'','s')}catch(e){alert(m)}};
+// ── sanitizer: admin-er HTML-o safe kore dekhay ──
+const OK=new Set('H2 H3 H4 P BR B STRONG I EM U S A UL OL LI BLOCKQUOTE HR TABLE THEAD TBODY TR TD TH IMG FIGURE FIGCAPTION PRE CODE SPAN DIV SUP SUB'.split(' '));
+function clean(h){const d=new DOMParser().parseFromString(h||'','text/html');
+ d.body.querySelectorAll('script,style,iframe,object,embed,form,link,meta').forEach(n=>n.remove());
+ d.body.querySelectorAll('*').forEach(n=>{
+  if(!OK.has(n.tagName)){n.replaceWith(...n.childNodes);return}
+  [...n.attributes].forEach(a=>{const k=a.name,v=a.value;
+   if(k==='href'&&/^(https?:|mailto:|#|\/)/i.test(v)){}
+   else if(k==='src'&&/^https?:/i.test(v)){}
+   else if(['alt','colspan','rowspan'].includes(k)){}
+   else if(k==='class'&&/^(infobox|callout)$/.test(v)){}
+   else if(k==='style'){const m=v.match(/(?:^|;)\s*(color|background-color|text-align)\s*:\s*([#\w(),.\s%-]+)/g);n.setAttribute('style',(m||[]).join(';'))}
+   else n.removeAttribute(k)});
+  if(n.tagName==='A'){n.target='_blank';n.rel='noopener noreferrer nofollow'}});
+ return d.body.innerHTML}
+const mins=h=>Math.max(1,Math.round((h||'').replace(/<[^>]+>/g,' ').split(/\s+/).length/180));
+async function load(){
+ if(posts.length)return;
+ const {data}=await sb.from('blog_posts').select(F).eq('status','published').order('published_at',{ascending:false});
+ posts=data||[]}
+function trend(){const t=[...posts].sort((a,b)=>b.views-a.views).slice(0,6);
+ const h=t.length?t.map((p,i)=>`<div class="bg-tr" onclick="BG.open('${E(p.slug)}')"><b>${N(i+1)}</b><span>${E(p.title)}<small><i class="fa-regular fa-eye"></i> ${N(p.views)} বার পড়া</small></span></div>`).join(''):'<div style="color:#94A3B8;font-size:.8rem">এখনো কোনো ব্লগ নেই</div>';
+ ['bgTrend','bgTrend2'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=h})}
+function render(){
+ const cats=[...new Set(posts.map(p=>p.category).filter(Boolean))];
+ document.getElementById('bgChips').innerHTML=['',...cats].map(c=>`<button class="bg-chip ${c===cat?'on':''}" onclick="BG.cat(this.dataset.c)" data-c="${E(c)}">${c?E(c):'সব'}</button>`).join('');
+ const q=(document.getElementById('bgSearch').value||'').toLowerCase();
+ const l=posts.filter(p=>(!cat||p.category===cat)&&(!q||(p.title+p.excerpt).toLowerCase().includes(q)));
+ document.getElementById('bgGrid').innerHTML=l.length?l.map(p=>`<div class="bg-card" onclick="BG.open('${E(p.slug)}')"><div class="bg-cover" style="${p.cover_image?`background-image:url('${E(p.cover_image)}')`:''}">${p.cover_image?'':'<i class="fa-solid fa-book-open"></i>'}</div><div class="bg-card-b"><span class="bg-cat">${E(p.category)}</span><h3>${E(p.title)}</h3><p>${E((p.excerpt||'').slice(0,110))}</p><div class="bg-meta"><span>${D(p.published_at)}</span><span><i class="fa-regular fa-eye"></i> ${N(p.views)}</span></div></div></div>`).join(''):'<div style="grid-column:1/-1;text-align:center;padding:50px;color:#94A3B8">কোনো ব্লগ পাওয়া যায়নি</div>'}
+async function list(push=true){
+ _navTo({page:'blog'},'ব্লগ কর্নার — বুক গ্যালাক্সি','/blog',push);
+ openPage('blog');await load();render();trend()}
+async function open(slug,push=true){
+ await load();
+ let {data:p}=await sb.from('blog_posts').select('*').eq('status','published').or(`slug.eq.${slug},short_code.eq.${slug}`).maybeSingle();
+ if(!p){history.replaceState({page:'home'},'','/');return}
+ cur=p;
+ _navTo({page:'blog-post',slug:p.slug},p.title+' — বুক গ্যালাক্সি','/blog/'+p.slug,push);
+ try{_setMeta(p.excerpt||p.title,'/blog/'+p.slug)}catch(e){}
+ const body=clean(p.content);
+ const tmp=document.createElement('div');tmp.innerHTML=body;
+ const hs=[...tmp.querySelectorAll('h2,h3')];hs.forEach((h,i)=>h.id='bgh'+i);
+ const toc=hs.length>=3?`<div class="bg-toc"><b>সূচিপত্র</b>${hs.map((h,i)=>`<a class="${h.tagName==='H3'?'l3':''}" onclick="document.getElementById('bgh${i}').scrollIntoView({behavior:'smooth'})">${E(h.textContent)}</a>`).join('')}</div>`:'';
+ const link=location.origin+'/b/'+p.short_code;
+ document.getElementById('bgArt').innerHTML=`<span class="bg-cat">${E(p.category)}</span><h1>${E(p.title)}</h1>
+ <div class="bg-meta"><span><i class="fa-solid fa-user-pen"></i> ${E(p.author_name)}</span><span>${D(p.published_at)}</span><span>${N(mins(p.content))} মিনিটে পড়া</span><span><i class="fa-regular fa-eye"></i> ${N(p.views)}</span></div>
+ ${p.cover_image?`<img class="bg-hero-img" src="${E(p.cover_image)}" alt="">`:''}${toc}
+ <div class="bg-body">${tmp.innerHTML}</div><div style="clear:both"></div>
+ <div class="bg-share"><b style="font-size:.85rem">শেয়ার:</b>
+  <button style="background:#1877F2" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent('${link}'))"><i class="fa-brands fa-facebook-f"></i></button>
+  <button style="background:#25D366" onclick="window.open('https://wa.me/?text='+encodeURIComponent('${E(p.title)} ${link}'))"><i class="fa-brands fa-whatsapp"></i></button>
+  <button style="background:#111" onclick="window.open('https://twitter.com/intent/tweet?url='+encodeURIComponent('${link}')+'&text='+encodeURIComponent('${E(p.title)}'))"><i class="fa-brands fa-x-twitter"></i></button>
+  <div class="bg-short"><input readonly value="${link}" id="bgLink"><button onclick="BG.copy()"><i class="fa-regular fa-copy"></i> কপি</button></div></div>
+ <h3 style="margin:20px 0 6px">মতামত (<span id="bgCmN">0</span>)</h3><div id="bgCm"></div>`;
+ openPage('blog-post');trend();loadCm();
+ sb.rpc('blog_inc_views',{pid:p.id}).then(()=>{});
+ document.getElementById('page-blog-post').scrollTop=0}
+async function loadCm(){
+ const {data}=await sb.from('blog_comments').select('*').eq('post_id',cur.id).order('created_at',{ascending:false});
+ const c=data||[];document.getElementById('bgCmN').textContent=N(c.length);
+ const form=currentUser?`<textarea class="bg-ta" id="bgCmT" maxlength="1000" placeholder="আপনার মতামত লিখুন..."></textarea><button class="bg-chip on" style="margin:8px 0 14px" onclick="BG.send()">মতামত দিন</button>`
+  :`<div style="padding:12px 0"><button class="bg-chip on" onclick="document.getElementById('authModal').classList.add('open')">মতামত দিতে লগইন করুন</button></div>`;
+ document.getElementById('bgCm').innerHTML=form+c.map(x=>`<div class="bg-cm"><b>${E(x.user_name)}</b><small>${D(x.created_at)}</small><p>${E(x.body)}</p></div>`).join('')}
+async function send(){
+ const t=document.getElementById('bgCmT').value.trim();if(!t)return;
+ const nm=(currentUser.user_metadata&&(currentUser.user_metadata.full_name||currentUser.user_metadata.name))||(currentUser.email||'').split('@')[0]||'পাঠক';
+ const {error}=await sb.from('blog_comments').insert({post_id:cur.id,user_id:currentUser.id,user_name:nm,body:t});
+ if(error)return T('মতামত পাঠানো যায়নি');T('মতামত যোগ হয়েছে');loadCm()}
+function copy(){const i=document.getElementById('bgLink');i.select();(navigator.clipboard?navigator.clipboard.writeText(i.value):Promise.resolve(document.execCommand('copy'))).then(()=>T('লিংক কপি হয়েছে'))}
+function home(){closePage('blog');closePage('blog-post');history.replaceState({page:'home'},'বুক গ্যালাক্সি','/');document.title='বুক গ্যালাক্সি'}
+window.BG={list,open,home,render,send,copy,cat:c=>{cat=c;render()}};
+window.openBlogList=list;window.openBlogPost=open;
+})();
+</script>
+
 </body>
 </html>
