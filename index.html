@@ -5559,6 +5559,22 @@ html, body {
 .tp-name{font-size:.84rem;font-weight:700;line-height:1.3;color:var(--text,#222);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .tp-meta{font-size:.68rem;color:var(--text-mid,#666);margin-top:2px;white-space:nowrap}
 .tp-meta i{color:#F5A623;font-size:.62rem}
+#homeReviewsSec{container-type:inline-size}
+.rv-row{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@container (min-width:640px){ .rv-row{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@container (min-width:900px){ .rv-row{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.rv-card{display:flex;flex-direction:column;gap:10px;padding:16px;background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:14px;cursor:pointer;transition:all .18s}
+.rv-card:hover{border-color:rgba(170,44,45,.3);box-shadow:0 8px 22px rgba(170,44,45,.12);transform:translateY(-2px)}
+.rv-stars{color:#F5A623;font-size:.9rem;letter-spacing:1px}
+.rv-stars span{color:#d8dbe0}
+.rv-text{margin:0;font-size:.84rem;line-height:1.65;color:var(--text,#222);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.rv-foot{display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border,#eee)}
+.rv-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;font-weight:700;font-size:.9rem}
+.rv-who{display:flex;flex-direction:column;min-width:0}
+.rv-name{font-size:.8rem;font-weight:700;color:var(--text,#222)}
+.rv-ver{font-style:normal;font-weight:500;font-size:.64rem;color:#16a34a;margin-left:4px;white-space:nowrap}
+.rv-book{font-size:.68rem;color:var(--text-mid,#666);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rv-book i{margin-right:3px;opacity:.7}
 </style>
 <style id="navMoreStyles">
 /* Category navbar — "আরও" dropdown (managed from Admin → Categories → নেভবার সাজান) */
@@ -6082,6 +6098,14 @@ html.gm-boot #gmSplash{display:flex}
         <h2 class="bn"><i class="fa-solid fa-building-columns" style="color:var(--blue);margin-right:6px"></i>জনপ্রিয় প্রকাশনী</h2>
       </div>
       <div class="tp-row" id="topPublishersRow"></div>
+    </section>
+
+    <!-- গ্রাহকদের মতামত — reviews টেবিল থেকে সেরা approved রিভিউ -->
+    <section id="homeReviewsSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-comments" style="color:var(--blue);margin-right:6px"></i>গ্রাহকদের মতামত</h2>
+      </div>
+      <div class="rv-row" id="homeReviewsRow"></div>
     </section>
   </div>
 </div>
@@ -8807,6 +8831,7 @@ function renderNewReleases() {
   // শুধু ডিফল্ট হোম ভিউতে (সব পণ্য, কোনো ফিল্টার/সার্চ নেই) দেখাবে
   const _onHome = !!(isHomeDefaultView() && _gridList && _gridList === _lastFiltered);
   renderTopPeople(_onHome);
+  renderHomeReviews(_onHome);
   if (!_onHome) { sec.style.display = 'none'; return; }
   const aboveIds = new Set(_gridList.slice(0, HOME_PAGE_SIZE).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
   const ts = p => new Date(p.created_at || 0).getTime() || 0;
@@ -8823,7 +8848,7 @@ function renderNewReleases() {
    জনপ্রিয় লেখক / প্রকাশনী — রেটিং হিসাব করে র‍্যাংক।
    স্কোর = বইগুলোর গড় রেটিং (কম বইয়ের ক্ষেত্রে ৪.০ এর দিকে একটু টেনে — ১টা বইয়ে ৫ স্টার পেয়ে
    ২০টা বইয়ের লেখকের উপরে উঠে যাবে না)। স্কোর সমান হলে বেশি বিক্রি, তারপর বেশি বই আগে।
-   লেখক তালিকায় নামে (অনুবাদক) থাকলে তারা মূল লেখকদের পরে বসে।
+   লেখক তালিকায় ক্রম: মূল লেখক → (অনুবাদক) → (সম্পাদক) সবার শেষে।
    ══════════════════════════════════════════════════ */
 const TOP_PEOPLE_COUNT = 10;    // প্রতি লাইনে কতজন
 function _tpEsc(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -8844,8 +8869,8 @@ function rankTopPeople(kind) {
   const PRIOR = 4, W = 2;
   return [...map.values()]
     .map(e => ({ ...e, avg: e.sum / e.n, score: (e.sum + PRIOR * W) / (e.n + W),
-                 tr: kind === 'author' && /অনুবাদক/.test(e.name) ? 1 : 0 }))   // নামে (অনুবাদক) থাকলে অনুবাদক
-    .sort((a, b) => (a.tr - b.tr) || (b.score - a.score) || (b.sold - a.sold) || (b.n - a.n))   // মূল লেখক আগে, অনুবাদক পরে
+                 tr: kind !== 'author' ? 0 : /সম্পাদক/.test(e.name) ? 2 : /অনুবাদক/.test(e.name) ? 1 : 0 }))   // ০ = মূল লেখক, ১ = (অনুবাদক), ২ = (সম্পাদক)
+    .sort((a, b) => (a.tr - b.tr) || (b.score - a.score) || (b.sold - a.sold) || (b.n - a.n))   // মূল লেখক → অনুবাদক → সম্পাদক (সবার শেষে)
     .slice(0, TOP_PEOPLE_COUNT);
 }
 function renderTopPeople(show) {
@@ -8871,6 +8896,67 @@ function renderTopPeople(show) {
 document.addEventListener('click', e => {
   const c = e.target.closest && e.target.closest('.tp-card');
   if (c) openAuthorPage(c.dataset.name, true, c.dataset.kind);
+});
+
+
+/* ══════════════════════════════════════════════════
+   গ্রাহকদের মতামত (হোম) — Supabase `reviews` টেবিলের approved রিভিউ থেকে।
+   নির্বাচন: রেটিং ৪+ , লেখা আছে, একই বই দুইবার নয়; যাচাইকৃত ক্রেতা আগে, তারপর বেশি রেটিং, তারপর নতুন।
+   ══════════════════════════════════════════════════ */
+const HOME_REVIEW_COUNT = 6;
+let _homeReviews = null, _homeReviewsLoading = false;
+async function loadHomeReviews() {
+  if (_homeReviews || _homeReviewsLoading) return;
+  _homeReviewsLoading = true;
+  try {
+    const { data, error } = await sbQuery(
+      () => sb.from('reviews').select('id,product_id,reviewer_name,rating,review_text,verified,created_at')
+              .eq('status', 'approved').order('created_at', { ascending: false }).limit(80),
+      'হোম রিভিউ লোড'
+    );
+    _homeReviews = error ? [] : (data || []);
+  } catch (e) { _homeReviews = []; }
+  _homeReviewsLoading = false;
+  renderHomeReviews(isHomeDefaultView() && _gridList === _lastFiltered);
+}
+function renderHomeReviews(show) {
+  const sec = document.getElementById('homeReviewsSec'), row = document.getElementById('homeReviewsRow');
+  if (!sec || !row) return;
+  if (!show) { sec.style.display = 'none'; return; }
+  if (_homeReviews === null) { loadHomeReviews(); return; }
+  const seen = new Set();
+  const picked = _homeReviews
+    .filter(r => Number(r.rating) >= 4 && String(r.review_text || '').trim().length >= 15)
+    .map(r => ({ r, p: products.find(p => String(p.id) === String(r.product_id)) }))
+    .filter(x => x.p)
+    .sort((a, b) => ((b.r.verified ? 1 : 0) - (a.r.verified ? 1 : 0)) || (b.r.rating - a.r.rating) || (new Date(b.r.created_at) - new Date(a.r.created_at)))
+    .filter(x => { const k = String(x.p.id); if (seen.has(k)) return false; seen.add(k); return true; })
+    .slice(0, HOME_REVIEW_COUNT);
+  if (!picked.length) { sec.style.display = 'none'; return; }
+  row.innerHTML = picked.map(({ r, p }) => {
+    const n = Math.max(1, Math.min(5, Math.round(r.rating)));
+    const nm = String(r.reviewer_name || 'গ্রাহক').trim();
+    const d = r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    return `<div class="rv-card" data-pid="${_tpEsc(p.id)}" role="link" tabindex="0" title="${_tpEsc(p.name)}">
+      <div class="rv-stars">${'★'.repeat(n)}<span>${'☆'.repeat(5 - n)}</span></div>
+      <p class="rv-text bn">${_tpEsc(String(r.review_text).trim())}</p>
+      <div class="rv-foot">
+        <span class="rv-av">${_tpEsc(Array.from(nm)[0] || 'গ')}</span>
+        <span class="rv-who"><span class="rv-name bn">${_tpEsc(nm)}${r.verified ? ' <em class="rv-ver"><i class="fa-solid fa-circle-check"></i> যাচাইকৃত ক্রেতা</em>' : ''}</span>
+        <span class="rv-book bn"><i class="fa-solid fa-book"></i> ${_tpEsc(p.name)}${d ? ' · ' + d : ''}</span></span>
+      </div>
+    </div>`;
+  }).join('');
+  sec.style.display = '';
+}
+document.addEventListener('click', e => {
+  const c = e.target.closest && e.target.closest('.rv-card');
+  if (c) openProduct(c.dataset.pid);
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const c = e.target.closest && e.target.closest('.rv-card');
+  if (c) openProduct(c.dataset.pid);
 });
 
 function getFiltered() {
