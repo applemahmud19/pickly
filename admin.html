@@ -2626,7 +2626,7 @@ body {
             <div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-pen-nib"></i></div>Blog Posts</div>
             <button class="btn btn-primary btn-sm" onclick="BL.edit()"><i class="fa-solid fa-plus"></i> নতুন ব্লগ লিখুন</button>
           </div>
-          <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Short link</th><th>Actions</th></tr></thead><tbody id="blBody"></tbody></table></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Link</th><th>Actions</th></tr></thead><tbody id="blBody"></tbody></table></div>
         </div>
         <div id="blEditor" class="panel" style="display:none;padding:18px">
           <div style="display:flex;justify-content:space-between;margin-bottom:14px">
@@ -2638,6 +2638,7 @@ body {
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
             <div class="form-group"><label class="form-label">Slug (ইংরেজি URL)</label><input class="form-inp" id="blSlug" placeholder="my-first-blog"></div>
             <div class="form-group"><label class="form-label">ক্যাটেগরি</label><input class="form-inp" id="blCat" placeholder="যেমন: বই রিভিউ"></div>
+            <div class="form-group"><label class="form-label">লেখকের নাম</label><input class="form-inp" id="blAuthor" placeholder="খালি রাখলে: বুক গ্যালাক্সি"></div>
             <div class="form-group"><label class="form-label">Status</label><select class="form-inp" id="blStatus"><option value="draft">Draft</option><option value="published">Published</option></select></div>
           </div>
           <div class="form-group"><label class="form-label">সংক্ষিপ্ত বিবরণ (SEO / কার্ডে দেখাবে)</label><input class="form-inp" id="blEx" maxlength="200"></div>
@@ -10677,13 +10678,13 @@ async function load(){
  const {data,error}=await sb.from('blog_posts').select('id,title,slug,short_code,category,status,views,updated_at').order('created_at',{ascending:false});
  if(error){$('blBody').innerHTML=`<tr><td colspan="6" style="padding:30px;text-align:center">${E(error.message)} — blog_setup.sql run korun</td></tr>`;return}
  $('blBody').innerHTML=(data||[]).map(p=>`<tr><td style="font-family:var(--font-bn)">${E(p.title)}</td><td>${E(p.category)}</td><td>${p.status==='published'?'✅ Published':'📝 Draft'}</td><td>${p.views}</td>
- <td><a href="/b/${p.short_code}" target="_blank">/b/${p.short_code}</a></td>
+ <td><a href="/blog/${p.slug}" target="_blank">/blog/${p.slug}</a></td>
  <td><button class="btn btn-sm" onclick="BL.edit('${p.id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm" onclick="BL.del('${p.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="6" style="padding:30px;text-align:center">কোনো ব্লগ নেই</td></tr>'}
 async function edit(id){
  let p={title:'',slug:'',category:'',status:'draft',excerpt:'',cover_image:'',content:''};
  if(id){const r=await sb.from('blog_posts').select('*').eq('id',id).single();if(r.data)p=r.data}
  $('blId').value=id||'';$('blHead').textContent=id?'ব্লগ এডিট':'নতুন ব্লগ';
- $('blTitle').value=p.title;$('blSlug').value=p.slug;$('blCat').value=p.category;$('blStatus').value=p.status;$('blEx').value=p.excerpt;$('blCover').value=p.cover_image;
+ $('blTitle').value=p.title;$('blSlug').value=p.slug;$('blCat').value=p.category;$('blAuthor').value=p.author_name||'';$('blStatus').value=p.status;$('blEx').value=p.excerpt;$('blCover').value=p.cover_image;
  $('blEd').innerHTML=p.content;src=false;$('blSrc').style.display='none';$('blEd').style.display='';
  $('blList').style.display='none';$('blEditor').style.display=''}
 function back(){$('blEditor').style.display='none';$('blList').style.display='';load()}
@@ -10692,7 +10693,7 @@ async function save(status){
  const title=$('blTitle').value.trim();if(!title){toast('Validation','শিরোনাম দিন','error');return}
  const id=$('blId').value;let slug=slugify($('blSlug').value)||slugify(title)||'post';
  const content=$('blEd').innerHTML;
- const row={title,slug,category:$('blCat').value.trim()||'সাধারণ',status,excerpt:$('blEx').value.trim()||$('blEd').innerText.trim().slice(0,160),cover_image:$('blCover').value.trim(),content,updated_at:new Date().toISOString(),author_name:($('sbName')&&$('sbName').textContent)||'বুক গ্যালাক্সি'};
+ const row={title,slug,category:$('blCat').value.trim()||'সাধারণ',status,excerpt:$('blEx').value.trim()||$('blEd').innerText.trim().slice(0,160),cover_image:$('blCover').value.trim(),content,updated_at:new Date().toISOString(),author_name:$('blAuthor').value.trim()||'বুক গ্যালাক্সি'};
  if(status==='published')row.published_at=new Date().toISOString();
  $('blStatus').value=status;
  let r;
