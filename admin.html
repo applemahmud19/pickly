@@ -2402,6 +2402,15 @@ create table if not exists public.visitor_logs (
   is_active   boolean default true
 );
 
+-- table ager theke thakle (purono version), jei column gulo nei seigulo add hobe
+alter table public.visitor_logs add column if not exists session_id text;
+alter table public.visitor_logs add column if not exists created_at timestamptz default now();
+alter table public.visitor_logs add column if not exists last_seen  timestamptz default now();
+alter table public.visitor_logs add column if not exists page       text;
+alter table public.visitor_logs add column if not exists is_active  boolean default true;
+-- upsert(onConflict: session_id) chalar jonno session_id unique thaka lagbe
+create unique index if not exists uq_vl_session on public.visitor_logs (session_id);
+
 create index if not exists idx_vl_created  on public.visitor_logs (created_at);
 create index if not exists idx_vl_lastseen on public.visitor_logs (last_seen);
 
