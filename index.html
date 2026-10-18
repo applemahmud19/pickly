@@ -6109,7 +6109,9 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
 .bg-box h4{margin:0 0 12px;font-size:.95rem;color:var(--text)}
 .bg-tr{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--border);cursor:pointer}
 .bg-tr:first-of-type{border-top:0}
-.bg-tr b{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0}
+.bg-tr{text-decoration:none}.bg-tr:hover span{color:var(--blue)}
+.bg-th{position:relative;width:78px;height:58px;border-radius:8px;flex-shrink:0;background:var(--blue-mid) center/cover;display:flex;align-items:center;justify-content:center;color:var(--blue)}
+.bg-th b{position:absolute;top:-5px;left:-5px;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.62rem;border:2px solid #fff}
 .bg-tr span{font-size:.82rem;line-height:1.5;color:var(--text)}
 .bg-tr small{display:block;color:var(--text-light);font-size:.68rem}
 .bg-art{background:#fff;border:1px solid var(--border);border-radius:12px;padding:26px 28px}
@@ -16494,7 +16496,7 @@ async function load(){
  const {data}=await sb.from('blog_posts').select(F).eq('status','published').order('published_at',{ascending:false});
  posts=data||[]}
 function trend(){const t=[...posts].sort((a,b)=>b.views-a.views).slice(0,6);
- const h=t.length?t.map((p,i)=>`<div class="bg-tr" onclick="BG.open('${E(p.slug)}')"><b>${N(i+1)}</b><span>${E(p.title)}<small><i class="fa-regular fa-eye"></i> ${N(p.views)} বার পড়া</small></span></div>`).join(''):'<div style="color:#94A3B8;font-size:.8rem">এখনো কোনো ব্লগ নেই</div>';
+ const h=t.length?t.map((p,i)=>`<a class="bg-tr" href="/blog/${encodeURIComponent(p.slug)}" onclick="event.preventDefault();BG.open('${E(p.slug)}')"><div class="bg-th" style="${p.cover_image?`background-image:url('${E(p.cover_image)}')`:''}">${p.cover_image?'':'<i class="fa-solid fa-book-open"></i>'}<b>${N(i+1)}</b></div><span>${E(p.title)}<small><i class="fa-regular fa-eye"></i> ${N(p.views)} বার পড়া</small></span></a>`).join(''):'<div style="color:#94A3B8;font-size:.8rem">এখনো কোনো ব্লগ নেই</div>';
  ['bgTrend','bgTrend2'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=h})}
 function render(){
  const cats=[...new Set(posts.map(p=>p.category).filter(Boolean))];
@@ -16516,9 +16518,9 @@ async function open(slug,push=true){
  const tmp=document.createElement('div');tmp.innerHTML=body;
  const hs=[...tmp.querySelectorAll('h2,h3')];hs.forEach((h,i)=>h.id='bgh'+i);
  const toc=hs.length>=3?`<div class="bg-toc"><b>সূচিপত্র</b>${hs.map((h,i)=>`<a class="${h.tagName==='H3'?'l3':''}" onclick="document.getElementById('bgh${i}').scrollIntoView({behavior:'smooth'})">${E(h.textContent)}</a>`).join('')}</div>`:'';
- const link=location.origin+'/b/'+p.short_code;
+ const link=location.origin+'/blog/'+encodeURIComponent(p.slug);
  document.getElementById('bgArt').innerHTML=`<span class="bg-cat">${E(p.category)}</span><h1>${E(p.title)}</h1>
- <div class="bg-meta"><span><i class="fa-solid fa-user-pen"></i> ${E(p.author_name)}</span><span>${D(p.published_at)}</span><span>${N(mins(p.content))} মিনিটে পড়া</span><span><i class="fa-regular fa-eye"></i> ${N(p.views)}</span></div>
+ <div class="bg-meta"><span><i class="fa-solid fa-user-pen"></i> ${E(p.author_name||'বুক গ্যালাক্সি')}</span><span>${D(p.published_at)}</span><span>${N(mins(p.content))} মিনিটে পড়া</span><span><i class="fa-regular fa-eye"></i> ${N(p.views)}</span></div>
  ${p.cover_image?`<img class="bg-hero-img" src="${E(p.cover_image)}" alt="">`:''}${toc}
  <div class="bg-body">${tmp.innerHTML}</div><div style="clear:both"></div>
  <div class="bg-share"><b style="font-size:.85rem">শেয়ার:</b>
