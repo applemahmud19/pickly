@@ -10445,11 +10445,15 @@ alter table finder_moods add column if not exists icon text default 'fa-wand-mag
 
 alter table finder_moods enable row level security;
 alter table finder_book_tags enable row level security;
+drop policy if exists "finder_moods_read" on finder_moods;
 create policy "finder_moods_read" on finder_moods for select using (true);
+drop policy if exists "finder_tags_read" on finder_book_tags;
 create policy "finder_tags_read"  on finder_book_tags for select using (true);
+drop policy if exists "finder_moods_admin" on finder_moods;
 create policy "finder_moods_admin" on finder_moods for all to authenticated
   using (exists (select 1 from admin_users a where a.id = auth.uid()))
   with check (exists (select 1 from admin_users a where a.id = auth.uid()));
+drop policy if exists "finder_tags_admin" on finder_book_tags;
 create policy "finder_tags_admin" on finder_book_tags for all to authenticated
   using (exists (select 1 from admin_users a where a.id = auth.uid()))
   with check (exists (select 1 from admin_users a where a.id = auth.uid()));`;
