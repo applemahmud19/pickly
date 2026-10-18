@@ -969,6 +969,11 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 .banner-card-title { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .banner-card-meta { font-size: 0.68rem; color: var(--text3); font-family: var(--mono); margin-bottom: 8px; }
 .banner-card-actions { display: flex; gap: 6px; }
+.bn-tabs{display:flex;gap:8px}
+.bn-tab{flex:1;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg3);cursor:pointer;font-weight:600;font-size:.78rem;color:var(--text2);font-family:var(--font-bn)}
+.bn-tab.active{border-color:var(--blue);color:var(--blue);background:var(--blue-ll)}
+.bn-swatch{width:38px;height:26px;border-radius:8px;border:2px solid #fff;box-shadow:0 0 0 1px var(--border);cursor:pointer;padding:0}
+.bn-swatch:hover{box-shadow:0 0 0 2px var(--blue)}
 .banner-order-badge {
   position: absolute; top: 8px; left: 8px;
   background: rgba(0,0,0,0.6); color: white; backdrop-filter: blur(6px);
@@ -2553,10 +2558,16 @@ end $$;
               <div class="panel-title-icon" style="background:rgba(50,173,230,0.1);color:var(--cyan)"><i class="fa-solid fa-images"></i></div>
               Hero Banner Management
             </div>
-            <button class="btn btn-primary btn-sm" onclick="openModal('bannerModal')">
-              <i class="fa-solid fa-plus"></i> নতুন ব্যানার যোগ করুন
-            </button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" id="bannerImportBtn" onclick="importDefaultBanners()" title="সাইটের ডিফল্ট ৩টা ব্যানার এখানে এনে এডিট করুন">
+                <i class="fa-solid fa-file-import"></i> ডিফল্ট ইমপোর্ট
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="openBannerModal()">
+                <i class="fa-solid fa-plus"></i> নতুন ব্যানার যোগ করুন
+              </button>
+            </div>
           </div>
+          <div id="bannerSetupNotice"></div>
           <div style="padding:20px">
             <div id="bannerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
               <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-images"></i></div><div class="empty-title">কোনো ব্যানার নেই</div><div class="empty-sub" style="font-family:var(--font-bn)">নতুন ব্যানার যোগ করুন</div></div>
@@ -3685,36 +3696,108 @@ end $$;
 </div>
 
 <div class="modal-overlay" id="bannerModal" onclick="if(event.target===this)closeModal('bannerModal')">
-  <div class="modal-box" style="max-width:520px">
+  <div class="modal-box" style="max-width:660px;max-height:92vh;overflow:auto">
     <div class="modal-header">
-      <div class="modal-title">নতুন ব্যানার আপলোড করুন</div>
+      <div class="modal-title" id="bannerModalTitle">নতুন ব্যানার</div>
       <button class="modal-close" onclick="closeModal('bannerModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
+      <input type="hidden" id="editBannerId">
       <div style="display:grid;gap:14px">
-        <div class="form-group">
-          <label class="form-label">Banner Image <span class="required">*</span></label>
-          <div class="upload-preview empty" id="bannerPreview" style="aspect-ratio:16/5">
-            <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
+
+        <div class="bn-tabs" id="bnTypeTabs">
+          <button type="button" class="bn-tab" data-type="text" onclick="setBannerType('text')"><i class="fa-solid fa-pen-ruler"></i> টেক্সট ব্যানার (নিজে ডিজাইন)</button>
+          <button type="button" class="bn-tab" data-type="image" onclick="setBannerType('image')"><i class="fa-regular fa-image"></i> ছবির ব্যানার</button>
+        </div>
+
+        <!-- ── ছবির ব্যানার ── -->
+        <div id="bnImageFields" style="display:grid;gap:14px">
+          <div class="form-group">
+            <label class="form-label">Banner Image <span class="required">*</span></label>
+            <div class="upload-preview empty" id="bannerPreview" style="aspect-ratio:16/5">
+              <i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>
+            </div>
+            <div class="upload-zone" id="bannerUploadZone">
+              <input type="file" id="bannerImageFile" accept="image/*" onchange="handleBannerImageSelect(this)">
+              <i class="fa-solid fa-panorama uz-icon"></i>
+              <div class="uz-title">Banner ছবি ড্র্যাগ করুন বা ক্লিক করুন</div>
+              <div class="uz-sub">Recommended: 1200×400px · PNG, JPG, WEBP · Max 5MB</div>
+              <div class="uz-drag-hint">✦ Drop to upload!</div>
+            </div>
           </div>
-          <div class="upload-zone" id="bannerUploadZone">
-            <input type="file" id="bannerImageFile" accept="image/*" onchange="handleBannerImageSelect(this)">
-            <i class="fa-solid fa-panorama uz-icon"></i>
-            <div class="uz-title">Banner ছবি ড্র্যাগ করুন বা ক্লিক করুন</div>
-            <div class="uz-sub">Recommended: 1200×400px · PNG, JPG, WEBP · Max 5MB</div>
-            <div class="uz-drag-hint">✦ Drop to upload!</div>
+          <div class="form-group">
+            <label class="form-label">Banner Title</label>
+            <input class="form-inp" type="text" id="bannerTitle" placeholder="e.g. Summer Sale 2025">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Link URL (Optional)</label>
+            <input class="form-inp" type="text" id="bannerLink" placeholder="https://...">
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Banner Title</label>
-          <input class="form-inp" type="text" id="bannerTitle" placeholder="e.g. Summer Sale 2025">
+
+        <!-- ── টেক্সট ব্যানার ── -->
+        <div id="bnTextFields" style="display:none;gap:14px;grid-template-columns:1fr" oninput="updateBnPreview()" onchange="updateBnPreview()">
+          <div class="form-group">
+            <label class="form-label">লাইভ প্রিভিউ</label>
+            <div id="bnLivePreview"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 170px;gap:10px">
+            <div class="form-group">
+              <label class="form-label">ছোট ট্যাগ (ঐচ্ছিক)</label>
+              <input class="form-inp" type="text" id="bnBadge" placeholder="যেমন: বিশেষ ছাড়">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ট্যাগের আইকন</label>
+              <select class="form-inp" id="bnBadgeIcon">
+                <option value="fa-star">⭐ স্টার</option><option value="fa-tag">🏷 ট্যাগ</option><option value="fa-book-open">📖 বই</option>
+                <option value="fa-truck-fast">🚚 ডেলিভারি</option><option value="fa-gift">🎁 গিফট</option><option value="fa-fire">🔥 ফায়ার</option>
+                <option value="fa-bolt">⚡ বিদ্যুৎ</option><option value="fa-heart">❤ হার্ট</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">মূল শিরোনাম <span class="required">*</span></label>
+            <textarea class="form-inp" id="bnMainTitle" rows="2" style="min-height:64px" placeholder="যেমন: পছন্দের বই, সেরা দামে"></textarea>
+            <div style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:var(--font-bn)">Enter চাপলে নতুন লাইন। <b>{{maxdisc}}</b> লিখলে "সর্বোচ্চ X% ছাড়!" নিজে নিজে বসবে।</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ছোট বর্ণনা</label>
+            <textarea class="form-inp" id="bnSub" rows="2" style="min-height:64px" placeholder="এক-দুই লাইনের বর্ণনা"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group"><label class="form-label">বাটন ১ এর লেখা</label><input class="form-inp" type="text" id="bnBtn" placeholder="যেমন: শপিং করুন"></div>
+            <div class="form-group"><label class="form-label">বাটন ১ লিংক</label><input class="form-inp" type="text" id="bnBtnLink" placeholder="খালি = বই দেখাবে"></div>
+            <div class="form-group"><label class="form-label">বাটন ২ এর লেখা (ঐচ্ছিক)</label><input class="form-inp" type="text" id="bnBtn2" placeholder="যেমন: অর্ডার ট্র্যাক"></div>
+            <div class="form-group"><label class="form-label">বাটন ২ লিংক</label><input class="form-inp" type="text" id="bnBtn2Link" placeholder="track"></div>
+          </div>
+          <div style="font-size:.68rem;color:var(--text3);margin-top:-4px;font-family:var(--font-bn)">লিংকে লিখতে পারেন: <b>খালি</b> = পণ্যের জায়গায় স্ক্রল · <b>track</b> = অর্ডার ট্র্যাক · <b>#discountSec</b> = ছাড়ের বই সেকশন · অথবা পুরো URL (https://...)</div>
+          <div class="form-group">
+            <label class="form-label">ব্যাকগ্রাউন্ড রং</label>
+            <div id="bnPresets" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><div style="font-size:.66rem;color:var(--text3);margin-bottom:3px">শুরুর রং</div><input class="form-inp" type="color" id="bnColor1" value="#AA2C2D" style="height:38px;padding:3px"></div>
+              <div><div style="font-size:.66rem;color:var(--text3);margin-bottom:3px">শেষের রং</div><input class="form-inp" type="color" id="bnColor2" value="#711D1E" style="height:38px;padding:3px"></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end">
+            <div class="form-group">
+              <label class="form-label">ডানদিকের আইকন সেট</label>
+              <select class="form-inp" id="bnIcons">
+                <option value="fa-book-open,fa-truck-fast,fa-shield-halved">বই · ডেলিভারি · নিরাপত্তা</option>
+                <option value="fa-tag,fa-gift,fa-percent">ট্যাগ · গিফট · ছাড়</option>
+                <option value="fa-truck-fast,fa-box,fa-shield-halved">ডেলিভারি · বক্স · নিরাপত্তা</option>
+                <option value="fa-star,fa-heart,fa-crown">স্টার · হার্ট · ক্রাউন</option>
+                <option value="">কোনো আইকন নয়</option>
+              </select>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-family:var(--font-bn);padding-bottom:10px;cursor:pointer">
+              <input type="checkbox" id="bnStats"> নিচে সংখ্যার সারি দেখান (বই, রেটিং, ডেলিভারি, COD)
+            </label>
+          </div>
         </div>
+
         <div class="form-group">
-          <label class="form-label">Link URL (Optional)</label>
-          <input class="form-inp" type="url" id="bannerLink" placeholder="https://...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Sort Order</label>
+          <label class="form-label">Sort Order (ছোট সংখ্যা আগে দেখায়)</label>
           <input class="form-inp" type="number" id="bannerOrder" placeholder="1" min="1" value="1">
         </div>
         <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
@@ -7646,39 +7729,189 @@ function toast(title, sub = '', type = 'success') {
 /* ══════════════════════════════════════
    BANNER MANAGEMENT
 ══════════════════════════════════════ */
-let allBanners = [];           // populated from Supabase (+ localStorage fallback)
+let allBanners = [];           // Supabase `banners` টেবিল থেকে
 let selectedBannerFile = null;
+let bannerType = 'text';       // 'text' | 'image'
 
-// Load banners from Supabase `banners` table; merge with any localStorage-only entries
+// টেক্সট ব্যানারের জন্য নতুন কলাম — Supabase → SQL Editor-এ একবার চালাতে হবে
+const BANNERS_SQL = `-- Supabase → SQL Editor-এ একবার চালান (টেক্সট ব্যানার চালু করতে):
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS type         text DEFAULT 'image';
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS badge_text   text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS badge_icon   text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS main_title   text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS subtitle     text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS button_text  text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS button_link  text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS button2_text text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS button2_link text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS bg_color     text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS bg_color2    text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS icons        text;
+ALTER TABLE banners ADD COLUMN IF NOT EXISTS show_stats   boolean DEFAULT false;
+ALTER TABLE banners ALTER COLUMN image_url DROP NOT NULL;
+UPDATE banners SET type = 'image' WHERE type IS NULL;`;
+
+// রঙের প্রিসেট (শুরু, শেষ)
+const BN_PRESETS = [
+  ['ব্র্যান্ড লাল', '#AA2C2D', '#711D1E'],
+  ['গাঢ় লাল-কমলা', '#7F1D1D', '#C2410C'],
+  ['গাঢ় ধূসর-লাল', '#1F2937', '#7F1D1D'],
+  ['সবুজ', '#10B981', '#059669'],
+  ['নীল', '#1D4ED8', '#3B82F6'],
+  ['সোনালি', '#B45309', '#F59E0B']
+];
+
+// ডিফল্ট ৩টা ব্যানার (সাইটে যেগুলো এতদিন কোডে বসানো ছিল) — "ডিফল্ট ইমপোর্ট" চাপলে টেবিলে ঢুকবে, তারপর এডিট/ডিলিট করা যাবে
+const DEFAULT_SITE_BANNERS = [
+  { type: 'text', title: 'পছন্দের বই, সেরা দামে ঘরে বসেই', badge_text: 'বই প্রেমীদের অনলাইন ঠিকানা', badge_icon: 'fa-book-open',
+    main_title: 'পছন্দের বই,\nসেরা দামে ঘরে বসেই',
+    subtitle: 'ইসলামী বই, অনুবাদ, রহস্য-গোয়েন্দা, রোমান্টিক উপন্যাস, মাঙ্গা ও আরও অনেক কিছু — সব এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
+    button_text: 'বই দেখুন', button_link: '', button2_text: 'অর্ডার ট্র্যাক', button2_link: 'track',
+    bg_color: '#AA2C2D', bg_color2: '#711D1E', icons: 'fa-book-open,fa-truck-fast,fa-shield-halved', show_stats: true, sort_order: 1 },
+  { type: 'text', title: 'বিশেষ ছাড়', badge_text: 'বিশেষ ছাড়', badge_icon: 'fa-tag',
+    main_title: '{{maxdisc}}',
+    subtitle: 'বাছাই করা বইয়ে বিশেষ ছাড় চলছে — কোন বইয়ে কত সাশ্রয়, এখনই দেখে নিন।',
+    button_text: 'ছাড়ের বই দেখুন', button_link: '#discountSec', button2_text: '', button2_link: '',
+    bg_color: '#7F1D1D', bg_color2: '#C2410C', icons: 'fa-tag,fa-gift,fa-percent', show_stats: false, sort_order: 2 },
+  { type: 'text', title: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি', badge_text: 'দ্রুত ডেলিভারি', badge_icon: 'fa-truck-fast',
+    main_title: 'সারা বাংলাদেশে\nক্যাশ অন ডেলিভারি',
+    subtitle: 'ঢাকায় ২–৩ দিন, ঢাকার বাইরে ৩–৫ দিনে হাতে পাবেন। bKash, Nagad ও Rocket-এও পেমেন্ট করা যায়।',
+    button_text: 'শপিং করুন', button_link: '', button2_text: '', button2_link: '',
+    bg_color: '#10B981', bg_color2: '#059669', icons: 'fa-truck-fast,fa-box,fa-shield-halved', show_stats: false, sort_order: 3 }
+];
+
+const _bnEsc = v => String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const _bnId  = id => document.getElementById(id);
+
 async function loadBannersFromSupabase() {
-  if (!sb) {
-    allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
-    renderBanners(); return;
-  }
+  if (!sb) { allBanners = []; renderBanners(); return; }
   try {
     const { data, error } = await sb.from('banners')
       .select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: false });
-    if (!error && data) {
-      // Normalize: Supabase rows use snake_case; legacy localStorage rows use camelCase
-      allBanners = data.map(b => ({
-        id:        b.id,
-        title:     b.title || 'Banner',
-        imageUrl:  b.image_url || b.imageUrl || '',
-        image_url: b.image_url || b.imageUrl || '',
-        link:      b.link || '',
-        order:     b.sort_order || 1,
-        is_active: b.is_active !== false,
-        createdAt: b.created_at || new Date().toISOString(),
-        _fromSupabase: true
-      }));
-    } else {
-      allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
-    }
-  } catch(e) {
-    allBanners = JSON.parse(localStorage.getItem('gm_banners') || '[]');
+    if (error) throw error;
+    allBanners = (data || []).map(b => ({
+      ...b,
+      title:     b.title || b.main_title || 'Banner',
+      imageUrl:  b.image_url || b.imageUrl || '',
+      image_url: b.image_url || b.imageUrl || '',
+      link:      b.link || '',
+      order:     b.sort_order || 1,
+      is_active: b.is_active !== false,
+      createdAt: b.created_at || new Date().toISOString(),
+      _fromSupabase: true
+    }));
+  } catch (e) {
+    console.error('[banners] load failed', e);
+    allBanners = [];
   }
   renderBanners();
+  checkBannerSchema();
 }
+
+// টেক্সট-ব্যানারের কলাম আছে কিনা দেখে; না থাকলে SQL দেখায়
+async function checkBannerSchema() {
+  const box = _bnId('bannerSetupNotice');
+  if (!box || !sb) return;
+  const { error } = await sb.from('banners').select('type,main_title,show_stats').limit(1);
+  box.innerHTML = error ? bannerSqlNoticeHtml() : '';
+}
+function bannerSqlNoticeHtml() {
+  return `<div style="margin:16px 20px 0;padding:14px 16px;border:1.5px solid rgba(255,159,10,.45);background:rgba(255,159,10,.08);border-radius:12px">
+    <div style="font-weight:700;font-size:.82rem;margin-bottom:4px;font-family:var(--font-bn)"><i class="fa-solid fa-triangle-exclamation" style="color:var(--amber)"></i> টেক্সট ব্যানার চালু করতে একবার এই SQL চালান</div>
+    <div style="font-size:.74rem;color:var(--text3);margin-bottom:8px;font-family:var(--font-bn)">Supabase → SQL Editor-এ পেস্ট করে Run দিন। এরপর রিফ্রেশ করলেই টেক্সট ব্যানার (নিজে ডিজাইন) আর ডিফল্ট ইমপোর্ট কাজ করবে। ছবির ব্যানার এখনকার মতোই চলবে।</div>
+    <pre style="max-height:150px;overflow:auto;background:var(--bg3);padding:10px;border-radius:8px;font-size:.68rem;white-space:pre-wrap;margin:0 0 8px">${_bnEsc(BANNERS_SQL)}</pre>
+    <button class="btn btn-ghost btn-xs" onclick="copyBannerSql()"><i class="fa-regular fa-copy"></i> SQL কপি করুন</button>
+  </div>`;
+}
+function copyBannerSql() {
+  navigator.clipboard?.writeText(BANNERS_SQL).then(() => toast('কপি হয়েছে', 'এখন Supabase SQL Editor-এ পেস্ট করুন', 'success'));
+}
+function handleBannerDbError(err) {
+  console.error('[banners] DB error', err);
+  if (/column|schema cache|does not exist|violates not-null/i.test(err?.message || '')) {
+    const box = _bnId('bannerSetupNotice'); if (box) box.innerHTML = bannerSqlNoticeHtml();
+    toast('একবার SQL চালাতে হবে', 'ব্যানার প্যানেলের উপরের SQL টা Supabase-এ Run করুন', 'warning');
+  } else {
+    toast('Error', (err?.message || 'সেভ করা যায়নি'), 'error');
+  }
+}
+
+/* ── মডাল ── */
+function setBannerType(t) {
+  bannerType = t;
+  _bnId('bnImageFields').style.display = t === 'image' ? 'grid' : 'none';
+  _bnId('bnTextFields').style.display  = t === 'text'  ? 'grid' : 'none';
+  document.querySelectorAll('.bn-tab').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+  if (t === 'text') updateBnPreview();
+}
+function renderBnPresets() {
+  _bnId('bnPresets').innerHTML = BN_PRESETS.map(([n, a, b]) =>
+    `<button type="button" class="bn-swatch" title="${n}" style="background:linear-gradient(120deg,${a},${b})" onclick="applyBnPreset('${a}','${b}')"></button>`).join('');
+}
+function applyBnPreset(a, b) { _bnId('bnColor1').value = a; _bnId('bnColor2').value = b; updateBnPreview(); }
+
+function openBannerModal(id) {
+  const b = id != null ? allBanners.find(x => String(x.id) === String(id)) : null;
+  const isText = !!b && b.type === 'text';
+  const set = (i, v) => { _bnId(i).value = v ?? ''; };
+  _bnId('editBannerId').value = b ? b.id : '';
+  _bnId('bannerModalTitle').textContent = b ? 'ব্যানার এডিট করুন' : 'নতুন ব্যানার';
+  _bnId('bnTypeTabs').style.display = b ? 'none' : 'flex';
+  selectedBannerFile = null; _bnId('bannerImageFile').value = '';
+  set('bannerOrder', b ? (b.order || 1) : (allBanners.length + 1));
+  // ছবির ব্যানার ফিল্ড
+  set('bannerTitle', b && !isText ? b.title : '');
+  set('bannerLink',  b && !isText ? b.link  : '');
+  const prev = _bnId('bannerPreview');
+  if (b && !isText && b.image_url) { prev.classList.remove('empty'); prev.innerHTML = `<img src="${_bnEsc(b.image_url)}" style="width:100%;height:100%;object-fit:cover">`; }
+  else { prev.classList.add('empty'); prev.innerHTML = '<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>'; }
+  // টেক্সট ব্যানার ফিল্ড
+  set('bnBadge', isText ? b.badge_text : '');
+  set('bnBadgeIcon', isText ? (b.badge_icon || 'fa-star') : 'fa-star');
+  set('bnMainTitle', isText ? b.main_title : '');
+  set('bnSub', isText ? b.subtitle : '');
+  set('bnBtn', isText ? b.button_text : 'শপিং করুন');
+  set('bnBtnLink', isText ? b.button_link : '');
+  set('bnBtn2', isText ? b.button2_text : '');
+  set('bnBtn2Link', isText ? b.button2_link : '');
+  set('bnColor1', isText ? (b.bg_color || '#AA2C2D') : '#AA2C2D');
+  set('bnColor2', isText ? (b.bg_color2 || '#711D1E') : '#711D1E');
+  const icons = _bnId('bnIcons'); icons.value = isText ? (b.icons ?? '') : 'fa-book-open,fa-truck-fast,fa-shield-halved';
+  if (icons.value !== (isText ? (b.icons ?? '') : 'fa-book-open,fa-truck-fast,fa-shield-halved')) icons.value = '';
+  _bnId('bnStats').checked = isText ? b.show_stats === true : false;
+  renderBnPresets();
+  setBannerType(b ? (isText ? 'text' : 'image') : 'text');
+  openModal('bannerModal');
+}
+
+function _bnText(v) {   // প্রিভিউয়ের জন্য টোকেন বসানো
+  return _bnEsc(v).replace(/\{\{maxdisc\}\}/g, 'সর্বোচ্চ ৩০% ছাড়!').replace(/\{\{books\}\}/g, '২০').replace(/\{\{rating\}\}/g, '৪.৫★');
+}
+function bannerCardHtml(o, big) {   // টেক্সট ব্যানারের মিনি ডিজাইন (প্রিভিউ + কার্ড)
+  const f = big ? 1 : .8;
+  const icons = String(o.icons || '').split(',').map(x => x.trim()).filter(x => /^fa-[a-z0-9-]+$/.test(x));
+  const badge = /^fa-[a-z0-9-]+$/.test(o.badge_icon || '') ? o.badge_icon : 'fa-star';
+  return `<div style="position:relative;overflow:hidden;border-radius:12px;padding:${16*f}px ${18*f}px;min-height:${big?150:0}px;height:100%;box-sizing:border-box;color:#fff;font-family:var(--font-bn);background:linear-gradient(120deg,${_bnEsc(o.bg_color || '#AA2C2D')} 0%,${_bnEsc(o.bg_color2 || '#711D1E')} 100%);display:flex;flex-direction:column;justify-content:center;gap:${6*f}px;text-align:left">
+    <div style="position:absolute;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.07);top:-50px;right:-30px"></div>
+    ${o.badge_text ? `<div style="align-self:flex-start;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:2px 10px;font-size:${.66*f}rem;font-weight:700"><i class="fa-solid ${badge}"></i> ${_bnText(o.badge_text)}</div>` : ''}
+    <div style="font-size:${1.25*f}rem;font-weight:800;line-height:1.25;max-width:78%;position:relative">${_bnText(o.main_title).replace(/\n/g, '<br>')}</div>
+    ${o.subtitle ? `<div style="font-size:${.72*f}rem;opacity:.92;max-width:78%;line-height:1.45;${big?'':'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden'}">${_bnText(o.subtitle)}</div>` : ''}
+    ${(o.button_text || o.button2_text) ? `<div style="display:flex;gap:6px;margin-top:2px">
+      ${o.button_text ? `<span style="background:#fff;color:${_bnEsc(o.bg_color || '#AA2C2D')};border-radius:8px;padding:4px 12px;font-size:${.68*f}rem;font-weight:700">${_bnEsc(o.button_text)}</span>` : ''}
+      ${o.button2_text ? `<span style="border:1.5px solid rgba(255,255,255,.5);border-radius:8px;padding:3px 11px;font-size:${.68*f}rem;font-weight:700">${_bnEsc(o.button2_text)}</span>` : ''}</div>` : ''}
+    ${o.show_stats ? `<div style="display:flex;gap:14px;border-top:1px solid rgba(255,255,255,.25);padding-top:6px;margin-top:4px;font-size:${.62*f}rem;opacity:.9"><span><b>২০</b> বই</span><span><b>৪.৫★</b> রেটিং</span><span><b>২–৫ দিন</b></span><span><b>COD</b></span></div>` : ''}
+    ${icons.length ? `<div style="position:absolute;right:${14*f}px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px">${icons.slice(0,3).map(i => `<div style="width:${28*f}px;height:${28*f}px;border-radius:8px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:${.75*f}rem"><i class="fa-solid ${i}"></i></div>`).join('')}</div>` : ''}
+  </div>`;
+}
+function readBnText() {
+  const g = i => _bnId(i).value;
+  return {
+    badge_text: g('bnBadge').trim(), badge_icon: g('bnBadgeIcon'), main_title: g('bnMainTitle').trim(), subtitle: g('bnSub').trim(),
+    button_text: g('bnBtn').trim(), button_link: g('bnBtnLink').trim(), button2_text: g('bnBtn2').trim(), button2_link: g('bnBtn2Link').trim(),
+    bg_color: g('bnColor1'), bg_color2: g('bnColor2'), icons: g('bnIcons'), show_stats: _bnId('bnStats').checked
+  };
+}
+function updateBnPreview() { const el = _bnId('bnLivePreview'); if (el) el.innerHTML = bannerCardHtml(readBnText(), true); }
 
 function handleBannerImageSelect(input) {
   const file = input.files[0];
@@ -7687,200 +7920,146 @@ function handleBannerImageSelect(input) {
   selectedBannerFile = file;
   const reader = new FileReader();
   reader.onload = (e) => {
-    const prev = document.getElementById('bannerPreview');
+    const prev = _bnId('bannerPreview');
     prev.classList.remove('empty');
     prev.innerHTML = `<img src="${e.target.result}" alt="preview" style="width:100%;height:100%;object-fit:cover">`;
   };
   reader.readAsDataURL(file);
 }
-
-// Banner drag & drop
 document.addEventListener('DOMContentLoaded', () => {
-  const bz = document.getElementById('bannerUploadZone');
+  const bz = _bnId('bannerUploadZone');
   if (bz) {
     bz.addEventListener('dragover', e => { e.preventDefault(); bz.classList.add('drag-over'); });
     bz.addEventListener('dragleave', () => bz.classList.remove('drag-over'));
     bz.addEventListener('drop', e => {
       e.preventDefault(); bz.classList.remove('drag-over');
       const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) {
-        document.getElementById('bannerImageFile').files = e.dataTransfer.files;
-        handleBannerImageSelect(document.getElementById('bannerImageFile'));
-      }
+      if (file && file.type.startsWith('image/')) { _bnId('bannerImageFile').files = e.dataTransfer.files; handleBannerImageSelect(_bnId('bannerImageFile')); }
     });
   }
 });
 
+async function uploadBannerImage(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const fileName = `banner_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  let up = await sb.storage.from('banners').upload(fileName, file, { cacheControl: '3600', upsert: false });
+  if (!up.error) return sb.storage.from('banners').getPublicUrl(fileName).data?.publicUrl || null;
+  console.error('[banner] primary bucket failed:', up.error.message);
+  const fb = getConfig().bucket || 'product-images';
+  up = await sb.storage.from(fb).upload(`banners/${fileName}`, file, { cacheControl: '3600', upsert: false });
+  if (up.error) { console.error('[banner] fallback bucket failed:', up.error.message); return null; }
+  return sb.storage.from(fb).getPublicUrl(`banners/${fileName}`).data?.publicUrl || null;
+}
+
 async function saveBanner() {
-  const title = document.getElementById('bannerTitle').value.trim() || 'Banner';
-  const link = document.getElementById('bannerLink').value.trim();
-  const order = parseInt(document.getElementById('bannerOrder').value) || 1;
+  if (!sb) { toast('Supabase সংযোগ নেই', 'আগে Settings-এ Supabase সংযুক্ত করুন', 'error'); return; }
+  const editId   = _bnId('editBannerId').value;
+  const existing = editId ? allBanners.find(x => String(x.id) === String(editId)) : null;
+  const order    = parseInt(_bnId('bannerOrder').value) || 1;
+  const btn = _bnId('saveBannerBtn');
+  const resetBtn = () => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন'; };
 
-  if (!selectedBannerFile) { toast('Image Required', 'ব্যানারের জন্য ছবি দিন', 'error'); return; }
+  let payload;
+  if (bannerType === 'text') {
+    const t = readBnText();
+    if (!t.main_title) { toast('শিরোনাম দিন', 'মূল শিরোনাম ফাঁকা রাখা যাবে না', 'error'); return; }
+    payload = { type: 'text', title: t.main_title.split('\n')[0].slice(0, 80), ...t, sort_order: order };
+  } else {
+    if (!selectedBannerFile && !(existing && existing.image_url)) { toast('Image Required', 'ব্যানারের জন্য ছবি দিন', 'error'); return; }
+    payload = { title: _bnId('bannerTitle').value.trim() || 'Banner', link: _bnId('bannerLink').value.trim() || null, sort_order: order };
+  }
 
-  const btn = document.getElementById('saveBannerBtn');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Saving...';
-
-  // ── 10-second timeout guard ──
-  const timeoutId = setTimeout(() => {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
-    toast('Connection Timeout!', 'ব্যানার আপলোড সময়সীমা অতিক্রম করেছে। আবার চেষ্টা করুন।', 'error');
-    console.error('[saveBanner] Timeout: Banner upload exceeded 10 seconds.');
-  }, 25000);
-
+  const guard = setTimeout(() => { resetBtn(); toast('Connection Timeout!', 'সময়সীমা শেষ। আবার চেষ্টা করুন।', 'error'); }, 25000);
   try {
-    let imageUrl = null;
-
-    if (sb) {
-      const BANNER_BUCKET = 'banners';
-      const ext = selectedBannerFile.name.split('.').pop().toLowerCase();
-      const fileName = `banner_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
-      // ── STEP 1: Upload image — strictly wait for success before DB write ──
-      let uploadResult = await sb.storage.from(BANNER_BUCKET).upload(fileName, selectedBannerFile, { cacheControl: '3600', upsert: false });
-
-      if (uploadResult.error) {
-        console.error('[saveBanner] Primary bucket upload failed:', uploadResult.error.message, uploadResult.error);
-        // Fallback to product images bucket
-        const fallbackBucket = getConfig().bucket || 'product-images';
-        uploadResult = await sb.storage.from(fallbackBucket).upload(`banners/${fileName}`, selectedBannerFile, { cacheControl: '3600', upsert: false });
-        if (uploadResult.error) {
-          console.error('[saveBanner] Fallback bucket upload also failed:', uploadResult.error.message, uploadResult.error);
-        } else {
-          const { data: urlData } = sb.storage.from(fallbackBucket).getPublicUrl(`banners/${fileName}`);
-          imageUrl = urlData?.publicUrl || null;
-        }
-      } else {
-        const { data: urlData } = sb.storage.from(BANNER_BUCKET).getPublicUrl(fileName);
-        imageUrl = urlData?.publicUrl || null;
-      }
-
-      // ── STEP 2: Only save to DB after confirmed upload ──
-      if (imageUrl) {
-        const { error: dbError } = await sb.from('banners').insert({
-          title,
-          image_url: imageUrl,
-          link: link || null,
-          sort_order: order,
-          is_active: true,
-          created_at: new Date().toISOString()
-        });
-        if (dbError) {
-          console.error('[saveBanner] Supabase DB insert failed:', dbError.message, dbError);
-          toast('DB Error', 'ছবি আপলোড হয়েছে কিন্তু ডেটাবেসে সেভ ব্যর্থ: ' + dbError.message, 'error');
-          clearTimeout(timeoutId);
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
-          return;
-        }
-      } else {
-        console.error('[saveBanner] imageUrl is null — upload failed on all buckets. Aborting DB write.');
-        toast('Upload Failed', 'Supabase Storage-এ ছবি আপলোড হয়নি। Settings-এ bucket নাম ঠিক আছে কিনা দেখুন।', 'error');
-        clearTimeout(timeoutId);
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
-        return;
-      }
-    } else {
-      // Fallback: base64 in localStorage (demo mode)
-      imageUrl = await new Promise(res => {
-        const r = new FileReader();
-        r.onload = e => res(e.target.result);
-        r.readAsDataURL(selectedBannerFile);
-      });
+    if (bannerType === 'image' && selectedBannerFile) {
+      const url = await uploadBannerImage(selectedBannerFile);
+      if (!url) { toast('Upload Failed', 'ছবি আপলোড হয়নি। Settings-এ bucket নাম ঠিক আছে কিনা দেখুন।', 'error'); return; }
+      payload.image_url = url;
     }
-
-    clearTimeout(timeoutId);
-
-    const banner = { id: Date.now(), title, link, order, imageUrl, createdAt: new Date().toISOString() };
-    allBanners.push(banner);
-    allBanners.sort((a, b) => a.order - b.order);
-    localStorage.setItem('gm_banners', JSON.stringify(allBanners));
-
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
-    toast('Success!', 'ব্যানার যোগ হয়েছে এবং ওয়েবসাইটে দেখাবে', 'success');
+    const res = existing
+      ? await sb.from('banners').update(payload).eq('id', existing.id)
+      : await sb.from('banners').insert({ ...payload, is_active: true, created_at: new Date().toISOString() });
+    if (res.error) { handleBannerDbError(res.error); return; }
+    toast('Success!', existing ? 'ব্যানার আপডেট হয়েছে' : 'ব্যানার যোগ হয়েছে — ওয়েবসাইটে দেখাবে', 'success');
     closeModal('bannerModal');
     selectedBannerFile = null;
-    document.getElementById('bannerPreview').classList.add('empty');
-    document.getElementById('bannerPreview').innerHTML = '<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>';
-    document.getElementById('bannerTitle').value = '';
-    document.getElementById('bannerLink').value = '';
     await loadBannersFromSupabase();
-
   } catch (err) {
-    clearTimeout(timeoutId);
-    console.error('[saveBanner] Unexpected error:', err);
-    toast('Unexpected Error', err.message || 'ব্যানার সেভ করতে অপ্রত্যাশিত সমস্যা হয়েছে।', 'error');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ব্যানার সেভ করুন';
-  }
+    console.error('[saveBanner]', err);
+    toast('Unexpected Error', err.message || 'ব্যানার সেভ করতে সমস্যা হয়েছে', 'error');
+  } finally { clearTimeout(guard); resetBtn(); }
+}
+
+async function importDefaultBanners() {
+  if (!sb) return;
+  if (!confirm('সাইটের ৩টা ডিফল্ট ব্যানার যোগ হবে। এরপর এগুলো এডিট, বন্ধ বা ডিলিট করা যাবে। চালিয়ে যাবেন?')) return;
+  const now = new Date().toISOString();
+  const { error } = await sb.from('banners').insert(DEFAULT_SITE_BANNERS.map(b => ({ ...b, is_active: true, created_at: now })));
+  if (error) { handleBannerDbError(error); return; }
+  toast('ইমপোর্ট হয়েছে', '৩টা ডিফল্ট ব্যানার যোগ হয়েছে — এখন এডিট করতে পারবেন', 'success');
+  await loadBannersFromSupabase();
 }
 
 async function deleteBanner(id) {
-  const b = allBanners.find(x => x.id === id);
+  const b = allBanners.find(x => String(x.id) === String(id));
   if (!confirm(`"${b?.title}" ব্যানারটি মুছে ফেলবেন?`)) return;
-  // Delete from Supabase if it came from there
-  if (sb && b?._fromSupabase) {
-    const { error } = await sb.from('banners').delete().eq('id', id);
-    if (error) { toast('Error', 'Supabase থেকে মুছতে সমস্যা: ' + error.message, 'error'); return; }
+  if (sb) {
+    const { error } = await sb.from('banners').delete().eq('id', b ? b.id : id);
+    if (error) { toast('Error', 'মুছতে সমস্যা: ' + error.message, 'error'); return; }
   }
-  allBanners = allBanners.filter(x => x.id !== id);
-  localStorage.setItem('gm_banners', JSON.stringify(allBanners.filter(x => !x._fromSupabase)));
+  allBanners = allBanners.filter(x => String(x.id) !== String(id));
   toast('Deleted', 'ব্যানার মুছে ফেলা হয়েছে', 'info');
   renderBanners();
 }
 
+async function toggleBannerActive(id, currentActive) {
+  const newVal = !currentActive;
+  const b = allBanners.find(x => String(x.id) === String(id));
+  if (sb) {
+    const { error } = await sb.from('banners').update({ is_active: newVal }).eq('id', b ? b.id : id);
+    if (error) { toast('Error', 'আপডেট ব্যর্থ: ' + error.message, 'error'); return; }
+  }
+  if (b) b.is_active = newVal;
+  toast(newVal ? 'Activated' : 'Deactivated', `ব্যানার ${newVal ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে`, 'info');
+  renderBanners();
+}
+
 function renderBanners() {
-  const grid = document.getElementById('bannerGrid');
+  const grid = _bnId('bannerGrid');
   if (!grid) return;
+  const imp = _bnId('bannerImportBtn');
+  if (imp) imp.style.display = allBanners.some(b => b.type === 'text') ? 'none' : '';
   if (!allBanners.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><i class="fa-solid fa-images"></i></div><div class="empty-title">কোনো ব্যানার নেই</div><div class="empty-sub" style="font-family:var(--font-bn)">নতুন ব্যানার যোগ করুন</div></div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><i class="fa-solid fa-images"></i></div><div class="empty-title">কোনো ব্যানার নেই</div><div class="empty-sub" style="font-family:var(--font-bn)">এখন সাইটে কোডের ডিফল্ট ৩টা ব্যানার দেখাচ্ছে। "ডিফল্ট ইমপোর্ট" চাপলে ওগুলো এখানে এসে এডিট করা যাবে, অথবা নতুন ব্যানার যোগ করুন।</div></div>`;
     return;
   }
   grid.innerHTML = allBanners.map(b => {
-    const imgSrc = b.image_url || b.imageUrl || '';
-    const activeLabel = b.is_active !== false ? 'Active' : 'Inactive';
-    const activeColor = b.is_active !== false ? 'var(--green,#10B981)' : 'var(--text3)';
-    const toggleIcon  = b.is_active !== false ? 'fa-eye-slash' : 'fa-eye';
-    const toggleTitle = b.is_active !== false ? 'Deactivate' : 'Activate';
+    const on = b.is_active !== false;
+    const isText = b.type === 'text';
+    const media = isText
+      ? `<div class="banner-card-img" style="display:block;opacity:${on ? 1 : .45}">${bannerCardHtml(b, false)}</div>`
+      : `<div class="banner-card-img" style="opacity:${on ? 1 : .45}"><img src="${_bnEsc(b.image_url || '')}" alt="${_bnEsc(b.title)}" onerror="this.style.display='none'"></div>`;
     return `
     <div class="banner-card">
-      <div class="banner-card-img">
-        <img src="${imgSrc}" alt="${b.title}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-image-slash\\' style=\\'font-size:2rem;color:var(--text4)\\'></i>'">
-      </div>
+      ${media}
       <div class="banner-order-badge">#${b.order}</div>
       <div class="banner-card-info">
-        <div class="banner-card-title">${b.title}</div>
+        <div class="banner-card-title">${_bnEsc(b.title)}</div>
         <div class="banner-card-meta">
-          ${b.link ? `<a href="${b.link}" target="_blank" style="color:var(--blue);text-decoration:none">${b.link.slice(0,40)}...</a>` : 'No link'}
-          · <span style="color:${activeColor};font-weight:600">${activeLabel}</span>
+          ${isText ? 'টেক্সট ব্যানার' : 'ছবির ব্যানার'}
+          · <span style="color:${on ? 'var(--green,#10B981)' : 'var(--text3)'};font-weight:600">${on ? 'Active' : 'Inactive'}</span>
           · ${fmtDate(b.createdAt)}
         </div>
         <div class="banner-card-actions">
-          <button class="btn btn-xs" style="background:var(--bg3);color:var(--text)" title="${toggleTitle}" onclick="toggleBannerActive('${b.id}',${b.is_active !== false})">
-            <i class="fa-solid ${toggleIcon}"></i>
-          </button>
+          <button class="btn btn-xs" style="background:var(--bg3);color:var(--text)" title="Edit" onclick="openBannerModal('${b.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn-xs" style="background:var(--bg3);color:var(--text)" title="${on ? 'Deactivate' : 'Activate'}" onclick="toggleBannerActive('${b.id}',${on})"><i class="fa-solid ${on ? 'fa-eye-slash' : 'fa-eye'}"></i></button>
           <button class="btn btn-danger btn-xs" onclick="deleteBanner('${b.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
         </div>
       </div>
     </div>`;
   }).join('');
-}
-
-// Toggle is_active for a banner in Supabase
-async function toggleBannerActive(id, currentActive) {
-  const newVal = !currentActive;
-  if (sb) {
-    const { error } = await sb.from('banners').update({ is_active: newVal }).eq('id', id);
-    if (error) { toast('Error', 'আপডেট ব্যর্থ: ' + error.message, 'error'); return; }
-  }
-  const b = allBanners.find(x => String(x.id) === String(id));
-  if (b) b.is_active = newVal;
-  toast(newVal ? 'Activated' : 'Deactivated', `ব্যানার ${newVal ? 'সক্রিয়' : 'নিষ্ক্রিয়'} করা হয়েছে`, 'info');
-  renderBanners();
 }
 
 
