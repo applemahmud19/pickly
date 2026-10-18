@@ -5548,20 +5548,17 @@ html, body {
 .grid-more-btn:hover{background:var(--blue,#AA2C2D);color:#fff;box-shadow:0 8px 22px rgba(170,44,45,.25)}
 .nr-sec{margin-top:34px;padding-top:22px;border-top:1px dashed var(--border,#e5e7eb)}
 .nr-sec .parea-header h2{font-size:1.05rem}
-.tp-row{display:flex;flex-wrap:wrap;gap:12px}
-.tp-card{display:flex;align-items:center;gap:11px;padding:10px 16px 10px 10px;min-width:210px;max-width:290px;background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:14px;cursor:pointer;text-align:left;transition:all .18s;font-family:'Hind Siliguri',sans-serif}
+#topAuthorsSec,#topPublishersSec{container-type:inline-size}
+.tp-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@container (min-width:900px){ .tp-row{grid-template-columns:repeat(5,minmax(0,1fr))} }
+.tp-card{display:flex;align-items:center;gap:10px;width:100%;min-height:66px;padding:10px 12px 10px 10px;background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:14px;cursor:pointer;text-align:left;transition:all .18s;font-family:'Hind Siliguri',sans-serif}
 .tp-card:hover{border-color:rgba(170,44,45,.35);box-shadow:0 8px 22px rgba(170,44,45,.14);transform:translateY(-2px)}
-.tp-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;font-size:1.05rem;font-weight:700}
-.tp-av i{font-size:.95rem}
-.tp-info{display:flex;flex-direction:column;min-width:0}
-.tp-name{font-size:.88rem;font-weight:700;color:var(--text,#222);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tp-meta{font-size:.7rem;color:var(--text-mid,#666);margin-top:1px}
-.tp-meta i{color:#F5A623;font-size:.64rem}
-@media (max-width:880px){
-  .tp-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;-webkit-overflow-scrolling:touch}
-  .tp-row::-webkit-scrollbar{display:none}
-  .tp-card{flex-shrink:0;min-width:180px}
-}
+.tp-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;font-size:1rem;font-weight:700}
+.tp-av i{font-size:.9rem}
+.tp-info{display:flex;flex-direction:column;min-width:0;flex:1}
+.tp-name{font-size:.84rem;font-weight:700;line-height:1.3;color:var(--text,#222);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.tp-meta{font-size:.68rem;color:var(--text-mid,#666);margin-top:2px;white-space:nowrap}
+.tp-meta i{color:#F5A623;font-size:.62rem}
 </style>
 <style id="navMoreStyles">
 /* Category navbar — "আরও" dropdown (managed from Admin → Categories → নেভবার সাজান) */
@@ -8826,6 +8823,7 @@ function renderNewReleases() {
    জনপ্রিয় লেখক / প্রকাশনী — রেটিং হিসাব করে র‍্যাংক।
    স্কোর = বইগুলোর গড় রেটিং (কম বইয়ের ক্ষেত্রে ৪.০ এর দিকে একটু টেনে — ১টা বইয়ে ৫ স্টার পেয়ে
    ২০টা বইয়ের লেখকের উপরে উঠে যাবে না)। স্কোর সমান হলে বেশি বিক্রি, তারপর বেশি বই আগে।
+   লেখক তালিকায় নামে (অনুবাদক) থাকলে তারা মূল লেখকদের পরে বসে।
    ══════════════════════════════════════════════════ */
 const TOP_PEOPLE_COUNT = 10;    // প্রতি লাইনে কতজন
 function _tpEsc(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -8845,8 +8843,9 @@ function rankTopPeople(kind) {
   });
   const PRIOR = 4, W = 2;
   return [...map.values()]
-    .map(e => ({ ...e, avg: e.sum / e.n, score: (e.sum + PRIOR * W) / (e.n + W) }))
-    .sort((a, b) => (b.score - a.score) || (b.sold - a.sold) || (b.n - a.n))
+    .map(e => ({ ...e, avg: e.sum / e.n, score: (e.sum + PRIOR * W) / (e.n + W),
+                 tr: kind === 'author' && /অনুবাদক/.test(e.name) ? 1 : 0 }))   // নামে (অনুবাদক) থাকলে অনুবাদক
+    .sort((a, b) => (a.tr - b.tr) || (b.score - a.score) || (b.sold - a.sold) || (b.n - a.n))   // মূল লেখক আগে, অনুবাদক পরে
     .slice(0, TOP_PEOPLE_COUNT);
 }
 function renderTopPeople(show) {
