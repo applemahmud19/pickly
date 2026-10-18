@@ -6204,7 +6204,7 @@ html.gm-boot #gmSplash{display:flex}
             <i class="fa-solid fa-user-lock" style="color:var(--blue);font-size:1.2rem"></i>
           </div>
           <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px">রিভিউ দিতে লগইন করুন</div>
-          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);margin-bottom:14px">আপনার অ্যাকাউন্টে লগইন করলে রিভিউ দিতে পারবেন।</div>
+          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);margin-bottom:14px">অ্যাকাউন্টে লগইন করলে রেটিং, রিভিউ ও ছবি দিতে পারবেন।</div>
           <button onclick="openAuth();closePage('product')" class="btn-primary bn" style="padding:9px 22px;font-size:.85rem">
             <i class="fa-solid fa-right-to-bracket"></i> লগইন করুন
           </button>
@@ -6219,11 +6219,19 @@ html.gm-boot #gmSplash{display:flex}
           <div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);line-height:1.6">এই পণ্যটি কিনে ডেলিভারি পাওয়ার পরেই আপনি রিভিউ দিতে পারবেন। এটি আমাদের <strong>ভেরিফাইড রিভিউ</strong> সিস্টেম।</div>
         </div>
 
-        <!-- State 3: Verified buyer — show form -->
+        <!-- State: already reviewed -->
+        <div id="reviewStateDone" style="display:none;text-align:center;padding:20px 16px">
+          <div style="width:52px;height:52px;background:#D1FAE5;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px">
+            <i class="fa-solid fa-circle-check" style="color:#059669;font-size:1.3rem"></i>
+          </div>
+          <div class="rv-done-sub" style="font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:600;color:var(--text)"></div>
+        </div>
+
+        <!-- State 3: logged-in user — show form -->
         <div id="reviewStateForm" style="display:none">
           <div class="bn fp-wr-title" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
             <i class="fa-solid fa-pen" style="color:var(--blue)"></i>আপনার রিভিউ লিখুন
-            <span style="background:#D1FAE5;color:#065F46;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:100px;font-family:'Hind Siliguri',sans-serif"><i class="fa-solid fa-circle-check" style="margin-right:3px"></i>যাচাইকৃত ক্রেতা</span>
+            
           </div>
           <!-- Star picker -->
           <div style="margin-bottom:14px">
@@ -9026,6 +9034,7 @@ function openProduct(id, pushUrl = true) {
   const badge = document.getElementById('pdReviewCountBadge');
   if (badge) badge.textContent = '';
 
+  loadProductReviews(p.id);   // গড় রেটিং + রিভিউ সংখ্যা হেডারে দেখাতে
   pushProductUrl(p, pushUrl);   // ✅ URL: /product/<slug>
   openPage('product');
 }
@@ -11756,37 +11765,42 @@ async function loadProductQuestions(productId) {
   `).join('');
 }
 
-async function loadProductReviews(productId) {
-  // Reset UI first
-  document.getElementById('pdReviewList').innerHTML = '<div class="pd-rev-empty"><i class="fa-solid fa-spinner fa-spin"></i>রিভিউ লোড হচ্ছে...</div>';
+// ── Reviews ─────────────────────────────────────────────
+// true  = নতুন রিভিউ সঙ্গে সঙ্গে সাইটে দেখাবে (অ্যাডমিন চাইলে Hide করতে পারবে)
+// false = অ্যাডমিন Approve করার পর দেখাবে
+const REVIEW_AUTO_APPROVE = true;
+const REVIEW_BUCKET = 'review-photos';
 
-  try {
-    const { data: reviews, error } = await sbQuery(
-      () => sb.from('reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false }),
-      'রিভিউ লোড'
-    );
-
-    if (error) throw error;
-    renderReviews(reviews || []);
-  } catch {
-    // Fallback: show demo reviews so UI is never empty
-    renderReviews(getDemoReviews());
-  }
+function escAttr(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function getDemoReviews() {
-  return [
-    { id:1, reviewer_name:'রাহেলা বেগম', rating:5, review_text:'অসাধারণ পণ্য! প্যাকেজিং খুব সুন্দর ছিল এবং সময়মতো ডেলিভারি পেয়েছি।', created_at: new Date(Date.now()-86400000*2).toISOString(), verified:true },
-    { id:2, reviewer_name:'Karim Ahmed', rating:4, review_text:'Quality is good. Will buy again from বুক গ্যালাক্সি.', created_at: new Date(Date.now()-86400000*5).toISOString(), verified:true },
-    { id:3, reviewer_name:'মোঃ সালাউদ্দিন', rating:5, review_text:'দাম অনুযায়ী পণ্যটি অনেক ভালো। সব বন্ধুদের রেকমেন্ড করেছি।', created_at: new Date(Date.now()-86400000*10).toISOString(), verified:false },
-  ];
+async function loadProductReviews(productId) {
+  const listEl = document.getElementById('pdReviewList');
+  if (listEl) listEl.innerHTML = '<div class="pd-rev-empty"><i class="fa-solid fa-spinner fa-spin"></i>রিভিউ লোড হচ্ছে...</div>';
+  let reviews = [];
+  try {
+    const { data, error } = await sbQuery(
+      () => sb.from('reviews').select('*')
+              .eq('product_id', String(productId))
+              .eq('status', 'approved')
+              .order('created_at', { ascending: false }),
+      'রিভিউ লোড'
+    );
+    if (error) throw error;
+    reviews = data || [];
+  } catch (e) {
+    console.warn('[loadProductReviews]', e?.message || e);
+    reviews = [];            // কোনো নকল/ডেমো রিভিউ দেখানো হবে না
+  }
+  renderReviews(reviews);
+  updateReviewFormState();
 }
 
 function renderReviews(reviews) {
-  // Rating summary
   const total = reviews.length;
   const avg   = total ? (reviews.reduce((s,r)=>s+Number(r.rating),0)/total) : 0;
-  const counts = [0,0,0,0,0]; // index 0 = 1★ … index 4 = 5★
+  const counts = [0,0,0,0,0];
   reviews.forEach(r => { const i = Math.min(Math.max(Math.round(r.rating),1),5)-1; counts[i]++; });
 
   document.getElementById('pdAvgScore').textContent   = avg ? avg.toFixed(1) : '—';
@@ -11794,8 +11808,14 @@ function renderReviews(reviews) {
   document.getElementById('pdTotalReviews').textContent = `${total} টি রিভিউ`;
   document.getElementById('pdReviewCountBadge').textContent = total || '';
 
-  // Bar chart
-  const barsHtml = [5,4,3,2,1].map(star => {
+  // Product header (stars + number + count) — real data overrides the default
+  if (total) {
+    const hs = document.getElementById('fpStars');      if (hs) hs.textContent = renderStars(avg);
+    const hn = document.getElementById('fpRatingNum');  if (hn) hn.textContent = `${avg.toFixed(1)} রেটিং`;
+    const hc = document.getElementById('fpReviewCnt');  if (hc) hc.textContent = `(${total} টি রিভিউ)`;
+  }
+
+  document.getElementById('pdRatingBars').innerHTML = [5,4,3,2,1].map(star => {
     const cnt = counts[star-1];
     const pct = total ? Math.round((cnt/total)*100) : 0;
     return `<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
@@ -11807,30 +11827,40 @@ function renderReviews(reviews) {
       <span style="font-size:.65rem;color:var(--text-light);width:20px">${cnt}</span>
     </div>`;
   }).join('');
-  document.getElementById('pdRatingBars').innerHTML = barsHtml;
 
-  // Review list
   const listEl = document.getElementById('pdReviewList');
   if (!total) {
     listEl.innerHTML = '<div class="pd-rev-empty"><i class="fa-regular fa-comment"></i>এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</div>';
     return;
   }
   listEl.innerHTML = reviews.map(r => {
-    const initials = (r.reviewer_name||'U').charAt(0).toUpperCase();
+    const initials = escFe((r.reviewer_name||'U').trim().charAt(0).toUpperCase());
     const dateStr  = r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
+    const photos = (Array.isArray(r.photos) ? r.photos : []).filter(u => typeof u === 'string' && /^https?:\/\//.test(u));
+    const photosHtml = photos.length
+      ? `<div class="rev-photos">${photos.map(u => `<img src="${escAttr(u)}" class="rev-photo-thumb" loading="lazy" alt="রিভিউ ছবি" onclick="openReviewLightbox(this.src)">`).join('')}</div>` : '';
     return `<div class="pd-rev-item">
       <div class="pd-rev-head">
         <div class="pd-rev-avatar">${initials}</div>
         <div>
-          <div class="pd-rev-name">${r.reviewer_name||'অজানা'}</div>
+          <div class="pd-rev-name">${escFe(r.reviewer_name||'অজানা')}</div>
           <div class="pd-rev-stars">${renderStars(r.rating)}</div>
         </div>
         <div class="pd-rev-date">${dateStr}</div>
         ${r.verified ? '<span class="pd-rev-verified">✓ যাচাইকৃত</span>' : ''}
       </div>
-      <div class="pd-rev-text">${r.review_text||''}</div>
+      <div class="pd-rev-text" style="white-space:pre-line">${escFe(r.review_text||'')}</div>
+      ${photosHtml}
     </div>`;
   }).join('');
+}
+
+function openReviewLightbox(url) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out';
+  ov.innerHTML = `<img src="${escAttr(url)}" style="max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)">`;
+  ov.onclick = () => ov.remove();
+  document.body.appendChild(ov);
 }
 
 function renderStars(rating) {
@@ -11905,94 +11935,112 @@ async function checkVerifiedBuyer(productId) {
   } catch { return false; }
 }
 
-// ── Update review form state based on login + purchase ──
+// ── Review form state: guest → login prompt · logged-in → form · already reviewed → thanks ──
 async function updateReviewFormState() {
   const guest = document.getElementById('reviewStateGuest');
   const notBuyer = document.getElementById('reviewStateNotBuyer');
   const form = document.getElementById('reviewStateForm');
-  if (!guest || !notBuyer || !form) return;
+  const done = document.getElementById('reviewStateDone');
+  if (!guest || !form) return;
   guest.style.display = 'none';
-  notBuyer.style.display = 'none';
+  if (notBuyer) notBuyer.style.display = 'none';
   form.style.display = 'none';
-  if (!currentUser) {
-    guest.style.display = 'block'; return;
-  }
-  const isBuyer = await checkVerifiedBuyer(currentProduct?.id);
-  if (!isBuyer) {
-    notBuyer.style.display = 'block'; return;
-  }
+  if (done) done.style.display = 'none';
+  if (!currentUser) { guest.style.display = 'block'; return; }
+
+  // এই ইউজার কি আগেই রিভিউ দিয়েছে? (একজন একবারই দিতে পারবে)
+  try {
+    const { data } = await sb.from('reviews').select('id,status')
+      .eq('product_id', String(currentProduct?.id)).eq('user_id', currentUser.id).limit(1);
+    if (data && data.length) {
+      if (done) {
+        done.querySelector('.rv-done-sub').textContent = data[0].status === 'approved'
+          ? 'আপনি এই পণ্যে ইতিমধ্যে রিভিউ দিয়েছেন। ধন্যবাদ!'
+          : 'আপনার রিভিউ জমা হয়েছে — অ্যাডমিন অনুমোদনের পর দেখা যাবে।';
+        done.style.display = 'block';
+      }
+      return;
+    }
+  } catch (e) { /* ফর্ম দেখাও */ }
   form.style.display = 'block';
+}
+
+// Resize photo before upload (faster + saves storage)
+function compressReviewImage(file, maxSide = 1400, quality = 0.82) {
+  return new Promise(resolve => {
+    if (!/^image\/(jpe?g|png|webp)$/i.test(file.type)) return resolve(file);
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => { URL.revokeObjectURL(url); resolve(b || file); }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
 }
 
 async function submitReview() {
   if (!currentProduct) return;
+  if (!currentUser) { toast('লগইন করুন','রিভিউ দিতে আগে লগইন করতে হবে','w'); openAuth(); return; }
   if (!pdReviewStar) { toast('রেটিং দিন','★ স্টার সিলেক্ট করুন','w'); return; }
   const text = document.getElementById('pdReviewText').value.trim();
   if (!text) { toast('রিভিউ লিখুন','একটু বিস্তারিত লিখুন','w'); return; }
   const name = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'অতিথি';
 
-  // Collect photo data URLs (base64 preview — in production upload to Storage)
-  const photos = [];
-  for (let i = 1; i <= 3; i++) {
-    const inp = document.getElementById('reviewPhoto' + i);
-    if (inp?.files?.[0]) {
-      const slot = document.getElementById('photoSlot' + i);
-      const previewImg = slot.querySelector('img');
-      if (previewImg) photos.push(previewImg.src);
-    }
-  }
-
   const btn = document.querySelector('#reviewStateForm .pd-wr-submit');
+  const resetBtn = () => { if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:7px"></i>রিভিউ জমা দিন'; } };
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> জমা হচ্ছে...'; }
 
   try {
-    await sb.from('reviews').insert({
-      product_id: currentProduct.id,
+    // 1) ছবি Storage-এ আপলোড
+    const photos = [];
+    for (let i = 1; i <= 3; i++) {
+      const file = document.getElementById('reviewPhoto' + i)?.files?.[0];
+      if (!file) continue;
+      const blob = await compressReviewImage(file);
+      const path = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+      const { error: upErr } = await sb.storage.from(REVIEW_BUCKET).upload(path, blob, { contentType: 'image/jpeg', cacheControl: '3600' });
+      if (upErr) throw new Error('ছবি আপলোড হয়নি: ' + upErr.message);
+      photos.push(sb.storage.from(REVIEW_BUCKET).getPublicUrl(path).data.publicUrl);
+    }
+
+    // 2) যাচাইকৃত ক্রেতা কিনা (ডেলিভারি পাওয়া অর্ডার থাকলে ব্যাজ পাবে)
+    const verified = await checkVerifiedBuyer(currentProduct.id);
+
+    // 3) রিভিউ সেভ
+    const { error } = await sb.from('reviews').insert({
+      product_id: String(currentProduct.id),
       user_id: currentUser.id,
       reviewer_name: name,
       rating: pdReviewStar,
       review_text: text,
-      photos: photos.length ? photos : null,
-      verified: true,
+      photos,
+      verified,
+      status: REVIEW_AUTO_APPROVE ? 'approved' : 'pending',
     });
-    toast('রিভিউ জমা হয়েছে!','ধন্যবাদ আপনার মতামতের জন্য ❤️','s');
-  } catch {
-    toast('রিভিউ সেভ হয়নি','লোকাল ভিউতে দেখাচ্ছে','i');
+    if (error) {
+      if (error.code === '23505') throw new Error('আপনি এই পণ্যে আগেই রিভিউ দিয়েছেন');
+      throw error;
+    }
+
+    toast('রিভিউ জমা হয়েছে!', REVIEW_AUTO_APPROVE ? 'ধন্যবাদ আপনার মতামতের জন্য ❤️' : 'অ্যাডমিন অনুমোদনের পর দেখা যাবে', 's');
+
+    // ফর্ম রিসেট
+    document.getElementById('pdReviewText').value = '';
+    pdReviewStar = 0; selectReviewStar(0);
+    for (let i = 1; i <= 3; i++) clearPhotoSlot(i);
+    document.getElementById('photoSlot2').style.display = 'none';
+    document.getElementById('photoSlot3').style.display = 'none';
+
+    await loadProductReviews(currentProduct.id);   // রিভিউ লিস্ট + গড় রেটিং রিফ্রেশ
+  } catch (err) {
+    console.error('[submitReview]', err);
+    toast('রিভিউ সেভ হয়নি', err.message || 'একটু পরে আবার চেষ্টা করুন', 'e');
   }
-
-  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right:7px"></i>রিভিউ জমা দিন'; }
-
-  // Optimistic UI — prepend new review
-  const photosHtml = photos.length
-    ? `<div class="rev-photos">${photos.map(p=>`<img src="${p}" class="rev-photo-thumb" onclick="window.open('${p}','_blank')">`).join('')}</div>`
-    : '';
-  const current = document.getElementById('pdReviewList');
-  const newItem = document.createElement('div');
-  newItem.className = 'pd-rev-item';
-  newItem.innerHTML = `
-    <div class="pd-rev-head">
-      <div class="pd-rev-avatar">${name.charAt(0).toUpperCase()}</div>
-      <div>
-        <div class="pd-rev-name">${name}</div>
-        <div class="pd-rev-stars">${renderStars(pdReviewStar)}</div>
-      </div>
-      <div class="pd-rev-date" style="margin-left:auto">আজ</div>
-      <span class="pd-rev-verified">✓ যাচাইকৃত ক্রেতা</span>
-    </div>
-    <div class="pd-rev-text">${text}</div>
-    ${photosHtml}`;
-  if (current.firstChild && current.firstChild.classList?.contains('pd-rev-empty')) current.innerHTML = '';
-  current.prepend(newItem);
-
-  // Reset form
-  document.getElementById('pdReviewText').value = '';
-  pdReviewStar = 0;
-  selectReviewStar(0);
-  for (let i = 1; i <= 3; i++) clearPhotoSlot(i);
-  document.getElementById('photoSlot2').style.display = 'none';
-  document.getElementById('photoSlot3').style.display = 'none';
-  const badge = document.getElementById('pdReviewCountBadge');
-  if (badge) badge.textContent = (parseInt(badge.textContent)||0) + 1;
+  resetBtn();
 }
 
 
