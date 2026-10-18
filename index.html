@@ -5559,17 +5559,37 @@ html, body {
 .tp-name{font-size:.84rem;font-weight:700;line-height:1.3;color:var(--text,#222);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .tp-meta{font-size:.68rem;color:var(--text-mid,#666);margin-top:2px;white-space:nowrap}
 .tp-meta i{color:#F5A623;font-size:.62rem}
+.tp-row{padding-top:8px}
+.tp-card{position:relative}
+.tp-rank{position:absolute;top:-9px;right:10px;display:inline-flex;align-items:center;gap:4px;padding:2px 9px 2px 7px;border-radius:999px;font-family:'Hind Siliguri',sans-serif;font-size:.66rem;font-weight:800;line-height:1.5;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.18);border:1.5px solid #fff;letter-spacing:.01em}
+.tp-rank i{font-size:.62rem}
+.tp-card.r1{border-color:#E8B923;background:linear-gradient(135deg,#fff 55%,#FFF6D6);box-shadow:0 4px 14px rgba(232,185,35,.22)}
+.tp-card.r2{border-color:#B8C0CC;background:linear-gradient(135deg,#fff 55%,#EEF1F5)}
+.tp-card.r3{border-color:#D79A62;background:linear-gradient(135deg,#fff 55%,#FBEBDD)}
+.tp-card.r1 .tp-av{box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px #E8B923}
+.tp-card.r2 .tp-av{box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px #B8C0CC}
+.tp-card.r3 .tp-av{box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px #D79A62}
+.tp-rank.r1{background:linear-gradient(135deg,#F7CF4A,#D99A00);text-shadow:0 1px 1px rgba(120,80,0,.35)}
+.tp-rank.r2{background:linear-gradient(135deg,#C9D0DA,#8E98A6);text-shadow:0 1px 1px rgba(40,50,60,.3)}
+.tp-rank.r3{background:linear-gradient(135deg,#E5A56B,#B06A2E);text-shadow:0 1px 1px rgba(90,45,10,.35)}
 .bud-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @container (min-width:900px){ .bud-row{grid-template-columns:repeat(5,minmax(0,1fr))} }
 #budgetSec{container-type:inline-size}
-.bud-btn{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:linear-gradient(135deg,#fff,#FBEDED);border:1.5px solid rgba(170,44,45,.22);border-radius:14px;cursor:pointer;text-align:left;font-family:'Hind Siliguri',sans-serif;transition:all .18s}
-.bud-btn:hover{border-color:var(--blue,#AA2C2D);box-shadow:0 8px 22px rgba(170,44,45,.18);transform:translateY(-2px)}
-.bud-ico{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;display:grid;place-items:center;font-size:.9rem;flex-shrink:0}
-.bud-txt{display:flex;flex-direction:column;min-width:0;flex:1}
-.bud-main{font-size:.92rem;font-weight:800;color:var(--blue,#AA2C2D);white-space:nowrap}
-.bud-sub{font-size:.68rem;color:var(--text-mid,#666)}
-.bud-arr{font-size:.7rem;color:var(--blue,#AA2C2D);opacity:.6;transition:transform .18s}
-.bud-btn:hover .bud-arr{transform:translateX(3px);opacity:1}
+.bud-btn{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:14px;width:100%;padding:14px 14px 13px;background:linear-gradient(145deg,#fff 40%,#FBEDED);border:1.5px solid rgba(170,44,45,.18);border-radius:16px;cursor:pointer;text-align:left;font-family:'Hind Siliguri',sans-serif;transition:all .22s}
+.bud-btn::after{content:"৳";position:absolute;right:-6px;bottom:-26px;font-size:5.2rem;font-weight:900;line-height:1;color:rgba(170,44,45,.07);pointer-events:none;transition:all .22s}
+.bud-btn:hover{border-color:transparent;background:linear-gradient(145deg,#AA2C2D,#711D1E);box-shadow:0 12px 26px rgba(170,44,45,.3);transform:translateY(-3px)}
+.bud-btn:hover::after{color:rgba(255,255,255,.12);transform:scale(1.08) rotate(-6deg)}
+.bud-ico{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#AA2C2D,#711D1E);color:#fff;display:grid;place-items:center;font-size:.95rem;flex-shrink:0;box-shadow:0 4px 10px rgba(170,44,45,.28);transition:all .22s}
+.bud-btn:hover .bud-ico{background:#fff;color:#AA2C2D;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.bud-txt{display:flex;flex-direction:column;gap:6px;min-width:0;width:100%;position:relative;z-index:1}
+.bud-main{font-size:1rem;font-weight:800;line-height:1.2;color:var(--blue,#AA2C2D);white-space:nowrap;transition:color .22s}
+.bud-btn:hover .bud-main{color:#fff}
+.bud-sub{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:.68rem;font-weight:600;color:var(--blue,#AA2C2D);background:rgba(170,44,45,.09);padding:2px 9px;border-radius:999px;transition:all .22s}
+.bud-sub i{font-size:.6rem}
+.bud-btn:hover .bud-sub{background:rgba(255,255,255,.2);color:#fff}
+.bud-arr{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.62rem;color:var(--blue,#AA2C2D);background:rgba(170,44,45,.09);transition:all .22s}
+.bud-btn:hover .bud-arr{background:#fff;color:#AA2C2D;transform:translateX(2px)}
+@container (max-width:899px){ .bud-btn:last-child:nth-child(odd){grid-column:1/-1} }
 .bud-label{font-family:'Hind Siliguri',sans-serif;font-size:.72rem;font-weight:700;color:var(--text-mid,#666);margin-bottom:7px}
 .bud-chips{display:flex;flex-wrap:wrap;gap:8px}
 .bud-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
@@ -8939,13 +8959,14 @@ function renderTopPeople(show) {
     if (!sec || !row) return;
     const list = show ? rankTopPeople(kind) : [];
     if (!list.length) { sec.style.display = 'none'; row.innerHTML = ''; return; }
-    row.innerHTML = list.map(e => {
+    row.innerHTML = list.map((e, idx) => {
       const first = (typeof Intl !== 'undefined' && Intl.Segmenter)
         ? (([...new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(e.name)][0] || {}).segment || '')
         : (Array.from(e.name)[0] || '');
       const av = kind === 'publisher' ? '<i class="fa-solid fa-building-columns"></i>' : _tpEsc(first);
-      return `<button type="button" class="tp-card" data-kind="${kind}" data-name="${_tpEsc(e.name)}" title="${_tpEsc(e.name)} — সব বই দেখুন">
-        <span class="tp-av">${av}</span>
+      const rk = idx < 3 ? `<span class="tp-rank r${idx + 1}"><i class="fa-solid ${idx === 0 ? 'fa-crown' : 'fa-medal'}"></i>${['১ম', '২য়', '৩য়'][idx]}</span>` : '';
+      return `<button type="button" class="tp-card${idx < 3 ? ' r' + (idx + 1) : ''}" data-kind="${kind}" data-name="${_tpEsc(e.name)}" title="${_tpEsc(e.name)} — সব বই দেখুন">
+        ${rk}<span class="tp-av">${av}</span>
         <span class="tp-info"><span class="tp-name bn">${_tpEsc(e.name)}</span>
         <span class="tp-meta bn"><i class="fa-solid fa-star"></i> ${e.avg.toFixed(1)} · ${e.n} টি বই</span></span>
       </button>`;
@@ -9066,12 +9087,14 @@ function renderBudgetButtons(show) {
   const sec = document.getElementById('budgetSec'), row = document.getElementById('budgetRow');
   if (!sec || !row) return;
   if (!show) { sec.style.display = 'none'; return; }
-  const items = BUDGET_RANGES.map(r => ({ r, n: booksInRange(r).length })).filter(x => x.n > 0);
+  const items = BUDGET_RANGES.map((r, i) => ({ r, i, n: booksInRange(r).length })).filter(x => x.n > 0);
   if (!items.length) { sec.style.display = 'none'; return; }
-  row.innerHTML = items.map(({ r, n }) => `<button type="button" class="bud-btn" data-budget="${budgetKey(r)}">
-      <span class="bud-ico"><i class="fa-solid fa-wallet"></i></span>
-      <span class="bud-txt"><span class="bud-main bn">${budgetLabel(r)}</span><span class="bud-sub bn">${n} টি বই</span></span>
-      <i class="fa-solid fa-arrow-right bud-arr"></i></button>`).join('');
+  const _budIcons = ['fa-coins', 'fa-wallet', 'fa-money-bill-wave', 'fa-gem', 'fa-crown'];
+  row.innerHTML = items.map(({ r, i, n }) => `<button type="button" class="bud-btn" data-budget="${budgetKey(r)}">
+      <span class="bud-ico"><i class="fa-solid ${_budIcons[i % _budIcons.length]}"></i></span>
+      <i class="fa-solid fa-arrow-right bud-arr"></i>
+      <span class="bud-txt"><span class="bud-main bn">${budgetLabel(r)}</span><span class="bud-sub bn"><i class="fa-solid fa-book"></i>${_bnDigits(n)} টি বই</span></span>
+      </button>`.replace(/>\s+</g, '><')).join('');
   sec.style.display = '';
 }
 function openBudgetPage(key, pushUrl = true) {
