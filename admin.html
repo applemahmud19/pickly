@@ -1638,6 +1638,9 @@ body {
       <div class="nav-item" data-sec="promos">
         <i class="fa-solid fa-ticket"></i> Promo Codes
       </div>
+      <div class="nav-item" data-sec="blog">
+        <i class="fa-solid fa-pen-nib"></i> <span style="font-family:var(--font-bn)">ব্লগ ম্যানেজার</span>
+      </div>
       <div class="nav-item" data-sec="settings">
         <i class="fa-solid fa-gear"></i> Settings
       </div>
@@ -2613,6 +2616,40 @@ body {
                 </td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="sec-blog">
+        <div id="blList" class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-pen-nib"></i></div>Blog Posts</div>
+            <button class="btn btn-primary btn-sm" onclick="BL.edit()"><i class="fa-solid fa-plus"></i> নতুন ব্লগ লিখুন</button>
+          </div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Short link</th><th>Actions</th></tr></thead><tbody id="blBody"></tbody></table></div>
+        </div>
+        <div id="blEditor" class="panel" style="display:none;padding:18px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+            <b style="font-family:var(--font-bn)" id="blHead">নতুন ব্লগ</b>
+            <button class="btn btn-sm" onclick="BL.back()"><i class="fa-solid fa-arrow-left"></i> ফিরে যান</button>
+          </div>
+          <input type="hidden" id="blId">
+          <div class="form-group"><label class="form-label">শিরোনাম *</label><input class="form-inp" id="blTitle" placeholder="ব্লগের শিরোনাম"></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+            <div class="form-group"><label class="form-label">Slug (ইংরেজি URL)</label><input class="form-inp" id="blSlug" placeholder="my-first-blog"></div>
+            <div class="form-group"><label class="form-label">ক্যাটেগরি</label><input class="form-inp" id="blCat" placeholder="যেমন: বই রিভিউ"></div>
+            <div class="form-group"><label class="form-label">Status</label><select class="form-inp" id="blStatus"><option value="draft">Draft</option><option value="published">Published</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">সংক্ষিপ্ত বিবরণ (SEO / কার্ডে দেখাবে)</label><input class="form-inp" id="blEx" maxlength="200"></div>
+          <div class="form-group"><label class="form-label">কভার ছবি</label>
+            <div style="display:flex;gap:10px;align-items:center"><input type="file" accept="image/*" id="blCoverF" onchange="BL.cover(this)"><input class="form-inp" id="blCover" placeholder="অথবা ছবির URL"></div></div>
+          <div class="bl-tb" id="blTb"></div>
+          <div id="blEd" contenteditable="true" class="bl-ed"></div>
+          <textarea id="blSrc" class="form-inp" style="display:none;min-height:360px;font-family:monospace"></textarea>
+          <input type="file" id="blImgF" accept="image/*" style="display:none" onchange="BL.img(this)">
+          <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-sm" onclick="BL.save('draft')">Draft সেভ</button>
+            <button class="btn btn-primary btn-sm" onclick="BL.save('published')"><i class="fa-solid fa-paper-plane"></i> Publish</button>
           </div>
         </div>
       </div>
@@ -7456,7 +7493,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder' };
+  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -7464,6 +7501,7 @@ function navTo(sec) {
   if (sec === 'admins')     renderAdminList();
   if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
+  if (sec === 'blog' && window.BL) BL.load();
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  loadVisitorStats();
   if (sec === 'questions')  loadProductQuestionsAdmin();
@@ -10578,5 +10616,95 @@ async function fAutoTag(id) {
 }
 document.addEventListener('DOMContentLoaded', () => { try { fIconGrid(); } catch (e) {} });
 </script>
+<style>
+.bl-tb{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border:1px solid var(--border);border-bottom:0;border-radius:10px 10px 0 0;background:var(--hover);position:sticky;top:0;z-index:5}
+.bl-tb button{border:1px solid var(--border);background:var(--card,#fff);color:var(--text);min-width:34px;height:32px;border-radius:6px;cursor:pointer;font-size:.8rem}
+.bl-tb button:hover{background:var(--blue);color:#fff}
+.bl-tb i.sep{width:1px;background:var(--border);margin:0 4px}
+.bl-ed{min-height:420px;border:1px solid var(--border);border-radius:0 0 10px 10px;padding:18px;line-height:1.9;outline:0;color:var(--text);font-family:var(--font-bn)}
+.bl-ed h2{font-size:1.4rem;border-bottom:1px solid var(--border)}.bl-ed img{max-width:100%}
+.bl-ed table{border-collapse:collapse;width:100%}.bl-ed td,.bl-ed th{border:1px solid var(--border);padding:6px 8px}
+.bl-ed blockquote{border-left:4px solid var(--blue);padding:6px 14px;margin:10px 0;background:rgba(170,44,45,.06)}
+.bl-ed .infobox{float:right;width:230px;margin-left:14px;font-size:.85rem}.bl-ed .callout{background:#FFF8E1;border-left:4px solid #F59E0B;padding:8px 12px}
+</style>
+<script>
+(function(){
+let range=null,src=false;
+const $=id=>document.getElementById(id);
+const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const TB=[['h2','H2','heading'],['h3','H3','heading'],['p','¶','paragraph'],'|',
+['b','<b>B</b>','bold'],['i','<i>I</i>','italic'],['u','<u>U</u>','underline'],['s','<s>S</s>','strikeThrough'],'|',
+['link','<i class="fa-solid fa-link"></i>','link'],['unlink','<i class="fa-solid fa-link-slash"></i>','unlink'],'|',
+['ul','<i class="fa-solid fa-list-ul"></i>','insertUnorderedList'],['ol','<i class="fa-solid fa-list-ol"></i>','insertOrderedList'],['quote','<i class="fa-solid fa-quote-left"></i>','quote'],['hr','—','hr'],'|',
+['left','<i class="fa-solid fa-align-left"></i>','justifyLeft'],['center','<i class="fa-solid fa-align-center"></i>','justifyCenter'],'|',
+['color','<i class="fa-solid fa-palette"></i>','color'],['table','<i class="fa-solid fa-table"></i>','table'],['image','<i class="fa-regular fa-image"></i>','image'],['info','Infobox','infobox'],['call','<i class="fa-solid fa-circle-info"></i> Note','callout'],['code','&lt;/&gt;','code'],'|',
+['undo','<i class="fa-solid fa-rotate-left"></i>','undo'],['redo','<i class="fa-solid fa-rotate-right"></i>','redo'],['clr','Tx','removeFormat'],['src','HTML','source']];
+$('blTb').innerHTML=TB.map(t=>t==='|'?'<i class="sep"></i>':`<button type="button" title="${t[2]}" onmousedown="event.preventDefault()" onclick="BL.cmd('${t[2]}')">${t[1]}</button>`).join('');
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(s.rangeCount&&$('blEd').contains(s.anchorNode))range=s.getRangeAt(0).cloneRange()});
+function restore(){$('blEd').focus();if(range){const s=getSelection();s.removeAllRanges();s.addRange(range)}}
+function html(h){restore();document.execCommand('insertHTML',false,h)}
+function cmd(c){
+ if(src&&c!=='source')return;
+ restore();const x=(a,v)=>document.execCommand(a,false,v);
+ switch(c){
+  case 'heading':x('formatBlock',event.currentTarget.title==='heading'&&event.currentTarget.textContent==='H3'?'H3':event.currentTarget.textContent==='H2'?'H2':'P');break;
+  case 'paragraph':x('formatBlock','P');break;
+  case 'link':{const u=prompt('লিংক (URL) দিন:','https://');if(!u)return;restore();
+   if(getSelection().isCollapsed)html(`<a href="${E(u)}" target="_blank" rel="noopener">${E(u)}</a>&nbsp;`);
+   else{x('createLink',u);$('blEd').querySelectorAll('a').forEach(a=>{a.target='_blank';a.rel='noopener'})}break}
+  case 'quote':x('formatBlock','BLOCKQUOTE');break;
+  case 'hr':x('insertHorizontalRule');break;
+  case 'color':{const c=prompt('রঙ (যেমন: #AA2C2D বা red):','#AA2C2D');if(c){restore();x('foreColor',c)}break}
+  case 'table':{const r=+prompt('কয়টি সারি?',3),k=+prompt('কয়টি কলাম?',3);if(!r||!k)return;
+   html('<table><thead><tr>'+'<th>শিরোনাম</th>'.repeat(k)+'</tr></thead><tbody>'+('<tr>'+'<td>&nbsp;</td>'.repeat(k)+'</tr>').repeat(r-1)+'</tbody></table><p></p>');break}
+  case 'image':$('blImgF').click();break;
+  case 'infobox':html('<table class="infobox"><tr><th colspan="2">শিরোনাম</th></tr><tr><td>নাম</td><td>মান</td></tr><tr><td>লেখক</td><td>—</td></tr></table>');break;
+  case 'callout':html('<div class="callout">গুরুত্বপূর্ণ তথ্য এখানে লিখুন</div><p></p>');break;
+  case 'code':{const t=getSelection().toString()||'code';html('<code>'+E(t)+'</code>&nbsp;');break}
+  case 'source':src=!src;if(src){$('blSrc').value=$('blEd').innerHTML;$('blSrc').style.display='';$('blEd').style.display='none'}else{$('blEd').innerHTML=$('blSrc').value;$('blSrc').style.display='none';$('blEd').style.display=''}break;
+  default:x(c)}}
+async function up(file,folder){
+ const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const p=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+ const {error}=await sb.storage.from('blog-images').upload(p,file,{contentType:file.type,cacheControl:'31536000'});
+ if(error){toast('Upload failed',error.message,'error');return null}
+ return sb.storage.from('blog-images').getPublicUrl(p).data.publicUrl}
+async function img(inp){const f=inp.files[0];inp.value='';if(!f)return;const u=await up(f,'inline');if(!u)return;
+ const c=prompt('ছবির ক্যাপশন (ঐচ্ছিক):','')||'';html(`<figure><img src="${u}" alt="${E(c)}">${c?`<figcaption>${E(c)}</figcaption>`:''}</figure><p></p>`)}
+async function cover(inp){const f=inp.files[0];if(!f)return;const u=await up(f,'covers');if(u){$('blCover').value=u;toast('Cover uploaded')}}
+const code=()=>Math.random().toString(36).slice(2,8);
+function slugify(s){return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+async function load(){
+ const {data,error}=await sb.from('blog_posts').select('id,title,slug,short_code,category,status,views,updated_at').order('created_at',{ascending:false});
+ if(error){$('blBody').innerHTML=`<tr><td colspan="6" style="padding:30px;text-align:center">${E(error.message)} — blog_setup.sql run korun</td></tr>`;return}
+ $('blBody').innerHTML=(data||[]).map(p=>`<tr><td style="font-family:var(--font-bn)">${E(p.title)}</td><td>${E(p.category)}</td><td>${p.status==='published'?'✅ Published':'📝 Draft'}</td><td>${p.views}</td>
+ <td><a href="/b/${p.short_code}" target="_blank">/b/${p.short_code}</a></td>
+ <td><button class="btn btn-sm" onclick="BL.edit('${p.id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm" onclick="BL.del('${p.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="6" style="padding:30px;text-align:center">কোনো ব্লগ নেই</td></tr>'}
+async function edit(id){
+ let p={title:'',slug:'',category:'',status:'draft',excerpt:'',cover_image:'',content:''};
+ if(id){const r=await sb.from('blog_posts').select('*').eq('id',id).single();if(r.data)p=r.data}
+ $('blId').value=id||'';$('blHead').textContent=id?'ব্লগ এডিট':'নতুন ব্লগ';
+ $('blTitle').value=p.title;$('blSlug').value=p.slug;$('blCat').value=p.category;$('blStatus').value=p.status;$('blEx').value=p.excerpt;$('blCover').value=p.cover_image;
+ $('blEd').innerHTML=p.content;src=false;$('blSrc').style.display='none';$('blEd').style.display='';
+ $('blList').style.display='none';$('blEditor').style.display=''}
+function back(){$('blEditor').style.display='none';$('blList').style.display='';load()}
+async function save(status){
+ if(src)cmd('source');
+ const title=$('blTitle').value.trim();if(!title){toast('Validation','শিরোনাম দিন','error');return}
+ const id=$('blId').value;let slug=slugify($('blSlug').value)||slugify(title)||'post';
+ const content=$('blEd').innerHTML;
+ const row={title,slug,category:$('blCat').value.trim()||'সাধারণ',status,excerpt:$('blEx').value.trim()||$('blEd').innerText.trim().slice(0,160),cover_image:$('blCover').value.trim(),content,updated_at:new Date().toISOString(),author_name:($('sbName')&&$('sbName').textContent)||'বুক গ্যালাক্সি'};
+ if(status==='published')row.published_at=new Date().toISOString();
+ $('blStatus').value=status;
+ let r;
+ if(id)r=await sb.from('blog_posts').update(row).eq('id',id).select('id').single();
+ else{row.short_code=code();r=await sb.from('blog_posts').insert(row).select('id').single();
+  if(r.error&&/slug/.test(r.error.message)){row.slug=slug+'-'+code();r=await sb.from('blog_posts').insert(row).select('id').single()}}
+ if(r.error){toast('Save failed',r.error.message,'error');return}
+ $('blId').value=r.data.id;toast(status==='published'?'Published ✅':'Draft saved')}
+async function del(id){if(!confirm('এই ব্লগ ডিলিট করবেন?'))return;await sb.from('blog_posts').delete().eq('id',id);load()}
+window.BL={cmd,img,cover,edit,back,save,del,load};
+})();
+</script>
+
 </body>
 </html>
