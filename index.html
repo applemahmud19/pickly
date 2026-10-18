@@ -12923,7 +12923,7 @@ const DEFAULT_BANNERS = [
     subtitle: 'ইসলামী বই, অনুবাদ, রহস্য-গোয়েন্দা, রোমান্টিক উপন্যাস, মাঙ্গা ও আরও অনেক কিছু — সব এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
     btn_label: 'বই দেখুন',
     btn2_label: 'অর্ডার ট্র্যাক',
-    btn2_action: 'openTrack()',
+    btn2_link: 'track',
     icons: ['fa-book-open','fa-truck-fast','fa-shield-halved'],
     gradient: 'linear-gradient(120deg,#AA2C2D 0%,#711D1E 100%)',
     show_stats: true,
@@ -12932,13 +12932,13 @@ const DEFAULT_BANNERS = [
   {
     tag: 'বিশেষ ছাড়',
     tag_icon: 'fa-tag',
-    title: '<span data-hero="maxdisc">বাছাই করা বইয়ে ছাড়!</span>',   // ডেটা লোড হলে "সর্বোচ্চ ৩১% ছাড়!" হয়ে যায়
+    title: '{{maxdisc}}',   // ডেটা লোড হলে "সর্বোচ্চ ৩১% ছাড়!" হয়ে যায়
     subtitle: 'বাছাই করা বইয়ে বিশেষ ছাড় চলছে — কোন বইয়ে কত সাশ্রয়, এখনই দেখে নিন।',
     btn_label: 'ছাড়ের বই দেখুন',
-    btn_target: '#discountSec',
+    btn_link: '#discountSec',
     btn2_label: null,
     icons: ['fa-tag','fa-gift','fa-percent'],
-    gradient: 'linear-gradient(120deg,#AA2C2D 0%,#3B82F6 60%,#60A5FA 100%)',
+    gradient: 'linear-gradient(120deg,#7F1D1D 0%,#C2410C 100%)',
     show_stats: false,
     is_active: true
   },
@@ -12960,6 +12960,39 @@ let heroBanners = [];
 let heroCurrent = 0;
 let heroAutoTimer = null;
 
+// অ্যাডমিন থেকে বানানো টেক্সট ব্যানার (banners টেবিলের type = 'text') → হিরো স্লাইডের ফরম্যাটে
+function _textBannerFromRow(b) {
+  const col = (v, d) => /^#[0-9a-fA-F]{3,8}$/.test(String(v || '').trim()) ? String(v).trim() : d;
+  const ic  = v => /^fa-[a-z0-9-]+$/.test(String(v || '').trim()) ? String(v).trim() : '';
+  return {
+    _isText: true,
+    tag: b.badge_text || '', tag_icon: ic(b.badge_icon) || 'fa-star',
+    title: b.main_title || b.title || '', subtitle: b.subtitle || '',
+    btn_label: b.button_text || '', btn_link: b.button_link || '',
+    btn2_label: b.button2_text || '', btn2_link: b.button2_link || '',
+    icons: String(b.icons || '').split(',').map(x => x.trim()).filter(ic),
+    gradient: `linear-gradient(120deg,${col(b.bg_color, '#AA2C2D')} 0%,${col(b.bg_color2, '#711D1E')} 100%)`,
+    show_stats: b.show_stats === true, is_active: true
+  };
+}
+// টেক্সটে {{maxdisc}} / {{books}} / {{rating}} লিখলে আসল ডেটা বসে; বাকি সব এস্কেপ করা হয়
+function _heroText(str, br) {
+  let t = _tpEsc(str || '')
+    .replace(/\{\{maxdisc\}\}/g, '<span data-hero="maxdisc">বিশেষ ছাড়!</span>')
+    .replace(/\{\{books\}\}/g, '<span data-hero="books">–</span>')
+    .replace(/\{\{rating\}\}/g, '<span data-hero="rating">–</span>');
+  return br ? t.replace(/\n/g, '<br>') : t;
+}
+// ব্যানারের বাটনের লিংক: খালি = পণ্যে স্ক্রল, track = অর্ডার ট্র্যাক, #id/.class = সেকশনে স্ক্রল, নইলে URL
+function heroGo(link) {
+  link = String(link || '').trim();
+  const toMain = () => document.querySelector('.main')?.scrollIntoView({ behavior: 'smooth' });
+  if (!link) return toMain();
+  if (link === 'track') return openTrack();
+  if (link[0] === '#' || link[0] === '.') { const el = document.querySelector(link); return el ? el.scrollIntoView({ behavior: 'smooth' }) : toMain(); }
+  window.open(link, '_self');
+}
+
 async function loadHeroBanners() {
   // Try to load photo banners from Supabase `banners` table first (admin uploads)
   // Falls back to `hero_banners` table, then DEFAULT_BANNERS
@@ -12972,7 +13005,7 @@ async function loadHeroBanners() {
 
     if (!pbErr && photoBanners && photoBanners.length) {
       // These are banners uploaded via admin — render as image or dynamic_builder
-      heroBanners = photoBanners.map(b => ({
+      heroBanners = photoBanners.map(b => (b.type === 'text' ? _textBannerFromRow(b) : {
         ...b,
         _type:       b.type || (b.image_url ? 'image' : 'dynamic_builder'),
         _isPhoto:    (b.type === 'image' || (!b.type && b.image_url)),
@@ -13076,22 +13109,22 @@ function renderHeroBanners() {
       </div>` : '';
 
     const btn2Html = b.btn2_label ? `
-      <button class="hslide-btn-outline bn" onclick="${b.btn2_action||''}">
-        <i class="fa-solid fa-location-dot"></i> ${b.btn2_label}
+      <button class="hslide-btn-outline bn" data-link="${_tpEsc(b.btn2_link || '')}" onclick="heroGo(this.dataset.link)">
+        <i class="fa-solid fa-location-dot"></i> ${_tpEsc(b.btn2_label)}
       </button>` : '';
 
-    const titleHtml = (b.title||'').replace(/\n/g, '<br>');
+    const titleHtml = _heroText(b.title, true);
 
     return `
       <div class="hero-slide hero-slide--text" style="background:${b.gradient||'linear-gradient(120deg,var(--blue),var(--blue-dark))'}; min-height:185px; position:relative; overflow:hidden">
         <div class="hslide-content">
-          <div class="hslide-tag bn"><i class="fa-solid ${b.tag_icon||'fa-star'}"></i> ${b.tag||''}</div>
+          ${b.tag ? `<div class="hslide-tag bn"><i class="fa-solid ${b.tag_icon||'fa-star'}"></i> ${_heroText(b.tag)}</div>` : ''}
           <div class="hslide-title bn">${titleHtml}</div>
-          <div class="hslide-sub bn">${b.subtitle||''}</div>
+          ${b.subtitle ? `<div class="hslide-sub bn">${_heroText(b.subtitle)}</div>` : ''}
           <div class="hslide-btns">
-            <button class="hslide-btn bn" style="color:var(--blue)" onclick="(document.querySelector('${b.btn_target||'.main'}')||document.querySelector('.main')).scrollIntoView({behavior:'smooth'})">
-              <i class="fa-solid fa-bag-shopping"></i> ${b.btn_label||'দেখুন'}
-            </button>
+            ${b.btn_label ? `<button class="hslide-btn bn" style="color:var(--blue)" data-link="${_tpEsc(b.btn_link || '')}" onclick="heroGo(this.dataset.link)">
+              <i class="fa-solid fa-bag-shopping"></i> ${_tpEsc(b.btn_label)}
+            </button>` : ''}
             ${btn2Html}
           </div>
           ${statsHtml}
