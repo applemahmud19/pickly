@@ -6141,6 +6141,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
 .bg-short button{border-radius:0;background:var(--blue)}
 .bg-cm{padding:12px 0;border-top:1px solid var(--border)}.bg-cm b{font-size:.85rem}.bg-cm small{color:var(--text-light);margin-left:8px}
 .bg-cm p{margin:4px 0 0;font-size:.88rem;white-space:pre-wrap}
+.bg-cact{margin-left:10px;font-size:.72rem}.bg-cact a{color:var(--blue);cursor:pointer;margin-right:10px}
 .bg-ta{width:100%;min-height:80px;border:1px solid var(--border);border-radius:8px;padding:10px;font:inherit;box-sizing:border-box}
 @media(max-width:900px){.bg-wrap{grid-template-columns:1fr}.bg-side{position:static}.bg-art{padding:16px}.bg-art h1{font-size:1.4rem}.bg-body .infobox{float:none;width:100%;margin:0 0 14px}}
 </style>
@@ -16470,7 +16471,7 @@ window.addEventListener('popstate',function(){
 <script>
 (function(){
 const F=['id','title','slug','short_code','excerpt','cover_image','category','author_name','published_at','views'].join(',');
-let posts=[],cat='',cur=null;
+let posts=[],cat='',cur=null,cms=[];
 const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const D=d=>d?new Date(d).toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric'}):'';
 const N=n=>Number(n||0).toLocaleString('bn-BD');
@@ -16534,19 +16535,28 @@ async function open(slug,push=true){
  document.getElementById('page-blog-post').scrollTop=0}
 async function loadCm(){
  const {data}=await sb.from('blog_comments').select('*').eq('post_id',cur.id).order('created_at',{ascending:false});
- const c=data||[];document.getElementById('bgCmN').textContent=N(c.length);
+ const c=cms=data||[];document.getElementById('bgCmN').textContent=N(c.length);
  const form=currentUser?`<textarea class="bg-ta" id="bgCmT" maxlength="1000" placeholder="আপনার মতামত লিখুন..."></textarea><button class="bg-chip on" style="margin:8px 0 14px" onclick="BG.send()">মতামত দিন</button>`
   :`<div style="padding:12px 0"><button class="bg-chip on" onclick="document.getElementById('authModal').classList.add('open')">মতামত দিতে লগইন করুন</button></div>`;
- document.getElementById('bgCm').innerHTML=form+c.map(x=>`<div class="bg-cm"><b>${E(x.user_name)}</b><small>${D(x.created_at)}</small><p>${E(x.body)}</p></div>`).join('')}
+ document.getElementById('bgCm').innerHTML=form+c.map(x=>`<div class="bg-cm" id="bgc${x.id}"><b>${E(x.user_name)}</b><small>${D(x.created_at)}${x.edited_at?' · সম্পাদিত':''}</small>${currentUser&&x.user_id===currentUser.id?`<span class="bg-cact"><a onclick="BG.cedit('${x.id}')">এডিট</a><a onclick="BG.cdel('${x.id}')">ডিলিট</a></span>`:''}<p>${E(x.body)}</p></div>`).join('')}
 async function send(){
  const t=document.getElementById('bgCmT').value.trim();if(!t)return;
  const nm=(currentUser.user_metadata&&(currentUser.user_metadata.full_name||currentUser.user_metadata.name))||(currentUser.email||'').split('@')[0]||'পাঠক';
  const {error}=await sb.from('blog_comments').insert({post_id:cur.id,user_id:currentUser.id,user_name:nm,body:t});
  if(error)return T('মতামত পাঠানো যায়নি');T('মতামত যোগ হয়েছে');loadCm()}
+function cedit(id){const x=cms.find(c=>c.id===id);if(!x)return;const el=document.getElementById('bgc'+id);
+ el.querySelector('p').outerHTML=`<textarea class="bg-ta" id="bgce${id}" maxlength="1000">${E(x.body)}</textarea><div style="margin-top:6px"><button class="bg-chip on" onclick="BG.csave('${id}')">সেভ</button> <button class="bg-chip" onclick="BG.cload()">বাতিল</button></div>`;
+ el.querySelector('.bg-cact').style.display='none'}
+async function csave(id){const t=document.getElementById('bgce'+id).value.trim();if(!t)return;
+ const {error}=await sb.from('blog_comments').update({body:t,edited_at:new Date().toISOString()}).eq('id',id).eq('user_id',currentUser.id);
+ if(error)return T('এডিট করা যায়নি');T('মতামত আপডেট হয়েছে');loadCm()}
+async function cdel(id){if(!confirm('মতামতটি ডিলিট করবেন?'))return;
+ const {error}=await sb.from('blog_comments').delete().eq('id',id).eq('user_id',currentUser.id);
+ if(error)return T('ডিলিট করা যায়নি');T('মতামত ডিলিট হয়েছে');loadCm()}
 function copy(){const i=document.getElementById('bgLink');i.select();(navigator.clipboard?navigator.clipboard.writeText(i.value):Promise.resolve(document.execCommand('copy'))).then(()=>T('লিংক কপি হয়েছে'))}
 function logo(){const h=document.getElementById('headerLogo');if(h&&h.src)document.querySelectorAll('.bg-logo').forEach(i=>i.src=h.src)}
 function home(){closePage('blog');closePage('blog-post');history.replaceState({page:'home'},'বুক গ্যালাক্সি','/');document.title='বুক গ্যালাক্সি'}
-window.BG={list,open,home,render,send,copy,cat:c=>{cat=c;render()}};
+window.BG={list,open,home,render,send,copy,cedit,csave,cdel,cload:loadCm,cat:c=>{cat=c;render()}};
 window.openBlogList=list;window.openBlogPost=open;
 })();
 </script>
