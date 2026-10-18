@@ -2515,6 +2515,17 @@ end $$;
               </div>
             </div>
 
+            <!-- Navbar layout (which categories sit in the storefront category bar + their order) -->
+            <div class="panel" id="navLayoutPanel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <div class="panel-title-icon" style="background:rgba(50,173,230,0.12);color:var(--blue)"><i class="fa-solid fa-arrow-down-wide-short"></i></div>
+                  <span style="font-family:var(--font-bn)">নেভবার সাজান</span>
+                </div>
+              </div>
+              <div style="padding:14px 20px 18px" id="navLayoutBody"></div>
+            </div>
+
             <!-- Book Types Manager -->
             <div class="panel">
               <div class="panel-header">
@@ -8486,6 +8497,13 @@ ON CONFLICT (slug) DO NOTHING;`;
 // In-memory list — populated from Supabase `categories` table (localStorage is only an offline fallback)
 let allCategories = [];
 let categoriesTableMissing = false;
+let navColsMissing = false;   // categories table has no show_in_nav / nav_order columns yet
+let navDraft = null;           // { pinned:[ids], unpinned:[ids] } — unsaved navbar layout
+let navDirty = false;
+const NAV_COLS_SQL = `-- Run this SQL once in Supabase → SQL Editor:
+ALTER TABLE categories
+  ADD COLUMN IF NOT EXISTS show_in_nav boolean DEFAULT true,
+  ADD COLUMN IF NOT EXISTS nav_order   integer DEFAULT 0;`;
 
 function getLocalCategories() {
   try {
@@ -8508,7 +8526,7 @@ async function loadCategoriesFromSupabase() {
     return;
   }
   try {
-    const { data, error } = await sb.from('categories').select('id, name, slug, icon, color, is_active').order('id', { ascending: true });
+    const { data, error } = await sb.from('categories').select('*').order('id', { ascending: true });
     if (error) {
       console.error('[Categories] Supabase fetch failed, falling back to local cache:', error);
       categoriesTableMissing = true;
@@ -8517,10 +8535,11 @@ async function loadCategoriesFromSupabase() {
       // Table exists but is empty — seed it once with the default book categories
       allCategories = await seedDefaultCategoriesToSupabase();
     } else {
+      navColsMissing = !('show_in_nav' in data[0]);
       allCategories = data.map(c => ({
         id: c.id, name: c.name, slug: c.slug || slugifyCategoryName(c.name),
         icon: c.icon || 'fa-box', color: c.color || '#AA2C2D',
-        is_active: c.is_active !== false, _fromSupabase: true
+        is_active: c.is_active !== false, show_in_nav: c.show_in_nav !== false, nav_order: c.nav_order, _fromSupabase: true
       }));
     }
   } catch (e) {
@@ -8957,6 +8976,7 @@ function renderCategoryList() {
   const badge = document.getElementById('catCountBadge');
   const notice = document.getElementById('categorySetupNotice');
   if (badge) badge.textContent = `${allCategories.length} টি ক্যাটাগরি`;
+  renderNavManager();
 
   if (notice) {
     notice.innerHTML = categoriesTableMissing ? `
@@ -8999,6 +9019,112 @@ function renderCategoryList() {
   // Also refresh dropdowns everywhere
   populateCategoryDropdown();
   populateProductCatFilter();
+}
+
+/* ══════════════════════════════════════
+   NAVBAR LAYOUT — which categories show in the storefront bar, and in what order.
+   Everything not pinned (or that does not fit on the line) goes into the "আরও" dropdown.
+══════════════════════════════════════ */
+function _navKey(c) { return Number(c.nav_order) > 0 ? Number(c.nav_order) : 9999; }
+function _navFresh() {
+  const act = allCategories.filter(c => c.is_active !== false).slice().sort((x, y) => _navKey(x) - _navKey(y));
+  return {
+    pinned:   act.filter(c => c.show_in_nav !== false).map(c => c.id),
+    unpinned: act.filter(c => c.show_in_nav === false).map(c => c.id)
+  };
+}
+function _navReconcile() {
+  if (!navDraft || !navDirty) { navDraft = _navFresh(); return; }
+  const ids = new Set(allCategories.filter(c => c.is_active !== false).map(c => c.id));
+  navDraft.pinned   = navDraft.pinned.filter(id => ids.has(id));
+  navDraft.unpinned = navDraft.unpinned.filter(id => ids.has(id));
+  allCategories.forEach(c => {
+    if (c.is_active !== false && !navDraft.pinned.includes(c.id) && !navDraft.unpinned.includes(c.id)) navDraft.pinned.push(c.id);
+  });
+}
+function _navCat(id) { return allCategories.find(c => c.id === id); }
+function _navRow(id, pos, kind, last) {
+  const c = _navCat(id); if (!c) return '';
+  const col = c.color || '#AA2C2D';
+  const iconBox = `<div style="width:26px;height:26px;border-radius:7px;background:${col}18;border:1px solid ${col}40;display:flex;align-items:center;justify-content:center;color:${col};font-size:0.72rem;flex-shrink:0"><i class="fa-solid ${escHtml(c.icon || 'fa-box')}"></i></div>`;
+  const nm = `<span style="font-family:var(--font-bn);font-weight:600;font-size:0.8rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.name)}</span>`;
+  if (kind === 'pinned') {
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg2,transparent)">
+      <span style="font-family:var(--mono);font-size:0.66rem;color:var(--text3);width:16px;text-align:center">${pos + 1}</span>${iconBox}${nm}
+      <button class="btn btn-secondary btn-xs" ${pos === 0 ? 'disabled' : ''} onclick="navMove(${id},-1)" title="আগে আনুন"><i class="fa-solid fa-arrow-up"></i></button>
+      <button class="btn btn-secondary btn-xs" ${last ? 'disabled' : ''} onclick="navMove(${id},1)" title="পরে দিন"><i class="fa-solid fa-arrow-down"></i></button>
+      <button class="btn btn-secondary btn-xs" onclick="navToggle(${id})" title="'আরও' মেনুতে পাঠান"><i class="fa-solid fa-eye-slash"></i></button>
+    </div>`;
+  }
+  return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px dashed var(--border);border-radius:9px">
+    ${iconBox}${nm}
+    <button class="btn btn-secondary btn-xs" onclick="navToggle(${id})" title="নেভবারে আনুন"><i class="fa-solid fa-thumbtack"></i></button>
+  </div>`;
+}
+function renderNavManager() {
+  const body = document.getElementById('navLayoutBody');
+  if (!body) return;
+  _navReconcile();
+  const p = navDraft.pinned, u = navDraft.unpinned;
+  const sqlBox = navColsMissing ? `
+    <div style="background:#FFF7E6;border:1px solid #FFD98A;border-radius:9px;padding:10px 12px;margin-bottom:12px;font-size:.72rem;color:#8A5A00;line-height:1.6">
+      <b>⚠ প্রথমে একবার SQL চালাতে হবে।</b> Supabase → SQL Editor-এ নিচের SQL রান করে এই পেজ রিফ্রেশ করুন।
+      <pre style="white-space:pre-wrap;background:#111;color:#7CFC7C;padding:8px;border-radius:6px;margin-top:6px;font-size:.64rem">${escHtml(NAV_COLS_SQL)}</pre>
+    </div>` : '';
+  body.innerHTML = sqlBox + `
+    <div style="font-size:0.72rem;color:var(--text3);line-height:1.6;margin-bottom:10px;font-family:var(--font-bn)">
+      ওয়েবসাইটের ক্যাটাগরি বারে কোনটা আগে থাকবে ঠিক করুন। জায়গা না হলে শেষের ক্যাটাগরিগুলো নিজে থেকেই <b>"আরও"</b> মেনুতে চলে যাবে, মাউস রাখলে সব দেখা যাবে।
+    </div>
+    <div style="font-size:0.7rem;font-weight:700;color:var(--text2);margin-bottom:6px;font-family:var(--font-bn)">নেভবারে দেখাবে (${p.length})</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      ${p.length ? p.map((id, i) => _navRow(id, i, 'pinned', i === p.length - 1)).join('') : '<div style="font-size:.72rem;color:var(--text3);padding:6px">কিছু নেই</div>'}
+    </div>
+    <div style="font-size:0.7rem;font-weight:700;color:var(--text2);margin-bottom:6px;font-family:var(--font-bn)">শুধু "আরও" মেনুতে থাকবে (${u.length})</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      ${u.length ? u.map(id => _navRow(id, 0, 'unpinned', false)).join('') : '<div style="font-size:.72rem;color:var(--text3);padding:6px">কিছু নেই</div>'}
+    </div>
+    <button class="btn btn-primary" id="navSaveBtn" onclick="saveNavLayout()" ${navColsMissing || !navDirty ? 'disabled' : ''} style="width:100%;justify-content:center">
+      <i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">নেভবার সেভ করুন</span>
+    </button>`;
+}
+function navMove(id, dir) {
+  const arr = navDraft.pinned, i = arr.indexOf(id), j = i + dir;
+  if (i < 0 || j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  navDirty = true; renderNavManager();
+}
+function navToggle(id) {
+  const { pinned, unpinned } = navDraft;
+  if (pinned.includes(id)) { navDraft.pinned = pinned.filter(x => x !== id); navDraft.unpinned.push(id); }
+  else { navDraft.unpinned = unpinned.filter(x => x !== id); navDraft.pinned.push(id); }
+  navDirty = true; renderNavManager();
+}
+async function saveNavLayout() {
+  if (!navDraft || navColsMissing) return;
+  const btn = document.getElementById('navSaveBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
+  const updates = [];
+  navDraft.pinned.forEach((id, i)   => updates.push({ id, show_in_nav: true,  nav_order: i + 1 }));
+  navDraft.unpinned.forEach((id, i) => updates.push({ id, show_in_nav: false, nav_order: navDraft.pinned.length + i + 1 }));
+  try {
+    if (sb) {
+      const jobs = updates.filter(u => _navCat(u.id)?._fromSupabase)
+        .map(u => sb.from('categories').update({ show_in_nav: u.show_in_nav, nav_order: u.nav_order }).eq('id', u.id));
+      const res = await Promise.all(jobs);
+      const bad = res.find(r => r.error);
+      if (bad) throw bad.error;
+    }
+  } catch (e) {
+    toast('Error', 'নেভবার সেভ ব্যর্থ: ' + (e.message || e), 'error');
+    renderNavManager();
+    return;
+  }
+  updates.forEach(u => { const c = _navCat(u.id); if (c) { c.show_in_nav = u.show_in_nav; c.nav_order = u.nav_order; } });
+  saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
+  navDirty = false;
+  renderNavManager();
+  broadcastCmsUpdate('categories', allCategories); // live-refresh the homepage navbar
+  toast('Saved!', 'ওয়েবসাইটের নেভবার আপডেট হয়েছে', 'success');
 }
 
 /* ── Live slug preview while typing a new category name ── */
