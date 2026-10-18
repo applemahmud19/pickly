@@ -6137,6 +6137,14 @@ html.gm-boot #gmSplash{display:flex}
       <div class="bud-row" id="budgetRow"></div>
     </section>
 
+    <!-- সর্বোচ্চ ছাড়ের বই — মোট ছাড় % (বেস + বাল্ক) অনুযায়ী -->
+    <section id="discountSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-tags" style="color:var(--blue);margin-right:6px"></i>সর্বোচ্চ ছাড়ের বই</h2>
+      </div>
+      <div class="pgrid" id="discountGrid"></div>
+    </section>
+
     <!-- জনপ্রিয় লেখক / জনপ্রিয় প্রকাশনী — রেটিং (ও বিক্রি) হিসাব করে সাজানো -->
     <section id="topAuthorsSec" class="nr-sec" style="display:none">
       <div class="parea-header">
@@ -8912,11 +8920,25 @@ function renderNewReleases() {
   renderTopPeople(_onHome);
   renderBudgetButtons(_onHome);
   renderHomeReviews(_onHome);
-  if (!_onHome) { sec.style.display = 'none'; return; }
+  if (!_onHome) { sec.style.display = 'none'; renderMaxDiscount(false); return; }
   const aboveIds = new Set(_gridList.slice(0, HOME_PAGE_SIZE).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
   const ts = p => new Date(p.created_at || 0).getTime() || 0;
   const books = products.filter(p => isBookProduct(p) && !aboveIds.has(p.id))
     .sort((a, b) => ((b.badge === 'new') - (a.badge === 'new')) || (ts(b) - ts(a)))   // "New" ব্যাজ দেওয়া বই আগে, তারপর সর্বশেষ যোগ হওয়া
+    .slice(0, NEW_RELEASE_COUNT);
+  if (!books.length) { sec.style.display = 'none'; renderMaxDiscount(true, aboveIds, new Set()); return; }
+  grid.innerHTML = books.map(p => buildProductCard(p)).join('');
+  sec.style.display = '';
+  renderMaxDiscount(true, aboveIds, new Set(books.map(p => p.id)));
+}
+// সর্বোচ্চ ছাড়ের বই — উপরের জনপ্রিয় ও নতুন প্রকাশিত বইগুলো বাদ দিয়ে, মোট ছাড় % বেশি যেগুলো
+function renderMaxDiscount(show, aboveIds = new Set(), nrIds = new Set()) {
+  const sec = document.getElementById('discountSec'), grid = document.getElementById('discountGrid');
+  if (!sec || !grid) return;
+  if (!show) { sec.style.display = 'none'; return; }
+  const pct = p => getEffectiveSalePrice(p).totalDiscPct;
+  const books = products.filter(p => isBookProduct(p) && pct(p) > 0 && !aboveIds.has(p.id) && !nrIds.has(p.id))
+    .sort((a, b) => (pct(b) - pct(a)) || popularCmp(a, b))
     .slice(0, NEW_RELEASE_COUNT);
   if (!books.length) { sec.style.display = 'none'; return; }
   grid.innerHTML = books.map(p => buildProductCard(p)).join('');
