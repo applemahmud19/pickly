@@ -5565,6 +5565,57 @@ html, body {
   }
 })();
 </script>
+<style id="author-page-css">
+/* ═════════ AUTHOR PROFILE PAGE (/author/<slug>) ═════════ */
+body.page-author-open .social-bar,
+body.page-author-open .nav-cats,
+body.page-author-open .mobile-search-row{display:none!important}
+
+/* product page-এ লেখকের নাম ক্লিকযোগ্য */
+.ap-link{cursor:pointer;color:var(--blue);font-weight:700;border-bottom:1.5px dotted rgba(170,44,45,.55);transition:all .18s;outline:none}
+.ap-link:hover,.ap-link:focus-visible{color:var(--blue-dark);border-bottom-style:solid}
+.ap-link-arrow{font-size:.62rem;color:var(--blue);margin-left:2px;opacity:.8}
+
+.ap-hero{position:relative;overflow:hidden;color:#fff;padding:34px 22px 78px;
+  background:linear-gradient(125deg,var(--blue) 0%,var(--blue-dark) 100%)}
+.ap-hero::before{content:"";position:absolute;width:360px;height:360px;right:-100px;top:-150px;border-radius:50%;background:rgba(255,255,255,.07)}
+.ap-hero::after{content:"";position:absolute;width:230px;height:230px;left:-70px;bottom:-120px;border-radius:50%;background:rgba(255,255,255,.06)}
+.ap-hero-pen{position:absolute;right:6%;bottom:10px;font-size:7.5rem;color:rgba(255,255,255,.07);transform:rotate(-18deg);pointer-events:none}
+.ap-hero-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:28px}
+.ap-avatar{width:124px;height:124px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:3.5rem;font-weight:900;line-height:1;color:var(--blue);
+  background:linear-gradient(145deg,#fff,var(--blue-light));
+  box-shadow:0 0 0 6px rgba(255,255,255,.25),0 16px 36px rgba(0,0,0,.28)}
+.ap-info{min-width:0}
+.ap-role{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);
+  border-radius:20px;padding:3px 13px;font-size:.76rem;font-weight:700;letter-spacing:.02em}
+.ap-name{font-size:2.1rem;font-weight:900;line-height:1.2;margin:9px 0 11px;letter-spacing:-.01em;word-break:break-word;color:#fff}
+.ap-cats{display:flex;flex-wrap:wrap;gap:7px}
+.ap-cat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:16px;padding:3px 12px;font-size:.74rem;font-weight:600}
+
+.ap-stats{position:relative;z-index:2;max-width:1100px;margin:-48px auto 0;padding:0 22px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ap-stat{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 22px rgba(30,41,59,.08)}
+.ap-stat-ico{width:42px;height:42px;border-radius:12px;background:var(--blue-light);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0}
+.ap-stat-val{font-size:1.25rem;font-weight:900;color:var(--text);line-height:1.1}
+.ap-stat-lbl{font-size:.72rem;color:var(--text-light);font-weight:600;margin-top:2px}
+
+.ap-body{max-width:1100px;margin:26px auto 0;padding:0 22px 48px}
+.ap-sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.ap-sec-title{font-size:1.15rem;font-weight:800;color:var(--text);margin:0;display:flex;align-items:center;gap:10px}
+.ap-sec-title::before{content:"";width:5px;height:22px;border-radius:4px;background:var(--blue)}
+.ap-count{font-size:.8rem;color:var(--text-light);font-weight:600}
+
+@media(max-width:700px){
+  .ap-hero{padding:26px 16px 72px}
+  .ap-hero-inner{flex-direction:column;text-align:center;gap:14px}
+  .ap-avatar{width:98px;height:98px;font-size:2.8rem}
+  .ap-name{font-size:1.55rem}
+  .ap-cats{justify-content:center}
+  .ap-stats{grid-template-columns:repeat(2,1fr);padding:0 14px;gap:10px;margin-top:-44px}
+  .ap-stat{padding:11px 12px}
+  .ap-body{padding:0 14px 40px}
+}
+</style>
 </head>
 <body>
 <!-- ═══ RELOAD SPLASH: /product/... ইত্যাদি লিংকে রিলোড করলে হোম পেজ ঝলকে না উঠে লোডিং স্ক্রিন দেখাবে ═══ -->
@@ -5937,6 +5988,60 @@ html.gm-boot #gmSplash{display:flex}
     <div class="pgn" id="pagination"></div>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: AUTHOR PROFILE  (/author/[slug])
+══════════════════════════════════════════════════ -->
+<div id="page-author" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn" onclick="closeAuthorPage()">
+      <i class="fa-solid fa-arrow-left"></i> ফিরে যান
+    </button>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closeAuthorPage(true)"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-link" style="cursor:default">লেখক</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current" id="apBreadName"></span>
+    </nav>
+    <button onclick="copyAuthorUrl()" id="apShareBtn" class="fp-share-btn" title="শেয়ার করুন">
+      <i class="fa-solid fa-share-nodes"></i>
+    </button>
+  </div>
+
+  <div class="ap-hero">
+    <i class="fa-solid fa-feather-pointed ap-hero-pen"></i>
+    <div class="ap-hero-inner">
+      <div class="ap-avatar" id="apAvatar"></div>
+      <div class="ap-info">
+        <span class="ap-role"><i class="fa-solid fa-pen-nib"></i> লেখক</span>
+        <h1 class="ap-name" id="apName"></h1>
+        <div class="ap-cats" id="apCats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ap-stats" id="apStats"></div>
+
+  <div class="ap-body">
+    <div class="ap-sec-head">
+      <h2 class="ap-sec-title"><span id="apBooksTitle">সব বই</span> <span class="ap-count" id="apBooksCount"></span></h2>
+      <select class="sort-sel bn" id="apSort" onchange="renderAuthorBooks()" style="font-size:.74rem;padding:7px 10px;max-width:170px">
+        <option value="popular">জনপ্রিয়</option>
+        <option value="low">দাম: কম → বেশি</option>
+        <option value="high">দাম: বেশি → কম</option>
+        <option value="discount">সর্বোচ্চ ছাড়</option>
+        <option value="rating">সেরা রেটিং</option>
+      </select>
+    </div>
+    <div class="pgrid" id="apGrid"></div>
+    <div id="apEmpty" style="display:none;text-align:center;padding:60px 20px">
+      <i class="fa-solid fa-book-open" style="font-size:3rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
+      <div class="bn" style="font-size:.95rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কোনো বই পাওয়া যায়নি</div>
+      <div class="bn" style="font-size:.78rem;color:var(--text-light)">এই লেখকের বই এখনো যোগ হয়নি</div>
+    </div>
+  </div>
+</div><!-- /#page-author -->
 
 <!-- ══════════════════════════════════════════════════
      FULL-PAGE: CATEGORY VIEW
@@ -7841,6 +7946,13 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path.startsWith('/author/')) {
+    const _ae = typeof window.findAuthorBySlug === 'function' ? window.findAuthorBySlug(path.replace('/author/', '')) : null;
+    if (_ae) openAuthorPage(_ae.name, false);
+    else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+    return;
+  }
+
   if (path.startsWith('/category/')) {
     const c = findCategoryBySlug(path.replace('/category/', ''));
     if (c) openCatPage(c.name, null, false);
@@ -8753,7 +8865,7 @@ function restoreHomeUrl() {
 
 // ── Global UI visibility manager ──
 // Hides social-bar + category-nav on product/checkout/track pages per design spec
-const _PAGES_HIDE_TOPBARS = ['product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category'];
+const _PAGES_HIDE_TOPBARS = ['product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category', 'author'];
 function updatePageUIVisibility(name) {
   if (_PAGES_HIDE_TOPBARS.includes(name)) {
     document.body.classList.add('page-' + name + '-open');
@@ -8806,6 +8918,7 @@ function closePage(name) {
   }
   if (name === 'product') restoreHomeUrl();
   if (name === 'category' && _safeDecode(location.pathname).startsWith('/category/')) restoreHomeUrl();
+  if (name === 'author' && _safeDecode(location.pathname).startsWith('/author/')) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
   if (name === 'profile') { history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/'); document.title = 'বুক গ্যালাক্সি'; }
@@ -8899,7 +9012,11 @@ function openProduct(id, pushUrl = true) {
         <div style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid rgba(170,44,45,.15);border-radius:20px;padding:4px 12px 4px 10px;margin-bottom:6px;flex-wrap:wrap;max-width:100%">
           <i class="fa-solid fa-pen-nib" style="color:var(--blue);font-size:.75rem"></i>
           <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:700;color:var(--text-mid)">লেখক:</span>
-          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--blue);word-break:break-word">${authorName}</span>
+          <span style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;font-weight:600;color:var(--blue);word-break:break-word">${
+            String(authorName).split(/[,،]/).map(s => s.trim()).filter(Boolean).map(n =>
+              `<span class="ap-link" role="link" tabindex="0" title="${n.replace(/"/g,'&quot;')} — সব বই দেখুন" data-a="${encodeURIComponent(n)}" onclick="openAuthorPage(decodeURIComponent(this.dataset.a))" onkeydown="if(event.key==='Enter'){openAuthorPage(decodeURIComponent(this.dataset.a))}">${n.replace(/</g,'&lt;')}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`
+            ).join('<span style="color:var(--text-light)">, </span>')
+          }</span>
         </div>`;
     } else { authorEl.innerHTML = ''; }
   }
@@ -14989,7 +15106,7 @@ window.addEventListener('scroll', onScroll, { passive: true });
 
 // ── 1. REGISTRY ──────────────────────────────────────────────────
 // All known full-pages (matches id="page-{name}")
-const ALL_PAGES   = ['product','track','order-detail','checkout','category','profile','wishlist'];
+const ALL_PAGES   = ['product','track','order-detail','checkout','category','profile','wishlist','author'];
 // All overlay modals (matches id)
 const ALL_MODALS  = ['cartOverlay','authModal','adminOverlay'];
 // Notif panel id
@@ -15350,6 +15467,9 @@ window.addEventListener('popstate', function(e) {
 
   } else if (state.page === 'category' && state.cat) {
     window.openCatPage(state.cat, null, false);
+
+  } else if (state.page === 'author' && state.author) {
+    if (typeof window.openAuthorPage === 'function') window.openAuthorPage(state.author, false);
 
   } else if (state.page === 'checkout') {
     if (cart.length && currentUser) window.openCheckout(); else document.title = 'বুক গ্যালাক্সি';
@@ -16036,5 +16156,138 @@ window.addEventListener('popstate',function(){
     <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.194 14.963l-3.055-3.26-5.963 3.26 6.559-6.963 3.13 3.26 5.889-3.26-6.56 6.963z"/>
   </svg>
 </a>
+<script>
+/* ══════════════════════════════════════════════════
+   AUTHOR PROFILE PAGE — লেখকের আলাদা পেজ + সব বই
+   URL: /author/<slug>   (বই-এর author / brand ফিল্ড থেকে অটো তৈরি)
+══════════════════════════════════════════════════ */
+(function () {
+  const _digits = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+  const _norm   = s => String(s || '').trim().replace(/\s+/g, ' ');
+  const _key    = s => _norm(s).toLowerCase();
+  const _esc    = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // একটি বইয়ের সব লেখক (কমা দিয়ে একাধিক লেখক থাকলে আলাদা করে)
+  function authorsOf(p) {
+    if (!p || !isBookProduct(p)) return [];
+    return String(p.author || p.brand || '').split(/[,،]/).map(_norm).filter(Boolean);
+  }
+
+  // সব লেখকের ইনডেক্স: key → { name, slug, books[] }
+  function authorIndex() {
+    const map = new Map();
+    products.forEach(p => {
+      authorsOf(p).forEach(n => {
+        const k = _key(n);
+        if (!map.has(k)) map.set(k, { key: k, name: n, slug: '', books: [] });
+        map.get(k).books.push(p);
+      });
+    });
+    // slug — নাম অনুযায়ী সাজিয়ে দিই যাতে একই নামের জন্য সবসময় একই slug হয়
+    const used = new Set();
+    [...map.values()].sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0).forEach((e, i) => {
+      let base = makeSlug(e.name) || ('author-' + (i + 1)), s = base, n = 2;
+      while (used.has(s)) s = base + '-' + (n++);
+      used.add(s); e.slug = s;
+    });
+    return map;
+  }
+
+  window.findAuthorBySlug = function (raw) {
+    const s = _safeDecode(String(raw || '')).split('?')[0].replace(/\/+$/, '').toLowerCase();
+    return [...authorIndex().values()].find(e => e.slug.toLowerCase() === s)
+        || [...authorIndex().values()].find(e => e.key === _key(s));
+  };
+
+  let _cur = null;   // { key, name, slug }
+
+  window.openAuthorPage = function (name, pushUrl) {
+    if (pushUrl === undefined) pushUrl = true;
+    const idx = authorIndex();
+    const ent = idx.get(_key(name));
+    const display = ent ? ent.name : _norm(name);
+    const slug = ent ? ent.slug : (makeSlug(display) || 'author');
+    _cur = { key: _key(display), name: display, slug };
+    if (pushUrl) window._authorFromApp = true;     // অ্যাপের ভেতর থেকে এসেছে → ব্যাক বাটনে আগের পেজে ফিরবে
+
+    // আগের পেজগুলোর body-class সাফ (যেমন product)
+    ['product','track','order-detail','checkout','category','profile','wishlist'].forEach(n => clearPageUIVisibility(n));
+
+    // Hero
+    const first = (typeof Intl !== 'undefined' && Intl.Segmenter)
+      ? (([...new Intl.Segmenter('bn', { granularity: 'grapheme' }).segment(display)][0] || {}).segment || '')
+      : Array.from(display)[0] || '';
+    document.getElementById('apAvatar').textContent = first;
+    document.getElementById('apName').textContent = display;
+    document.getElementById('apBreadName').textContent = display;
+    document.getElementById('apSort').value = 'popular';
+
+    renderAuthorBooks();
+
+    const url = '/author/' + slug;
+    const n = (ent ? ent.books.length : 0);
+    _navTo({ page: 'author', author: display }, `${display} — লেখক | বুক গ্যালাক্সি`, url, pushUrl);
+    _setMeta(`${display}-এর সব বই (${_digits(n)}টি) কিনুন বুক গ্যালাক্সি-তে। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।`, url);
+    openPage('author');
+  };
+
+  window.renderAuthorBooks = function () {
+    if (!_cur) return;
+    const ent = authorIndex().get(_cur.key);
+    let list = ent ? [...ent.books] : [];
+    const sort = (document.getElementById('apSort') || {}).value || 'popular';
+    if (sort === 'low')           list.sort((a, b) => getEffectiveSalePrice(a).displayPrice - getEffectiveSalePrice(b).displayPrice);
+    else if (sort === 'high')     list.sort((a, b) => getEffectiveSalePrice(b).displayPrice - getEffectiveSalePrice(a).displayPrice);
+    else if (sort === 'rating')   list.sort((a, b) => (b.rating || 4) - (a.rating || 4));
+    else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
+
+    // ক্যাটাগরি চিপ
+    const cats = [...new Set(list.map(p => p.category).filter(Boolean))];
+    document.getElementById('apCats').innerHTML = cats.map(c => `<span class="ap-cat">${_esc(c)}</span>`).join('');
+
+    // Stats
+    const avg = list.length ? list.reduce((s, p) => s + (p.rating || 4), 0) / list.length : 0;
+    const maxDisc = list.length ? Math.max(...list.map(p => Math.round(getEffectiveSalePrice(p).totalDiscPct))) : 0;
+    const stats = [
+      { ico: 'fa-book',        val: _digits(list.length),         lbl: 'মোট বই' },
+      { ico: 'fa-layer-group', val: _digits(cats.length),         lbl: 'ক্যাটাগরি' },
+      { ico: 'fa-star',        val: _digits(avg.toFixed(1)),      lbl: 'গড় রেটিং' },
+      { ico: 'fa-tags',        val: _digits(maxDisc) + '%',       lbl: 'সর্বোচ্চ ছাড়' }
+    ];
+    document.getElementById('apStats').innerHTML = stats.map(s => `
+      <div class="ap-stat">
+        <div class="ap-stat-ico"><i class="fa-solid ${s.ico}"></i></div>
+        <div><div class="ap-stat-val">${s.val}</div><div class="ap-stat-lbl">${s.lbl}</div></div>
+      </div>`).join('');
+
+    document.getElementById('apBooksTitle').textContent = `${_cur.name}-এর সব বই`;
+    document.getElementById('apBooksCount').textContent = `(${_digits(list.length)} টি)`;
+
+    const grid = document.getElementById('apGrid'), empty = document.getElementById('apEmpty');
+    if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+  };
+
+  window.closeAuthorPage = function (forceHome) {
+    if (!forceHome && window._authorFromApp && history.length > 1) { history.back(); return; }
+    closePage('author');
+  };
+
+  window.copyAuthorUrl = function () {
+    if (!_cur) return;
+    const url = window.location.origin + '/author/' + encodeURIComponent(_cur.slug);
+    const done = () => {
+      const btn = document.getElementById('apShareBtn');
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-check" style="color:var(--green)"></i>';
+        setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-share-nodes"></i>'; }, 2000);
+      }
+      toast('লিংক কপি!', url.slice(0, 50) + '...', 's');
+    };
+    navigator.clipboard.writeText(url).then(done).catch(() => toast('কপি ব্যর্থ', 'ম্যানুয়ালি কপি করুন', 'w'));
+  };
+})();
+</script>
 </body>
 </html>
