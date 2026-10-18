@@ -5989,7 +5989,7 @@ html.gm-boot #gmSplash{display:flex}
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-tag"></i>
-        <span class="bn">ঈদ স্পেশাল 30% পর্যন্ত ছাড়</span>
+        <span class="bn">বাছাই করা বইয়ে বিশেষ ছাড়</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
@@ -6010,7 +6010,7 @@ html.gm-boot #gmSplash{display:flex}
       <span class="promo-sep">·</span>
       <div class="promo-item">
         <i class="fa-solid fa-tag"></i>
-        <span class="bn">ঈদ স্পেশাল 30% পর্যন্ত ছাড়</span>
+        <span class="bn">বাছাই করা বইয়ে বিশেষ ছাড়</span>
       </div>
       <span class="promo-sep">·</span>
       <div class="promo-item">
@@ -6366,6 +6366,11 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
     </div>
     <div class="bud-label bn" style="margin-top:12px">ক্যাটাগরি</div>
     <div class="bud-chips" id="budgetCatChips"></div>
+  </div>
+  <!-- সব পণ্য পেজের ফিল্টার: সব / বই / অন্যান্য পণ্য -->
+  <div id="allFilterBar" style="display:none;max-width:1100px;margin:18px auto 0;padding:0 22px">
+    <div class="bud-label bn">ধরন</div>
+    <div class="bud-chips" id="allTypeChips"></div>
   </div>
   <!-- Products grid -->
   <div style="max-width:1100px;margin:24px auto;padding:0 22px 40px">
@@ -8252,7 +8257,7 @@ async function _restorePageFromUrl() {
   }
 
   if (path === '/all-products') {
-    openAllBooksPage(parseInt(new URLSearchParams(location.search).get('page')) || 1, false);
+    { const _sp = new URLSearchParams(location.search); openAllBooksPage(parseInt(_sp.get('page')) || 1, false, false, _sp.get('type') || 'all'); }
     return;
   }
 
@@ -8918,6 +8923,7 @@ function _paintGrid(list, append) {
   renderNewReleases();
 }
 function renderNewReleases() {
+  updateHeroDynamic();
   const sec = document.getElementById('newReleaseSec');
   const grid = document.getElementById('newReleaseGrid');
   if (!sec || !grid) return;
@@ -9095,6 +9101,7 @@ const BUDGET_RANGES = [            // এখানের সংখ্যা ব�
 ];
 let currentAllMode = false;       // true = "আরও দেখুন" থেকে খোলা সব-পণ্যের পেজ (পেজিনেশন সহ)
 let currentAllPage = 1;
+let currentAllType = 'all';        // 'all' | 'book' | 'product'(বই ছাড়া অন্য পণ্য)
 let currentBudget = 0;             // 0 = বাজেট মোড বন্ধ, নইলে { min, max }
 let currentBudgetCat = 'সব';
 function _bnDigits(n) { return String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
@@ -9214,8 +9221,10 @@ function catSortChanged() {
   if (currentAllMode) openAllBooksPage(1, false, true);   // সাজানো বদলালে ১ নম্বর পেজ থেকে
   else renderCatPageProducts();
 }
-function openAllBooksPage(page = 1, pushUrl = true, keepSort = false) {
+function openAllBooksPage(page = 1, pushUrl = true, keepSort = false, type) {
   resetBudgetMode();
+  if (type) currentAllType = ['book', 'product'].includes(type) ? type : 'all';
+  else if (!keepSort) currentAllType = 'all';
   currentAllMode = true; currentCatPage = 'সব';
   currentAllPage = Math.max(1, parseInt(page) || 1);
   document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
@@ -9224,9 +9233,10 @@ function openAllBooksPage(page = 1, pushUrl = true, keepSort = false) {
   document.getElementById('catPageBreadcrumb').textContent = 'সব পণ্য';
   if (!keepSort) document.getElementById('catPageSort').value = 'popular';
   renderCatPageProducts();                       // এখানেই currentAllPage শেষ পেজ ছাড়িয়ে গেলে ঠিক করে নেয়
-  const url = '/all-products' + (currentAllPage > 1 ? '?page=' + currentAllPage : '');
-  _navTo({ page: 'category', cat: 'সব', all: currentAllPage }, 'সব পণ্য — বুক গ্যালাক্সি', url, pushUrl);
-  _setMeta('বুক গ্যালাক্সি-র সব বই ও পণ্য এক জায়গায়। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।', '/all-products' + (currentAllPage > 1 ? '?page=' + currentAllPage : ''));
+  const _q = []; if (currentAllType !== 'all') _q.push('type=' + currentAllType); if (currentAllPage > 1) _q.push('page=' + currentAllPage);
+  const url = '/all-products' + (_q.length ? '?' + _q.join('&') : '');
+  _navTo({ page: 'category', cat: 'সব', all: currentAllPage, type: currentAllType }, 'সব পণ্য — বুক গ্যালাক্সি', url, pushUrl);
+  _setMeta('বুক গ্যালাক্সি-র সব বই ও পণ্য এক জায়গায়। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।', '/all-products' + (currentAllType !== 'all' ? '?type=' + currentAllType : ''));
   openPage('category');
   const pg = document.getElementById('page-category'); if (pg) pg.scrollTop = 0;
 }
@@ -9235,7 +9245,16 @@ function renderAllPageProducts() {
   const pager = document.getElementById('catPagePager');
   const sort = document.getElementById('catPageSort')?.value || 'popular';
   const price = p => getEffectiveSalePrice(p).displayPrice;
-  const list = [...products];
+  // ফিল্টার বার: সব / বই / অন্যান্য পণ্য
+  const nBook = products.filter(isBookProduct).length, nOther = products.length - nBook;
+  const bar = document.getElementById('allFilterBar'), chips = document.getElementById('allTypeChips');
+  if (bar && chips) {
+    bar.style.display = '';
+    chips.innerHTML = [['all', 'সব', products.length], ['book', 'বই', nBook], ['product', 'অন্যান্য পণ্য', nOther]].map(([k, l, n]) =>
+      `<button type="button" class="bud-chip bn${currentAllType === k ? ' on' : ''}" data-alltype="${k}">${l} (${_bnDigits(n)})</button>`).join('');
+  }
+  const list = products.filter(p => currentAllType === 'all' || (currentAllType === 'book' ? isBookProduct(p) : !isBookProduct(p)));
+  if (empty && empty.lastElementChild) empty.lastElementChild.textContent = 'এই ধরনে এখনো কোনো পণ্য নেই';
   if (sort === 'low') list.sort((a, b) => price(a) - price(b));
   else if (sort === 'high') list.sort((a, b) => price(b) - price(a));
   else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4) || popularCmp(a, b));
@@ -9263,6 +9282,8 @@ function renderAllPageProducts() {
     `<button type="button" class="pgbtn" data-allpage="${currentAllPage + 1}" ${currentAllPage === total ? 'disabled style="opacity:.4;cursor:default"' : ''} aria-label="পরের পেজ"><i class="fa-solid fa-chevron-right"></i></button>`;
 }
 document.addEventListener('click', e => {
+  const t = e.target.closest && e.target.closest('.bud-chip[data-alltype]');
+  if (t && currentAllMode) { openAllBooksPage(1, true, true, t.dataset.alltype); return; }
   const b = e.target.closest && e.target.closest('#catPagePager .pgbtn[data-allpage]');
   if (b && !b.disabled && currentAllMode) openAllBooksPage(parseInt(b.dataset.allpage), true, true);
 });
@@ -12896,24 +12917,25 @@ async function submitReview() {
 // Default/fallback banners (used when Supabase table is empty or not yet created)
 const DEFAULT_BANNERS = [
   {
-    tag: 'নতুন পণ্য এসেছে — মে ২০২৬',
-    tag_icon: 'fa-star',
-    title: 'সেরা পণ্য, সেরা দামে\nএখনই কিনুন',
-    subtitle: 'বই থেকে ইলেকট্রনিক্স, ফ্যাশন থেকে হোম ডেকোর — সব কিছু এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
-    btn_label: 'শপিং করুন',
+    tag: 'বই প্রেমীদের অনলাইন ঠিকানা',
+    tag_icon: 'fa-book-open',
+    title: 'পছন্দের বই,\nসেরা দামে ঘরে বসেই',
+    subtitle: 'ইসলামী বই, অনুবাদ, রহস্য-গোয়েন্দা, রোমান্টিক উপন্যাস, মাঙ্গা ও আরও অনেক কিছু — সব এক জায়গায়। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।',
+    btn_label: 'বই দেখুন',
     btn2_label: 'অর্ডার ট্র্যাক',
     btn2_action: 'openTrack()',
-    icons: ['fa-book','fa-mobile-screen','fa-shirt'],
+    icons: ['fa-book-open','fa-truck-fast','fa-shield-halved'],
     gradient: 'linear-gradient(120deg,#AA2C2D 0%,#711D1E 100%)',
     show_stats: true,
     is_active: true
   },
   {
-    tag: 'ঈদ স্পেশাল অফার',
+    tag: 'বিশেষ ছাড়',
     tag_icon: 'fa-tag',
-    title: '৩০% পর্যন্ত ছাড়!',
-    subtitle: 'সীমিত সময়ের জন্য — সব ক্যাটাগরিতে বিশেষ ছাড়। এখনই সুযোগ নিন।',
-    btn_label: 'অফার দেখুন',
+    title: '<span data-hero="maxdisc">বাছাই করা বইয়ে ছাড়!</span>',   // ডেটা লোড হলে "সর্বোচ্চ ৩১% ছাড়!" হয়ে যায়
+    subtitle: 'বাছাই করা বইয়ে বিশেষ ছাড় চলছে — কোন বইয়ে কত সাশ্রয়, এখনই দেখে নিন।',
+    btn_label: 'ছাড়ের বই দেখুন',
+    btn_target: '#discountSec',
     btn2_label: null,
     icons: ['fa-tag','fa-gift','fa-percent'],
     gradient: 'linear-gradient(120deg,#AA2C2D 0%,#3B82F6 60%,#60A5FA 100%)',
@@ -12921,10 +12943,10 @@ const DEFAULT_BANNERS = [
     is_active: true
   },
   {
-    tag: 'ফ্রি ডেলিভারি',
+    tag: 'দ্রুত ডেলিভারি',
     tag_icon: 'fa-truck-fast',
-    title: '৳৯৯৯+ অর্ডারে ফ্রি!',
-    subtitle: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি — দ্রুত পৌঁছানোর গ্যারান্টি। আজই অর্ডার করুন।',
+    title: 'সারা বাংলাদেশে\nক্যাশ অন ডেলিভারি',
+    subtitle: 'ঢাকায় ২–৩ দিন, ঢাকার বাইরে ৩–৫ দিনে হাতে পাবেন। bKash, Nagad ও Rocket-এও পেমেন্ট করা যায়।',
     btn_label: 'শপিং করুন',
     btn2_label: null,
     icons: ['fa-truck-fast','fa-box','fa-shield-halved'],
@@ -13047,9 +13069,9 @@ function renderHeroBanners() {
 
     const statsHtml = b.show_stats ? `
       <div class="hslide-stats">
-        <div class="hslide-stat"><div class="snum">৫০০+</div><div class="slbl bn">পণ্য</div></div>
-        <div class="hslide-stat"><div class="snum">২০হা+</div><div class="slbl bn">কাস্টমার</div></div>
-        <div class="hslide-stat"><div class="snum">৪.৯★</div><div class="slbl bn">রেটিং</div></div>
+        <div class="hslide-stat"><div class="snum" data-hero="books">–</div><div class="slbl bn">বই</div></div>
+        <div class="hslide-stat"><div class="snum" data-hero="rating">–</div><div class="slbl bn">গড় রেটিং</div></div>
+        <div class="hslide-stat"><div class="snum">২–৫ দিন</div><div class="slbl bn">ডেলিভারি</div></div>
         <div class="hslide-stat"><div class="snum">COD</div><div class="slbl bn">পেমেন্ট</div></div>
       </div>` : '';
 
@@ -13067,7 +13089,7 @@ function renderHeroBanners() {
           <div class="hslide-title bn">${titleHtml}</div>
           <div class="hslide-sub bn">${b.subtitle||''}</div>
           <div class="hslide-btns">
-            <button class="hslide-btn bn" style="color:var(--blue)" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">
+            <button class="hslide-btn bn" style="color:var(--blue)" onclick="(document.querySelector('${b.btn_target||'.main'}')||document.querySelector('.main')).scrollIntoView({behavior:'smooth'})">
               <i class="fa-solid fa-bag-shopping"></i> ${b.btn_label||'দেখুন'}
             </button>
             ${btn2Html}
@@ -13084,11 +13106,26 @@ function renderHeroBanners() {
 
   heroGoTo(0);
   startHeroAuto();
+  updateHeroDynamic();
 
   // Height of a text/dynamic-builder slide is known immediately, but let the
   // browser finish layout first (and cover the async photo-banner case too).
   requestAnimationFrame(syncHeroTopsellHeight);
   setTimeout(syncHeroTopsellHeight, 300);
+}
+
+// ব্যানারের সংখ্যাগুলো আসল ডেটা থেকে (বই সংখ্যা, গড় রেটিং, সর্বোচ্চ ছাড়) — বানানো সংখ্যা নেই
+function updateHeroDynamic() {
+  if (typeof products === 'undefined' || !products.length) return;
+  const books = products.filter(isBookProduct);
+  const set = (k, v) => document.querySelectorAll('[data-hero="' + k + '"]').forEach(el => { el.textContent = v; });
+  if (books.length) {
+    set('books', _bnDigits(books.length));
+    const avg = books.reduce((t, p) => t + (Number(p.rating) || 4), 0) / books.length;
+    set('rating', _bnDigits(avg.toFixed(1)) + '★');
+  }
+  const maxDisc = Math.floor(products.reduce((m, p) => Math.max(m, getEffectiveSalePrice(p).totalDiscPct), 0));
+  if (maxDisc > 0) set('maxdisc', 'সর্বোচ্চ ' + _bnDigits(maxDisc) + '% ছাড়!');
 }
 
 function heroGoTo(idx) {
@@ -15157,6 +15194,7 @@ function closeCatPage() {
 
 function renderCatPageProducts() {
   const _pgr = document.getElementById('catPagePager'); if (_pgr) _pgr.innerHTML = '';
+  const _afb = document.getElementById('allFilterBar'); if (_afb) _afb.style.display = 'none';
   if (currentBudget) return renderBudgetPageProducts();
   if (currentAllMode) return renderAllPageProducts();
   const grid  = document.getElementById('catPageGrid');
@@ -16352,7 +16390,7 @@ window.addEventListener('popstate', function(e) {
     else document.title = 'বুক গ্যালাক্সি';
 
   } else if (state.page === 'category' && state.all) {
-    openAllBooksPage(state.all, false, true);
+    openAllBooksPage(state.all, false, true, state.type || 'all');
 
   } else if (state.page === 'category' && state.budget) {
     openBudgetPage(state.budget, false);
@@ -16428,7 +16466,7 @@ window.addEventListener('popstate', function(e) {
   function applyPromoBar() {
     const DEFAULT = [
       { icon: 'fa-truck-fast',    text: '৳999+ অর্ডারে ফ্রি ডেলিভারি' },
-      { icon: 'fa-tag',           text: 'ঈদ স্পেশাল 30% পর্যন্ত ছাড়' },
+      { icon: 'fa-tag',           text: 'বাছাই করা বইয়ে বিশেষ ছাড়' },
       { icon: 'fa-shield-halved', text: '100% অরিজিনাল পণ্য' },
       { icon: 'fa-rotate-left',   text: 'সহজ রিটার্ন পলিসি' }
     ];
