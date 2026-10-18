@@ -15199,6 +15199,11 @@ window.addEventListener('scroll', onScroll, { passive: true });
     // body-এর page-context class সরাও
     document.body.className = document.body.className.replace(/\bpage-\S+/g, '').trim();
     document.body.style.overflow = '';
+    // URL-ও হোমে ফিরিয়ে আনো (নইলে address bar-এ পুরনো /product/... থেকে যায়)
+    if (location.pathname !== '/') {
+      history.pushState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+      document.title = 'বুক গ্যালাক্সি';
+    }
   };
 
   // Home: সব বন্ধ → top-এ scroll
