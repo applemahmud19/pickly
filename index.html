@@ -6084,11 +6084,12 @@ html.gm-boot #gmSplash{display:flex}
 ══════════════════════════════════════════════════ -->
 <style>
 .bg-wrap{max-width:1180px;margin:0 auto;padding:18px 16px 60px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
-.bg-hero{background:linear-gradient(135deg,#711D1E,#AA2C2D);color:#fff;padding:30px 16px;text-align:center}
-.bg-hero h1{font-size:1.7rem;margin:0 0 6px;font-family:'Hind Siliguri',sans-serif}
-.bg-hero p{margin:0 0 14px;opacity:.9;font-size:.88rem}
+body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-open .mobile-search-row,body.page-blog-post-open .social-bar,body.page-blog-post-open .nav-cats,body.page-blog-post-open .mobile-search-row{display:none!important}
+.bg-hero{background:linear-gradient(135deg,#711D1E,#AA2C2D);color:#fff;padding:12px 16px;text-align:center}
+.bg-hero h1{font-size:1.25rem;margin:0 0 2px;line-height:1.5;font-family:'Hind Siliguri',sans-serif}
+.bg-hero p{margin:0 0 8px;opacity:.9;font-size:.78rem;line-height:1.4}
 .bg-search{max-width:460px;margin:0 auto;display:flex;background:#fff;border-radius:10px;overflow:hidden}
-.bg-search input{flex:1;border:0;padding:11px 14px;font:inherit;outline:0}
+.bg-search input{flex:1;border:0;padding:8px 12px;font:inherit;outline:0}
 .bg-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .bg-chip{border:1px solid var(--border);background:#fff;padding:6px 14px;border-radius:99px;cursor:pointer;font-size:.8rem;font-family:inherit}
 .bg-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -8989,7 +8990,7 @@ function restoreHomeUrl() {
 
 // ── Global UI visibility manager ──
 // Hides social-bar + category-nav on product/checkout/track pages per design spec
-const _PAGES_HIDE_TOPBARS = ['product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category', 'author'];
+const _PAGES_HIDE_TOPBARS = ['blog', 'blog-post', 'product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category', 'author'];
 function updatePageUIVisibility(name) {
   if (_PAGES_HIDE_TOPBARS.includes(name)) {
     document.body.classList.add('page-' + name + '-open');
