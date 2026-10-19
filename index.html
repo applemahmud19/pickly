@@ -260,7 +260,15 @@ body.page-category-open .nav-cats,
 body.page-category-open .mobile-search-row {
   display: none !important;
 }
-body.page-category-open.search-results-open .mobile-search-row { display: block !important; }
+@media (max-width: 880px) {
+  body.page-category-open.search-results-open .mobile-search-row { display: block !important; }
+}
+/* সার্চ রেজাল্ট পেজে লাল হিরো বার ছোট */
+body.search-results-open #catPageHero { padding: 9px 18px !important; }
+body.search-results-open #catPageIcon { width: 34px !important; height: 34px !important; border-radius: 10px !important; font-size: 1rem !important; }
+body.search-results-open #catPageIcon i { font-size: 1rem !important; }
+body.search-results-open #catPageTitle { font-size: 1.05rem !important; line-height: 1.25 !important; }
+body.search-results-open #catPageSubtitle { font-size: .72rem !important; margin-top: 1px !important; }
 /* ── লাইভ সার্চ সাজেশন ── */
 .search-wrap{position:relative}
 .mobile-search-row{position:relative}
@@ -9474,7 +9482,7 @@ function renderSearchPageProducts() {
    লাইভ সাজেশন — সার্চ বারে লেখার সময়ই নিচে বইয়ের নাম, লেখক ও দাম দেখায়
    ↑ ↓ দিয়ে বাছা যায়, Enter-এ বই খোলে (কিছু না বাছলে সব রেজাল্টের পেজ), Esc-এ বন্ধ
    ══════════════════════════════════════════════════ */
-const SUGGEST_MAX = 6;
+const SUGGEST_MAX = 8;
 const _sg = { idx: -1, list: [], q: '', id: '' };
 function _sgEsc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function _sgBox(inputId) {
@@ -9527,7 +9535,7 @@ function sgUpdate(inputId) {
       <span class="sg-info"><span class="sg-name bn">${_sgEsc(p.name)}</span>${sub ? `<span class="sg-sub bn">${_sgEsc(sub)}</span>` : ''}</span>
       <span class="sg-price bn">${p.old_price && pr.originalPrice > pr.displayPrice ? `<s>৳${fmtPrice(pr.originalPrice)}</s>` : ''}<b>৳${fmtPrice(pr.displayPrice)}</b></span>
     </div>`;
-  }).join('') + `<div class="sg-all bn" data-sgall="1"><i class="fa-solid fa-magnifying-glass"></i> “${_sgEsc(q)}” এর সব রেজাল্ট দেখুন (${_bnDigits(all.length)})</div>`;
+  }).join('');
   box.classList.add('open');
 }
 function _sgMove(inputId, dir) {
