@@ -1,6 +1,16 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/product/:slug", "destination": "/api/page?kind=product&slug=:slug" },
+    { "source": "/category/:slug", "destination": "/api/page?kind=category&slug=:slug" },
+    { "source": "/author/:slug", "destination": "/api/page?kind=author&slug=:slug" },
+    { "source": "/publisher/:slug", "destination": "/api/page?kind=publisher&slug=:slug" },
+    { "source": "/subcategory/:slug", "destination": "/api/page?kind=subcategory&slug=:slug" },
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|favicon|robots|sitemap).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    { "source": "/admin", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] },
+    { "source": "/admin.html", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
   ]
 }
