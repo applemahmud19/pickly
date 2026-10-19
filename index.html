@@ -11416,12 +11416,10 @@ async function signOut() {
 function openAdmin() {
   if(!currentUser){ toast('লগইন করুন','অ্যাডমিন প্যানেল দেখতে লগইন করতে হবে','w'); return; }
   if(!isAdmin){ toast('অ্যাক্সেস নেই','আপনি এই সাইটের অ্যাডমিন নন','e'); return; }
-  // Re-verify admin status live before opening (security double-check)
-  sb.from('admin_users').select('id').eq('id', currentUser.id).single().then(({data, error}) => {
-    if(error || !data){ isAdmin=false; updateAuthUI(); toast('অ্যাক্সেস নেই','অ্যাডমিন যাচাই ব্যর্থ','e'); return; }
-    openModal('adminOverlay');
-    loadAdminProducts(); loadDashboardKPIs();
-  });
+  // মূল অ্যাডমিন ড্যাশবোর্ড (admin.html) নতুন ট্যাবে খোলে — এটাই আসল প্যানেল।
+  // admin.html নিজেও লগইন ও admin_users দিয়ে যাচাই করে।
+  const w = window.open('/admin.html', '_blank', 'noopener');
+  if (!w) window.location.href = '/admin.html';   // পপআপ ব্লক থাকলে একই ট্যাবে খুলবে
 }
 function closeAdmin() { closeModal('adminOverlay'); }
 
@@ -16557,11 +16555,8 @@ window.__router = { closeAllPages, closeAllModals, closeAllUI };
   const _orig = window.openAdmin;
   if (!_orig) return;
   window.openAdmin = function() {
-    closeAllPages();
-    closeAllModals('adminOverlay');
-    closeNotifPanel();
     if (typeof window.closeDropdown === 'function') window.closeDropdown();
-    _orig.call(this);
+    _orig.call(this);       // নতুন ট্যাবে admin.html খোলে, দোকানের পেজ বন্ধ করার দরকার নেই
   };
 })();
 
