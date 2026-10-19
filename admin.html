@@ -1951,6 +1951,7 @@ body {
                 <i class="fa-solid fa-rotate"></i> সব পুনঃতৈরি
               </button>
               <button class="btn btn-ghost btn-sm" onclick="bulkOpen()" title="CSV দিয়ে একসাথে অনেক বই আপলোড"><i class="fa-solid fa-file-csv"></i> Bulk Import</button>
+              <button class="btn btn-ghost btn-sm" onclick="migOpen()" title="যেসব বইয়ের ছবি বাইরের লিংক থেকে আসছে সেগুলো নিজের সার্ভারে আনুন"><i class="fa-solid fa-cloud-arrow-down"></i> ছবি নিজের সার্ভারে আনুন</button>
               <button class="btn btn-primary btn-sm" onclick="openProductModal()">
                 <i class="fa-solid fa-plus"></i> পণ্য যোগ করুন
               </button>
@@ -11269,6 +11270,79 @@ window.PDE={cmd,load,get};
 @media(max-width:700px){.tb-bulk-btn span{display:none}}
 </style>
 <div id="bulkGlobalDrop"><div><i class="fa-solid fa-file-csv" style="font-size:2.4rem"></i><br>CSV ফাইল এখানে ছাড়ুন</div></div>
+<div class="modal-overlay" id="migImgModal" onclick="if(event.target===this && !_migRunning)closeModal('migImgModal')">
+  <div class="modal-box" style="max-width:640px;width:94vw">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--blue);margin-right:6px"></i>বাইরের ছবি নিজের সার্ভারে আনুন</div>
+      <button class="modal-close" onclick="if(!_migRunning)closeModal('migImgModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="display:grid;gap:12px">
+      <div id="migInfo" style="font-size:0.8rem;line-height:1.7;color:var(--text2)"></div>
+      <div style="height:8px;background:var(--bg3);border-radius:6px;overflow:hidden"><div id="migBar" style="height:100%;width:0;background:var(--blue);transition:width .2s"></div></div>
+      <div id="migStatus" style="font-size:0.76rem;color:var(--text2)"></div>
+      <textarea id="migLog" readonly style="width:100%;height:170px;font-family:monospace;font-size:0.68rem;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px;resize:vertical"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost" id="migStopBtn" style="display:none" onclick="_migCancel=true">Stop</button>
+        <button class="btn btn-primary" id="migStartBtn" onclick="migStart()"><i class="fa-solid fa-cloud-arrow-down"></i> শুরু করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+/* ══════════ বিদ্যমান বইয়ের বাইরের ছবি → নিজের Storage ══════════ */
+let _migRunning = false, _migCancel = false;
+function migIsExternal(u){
+  if (!/^https?:\/\//i.test(u || '')) return false;
+  const base = (getConfig().url || '').replace(/\/$/, '');
+  return !(base && u.startsWith(base + '/storage/'));
+}
+function migScan(){
+  return (allProducts || []).map(p => {
+    const list = [...new Set([p.image_url, ...(Array.isArray(p.images) ? p.images : [])].filter(Boolean))];
+    return { p, list, ext: list.filter(migIsExternal) };
+  }).filter(x => x.ext.length);
+}
+function migOpen(){
+  const todo = migScan(), n = new Set(todo.flatMap(x => x.ext)).size;
+  document.getElementById('migInfo').innerHTML = todo.length
+    ? `<b>${todo.length.toLocaleString()}টি বই</b>-এর <b>${n.toLocaleString()}টি ছবি</b> বাইরের লিংক থেকে আসছে। শুরু করলে ছবিগুলো ডাউনলোড হয়ে আপনার Storage-এ যাবে এবং বইয়ের লিংক বদলে যাবে। ব্যর্থ ছবির পুরনো লিংক অপরিবর্তিত থাকবে।`
+    : '✅ সব বইয়ের ছবিই ইতিমধ্যে আপনার নিজের সার্ভারে আছে।';
+  document.getElementById('migStartBtn').disabled = !todo.length;
+  document.getElementById('migBar').style.width = '0'; document.getElementById('migStatus').textContent = ''; document.getElementById('migLog').value = '';
+  openModal('migImgModal');
+}
+async function migStart(){
+  if (_migRunning || !sb) return;
+  const todo = migScan(); if (!todo.length) return;
+  const urls = [...new Set(todo.flatMap(x => x.ext))];
+  if (!confirm(`${urls.length} টি ছবি ডাউনলোড করে নিজের সার্ভারে তুলবেন?`)) return;
+  _migRunning = true; _migCancel = false;
+  const log = m => { const t = document.getElementById('migLog'); t.value += m + '\n'; t.scrollTop = t.scrollHeight; };
+  document.getElementById('migStartBtn').disabled = true; document.getElementById('migStopBtn').style.display = '';
+  const map = new Map(); let done = 0, ok = 0, fail = 0;
+  await bulkPool(urls, 3, async u => {
+    try { map.set(u, await bulkUpload(await bulkFetchExternal(u))); ok++; }
+    catch(e){ fail++; log('✗ ' + u + '\n   ' + (e.message || e)); }
+    done++;
+    document.getElementById('migBar').style.width = Math.round(done / urls.length * 100) + '%';
+    document.getElementById('migStatus').textContent = `ছবি ${done} / ${urls.length} — সফল ${ok}, ব্যর্থ ${fail}`;
+  });
+  let upd = 0;
+  for (const x of todo){
+    if (_migCancel) break;
+    if (!x.ext.some(u => map.has(u))) continue;
+    const list = x.list.map(u => map.get(u) || u);
+    const { error } = await sb.from('products').update({ image_url: list[0], images: list }).eq('id', x.p.id);
+    if (error) log('✗ বই আপডেট ব্যর্থ ' + x.p.name + ': ' + error.message);
+    else { x.p.image_url = list[0]; x.p.images = list; upd++; }
+  }
+  log(`\n✅ সম্পন্ন — ${upd}টি বই আপডেট, ${fail}টি ছবি ব্যর্থ`);
+  if (fail) log('ℹ ব্যর্থের কারণ উপরে দেখুন। "প্রক্সি: HTTP 404" মানে /api/fetch-image ডেপ্লয় হয়নি; "HTTP 401" মানে Vercel-এ SUPABASE_URL / SUPABASE_ANON_KEY নেই বা ভুল।');
+  _migRunning = false; document.getElementById('migStopBtn').style.display = 'none'; document.getElementById('migStartBtn').disabled = false;
+  toast('ছবি স্থানান্তর শেষ', `${upd}টি বই আপডেট হয়েছে${fail ? ', ' + fail + 'টি ছবি ব্যর্থ' : ''}`, fail ? 'info' : 'success');
+  try { await loadProducts(); } catch {}
+}
+</script>
 <!-- ══════════ BULK CSV IMPORT ══════════ -->
 <div class="modal-overlay" id="bulkImportModal" onclick="if(event.target===this && !_bulkRunning)closeModal('bulkImportModal')">
   <div class="modal-box" style="max-width:820px;width:94vw">
@@ -11649,7 +11723,7 @@ async function bulkUpload(file){
 async function bulkFetchExternal(url){
   const grab = async (u, headers) => {
     const r = await fetch(u, headers ? { headers } : undefined);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok){ let m = ''; try { m = (await r.text()).slice(0, 80); } catch {} throw new Error('HTTP ' + r.status + (m ? ' ' + m : '')); }
     const b = await r.blob();
     if (!/^image\//i.test(b.type)) throw new Error('ছবি নয়');
     if (b.size > 10 * 1024 * 1024) throw new Error('১০MB-এর বড়');
@@ -11659,7 +11733,8 @@ async function bulkFetchExternal(url){
   try { blob = await grab(url); }                      // ১) সরাসরি (সার্ভার CORS দিলে)
   catch (e1){                                          // ২) নিজের /api/fetch-image প্রক্সি
     let tok = ''; try { tok = (await sb.auth.getSession()).data.session.access_token; } catch {}
-    blob = await grab('/api/fetch-image?url=' + encodeURIComponent(url), tok ? { Authorization: 'Bearer ' + tok } : {});
+    try { blob = await grab('/api/fetch-image?url=' + encodeURIComponent(url), tok ? { Authorization: 'Bearer ' + tok } : {}); }
+    catch (e2){ throw new Error('সরাসরি: ' + (e1.message || 'CORS ব্লক') + ' | প্রক্সি: ' + (e2.message || e2)); }
   }
   const ext = ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif', 'image/avif':'avif' })[blob.type.toLowerCase()] || 'jpg';
   return new File([blob], 'ext-image.' + ext, { type: blob.type });
