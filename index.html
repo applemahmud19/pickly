@@ -1398,13 +1398,37 @@ header.scrolled{
 .cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .cart-total-row .lbl{font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid)}
 .cart-total-row .amt{font-size:1.3rem;font-weight:700}
+.cart-promo-msg{font-family:'Hind Siliguri',sans-serif;font-size:.74rem;line-height:1.45;padding:7px 11px;border-radius:var(--radius-sm);margin:-3px 0 11px;display:flex;align-items:flex-start;gap:6px}
+.cart-promo-msg.s{background:#ECFDF5;color:#047857;border:1px solid #A7F3D0}
+.cart-promo-msg.e{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA}
+.cart-promo-msg.w{background:#FFFBEB;color:#B45309;border:1px solid #FDE68A}
+.cart-disc-row{margin-bottom:6px}
+.cart-disc-row .lbl{color:#047857;font-weight:600}
+.cart-disc-row .lbl b{font-weight:700;background:#D1FAE5;padding:1px 7px;border-radius:100px;font-size:.7rem;margin-left:3px}
+.cart-disc-row .amt{font-size:1rem;color:#047857}
+.cart-after-row .lbl{font-weight:700;color:var(--text)}
+.promo-btn.is-cancel{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}
+.promo-btn.is-cancel:hover{background:#B91C1C;color:#fff}
+.promo-inp:disabled{opacity:.8;cursor:not-allowed;font-weight:700;letter-spacing:.04em}
+/* চেকআউটের পরিমাণ বাড়ানো-কমানো */
+.co-qty{display:inline-flex;align-items:center;border:1.5px solid var(--border);border-radius:100px;background:#fff;overflow:hidden}
+.co-qty button{width:28px;height:28px;border:none;background:transparent;color:var(--blue);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.co-qty button:hover:not(:disabled){background:var(--blue-light)}
+.co-qty button:disabled{color:#c9bcbc;cursor:not-allowed}
+.co-qty span{min-width:26px;text-align:center;font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:700;color:var(--text)}
+.co-rm{border:none;background:transparent;color:#a99;cursor:pointer;font-size:.8rem;padding:6px 8px;border-radius:8px;transition:all .15s}
+.co-rm:hover{background:#FEF2F2;color:#B91C1C}
 .cod-note{background:var(--blue-light);border-radius:var(--radius-sm);padding:7px 11px;font-family:'Hind Siliguri',sans-serif;font-size:.72rem;color:var(--text-mid);display:flex;align-items:center;gap:6px;margin-bottom:11px}
 .checkout-btn{width:100%;padding:13px 16px;border-radius:var(--radius);background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;border:none;font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--t);display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em;box-shadow:0 4px 16px rgba(170,44,45,.28)}
 
 /* Checkout saved-address card + edit button (Rokomari-style) */
 #checkoutSaveAddressBtn:hover{background:var(--blue-dark)}
 #checkoutSavedCard button:hover{background:var(--blue-mid)}
-.checkout-btn:hover{background:linear-gradient(135deg,var(--blue-dark),#003DA6);box-shadow:0 8px 28px rgba(170,44,45,.38);transform:translateY(-1px)}
+.checkout-btn{position:relative;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease,filter .22s ease}
+.checkout-btn::after{content:'';position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);transition:left .55s ease;pointer-events:none}
+.checkout-btn:hover{filter:brightness(1.08) saturate(1.05);box-shadow:0 10px 26px rgba(170,44,45,.34);transform:translateY(-1px)}
+.checkout-btn:hover::after{left:125%}
+.checkout-btn:active{transform:translateY(0);filter:brightness(.97);box-shadow:0 3px 10px rgba(170,44,45,.3)}
 
 /* ── CHECKOUT MODAL ── */
 /* checkout is now full-page */
@@ -6896,9 +6920,12 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
     <div class="cart-hd"><h3 class="bn"><i class="fa-solid fa-cart-shopping" style="color:var(--blue);margin-right:7px"></i>আমার কার্ট</h3><button class="close-btn" onclick="closeCart()"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="cart-items" id="cartItems"></div>
     <div class="cart-foot">
-      <div class="promo-row"><input class="promo-inp bn" type="text" placeholder="কুপন কোড..." id="couponInput"><button class="promo-btn bn" onclick="applyCoupon()">প্রয়োগ</button></div>
+      <div class="promo-row"><input class="promo-inp bn" type="text" placeholder="কুপন কোড..." id="couponInput" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyCoupon()}"><button class="promo-btn bn" id="cartCouponBtn" onclick="applyCoupon()">প্রয়োগ</button></div>
+      <div class="cart-promo-msg bn" id="cartPromoMsg" style="display:none"></div>
       <div class="cod-note bn"><i class="fa-solid fa-truck-fast" style="color:var(--blue)"></i>ডেলিভারি চার্জ চেকআউটে নির্ধারিত হবে</div>
       <div class="cart-total-row"><span class="lbl bn">বই মোট</span><span class="amt bn" id="cartTotal">৳ ০</span></div>
+      <div class="cart-total-row cart-disc-row" id="cartDiscountRow" style="display:none"><span class="lbl bn"><i class="fa-solid fa-tag"></i> কুপন ছাড় <b id="cartCouponCode"></b></span><span class="amt bn" id="cartDiscountAmt">-৳০</span></div>
+      <div class="cart-total-row cart-after-row" id="cartAfterRow" style="display:none"><span class="lbl bn">ছাড়ের পর মোট</span><span class="amt bn" id="cartAfterTotal">৳ ০</span></div>
       <button class="checkout-btn bn" onclick="openCheckout()"><i class="fa-solid fa-bolt"></i>এক্সপ্রেস চেকআউট</button>
     </div>
   </div>
@@ -7182,6 +7209,9 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
     #page-checkout .co-count{margin-left:auto;font-size:.74rem;font-weight:700;color:var(--blue);background:var(--blue-light);padding:3px 11px;border-radius:100px}
     #page-checkout .co-items #checkoutSummary > div:last-child{margin-bottom:0!important;padding-bottom:0!important;border-bottom:0!important}
     #page-checkout .co-side .location-fields-grid{grid-template-columns:1fr!important;gap:12px}
+    #page-checkout .co-card [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+    #page-checkout .co-card .form-group{min-width:0}
+    #page-checkout .co-card .form-inp,#page-checkout .co-card .form-sel{width:100%;min-width:0;box-sizing:border-box}
     #page-checkout .co-side .co-card:last-child{margin-bottom:16px}
     #page-checkout .co-pay{margin-bottom:0}
     @media(max-width:720px){
@@ -7196,7 +7226,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
       #page-checkout .co-card{padding:16px 16px}
     }
     @media(max-width:600px){
-      #page-checkout .co-addr [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+      #page-checkout .co-card [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:minmax(0,1fr)!important}
     }
   </style>
 
@@ -10530,7 +10560,8 @@ function updateCartBadge() {
 }
 function renderCartItems() {
   const el = document.getElementById('cartItems');
-  if(!cart.length){ el.innerHTML='<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p class="bn">কার্ট খালি আছে</p></div>'; document.getElementById('cartTotal').textContent='৳ ০'; return; }
+  syncCouponToCart();   // পরিমাণ বদলালে কুপনের ছাড় নতুন করে হিসাব
+  if(!cart.length){ el.innerHTML='<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p class="bn">কার্ট খালি আছে</p></div>'; document.getElementById('cartTotal').textContent='৳ ০'; renderCartCouponUI(); return; }
   el.innerHTML = cart.map(item=>{
     const thumbHtml = item.image_url
       ? `<div class="ci-icon" style="background:#f8f9fa;border:1px solid var(--border);overflow:hidden;padding:0">
@@ -10555,173 +10586,183 @@ function renderCartItems() {
   // Cart shows ONLY book subtotal (no delivery) — bulk-aware effective price ব্যবহার
   const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString('en-US')}`;
+  renderCartCouponUI();
 }
 function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); updateCartBadge();renderCartItems(); }
 function removeCart(id){ cart=cart.filter(x=>x.id!==id); updateCartBadge();renderCartItems(); }
 
+/* ══════════════════════════════════════════════════
+   কুপন — কার্ট ও চেকআউট একই appliedCoupon ব্যবহার করে।
+   পরিমাণ বদলালে ছাড় নিজে থেকেই নতুন করে হিসাব হয়।
+   ══════════════════════════════════════════════════ */
+let appliedCoupon = null;     // { code, discount_type, discount_value, min_order }
+let lastCouponEvent = null;   // কুপন নিজে থেকে সরে গেলে তার কারণ
+
+function cartSubtotal() { return cart.reduce((s, x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0); }
+function couponDiscountFor(c, sub) {
+  const raw = c.discount_type === 'percent' ? Math.round(sub * (Number(c.discount_value) / 100)) : Number(c.discount_value);
+  return Math.max(0, Math.min(raw || 0, sub));
+}
+function couponLabel(c, amt) {
+  return c.discount_type === 'percent' ? `${c.discount_value}% (৳${amt.toLocaleString('en-US')})` : `৳${amt.toLocaleString('en-US')}`;
+}
+function clearAppliedCoupon() { appliedCoupon = null; discount = 0; }
+function syncCouponToCart() {
+  lastCouponEvent = null;
+  if (!appliedCoupon) { discount = 0; return; }
+  const sub = cartSubtotal();
+  if (!cart.length || sub < (appliedCoupon.min_order || 0)) {
+    lastCouponEvent = { code: appliedCoupon.code, min: appliedCoupon.min_order || 0, empty: !cart.length };
+    clearAppliedCoupon();
+    return;
+  }
+  discount = couponDiscountFor(appliedCoupon, sub);
+}
+// DB থেকে কুপন এনে যাচাই করে: {ok:true, coupon} অথবা {ok:false, msg, type}
+async function lookupCoupon(code) {
+  const { data, error } = await sbQuery(() => sb.from('coupons').select('*').eq('code', code).maybeSingle(), 'কুপন যাচাই');
+  if (error) return { ok: false, silent: !!error.isTimeout, msg: 'কুপন যাচাই করা যায়নি — আবার চেষ্টা করুন', type: 'e' };
+  if (!data) return { ok: false, msg: 'এই কুপন কোড বিদ্যমান নেই — বানানটি পরীক্ষা করুন', type: 'e' };
+  if (!data.is_active) return { ok: false, msg: `"${code}" কুপনটি বর্তমানে নিষ্ক্রিয়`, type: 'w' };
+  if (data.expiry && new Date(data.expiry) < new Date()) return { ok: false, msg: `"${code}" কুপনের মেয়াদ শেষ হয়ে গেছে`, type: 'w' };
+  if (cartSubtotal() < (data.min_order || 0)) return { ok: false, msg: `ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, type: 'w' };
+  return { ok: true, coupon: { code: String(data.code || code).toUpperCase(), discount_type: data.discount_type, discount_value: data.discount_value, min_order: data.min_order || 0 } };
+}
+
+function showCartPromoMsg(text, type) {
+  const el = document.getElementById('cartPromoMsg'); if (!el) return;
+  if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
+  const icon = { s: 'fa-circle-check', e: 'fa-circle-xmark', w: 'fa-triangle-exclamation' }[type] || 'fa-circle-info';
+  el.className = 'cart-promo-msg bn ' + (type || 'w');
+  el.innerHTML = `<i class="fa-solid ${icon}" style="margin-top:2px"></i><span></span>`;
+  el.lastElementChild.textContent = text;
+  el.style.display = 'flex';
+}
+// কার্ট প্যানেলের কুপন অংশ (ইনপুট, বাটন, ছাড়ের লাইন, মোট) ঠিক অবস্থায় আনে
+function renderCartCouponUI() {
+  const input = document.getElementById('couponInput'), btn = document.getElementById('cartCouponBtn');
+  const dRow = document.getElementById('cartDiscountRow'), aRow = document.getElementById('cartAfterRow');
+  if (!input || !btn) return;
+  const sub = cartSubtotal();
+  if (appliedCoupon && discount > 0) {
+    input.value = appliedCoupon.code; input.disabled = true;
+    btn.textContent = 'বাতিল'; btn.classList.add('is-cancel');
+    document.getElementById('cartCouponCode').textContent = appliedCoupon.code;
+    document.getElementById('cartDiscountAmt').textContent = `-৳${discount.toLocaleString('en-US')}`;
+    document.getElementById('cartAfterTotal').textContent = `৳ ${Math.max(0, sub - discount).toLocaleString('en-US')}`;
+    dRow.style.display = 'flex'; aRow.style.display = 'flex';
+    showCartPromoMsg(`কুপন প্রয়োগ হয়েছে! ${couponLabel(appliedCoupon, discount)} ছাড় পেয়েছেন।`, 's');
+  } else {
+    if (input.disabled) input.value = '';
+    input.disabled = false;
+    btn.textContent = 'প্রয়োগ'; btn.classList.remove('is-cancel');
+    dRow.style.display = 'none'; aRow.style.display = 'none';
+    if (lastCouponEvent) {
+      showCartPromoMsg(lastCouponEvent.empty ? 'কার্ট খালি হওয়ায় কুপন সরানো হয়েছে।'
+        : `ন্যূনতম ৳${Number(lastCouponEvent.min).toLocaleString('en-US')} না হওয়ায় "${lastCouponEvent.code}" কুপন সরানো হয়েছে।`, 'w');
+    } else if (document.getElementById('cartPromoMsg')?.classList.contains('s')) {
+      showCartPromoMsg('');
+    }
+  }
+}
+
 async function applyCoupon() {
   const input = document.getElementById('couponInput');
-  const btn   = document.querySelector('.promo-btn');
-  const code  = (input?.value || '').trim().toUpperCase();
+  const btn   = document.getElementById('cartCouponBtn');
+  if (!input || !btn) return;
 
-  if (!code) { toast('ত্রুটি', 'কুপন কোড লিখুন', 'w'); return; }
-
-  // Button loading state
-  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
-
-  // 8-second timeout guard
-  const timeoutId = setTimeout(() => {
-    if (btn) { btn.disabled = false; btn.innerHTML = 'প্রয়োগ'; }
-    toast('Connection Timeout!', 'কুপন যাচাই করতে সময় লাগছে। আবার চেষ্টা করুন।', 'e');
-    console.error('[applyCoupon cart] Timeout verifying coupon code:', code);
-  }, 8000);
-
-  try {
-    const { data, error } = await sb.from('coupons')
-      .select('*').eq('code', code).single();
-
-    clearTimeout(timeoutId);
-    if (btn) { btn.disabled = false; btn.innerHTML = 'প্রয়োগ'; }
-
-    if (error || !data) {
-      console.error('[applyCoupon cart] Coupon not found:', code, error?.message);
-      toast('অবৈধ কুপন', 'এই কুপন কোড পাওয়া যায়নি', 'e');
-      return;
-    }
-
-    // Active check
-    if (!data.is_active) {
-      toast('কুপন নিষ্ক্রিয়', `"${code}" কুপন কোড বর্তমানে নিষ্ক্রিয়`, 'w');
-      return;
-    }
-
-    // Expiry check
-    if (data.expiry && new Date(data.expiry) < new Date()) {
-      toast('মেয়াদোত্তীর্ণ', `"${code}" কুপনের মেয়াদ শেষ হয়ে গেছে`, 'w');
-      return;
-    }
-
-    const sub = cart.reduce((s, x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
-
-    if (sub < (data.min_order || 0)) {
-      toast('প্রযোজ্য নয়', `ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করুন`, 'w');
-      return;
-    }
-
-    discount = data.discount_type === 'percent'
-      ? Math.round(sub * (data.discount_value / 100))
-      : data.discount_value;
-
+  // আগেই প্রয়োগ করা থাকলে এই বাটন "বাতিল" হিসেবে কাজ করে
+  if (appliedCoupon) {
+    clearAppliedCoupon();
     renderCartItems();
-    toast('কুপন প্রয়োগ হয়েছে!', `${data.discount_value}${data.discount_type === 'percent' ? '%' : '৳'} ছাড় পেয়েছেন`, 's');
+    syncCheckoutCouponUI();
+    showCartPromoMsg('কুপন বাতিল করা হয়েছে।', 'w');
+    toast('কুপন বাতিল', 'ডিসকাউন্ট সরানো হয়েছে', 'i');
+    return;
+  }
 
+  const code = (input.value || '').trim().toUpperCase();
+  if (!code) { showCartPromoMsg('কুপন কোড লিখুন', 'w'); input.focus(); return; }
+  if (!cart.length) { showCartPromoMsg('আগে কার্টে বই যোগ করুন', 'w'); return; }
+
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  showCartPromoMsg('');
+  try {
+    const r = await lookupCoupon(code);
+    if (!r.ok) { if (!r.silent) showCartPromoMsg(r.msg, r.type); return; }
+    appliedCoupon = r.coupon;
+    discount = couponDiscountFor(appliedCoupon, cartSubtotal());
+    renderCartItems();              // ছাড়ের লাইন + নতুন মোট এখানেই দেখা যাবে
+    syncCheckoutCouponUI();
+    toast('কুপন প্রয়োগ সফল!', `${couponLabel(appliedCoupon, discount)} ছাড় পেলেন`, 's');
   } catch (err) {
-    clearTimeout(timeoutId);
-    if (btn) { btn.disabled = false; btn.innerHTML = 'প্রয়োগ'; }
-    console.error('[applyCoupon cart] Unexpected error:', err, 'Code:', code);
-    toast('ত্রুটি', err.message || 'কুপন যাচাই করা যায়নি, আবার চেষ্টা করুন', 'e');
+    console.error('[applyCoupon cart]', err);
+    showCartPromoMsg('কুপন যাচাই করা যায়নি, আবার চেষ্টা করুন', 'e');
+  } finally {
+    btn.disabled = false;
+    if (!appliedCoupon) { btn.textContent = 'প্রয়োগ'; btn.classList.remove('is-cancel'); }
   }
 }
 
 // ── Checkout page coupon apply (separate from cart coupon) ──
 async function applyCheckoutCoupon() {
   const input = document.getElementById('checkoutCouponInput');
-  const msgEl = document.getElementById('checkoutPromoMsg');
   const btn   = document.getElementById('checkoutCouponBtn');
-  const code  = (input?.value || '').trim().toUpperCase();
+  if (!input || !btn) return;
 
-  if (!code) {
-    showCheckoutPromoMsg('কুপন কোড লিখুন', 'w');
-    return;
-  }
-
-  // If already applied, allow clearing
-  if (input.dataset.applied === 'true') {
-    discount = 0;
-    input.value = '';
-    input.dataset.applied = '';
-    input.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
-    btn.style.background = 'var(--blue)';
-    msgEl.style.display = 'none';
+  // প্রয়োগ করা থাকলে এই বাটন "বাতিল করুন" হিসেবে কাজ করে
+  if (appliedCoupon) {
+    clearAppliedCoupon();
+    syncCheckoutCouponUI(true);
     refreshCheckoutTotals();
-    toast('কুপন বাতিল','ডিসকাউন্ট সরানো হয়েছে','i');
+    renderCartItems();
+    toast('কুপন বাতিল', 'ডিসকাউন্ট সরানো হয়েছে', 'i');
     return;
   }
+
+  const code = (input.value || '').trim().toUpperCase();
+  if (!code) { showCheckoutPromoMsg('কুপন কোড লিখুন', 'w'); return; }
 
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
   btn.disabled = true;
-
   try {
-    // Fetch without is_active filter so we can give specific error messages
-    const { data, error } = await sb.from('coupons')
-      .select('*').eq('code', code).maybeSingle();
-
-    if (error) {
-      console.error('[applyCheckoutCoupon] Supabase error:', error.message, error, 'Code:', code);
-      showCheckoutPromoMsg('কুপন যাচাই করা যায়নি — আবার চেষ্টা করুন', 'e');
-      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
-      btn.disabled = false;
+    const r = await lookupCoupon(code);
+    if (!r.ok) {
+      if (!r.silent) showCheckoutPromoMsg(r.msg, r.type);
       return;
     }
-
-    if (!data) {
-      console.error('[applyCheckoutCoupon] Coupon not found in DB:', code);
-      showCheckoutPromoMsg('এই কুপন কোড বিদ্যমান নেই — বানানটি পরীক্ষা করুন', 'e');
-      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
-      btn.disabled = false;
-      return;
-    }
-
-    // Active check
-    if (!data.is_active) {
-      showCheckoutPromoMsg(`"${code}" কুপনটি বর্তমানে নিষ্ক্রিয়`, 'w');
-      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
-      btn.disabled = false;
-      return;
-    }
-
-    // Expiry check
-    if (data.expiry && new Date(data.expiry) < new Date()) {
-      showCheckoutPromoMsg(`"${code}" কুপনের মেয়াদ শেষ হয়ে গেছে`, 'w');
-      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
-      btn.disabled = false;
-      return;
-    }
-
-    const sub = cart.reduce((s,x) => s + x.price * x.qty, 0);
-
-    if (sub < (data.min_order || 0)) {
-      showCheckoutPromoMsg(`ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, 'w');
-      btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
-      btn.disabled = false;
-      return;
-    }
-
-    // Apply discount
-    discount = data.discount_type === 'percent'
-      ? Math.round(sub * (data.discount_value / 100))
-      : data.discount_value;
-
-    // Mark as applied
-    input.dataset.applied = 'true';
-    input.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-xmark" style="margin-right:4px"></i>বাতিল করুন';
-    btn.style.background = 'var(--red)';
-    btn.disabled = false;
-
-    const discLabel = data.discount_type === 'percent'
-      ? `${data.discount_value}% (৳${discount.toLocaleString('en-US')})`
-      : `৳${discount.toLocaleString('en-US')}`;
-
-    showCheckoutPromoMsg(`"${data.code}" কুপন প্রয়োগ হয়েছে! ${discLabel} ছাড় পেয়েছেন।`, 's');
+    appliedCoupon = r.coupon;
+    discount = couponDiscountFor(appliedCoupon, cartSubtotal());
+    syncCheckoutCouponUI();
     refreshCheckoutTotals();
-    toast('কুপন প্রয়োগ সফল!', `${discLabel} ছাড় পেলেন`, 's');
-
+    renderCartItems();
+    toast('কুপন প্রয়োগ সফল!', `${couponLabel(appliedCoupon, discount)} ছাড় পেলেন`, 's');
   } catch (err) {
+    console.error('[applyCheckoutCoupon]', err);
     showCheckoutPromoMsg('কুপন যাচাই করা যায়নি, আবার চেষ্টা করুন', 'e');
-    btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+  } finally {
     btn.disabled = false;
+    if (!appliedCoupon) btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+  }
+}
+
+// চেকআউটের কুপন বক্স appliedCoupon-এর সাথে মিলিয়ে দেয় (কার্টে প্রয়োগ করা থাকলে এখানেও দেখায়)
+function syncCheckoutCouponUI(resetTyped) {
+  const input = document.getElementById('checkoutCouponInput');
+  const btn   = document.getElementById('checkoutCouponBtn');
+  const msg   = document.getElementById('checkoutPromoMsg');
+  if (!input || !btn) return;
+  if (appliedCoupon && discount > 0) {
+    input.value = appliedCoupon.code; input.disabled = true; input.dataset.applied = 'true';
+    btn.innerHTML = '<i class="fa-solid fa-xmark" style="margin-right:4px"></i>বাতিল করুন';
+    btn.style.background = 'var(--red)'; btn.disabled = false;
+    showCheckoutPromoMsg(`"${appliedCoupon.code}" কুপন প্রয়োগ হয়েছে! ${couponLabel(appliedCoupon, discount)} ছাড় পেয়েছেন।`, 's');
+  } else {
+    if (resetTyped || input.dataset.applied === 'true') input.value = '';
+    input.disabled = false; input.dataset.applied = '';
+    btn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন';
+    btn.style.background = 'var(--blue)'; btn.disabled = false;
+    if (msg) msg.style.display = 'none';
   }
 }
 
@@ -10736,16 +10777,20 @@ function showCheckoutPromoMsg(text, type) {
 
 function refreshCheckoutTotals() {
   // bulk-aware effective price দিয়ে subtotal হিসেব
-  const sub      = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
-  const delivery = calcDeliveryCharge();
+  const sub      = cartSubtotal();
+  const district = document.getElementById('cDistrict')?.value || '';
+  const delivery = district ? calcDeliveryCharge() : 0;
   const total    = Math.max(0, sub + delivery - discount);
 
   const subEl  = document.getElementById('checkoutSubtotal');
+  const delEl  = document.getElementById('checkoutDelivery');
   const totEl  = document.getElementById('checkoutTotal');
   const discEl = document.getElementById('checkoutDiscountAmt');
   const discRow= document.getElementById('discountRow');
 
   if (subEl) subEl.textContent = `৳${sub.toLocaleString('en-US')}`;
+  if (delEl) delEl.textContent = district ? `৳${delivery}` : '— জেলা বেছে নিন';
+  const dn = document.getElementById('deliveryNote'); if (dn) dn.textContent = '';
   if (totEl) totEl.textContent = `৳${total.toLocaleString('en-US')}`;
   if (discount > 0 && discRow && discEl) {
     discRow.style.display = 'flex';
@@ -10758,19 +10803,7 @@ function refreshCheckoutTotals() {
 // ══════════════════════════════════════════════════
 // CHECKOUT & ORDER — Supabase এ সেভ
 // ══════════════════════════════════════════════════
-function openCheckout() {
-  if(!cart.length){ toast('কার্ট খালি','কার্টে পণ্য যোগ করুন','w'); return; }
-  // ── AUTH GATE: লগইন ছাড়া চেকআউট নয় ──
-  if (!currentUser) {
-    // কার্ট overlay বন্ধ করে login modal খোলো
-    closeCart();
-    switchAuthView('login');
-    openAuth();
-    toast('লগইন প্রয়োজন', 'অর্ডার করতে আগে লগইন করুন।', 'w');
-    return;
-  }
-  if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
-
+function renderCheckoutItems() {
   // ── Consolidated product savings across all cart items ──
   // cart item-এ bulk_discount_percentage থাকলে effective price ব্যবহার করো
   const totalSaved = cart.reduce((sum, i) => {
@@ -10830,9 +10863,16 @@ function openCheckout() {
         <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35">${i.name}</div>
         <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap">
           ${subLabel ? `<span style="font-size:.72rem;color:var(--text-light)">${subLabel}</span><span style="color:var(--border);font-size:.7rem">·</span>` : ''}
-          <span style="font-size:.72rem;font-weight:700;color:var(--blue);background:var(--blue-light);padding:1px 7px;border-radius:100px">×${i.qty}</span>
           ${unitPriceLine}
           ${discBadge}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <div class="co-qty" role="group" aria-label="পরিমাণ">
+            <button type="button" aria-label="কমান" onclick="changeCheckoutQty('${i.id}',-1)" ${i.qty <= 1 ? 'disabled' : ''}>−</button>
+            <span>${i.qty}</span>
+            <button type="button" aria-label="বাড়ান" onclick="changeCheckoutQty('${i.id}',1)" ${i.qty >= 99 ? 'disabled' : ''}>+</button>
+          </div>
+          <button type="button" class="co-rm" title="সরিয়ে দিন" aria-label="সরিয়ে দিন" onclick="removeCheckoutItem('${i.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
 
@@ -10842,18 +10882,6 @@ function openCheckout() {
   }).join('');
   document.getElementById('checkoutSummary').innerHTML = summary;
   { const _cc = document.getElementById('checkoutItemCount'); if (_cc) _cc.textContent = _bnDigits(cart.reduce((a, x) => a + (x.qty || 1), 0)) + ' টি পণ্য'; }
-  // bulk-aware effective price দিয়ে subtotal
-  const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
-  document.getElementById('checkoutSubtotal').textContent = `৳${sub.toLocaleString('en-US')}`;
-  document.getElementById('checkoutDelivery').textContent = '— জেলা বেছে নিন';
-  document.getElementById('deliveryNote').textContent = '';
-  document.getElementById('checkoutTotal').textContent = `৳${(sub - discount).toLocaleString('en-US')}`;
-  if(discount > 0){
-    document.getElementById('discountRow').style.display = 'flex';
-    document.getElementById('checkoutDiscountAmt').textContent = `-৳${discount.toLocaleString('en-US')}`;
-  } else {
-    document.getElementById('discountRow').style.display = 'none';
-  }
   // ── Consolidated product savings banner ──
   const savingsRow = document.getElementById('productSavingsRow');
   if (savingsRow) {
@@ -10864,14 +10892,52 @@ function openCheckout() {
       savingsRow.style.display = 'none';
     }
   }
+  refreshCheckoutTotals();
+}
+
+// চেকআউট পেজে পরিমাণ বাড়ানো/কমানো — কার্ট, ছাড় আর মোট সব একসাথে নতুন হয়
+function changeCheckoutQty(id, d) {
+  const item = cart.find(x => String(x.id) === String(id)); if (!item) return;
+  const nq = Math.min(99, Math.max(1, (item.qty || 1) + d));
+  if (nq === item.qty) return;
+  item.qty = nq;
+  updateCartBadge();
+  renderCartItems();            // এখানে কুপনের ছাড়ও নতুন করে হিসাব হয়
+  renderCheckoutItems();
+  syncCheckoutCouponUI();
+  if (lastCouponEvent) {
+    showCheckoutPromoMsg(`ন্যূনতম ৳${Number(lastCouponEvent.min).toLocaleString('en-US')} না হওয়ায় "${lastCouponEvent.code}" কুপন সরানো হয়েছে`, 'w');
+    toast('কুপন সরানো হয়েছে', 'ন্যূনতম অর্ডারের নিচে নেমে গেছে', 'w');
+  }
+}
+function removeCheckoutItem(id) {
+  cart = cart.filter(x => String(x.id) !== String(id));
+  updateCartBadge();
+  renderCartItems();
+  if (!cart.length) { toast('কার্ট খালি', 'সব পণ্য সরানো হয়েছে', 'w'); closeCheckoutPage(); return; }
+  renderCheckoutItems();
+  syncCheckoutCouponUI();
+  if (lastCouponEvent) showCheckoutPromoMsg(`ন্যূনতম ৳${Number(lastCouponEvent.min).toLocaleString('en-US')} না হওয়ায় "${lastCouponEvent.code}" কুপন সরানো হয়েছে`, 'w');
+}
+
+function openCheckout() {
+  if(!cart.length){ toast('কার্ট খালি','কার্টে পণ্য যোগ করুন','w'); return; }
+  // ── AUTH GATE: লগইন ছাড়া চেকআউট নয় ──
+  if (!currentUser) {
+    // কার্ট overlay বন্ধ করে login modal খোলো
+    closeCart();
+    switchAuthView('login');
+    openAuth();
+    toast('লগইন প্রয়োজন', 'অর্ডার করতে আগে লগইন করুন।', 'w');
+    return;
+  }
+  if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
+
+  renderCheckoutItems();
   populateDistricts();
   loadCheckoutAddress(); // Rokomari-style saved address card (non-blocking)
-  const ccInput = document.getElementById('checkoutCouponInput');
-  const ccBtn   = document.getElementById('checkoutCouponBtn');
-  const ccMsg   = document.getElementById('checkoutPromoMsg');
-  if (ccInput) { ccInput.value = ''; ccInput.disabled = false; ccInput.dataset.applied = ''; }
-  if (ccBtn)   { ccBtn.innerHTML = '<i class="fa-solid fa-tag" style="margin-right:4px"></i>প্রয়োগ করুন'; ccBtn.style.background = 'var(--blue)'; ccBtn.disabled = false; }
-  if (ccMsg)   { ccMsg.style.display = 'none'; }
+  syncCheckoutCouponUI(true);   // কার্টে প্রয়োগ করা কুপন থাকলে এখানেও দেখাবে
+  refreshCheckoutTotals();      // জেলা রিসেট হয়েছে — ডেলিভারি/মোট নতুন করে
   updateHeaderHeight();
   closeCart();
   // ── চেকআউট পেজ open আছে — sessionStorage-এ মার্ক করো ──
@@ -11102,7 +11168,7 @@ async function placeOrder() {
       if (pe) console.warn('[profile_autosave] failed (non-critical):', pe.message);
     });
   }
-  cart = []; discount = 0; updateCartBadge(); renderCartItems();
+  cart = []; clearAppliedCoupon(); updateCartBadge(); renderCartItems();
   try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
   closePage('checkout');
   toast('অর্ডার সফল!', `অর্ডার নম্বর: ${orderNum}`, 's');
@@ -14211,16 +14277,7 @@ function calcDeliveryCharge() {
 function calcDelivery() {
   const district = document.getElementById('cDistrict')?.value || '';
   if (!district) return;
-  const charge = calcDeliveryCharge();
-  const sub = cart.reduce((s,x)=>s+x.price*x.qty, 0);
-  const insideDhaka = isDhaka(district);
-  const totalQty = cart.reduce((s,x)=>s+x.qty, 0);
-  const hasHighValue = cart.some(item => item.price > 700);
-
-  document.getElementById('checkoutDelivery').textContent = `৳${charge}`;
-  document.getElementById('deliveryNote').textContent = '';
-  const total = sub + charge - discount;
-  document.getElementById('checkoutTotal').textContent = `৳${total.toLocaleString('en-US')}`;
+  refreshCheckoutTotals();   // ডেলিভারি চার্জ + ছাড় + মোট — একই হিসাব-পথে
 }
 
 function populateDistricts() {
