@@ -7072,13 +7072,13 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
             </div>
             <div class="form-group" style="margin-bottom:12px">
               <label class="bn">মোবাইল নম্বর *</label>
-              <input class="form-inp" type="tel" id="cPhone" placeholder="01XXXXXXXXX">
+              <input class="form-inp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="16" id="cPhone" placeholder="01XXXXXXXXX">
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="form-group" style="margin-bottom:0">
               <label class="bn">বিকল্প ফোন <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক)</span></label>
-              <input class="form-inp" type="tel" id="cAltPhone" placeholder="01XXXXXXXXX">
+              <input class="form-inp" type="tel" inputmode="numeric" autocomplete="tel" maxlength="16" id="cAltPhone" placeholder="01XXXXXXXXX">
             </div>
             <div class="form-group" style="margin-bottom:0">
               <label class="bn">ইমেইল <span style="font-weight:400;color:var(--text-light)">(ঐচ্ছিক)</span></label>
@@ -11103,8 +11103,8 @@ function showCheckoutAddressForm() {
 // as a safety net, in case the values were re-edited afterward).
 function saveCheckoutAddress() {
   const name     = document.getElementById('cName').value.trim();
-  const phone    = document.getElementById('cPhone').value.trim();
-  const altPhone = document.getElementById('cAltPhone')?.value.trim() || '';
+  const phone    = normalizeBDPhone(document.getElementById('cPhone').value);
+  const altPhone = normalizeBDPhone(document.getElementById('cAltPhone')?.value || '');
   const email    = document.getElementById('cEmail').value.trim();
   const address  = document.getElementById('cAddress').value.trim();
   const district = document.getElementById('cDistrict').value;
@@ -11115,11 +11115,11 @@ function saveCheckoutAddress() {
     toast('অসম্পূর্ণ তথ্য', 'নাম, ফোন, ঠিকানা এবং জেলা/উপজেলা/ইউনিয়ন পূরণ করুন', 'w');
     return;
   }
-  if (!/^01[3-9]\d{8}$/.test(phone)) {
+  if (!isValidBDPhone(phone)) {
     toast('ফোন নম্বর ভুল', 'সঠিক বাংলাদেশি নম্বর দিন (01XXXXXXXXX)', 'w');
     return;
   }
-  if (altPhone && !/^01[3-9]\d{8}$/.test(altPhone)) {
+  if (altPhone && !isValidBDPhone(altPhone)) {
     toast('বিকল্প ফোন নম্বর ভুল', 'সঠিক বাংলাদেশি নম্বর দিন বা ফাঁকা রাখুন', 'w');
     return;
   }
@@ -11145,6 +11145,49 @@ function showSavedCheckoutCard() {
   if (cardEl) cardEl.style.display = '';
 }
 
+/* ── বাংলাদেশি মোবাইল নম্বর: normalize + যাচাই ── */
+function normalizeBDPhone(raw) {
+  let v = String(raw || '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[\s\-().]/g, '');
+  v = v.replace(/^(\+?880|00880)/, '0');   // +8801712345678 / 8801712345678 → 01712345678
+  return v;
+}
+function isValidBDPhone(raw) {
+  const v = normalizeBDPhone(raw);
+  if (!/^01[3-9]\d{8}$/.test(v)) return false;       // 013–019 (BD অপারেটর কোড) + আরও ৮ ডিজিট
+  const rest = v.slice(3);
+  if (/^(\d)\1+$/.test(rest)) return false;           // 00000000, 11111111 ...
+  if (/^(\d\d)\1{3}$/.test(rest)) return false;       // 12121212 ...
+  if (/^(\d\d\d\d)\1$/.test(rest)) return false;      // 12341234 ...
+  if ('01234567890123456789'.includes(rest) || '98765432109876543210'.includes(rest)) return false; // 12345678, 87654321
+  if (/(\d)\1{5,}/.test(v)) return false;             // একই ডিজিট ৬+ বার পরপর
+  return true;
+}
+(function () {
+  function bind(id) {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.bdBound) return;
+    el.dataset.bdBound = '1';
+    const msg = document.createElement('div');
+    msg.style.cssText = 'display:none;color:#dc2626;font-size:.74rem;margin-top:4px;font-family:inherit';
+    msg.textContent = 'সঠিক বাংলাদেশি নম্বর দিন (যেমন: 01712345678)';
+    el.insertAdjacentElement('afterend', msg);
+    const show = ok => { msg.style.display = ok ? 'none' : 'block'; el.style.borderColor = ok ? '' : '#dc2626'; };
+    el.addEventListener('input', () => {
+      // বাংলা ডিজিট → ইংরেজি, আর ফোনের বাইরের অক্ষর বাদ
+      el.value = el.value.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[^\d+\s\-]/g, '');
+      if (msg.style.display === 'block') show(!el.value || isValidBDPhone(el.value));
+    });
+    el.addEventListener('blur', () => {
+      if (!el.value.trim()) { show(true); return; }
+      const ok = isValidBDPhone(el.value);
+      if (ok) el.value = normalizeBDPhone(el.value);
+      show(ok);
+    });
+  }
+  function init() { bind('cPhone'); bind('cAltPhone'); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
 async function placeOrder() {
   // ── AUTH GATE (double-check) — লগইন না থাকলে কোনো DB call নয় ──
   if (!currentUser) {
@@ -11155,8 +11198,8 @@ async function placeOrder() {
     return;
   }
   const name = document.getElementById('cName').value.trim();
-  const phone = document.getElementById('cPhone').value.trim();
-  const altPhone = document.getElementById('cAltPhone')?.value.trim() || '';
+  const phone = normalizeBDPhone(document.getElementById('cPhone').value);
+  const altPhone = normalizeBDPhone(document.getElementById('cAltPhone')?.value || '');
   const address = document.getElementById('cAddress').value.trim();
   const district = document.getElementById('cDistrict').value;
   const upazila = document.getElementById('cUpazila').value;
@@ -11165,8 +11208,8 @@ async function placeOrder() {
   // Validate required fields
   if(!name||!phone||!address||!district||!upazila||!thana){ toast('অসম্পূর্ণ তথ্য','নাম, ফোন, ঠিকানা এবং জেলা পূরণ করুন','w'); return; }
   // BD phone format validation (01XXXXXXXXX)
-  if(!/^01[3-9]\d{8}$/.test(phone)){ toast('ফোন নম্বর ভুল','সঠিক বাংলাদেশি নম্বর দিন (01XXXXXXXXX)','w'); return; }
-  if(altPhone && !/^01[3-9]\d{8}$/.test(altPhone)){ toast('বিকল্প ফোন নম্বর ভুল','সঠিক বাংলাদেশি নম্বর দিন বা ফাঁকা রাখুন','w'); return; }
+  if(!isValidBDPhone(phone)){ toast('ফোন নম্বর ভুল','সঠিক বাংলাদেশি নম্বর দিন (01XXXXXXXXX)','w'); return; }
+  if(altPhone && !isValidBDPhone(altPhone)){ toast('বিকল্প ফোন নম্বর ভুল','সঠিক বাংলাদেশি নম্বর দিন বা ফাঁকা রাখুন','w'); return; }
   // Name length
   if(name.length < 3){ toast('নাম ছোট','কমপক্ষে ৩ অক্ষরের নাম দিন','w'); return; }
   // Prevent empty cart order
