@@ -9374,13 +9374,13 @@ function _fieldData(text) {
   return { raw, roman, words, joined: words.join('') };
 }
 function _prodSearchData(p) {
-  const sig = [p.name, p.author, p.brand, p.publisher, p.category].join('\u0001');
+  const sig = [p.name, p.author, p.brand, p.publisher, p.category, p.sub_category].join('\u0001');
   if (p.__sk && p.__sk.sig === sig) return p.__sk;
   const d = { sig, f: [
     [3, _fieldData(p.name)],
     [2, _fieldData(p.author)], [2, _fieldData(p.brand)], [2, _fieldData(p.publisher)],
-    [1, _fieldData(p.category)]
-  ] };
+    [1, _fieldData(p.category)], [2, _fieldData(p.sub_category)]
+  ], g: [_fieldData(p.category), _fieldData(p.sub_category)] };
   try { Object.defineProperty(p, '__sk', { value: d, writable: true, configurable: true, enumerable: false }); } catch (e) { p.__sk = d; }
   return d;
 }
@@ -9405,15 +9405,99 @@ function _tokLevel(t, fd) {
   }
   return 0;
 }
+
+/* ── ধরন/genre অভিধান: "horror" লিখলে ভৌতিক ক্যাটাগরির সব বই, "romantic" লিখলে রোমান্টিক সব বই… ──
+   keys  = ব্যবহারকারী যা লিখতে পারে (ইংরেজি/বাংলিশ/বাংলা)
+   terms = ক্যাটাগরি বা সাব-ক্যাটাগরির নামে যে শব্দ থাকলে বইটা মিলবে
+   নতুন ধরন যোগ করতে এখানে এক লাইন বাড়ালেই হবে */
+const GENRE_MAP = [
+  { keys: ['horror', 'ghost', 'ghosts', 'scary', 'bhoot', 'bhut', 'bhuter', 'bhootik', 'bhoutik', 'bhutik', 'paranormal', 'supernatural', 'occult', 'ভূত', 'ভুত', 'ভৌতিক', 'ভুতুড়ে', 'অতিপ্রাকৃত', 'অলৌকিক'],
+    terms: ['ভৌতিক', 'অতিপ্রাকৃত', 'ভূত', 'ভুতুড়ে', 'অলৌকিক', 'horror', 'paranormal', 'supernatural'] },
+  { keys: ['romantic', 'romance', 'love', 'lovestory', 'love story', 'prem', 'premer', 'bhalobasha', 'রোমান্টিক', 'রোমান্স', 'প্রেম', 'ভালোবাসা', 'প্রেমের'],
+    terms: ['রোমান্টিক', 'রোমান্স', 'প্রেম', 'ভালোবাসা', 'romantic', 'romance', 'love'] },
+  { keys: ['manga', 'mangaa', 'comics', 'comic', 'anime', 'manhwa', 'graphic novel', 'মাঙ্গা', 'মাংগা', 'কমিকস', 'কমিক', 'অ্যানিমে'],
+    terms: ['মাঙ্গা', 'মাংগা', 'কমিকস', 'কমিক', 'manga', 'comic', 'graphic'] },
+  { keys: ['islamic', 'islam', 'islami', 'religion', 'religious', 'ইসলামী', 'ইসলামিক', 'ইসলাম', 'ধর্মীয়'],
+    terms: ['ইসলামী', 'ইসলামিক', 'ইসলাম', 'ধর্ম', 'islam'] },
+  { keys: ['translation', 'translated', 'onubad', 'anubad', 'অনুবাদ', 'অনূদিত'],
+    terms: ['অনুবাদ', 'translat'] },
+  { keys: ['poem', 'poems', 'poetry', 'kobita', 'kabita', 'কবিতা', 'কাব্য'],
+    terms: ['কবিতা', 'কাব্য', 'poem', 'poetry'] },
+  { keys: ['mystery', 'thriller', 'detective', 'crime', 'suspense', 'goyenda', 'goenda', 'rohosso', 'rahasya', 'রহস্য', 'গোয়েন্দা', 'থ্রিলার', 'সাসপেন্স', 'অপরাধ'],
+    terms: ['রহস্য', 'গোয়েন্দা', 'থ্রিলার', 'সাসপেন্স', 'অপরাধ', 'mystery', 'thriller', 'detective', 'crime'] },
+  { keys: ['career', 'motivation', 'motivational', 'selfhelp', 'self help', 'self-help', 'development', 'ক্যারিয়ার', 'মোটিভেশন', 'আত্মউন্নয়ন', 'আত্মোন্নয়ন'],
+    terms: ['ক্যারিয়ার', 'মোটিভেশন', 'আত্মউন্নয়ন', 'আত্মোন্নয়ন', 'career', 'motivation', 'self'] },
+  { keys: ['novel', 'novels', 'upanyas', 'upannyas', 'উপন্যাস'],
+    terms: ['উপন্যাস', 'novel'] },
+  { keys: ['story', 'stories', 'golpo', 'galpa', 'short story', 'গল্প', 'ছোটগল্প', 'ছোট গল্প'],
+    terms: ['গল্প', 'story', 'stories'] },
+  { keys: ['scifi', 'sci-fi', 'sci fi', 'science fiction', 'sciencefiction', 'sf', 'সায়েন্স ফিকশন', 'বৈজ্ঞানিক কল্পকাহিনী', 'কল্পবিজ্ঞান'],
+    terms: ['সায়েন্স ফিকশন', 'কল্পবিজ্ঞান', 'বিজ্ঞান', 'science fiction', 'sci'] },
+  { keys: ['fantasy', 'ফ্যান্টাসি', 'কল্পকাহিনী'],
+    terms: ['ফ্যান্টাসি', 'কল্পকাহিনী', 'fantasy'] },
+  { keys: ['adventure', 'oddventure', 'অ্যাডভেঞ্চার', 'এডভেঞ্চার', 'অভিযান'],
+    terms: ['অ্যাডভেঞ্চার', 'এডভেঞ্চার', 'অভিযান', 'adventure'] },
+  { keys: ['children', 'child', 'kids', 'kid', 'shishu', 'kishor', 'শিশু', 'কিশোর', 'শিশুতোষ'],
+    terms: ['শিশু', 'কিশোর', 'children', 'kids'] },
+  { keys: ['history', 'itihas', 'historical', 'ইতিহাস', 'ঐতিহাসিক'],
+    terms: ['ইতিহাস', 'ঐতিহাসিক', 'history'] },
+  { keys: ['biography', 'autobiography', 'jiboni', 'jibani', 'জীবনী', 'আত্মজীবনী'],
+    terms: ['জীবনী', 'আত্মজীবনী', 'biography'] },
+  { keys: ['politics', 'political', 'rajniti', 'রাজনীতি', 'রাজনৈতিক'],
+    terms: ['রাজনীতি', 'রাজনৈতিক', 'politic'] },
+  { keys: ['science', 'biggan', 'bigyan', 'বিজ্ঞান'],
+    terms: ['বিজ্ঞান', 'science'] },
+  { keys: ['philosophy', 'dorshon', 'darshan', 'দর্শন'],
+    terms: ['দর্শন', 'philosoph'] },
+  { keys: ['psychology', 'monobigyan', 'মনোবিজ্ঞান'],
+    terms: ['মনোবিজ্ঞান', 'psycholog'] },
+  { keys: ['humor', 'humour', 'comedy', 'funny', 'hasi', 'কৌতুক', 'হাস্যরস', 'রম্যরচনা'],
+    terms: ['কৌতুক', 'হাস্যরস', 'রম্য', 'humor', 'comedy'] },
+  { keys: ['literature', 'sahitto', 'sahitya', 'সাহিত্য'],
+    terms: ['সাহিত্য', 'literature'] },
+  { keys: ['business', 'ব্যবসা', 'বিজনেস', 'অর্থনীতি', 'finance'],
+    terms: ['ব্যবসা', 'বিজনেস', 'অর্থনীতি', 'business', 'finance'] }
+];
+const _GEN_PHRASES = GENRE_MAP.flatMap(g => g.keys).filter(k => /\s/.test(k)).sort((a, b) => b.length - a.length);
+const _SEARCH_STOP = new Set(['book', 'books', 'boi', 'bai', 'bois', 'boy', 'বই', 'বইসমূহ', 'বইগুলো', 'বইগুলি', 'এর', 'er']);
+function _genreKeyMatch(raw, k) {
+  if (raw === k) return true;
+  if (/[\u0980-\u09FF]/.test(raw)) return raw.length >= 3 && (k.startsWith(raw) || raw.startsWith(k) && k.length >= 4);
+  if (raw.length >= 4 && k.startsWith(raw)) return true;           // roma → romantic
+  return raw.length >= 5 && k.length >= 5 && _lev(raw, k, 1) <= 1; // horrer → horror
+}
+function _genreTerms(raw) {
+  const out = [];
+  for (const g of GENRE_MAP) if (g.keys.some(k => _genreKeyMatch(raw, k))) out.push(...g.terms);
+  return out.map(t => { const r = t.toLowerCase(); return { raw: r, roman: String(bnTranslit(r)).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() }; });
+}
+function _genreHit(terms, gfds) {
+  for (const fd of gfds) {
+    if (!fd.raw) continue;
+    for (const t of terms) if (fd.raw.includes(t.raw) || (t.roman.length >= 4 && fd.roman.includes(t.roman))) return true;
+  }
+  return false;
+}
+
 // প্রোডাক্ট তালিকা → মিল অনুযায়ী সাজানো রেজাল্ট (সব শব্দ মিলতে হবে; of/the/a-র মতো ছোট শব্দ না মিললে বাদ)
 function smartSearchProducts(query, list) {
-  const toks = String(query || '').trim().toLowerCase().split(/\s+/).filter(Boolean).map(w => ({
+  let qs = ' ' + String(query || '').trim().toLowerCase().replace(/\s+/g, ' ') + ' ';
+  const raws = [];
+  for (const ph of _GEN_PHRASES) {                                   // "science fiction", "love story" — একসাথে ধরো
+    const pad = ' ' + ph + ' ';
+    if (qs.includes(pad)) { raws.push(ph); qs = qs.replace(pad, ' '); }
+  }
+  qs.trim().split(/\s+/).filter(Boolean).forEach(w => raws.push(w));
+  let toks = raws.map(w => ({
     raw: w,
     roman: String(bnTranslit(w)).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(),
-    key: _skelWords(w).join('')
+    key: _skelWords(w).join(''),
+    gen: _genreTerms(w)
   })).filter(t => t.raw.length >= 2 || /[\u0980-\u09FF]/.test(t.raw));
+  const meaningful = toks.filter(t => !_SEARCH_STOP.has(t.raw));
+  if (meaningful.length) toks = meaningful;                          // "horror book" → শুধু horror
   if (!toks.length) return [];
-  const small = toks.map(t => t.raw.length <= 3 && t.key.length <= 1 && !/[\u0980-\u09FF]/.test(t.raw));
+  const small = toks.map(t => t.raw.length <= 3 && t.key.length <= 1 && !t.gen.length && !/[\u0980-\u09FF]/.test(t.raw));
   const res = [];
   for (const p of list) {
     const d = _prodSearchData(p);
@@ -9424,6 +9508,10 @@ function smartSearchProducts(query, list) {
         const lv = _tokLevel(toks[i], fd);
         if (lv && lv * 4 + wt > best) { best = lv * 4 + wt; bestLv = lv; }
       }
+      if (toks[i].gen.length && _genreHit(toks[i].gen, d.g)) {       // ধরনের ক্যাটাগরিতে পড়লে
+        const gs = 3.6 * 4 + 2;
+        if (gs > best) { best = gs; bestLv = 3.6; }
+      }
       if (best) { total += best; matched++; if (bestLv < minLv) minLv = bestLv; }
       else if (!small[i]) { ok = false; break; }
     }
@@ -9431,8 +9519,9 @@ function smartSearchProducts(query, list) {
   }
   if (!res.length) return [];
   const top = Math.max(...res.map(r => r.lv));
-  const floor = top >= 4 ? 3.1 : top - 0.9;                        // জোরালো মিল থাকলে দুর্বল আন্দাজি মিল বাদ
-  return res.filter(r => r.lv >= floor).sort((a, b) => b.score - a.score).map(r => r.p);
+  const floor = top >= 4 ? 3.1 : top - 0.9;                          // জোরালো মিল থাকলে দুর্বল আন্দাজি মিল বাদ
+  const pop = (typeof popularCmp === 'function') ? popularCmp : () => 0;
+  return res.filter(r => r.lv >= floor).sort((a, b) => (b.score - a.score) || pop(a.p, b.p)).map(r => r.p);
 }
 
 function openSearchPage(q, pushUrl = true) {
