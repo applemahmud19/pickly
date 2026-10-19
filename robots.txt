@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /checkout
+Disallow: /profile
+Disallow: /wishlist
+Disallow: /track-order
+Disallow: /order/
+Disallow: /search
+
+Sitemap: https://bookgalaxybd.vercel.app/sitemap.xml
