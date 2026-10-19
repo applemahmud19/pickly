@@ -3316,11 +3316,9 @@ end $$;
           <div class="form-group" style="gap:3px">
             <label class="form-label" style="font-size:0.62rem;display:flex;align-items:center;gap:6px">
               Description
-              <span style="color:var(--text3);font-weight:400;font-family:var(--font);text-transform:none;letter-spacing:0;font-size:0.6rem;background:var(--bg3);padding:1px 7px;border-radius:4px;border:1px solid var(--border)">* = বুলেট পয়েন্ট · Enter = নতুন লাইন</span>
+              <span style="color:var(--text3);font-weight:400;font-family:var(--font);text-transform:none;letter-spacing:0;font-size:0.6rem;background:var(--bg3);padding:1px 7px;border-radius:4px;border:1px solid var(--border)">টুলবার দিয়ে সুন্দর করে সাজান · Ctrl+B/I/U</span>
             </label>
-            <textarea class="form-inp" id="pDescription"
-              placeholder="পণ্যের বিবরণ লিখুন...&#10;* এই পণ্যের প্রথম বৈশিষ্ট্য&#10;* দ্বিতীয় বৈশিষ্ট্য&#10;&#10;নতুন প্যারাগ্রাফের জন্য খালি লাইন দিন।"
-              style="min-height:350px;padding:8px 11px;font-family:var(--font-bn);line-height:1.6;white-space:pre-line;resize:vertical;font-size:0.82rem"></textarea>
+            <div class="pde-tb" id="pdeTb"></div><div id="pdeEd" contenteditable="true" class="pde-ed bn" data-ph="পণ্যের বিবরণ লিখুন… উপরের টুলবার দিয়ে হেডিং, বুলেট, বোল্ড, টেবিল ইত্যাদি যোগ করুন।"></div><textarea id="pdeSrc" class="form-inp" style="display:none;min-height:350px;font-family:monospace;font-size:.78rem;border-radius:0 0 10px 10px"></textarea><textarea id="pDescription" style="display:none"></textarea>
           </div>
 
         </div><!-- /right column -->
@@ -6867,7 +6865,7 @@ async function openProductModal(product = null) {
   document.getElementById('pOldPrice').value    = product?.old_price || '';
   document.getElementById('pStock').value       = product?.stock || '';
   document.getElementById('pColor').value       = product?.color || '#AA2C2D';
-  document.getElementById('pDescription').value = product?.description || '';
+  document.getElementById('pDescription').value = product?.description || ''; if(window.PDE) PDE.load(product?.description || '');
   renderVariantRows(product?.variants || []);
   renderSpecRows(product?.specifications || []);
   renderFaqRows(product?.faqs || []);
@@ -7434,7 +7432,7 @@ async function saveProduct() {
       specifications: collectSpecifications(),
       faqs:        collectFaqs(),
       ...(function(){ const v = parseFloat(document.getElementById('pRating')?.value); return (!isNaN(v) && v >= 0 && v <= 5) ? { rating: Math.round(v*10)/10 } : {}; })(),
-      description: document.getElementById('pDescription').value.trim() || null,
+      description: (window.PDE ? PDE.get() : document.getElementById('pDescription').value).trim() || null,
       // Book-specific fields (null for General Product)
       author_name: authorVal,
       publisher,
@@ -11097,5 +11095,108 @@ window.BL={cmd,img,cover,edit,back,save,del,load,cms,cmEdit,cmDel};
 })();
 </script>
 
+
+<style>
+.pde-tb{display:flex;flex-wrap:wrap;gap:4px;padding:7px;border:1px solid var(--border);border-bottom:0;border-radius:10px 10px 0 0;background:var(--bg3);position:sticky;top:0;z-index:5}
+.pde-tb button{border:1px solid var(--border);background:var(--surface,#fff);color:var(--text);min-width:32px;height:30px;padding:0 7px;border-radius:6px;cursor:pointer;font-size:.76rem;font-family:inherit}
+.pde-tb button:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pde-tb button.on{background:var(--blue);color:#fff}
+.pde-tb i.sep{width:1px;background:var(--border);margin:0 3px}
+.pde-ed{min-height:350px;max-height:62vh;overflow:auto;resize:vertical;border:1px solid var(--border);border-radius:0 0 10px 10px;padding:14px 16px;line-height:1.85;outline:0;color:var(--text);background:var(--surface,#fff);font-size:.88rem}
+.pde-ed:empty:before{content:attr(data-ph);color:var(--text3);pointer-events:none}
+.pde-ed:focus{border-color:var(--blue)}
+.pde-ed h2{font-size:1.25rem;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.pde-ed h3{font-size:1.05rem;margin:12px 0 6px}
+.pde-ed p{margin:0 0 8px}
+.pde-ed ul,.pde-ed ol{margin:6px 0 10px;padding-left:24px}
+.pde-ed a{color:var(--blue);text-decoration:underline}
+.pde-ed table{border-collapse:collapse;width:100%;margin:8px 0}
+.pde-ed td,.pde-ed th{border:1px solid var(--border);padding:6px 8px}
+.pde-ed th{background:var(--bg3)}
+.pde-ed blockquote{border-left:4px solid var(--blue);padding:6px 14px;margin:10px 0;background:rgba(170,44,45,.06)}
+.pde-ed .callout{background:#FFF8E1;color:#3d2e00;border-left:4px solid #F59E0B;padding:8px 12px;margin:8px 0}
+.pde-ed code{background:var(--bg3);padding:1px 5px;border-radius:4px}
+</style>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const ED=$('pdeEd'),TB=$('pdeTb'),SRC=$('pdeSrc');
+if(!ED||!TB)return;
+let range=null,src=false;
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const ALLOW=new Set(['p','div','br','b','strong','i','em','u','s','strike','h2','h3','h4','ul','ol','li','blockquote','hr','a','span','font','table','thead','tbody','tr','th','td','code','figure','figcaption','img']);
+const DROP=new Set(['script','style','iframe','object','embed','link','meta','svg','math','form','input','button','textarea','select','noscript','template']);
+function safeStyle(st){const out=[];String(st||'').split(';').forEach(d=>{const i=d.indexOf(':');if(i<0)return;const k=d.slice(0,i).trim().toLowerCase(),v=d.slice(i+1).trim();
+ if(k==='color'&&/^(#[0-9a-f]{3,8}|rgba?\([\d\s,.%]+\)|[a-z]{3,20})$/i.test(v))out.push('color:'+v);
+ else if(k==='text-align'&&/^(left|right|center|justify)$/i.test(v))out.push('text-align:'+v.toLowerCase())});return out.join(';')}
+function clean(node){[...node.childNodes].forEach(ch=>{
+ if(ch.nodeType===3)return;
+ if(ch.nodeType!==1){ch.remove();return}
+ const t=ch.tagName.toLowerCase();
+ if(DROP.has(t)){ch.remove();return}
+ clean(ch);
+ if(!ALLOW.has(t)){while(ch.firstChild)node.insertBefore(ch.firstChild,ch);ch.remove();return}
+ [...ch.attributes].forEach(a=>{const n=a.name.toLowerCase(),v=a.value;let ok=false;
+  if(n==='style'){const s=safeStyle(v);if(s)ch.setAttribute('style',s);else ch.removeAttribute('style');return}
+  if(t==='a'&&n==='href')ok=/^(https?:|mailto:|tel:|\/)/i.test(v.trim());
+  else if(t==='a'&&(n==='target'||n==='rel'))ok=true;
+  else if(t==='img'&&n==='src')ok=/^https?:\/\//i.test(v.trim());
+  else if(t==='img'&&n==='alt')ok=true;
+  else if(t==='font'&&n==='color')ok=/^(#[0-9a-f]{3,8}|[a-z]{3,20})$/i.test(v.trim());
+  else if((t==='td'||t==='th')&&(n==='colspan'||n==='rowspan'))ok=/^\d{1,2}$/.test(v);
+  else if(n==='class')ok=(v==='callout');
+  if(!ok)ch.removeAttribute(a.name)});
+ if(t==='a'){ch.setAttribute('target','_blank');ch.setAttribute('rel','noopener noreferrer nofollow')}
+})}
+function sanitize(h){const tpl=document.createElement('template');tpl.innerHTML=String(h||'');clean(tpl.content);return tpl.innerHTML}
+const RICH=/<\/?(p|div|br|h[1-6]|ul|ol|li|b|strong|i|em|u|s|a|blockquote|table|span|font|hr|figure|img)\b[^>]*>/i;
+
+function legacy(t){const lines=String(t||'').replace(/\r/g,'').split('\n');let out='',mode=null;
+ const close=()=>{if(mode==='ul')out+='</ul>';else if(mode==='p')out+='</p>';mode=null};
+ lines.forEach(l=>{const s=l.trim();
+  if(!s){close();return}
+  if(/^(\*=?|•)\s/.test(s)){if(mode!=='ul'){close();out+='<ul>';mode='ul'}out+='<li>'+esc(s.replace(/^(\*=?|•)\s*/,''))+'</li>'}
+  else{if(mode!=='p'){close();out+='<p>';mode='p'}else out+='<br>';out+=esc(s)}});
+ close();return out}
+const BTN=[['h2','H2','বড় হেডিং'],['h3','H3','ছোট হেডিং'],['p','¶','সাধারণ লেখা'],'|',
+['bold','<b>B</b>','বোল্ড'],['italic','<i>I</i>','ইটালিক'],['underline','<u>U</u>','আন্ডারলাইন'],['strikeThrough','<s>S</s>','কাটা লেখা'],'|',
+['link','<i class="fa-solid fa-link"></i>','লিংক'],['unlink','<i class="fa-solid fa-link-slash"></i>','লিংক সরান'],'|',
+['insertUnorderedList','<i class="fa-solid fa-list-ul"></i>','বুলেট লিস্ট'],['insertOrderedList','<i class="fa-solid fa-list-ol"></i>','নম্বর লিস্ট'],['quote','<i class="fa-solid fa-quote-left"></i>','কোট'],['hr','—','দাগ'],'|',
+['justifyLeft','<i class="fa-solid fa-align-left"></i>','বামে'],['justifyCenter','<i class="fa-solid fa-align-center"></i>','মাঝে'],'|',
+['color','<i class="fa-solid fa-palette"></i>','রঙ'],['table','<i class="fa-solid fa-table"></i>','টেবিল'],['callout','<i class="fa-solid fa-circle-info"></i> Note','হাইলাইট বক্স'],'|',
+['undo','<i class="fa-solid fa-rotate-left"></i>','Undo'],['redo','<i class="fa-solid fa-rotate-right"></i>','Redo'],['removeFormat','Tx','ফরম্যাট মুছুন'],['source','HTML','HTML কোড']];
+TB.innerHTML=BTN.map(t=>t==='|'?'<i class="sep"></i>':`<button type="button" title="${t[2]}" onmousedown="event.preventDefault()" onclick="PDE.cmd('${t[0]}')">${t[1]}</button>`).join('');
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(s.rangeCount&&ED.contains(s.anchorNode))range=s.getRangeAt(0).cloneRange()});
+function restore(){ED.focus();if(range){const s=getSelection();s.removeAllRanges();s.addRange(range)}}
+function html(h){restore();document.execCommand('insertHTML',false,h)}
+function cmd(c){
+ if(src&&c!=='source')return;
+ restore();const x=(a,v)=>document.execCommand(a,false,v);
+ switch(c){
+  case 'h2':x('formatBlock','H2');break;
+  case 'h3':x('formatBlock','H3');break;
+  case 'p':x('formatBlock','P');break;
+  case 'quote':x('formatBlock','BLOCKQUOTE');break;
+  case 'hr':x('insertHorizontalRule');break;
+  case 'link':{const u=prompt('লিংক (URL) দিন:','https://');if(!u)return;restore();
+   if(getSelection().isCollapsed)html(`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>&nbsp;`);else x('createLink',u);break}
+  case 'color':{const v=prompt('রঙ (যেমন: #AA2C2D বা red):','#AA2C2D');if(v){restore();x('styleWithCSS',true);x('foreColor',v)}break}
+  case 'table':{const r=+prompt('কয়টি সারি?',3),k=+prompt('কয়টি কলাম?',2);if(!r||!k)return;
+   html('<table><thead><tr>'+'<th>শিরোনাম</th>'.repeat(k)+'</tr></thead><tbody>'+('<tr>'+'<td>&nbsp;</td>'.repeat(k)+'</tr>').repeat(Math.max(r-1,1))+'</tbody></table><p><br></p>');break}
+  case 'callout':html('<div class="callout">গুরুত্বপূর্ণ তথ্য এখানে লিখুন</div><p><br></p>');break;
+  case 'source':src=!src;if(src){SRC.value=sanitize(ED.innerHTML);SRC.style.display='';ED.style.display='none'}else{ED.innerHTML=sanitize(SRC.value);SRC.style.display='none';ED.style.display=''}break;
+  default:x(c)}}
+ED.addEventListener('paste',e=>{e.preventDefault();const cd=e.clipboardData;const h=cd.getData('text/html'),t=cd.getData('text/plain');
+ document.execCommand('insertHTML',false,h?sanitize(h):legacy(t))});
+function load(v){v=v||'';ED.innerHTML=RICH.test(v)?sanitize(v):legacy(v);range=null;
+ if(src){src=false;SRC.style.display='none';ED.style.display=''}}
+function get(){if(src)ED.innerHTML=sanitize(SRC.value);
+ const h=sanitize(ED.innerHTML).trim();const tmp=document.createElement('div');tmp.innerHTML=h;
+ const empty=!tmp.textContent.trim()&&!tmp.querySelector('img,table,hr');
+ const out=empty?'':h;$('pDescription').value=out;return out}
+window.PDE={cmd,load,get};
+})();
+</script>
 </body>
 </html>
