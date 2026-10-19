@@ -6926,18 +6926,83 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
     </div>
   </div>
 
-  <!-- Page body -->
-  <div style="max-width:1000px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start" id="checkoutPageBody">
+  <!-- Page body: বাঁয়ে বইয়ের তালিকা, ডানে ঠিকানা + হিসাব -->
+  <div class="co-grid" id="checkoutPageBody">
 
-    <!-- ── LEFT COLUMN: Saved Address Card + Form ── -->
-    <div>
+    <!-- ── LEFT: অর্ডারের বই, ডেলিভারি সময়, পেমেন্ট ── -->
+    <div class="co-main">
 
+      <div class="co-card co-items">
+        <div class="co-h"><i class="fa-solid fa-book-open co-hi"></i> আপনার অর্ডার <span id="checkoutItemCount" class="co-count bn"></span></div>
+        <div id="checkoutSummary"></div>
+      </div>
+
+      <!-- Delivery Notice -->
+      <div class="co-card co-notice" style="background:linear-gradient(135deg,#FFF8E1,#FFFBF0);border-color:#FFE082">
+        <div class="co-h" style="color:#7C4E00;margin-bottom:12px">
+          <i class="fa-solid fa-truck-fast" style="color:#F59E0B;font-size:1rem"></i> ডেলিভারি সময়সীমা
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="width:32px;height:32px;background:#DCFCE7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="fa-solid fa-city" style="color:#16A34A;font-size:.78rem"></i>
+            </div>
+            <div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#166534;margin-bottom:2px">ঢাকার ভেতরে</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">স্টক থাকলে <strong>২-৩ কার্যদিবসের</strong> মধ্যে ডেলিভারি সম্ভব।</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="width:32px;height:32px;background:#DBEAFE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="fa-solid fa-map-location-dot" style="color:#1D4ED8;font-size:.78rem"></i>
+            </div>
+            <div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#1E3A8A;margin-bottom:2px">ঢাকার বাইরে</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">স্টক থাকলে <strong>৩-৫ কার্যদিবসের</strong> মধ্যে ডেলিভারি সম্ভব।</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding-top:10px;border-top:1px dashed #FFD54F">
+            <div style="width:32px;height:32px;background:#FEF3C7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+              <i class="fa-solid fa-hourglass-half" style="color:#D97706;font-size:.78rem"></i>
+            </div>
+            <div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#92400E;margin-bottom:2px">স্টক না থাকলে</div>
+              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">পণ্য সংগ্রহ করে পাঠানো হবে — সেক্ষেত্রে কিছুটা অতিরিক্ত সময় লাগতে পারে। আমরা আপনার অর্ডারের নোট দেওয়ার মাধ্যমে জানাব।</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="co-card co-pay">
+        <div class="co-h">
+          <i class="fa-solid fa-wallet co-hi"></i>
+          পেমেন্ট পদ্ধতি
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px">
+          <div style="width:42px;height:42px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="fa-solid fa-money-bill-wave" style="color:white;font-size:1.1rem"></i>
+          </div>
+          <div>
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9375rem;font-weight:700;color:var(--text)">ক্যাশ অন ডেলিভারি (COD)</div>
+            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8125rem;color:var(--text-mid);margin-top:2px">পণ্য হাতে পেয়ে টাকা দিন — কোনো অগ্রিম পেমেন্ট নেই</div>
+          </div>
+          <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:1.2rem;margin-left:auto"></i>
+        </div>
+      </div>
+
+    </div><!-- /left column -->
+
+    <!-- ── RIGHT: ডেলিভারি ঠিকানা + অর্ডার সারসংক্ষেপ ── -->
+    <div class="co-side">
+
+      <div class="co-addr">
       <!-- ── SAVED ADDRESS CARD (Rokomari-style summary — shown when a
            usable saved address exists for this logged-in user) ── -->
-      <div id="checkoutSavedCard" style="display:none;background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px">
+      <div id="checkoutSavedCard" class="co-card" style="display:none">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
-          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.94rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px">
-            <i class="fa-solid fa-location-dot" style="color:var(--blue)"></i> ডেলিভারি ঠিকানা
+          <div class="co-h" style="margin-bottom:0">
+            <i class="fa-solid fa-location-dot co-hi"></i> ডেলিভারি ঠিকানা
           </div>
           <button type="button" class="bn" onclick="showCheckoutAddressForm()"
             style="flex-shrink:0;background:var(--blue-light);color:var(--blue);border:none;padding:6px 12px;border-radius:100px;font-size:.76rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap">
@@ -6952,9 +7017,9 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
       <div id="checkoutFormSection">
 
         <!-- Customer Info -->
-        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px">
-          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            <span class="step-circle" style="background:var(--blue);color:white">১</span>
+        <div class="co-card">
+          <div class="co-h">
+            <i class="fa-solid fa-user co-hi"></i>
             ব্যক্তিগত তথ্য
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -6980,9 +7045,9 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         </div>
 
         <!-- Delivery Location -->
-        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;overflow:visible">
-          <div style="font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">
-            <span class="step-circle" style="background:var(--blue);color:white">২</span>
+        <div class="co-card" style="overflow:visible">
+          <div class="co-h">
+            <i class="fa-solid fa-location-dot co-hi"></i>
             ডেলিভারি ঠিকানা
           </div>
           <div class="location-fields-grid" style="display:grid;gap:12px;margin-bottom:12px;overflow:visible">
@@ -7019,65 +7084,9 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         </button>
       </div>
 
-      <!-- Delivery Notice -->
-      <div style="background:linear-gradient(135deg,#FFF8E1,#FFFBF0);border:1px solid #FFE082;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px">
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9rem;font-weight:700;color:#7C4E00;margin-bottom:10px;display:flex;align-items:center;gap:7px">
-          <i class="fa-solid fa-truck-fast" style="color:#F59E0B;font-size:1rem"></i> ডেলিভারি সময়সীমা
-        </div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:flex-start;gap:10px">
-            <div style="width:32px;height:32px;background:#DCFCE7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
-              <i class="fa-solid fa-city" style="color:#16A34A;font-size:.78rem"></i>
-            </div>
-            <div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#166534;margin-bottom:2px">ঢাকার ভেতরে</div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">স্টক থাকলে <strong>২-৩ কার্যদিবসের</strong> মধ্যে ডেলিভারি সম্ভব।</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:10px">
-            <div style="width:32px;height:32px;background:#DBEAFE;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
-              <i class="fa-solid fa-map-location-dot" style="color:#1D4ED8;font-size:.78rem"></i>
-            </div>
-            <div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#1E3A8A;margin-bottom:2px">ঢাকার বাইরে</div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">স্টক থাকলে <strong>৩-৫ কার্যদিবসের</strong> মধ্যে ডেলিভারি সম্ভব।</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:10px;padding-top:10px;border-top:1px dashed #FFD54F">
-            <div style="width:32px;height:32px;background:#FEF3C7;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
-              <i class="fa-solid fa-hourglass-half" style="color:#D97706;font-size:.78rem"></i>
-            </div>
-            <div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;font-weight:700;color:#92400E;margin-bottom:2px">স্টক না থাকলে</div>
-              <div style="font-family:'Hind Siliguri',sans-serif;font-size:.875rem;color:#374151;line-height:1.6">পণ্য সংগ্রহ করে পাঠানো হবে — সেক্ষেত্রে কিছুটা অতিরিক্ত সময় লাগতে পারে। আমরা আপনার অর্ডারের নোট দেওয়ার মাধ্যমে জানাব।</div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- Payment Method -->
-      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px">
-        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px">
-          <span class="step-circle" style="background:var(--blue);color:white">৩</span>
-          পেমেন্ট পদ্ধতি
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px">
-          <div style="width:42px;height:42px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <i class="fa-solid fa-money-bill-wave" style="color:white;font-size:1.1rem"></i>
-          </div>
-          <div>
-            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.9375rem;font-weight:700;color:var(--text)">ক্যাশ অন ডেলিভারি (COD)</div>
-            <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8125rem;color:var(--text-mid);margin-top:2px">পণ্য হাতে পেয়ে টাকা দিন — কোনো অগ্রিম পেমেন্ট নেই</div>
-          </div>
-          <i class="fa-solid fa-circle-check" style="color:var(--green);font-size:1.2rem;margin-left:auto"></i>
-        </div>
-      </div>
-
-    </div><!-- /left column -->
-
-    <!-- ── RIGHT COLUMN: Order Summary ── -->
-    <div style="position:sticky;top:80px">
-      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <div class="co-card co-summary" style="padding:0;overflow:hidden">
 
         <!-- Header -->
         <div style="background:linear-gradient(135deg,var(--blue),var(--blue-dark));padding:16px 20px">
@@ -7087,9 +7096,6 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         </div>
 
         <div style="padding:16px 18px">
-          <!-- Item list -->
-          <div id="checkoutSummary" style="margin-bottom:12px"></div>
-
           <!-- ── কুপন / প্রমো কোড ── -->
           <div id="checkoutPromoWrap" style="margin-bottom:14px">
             <div style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:700;color:var(--text-mid);margin-bottom:7px;display:flex;align-items:center;gap:5px">
@@ -7151,8 +7157,9 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         </div>
       </div>
 
+
       <!-- Trust badges -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+      <div class="co-trust" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center">
           <i class="fa-solid fa-rotate-left" style="color:var(--blue);font-size:1.1rem;display:block;margin-bottom:5px"></i>
           <div style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;color:var(--text-mid)">সহজ রিটার্ন</div>
@@ -7166,22 +7173,30 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
 
   </div><!-- /grid -->
 
-  <!-- Mobile responsive style override -->
   <style>
+    #page-checkout .co-grid{max-width:1120px;margin:0 auto;padding:22px 20px 70px;display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:24px;align-items:start}
+    #page-checkout .co-main,#page-checkout .co-side{min-width:0}
+    #page-checkout .co-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(60,20,20,.04)}
+    #page-checkout .co-h{font-family:'Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:9px;margin-bottom:14px}
+    #page-checkout .co-hi{color:var(--blue);font-size:.95rem;width:18px;text-align:center;flex-shrink:0}
+    #page-checkout .co-count{margin-left:auto;font-size:.74rem;font-weight:700;color:var(--blue);background:var(--blue-light);padding:3px 11px;border-radius:100px}
+    #page-checkout .co-items #checkoutSummary > div:last-child{margin-bottom:0!important;padding-bottom:0!important;border-bottom:0!important}
+    #page-checkout .co-side .location-fields-grid{grid-template-columns:1fr!important;gap:12px}
+    #page-checkout .co-side .co-card:last-child{margin-bottom:16px}
+    #page-checkout .co-pay{margin-bottom:0}
     @media(max-width:720px){
-      #checkoutPageBody{grid-template-columns:1fr!important;gap:16px!important;padding:16px 14px 60px!important}
-      #checkoutPageBody > div:last-child{position:static!important}
+      #page-checkout #checkoutPageBody{grid-template-columns:1fr!important;gap:0!important;padding:14px 12px 90px!important}
+      #page-checkout .co-main,#page-checkout .co-side{display:contents}
+      #page-checkout .co-items{order:1}
+      #page-checkout .co-addr{order:2}
+      #page-checkout .co-notice{order:3}
+      #page-checkout .co-pay{order:4;margin-bottom:16px}
+      #page-checkout .co-summary{order:5}
+      #page-checkout .co-trust{order:6}
+      #page-checkout .co-card{padding:16px 16px}
     }
     @media(max-width:600px){
-      #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
-      #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important}
-      /* Checkout section headings */
-      #page-checkout .step-circle{flex-shrink:0}
-      /* Trust badges at bottom */
-      #page-checkout > div[style*="grid-template-columns:1fr 1fr"] {grid-template-columns:1fr 1fr!important}
-    }
-    @media(max-width:420px){
-      #checkoutPageBody > div:first-child > div > div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
+      #page-checkout .co-addr [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
     }
   </style>
 
@@ -8469,6 +8484,11 @@ setTimeout(() => {
 // ══════════════════════════════════════════════════
 
 /* ── SAFE PRICE FORMATTER ── prevents NaN/undefined display */
+// কার্ট ও চেকআউটে লেখকের তালিকা থেকে শুধু প্রথম জনের নাম ("কুপার, রাশেদ (অনুবাদক)" → "কুপার")
+function firstWriter(v) {
+  const first = String(v == null ? '' : v).split(/[,،;]/)[0] || '';
+  return first.replace(/\s*[\(（][^)）]*[\)）]\s*/g, ' ').replace(/\s+/g, ' ').trim();
+}
 function fmtPrice(val) {
   const n = Number(val);
   if (isNaN(n) || val === null || val === undefined) return '—';
@@ -10521,7 +10541,7 @@ function renderCartItems() {
     ${thumbHtml}
     <div class="ci-info">
       <div class="ci-name bn">${item.name}</div>
-      <div class="ci-brand">${isBookProduct(item) ? (item.author || item.brand || '') : (item.brand || '')}</div>
+      <div class="ci-brand">${isBookProduct(item) ? firstWriter(item.author || item.brand || '') : (item.brand || '')}</div>
       <div class="ci-qty">
         <button class="ciqbtn" onclick="changeCartQty('${item.id}',-1)">−</button>
         <span style="font-weight:700;font-size:.8rem;min-width:18px;text-align:center">${item.qty}</span>
@@ -10774,7 +10794,7 @@ function openCheckout() {
 
     // Sub-label: author for books, brand otherwise
     const subLabel = isBookProduct(i)
-      ? (i.author || i.brand || '')
+      ? firstWriter(i.author || i.brand || '')
       : (i.brand || '');
 
     // ── Discount calculation (per item) — bulk-aware ──
@@ -10821,6 +10841,7 @@ function openCheckout() {
     </div>`;
   }).join('');
   document.getElementById('checkoutSummary').innerHTML = summary;
+  { const _cc = document.getElementById('checkoutItemCount'); if (_cc) _cc.textContent = _bnDigits(cart.reduce((a, x) => a + (x.qty || 1), 0)) + ' টি পণ্য'; }
   // bulk-aware effective price দিয়ে subtotal
   const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   document.getElementById('checkoutSubtotal').textContent = `৳${sub.toLocaleString('en-US')}`;
