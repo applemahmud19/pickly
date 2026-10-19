@@ -2631,6 +2631,22 @@ footer{background:var(--text);color:rgba(255,255,255,.7);padding:28px 22px}
 }
 .fp-trust-item i { color: var(--blue); }
 
+/* ── RICH DESCRIPTION (admin editor output) ── */
+.rich-desc p{margin:0 0 8px}
+.rich-desc h2{font-size:1.15rem;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border,#e5e7eb);color:var(--text,#111)}
+.rich-desc h3{font-size:1rem;margin:12px 0 6px;color:var(--text,#111)}
+.rich-desc h4{font-size:.95rem;margin:10px 0 6px}
+.rich-desc ul,.rich-desc ol{margin:6px 0 10px;padding-left:22px}
+.rich-desc li{margin:3px 0}
+.rich-desc ul li::marker{color:var(--blue,#AA2C2D)}
+.rich-desc a{color:var(--blue,#AA2C2D);text-decoration:underline}
+.rich-desc blockquote{border-left:4px solid var(--blue,#AA2C2D);padding:6px 14px;margin:10px 0;background:rgba(170,44,45,.06)}
+.rich-desc table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:8px 0}
+.rich-desc td,.rich-desc th{border:1px solid var(--border,#e5e7eb);padding:6px 10px}
+.rich-desc th{background:rgba(0,0,0,.04)}
+.rich-desc .callout{background:#FFF8E1;color:#3d2e00;border-left:4px solid #F59E0B;padding:8px 12px;margin:8px 0;border-radius:0 6px 6px 0}
+.rich-desc img{max-width:100%;height:auto}
+.rich-desc hr{border:0;border-top:1px solid var(--border,#e5e7eb);margin:12px 0}
 /* ── DESCRIPTION SEE MORE/LESS ── */
 .desc-wrapper {
   /* No position:relative needed — gradient is now handled differently */
@@ -9995,7 +10011,7 @@ function findCategoryBySlug(raw) {
 function pushProductUrl(p, push = true) {
   const url = `/product/${productSlug(p)}`;
   _navTo({ productId: p.id, slug: productSlug(p), page: 'product' }, `${p.name} — বুক গ্যালাক্সি`, url, push);
-  _setMeta(p.description ? String(p.description).slice(0, 155)
+  _setMeta(p.description ? String(p.description).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0, 155)
                          : `${p.name} কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`, url);
 }
 
@@ -10440,7 +10456,8 @@ function renderDesc(id, raw) {
   const el = document.getElementById(id);
   if (!el) return;
   if (!raw || !raw.trim()) { el.innerHTML = ''; return; }
-  const lines = raw.split('\n');
+  const rich = _isRichDesc(raw);
+  const lines = rich ? [] : raw.split('\n');
   let html = '';
   let inPara = false;
   lines.forEach(line => {
@@ -10460,6 +10477,9 @@ function renderDesc(id, raw) {
     }
   });
   if (inPara) html += '</p>';
+  if (rich) { html = _sanitizeDesc(raw); }
+  el.style.whiteSpace = rich ? 'normal' : 'pre-line';
+  el.classList.toggle('rich-desc', rich);
   el.innerHTML = html;
 
   // See more / see less toggle — only for modalDesc
@@ -10510,6 +10530,39 @@ function toggleDesc() {
     if (label) label.textContent = 'সংক্ষেপে দেখুন';
   }
 }
+/* ── Rich description sanitizer (admin editor HTML) ── */
+(function(){
+
+const ALLOW=new Set(['p','div','br','b','strong','i','em','u','s','strike','h2','h3','h4','ul','ol','li','blockquote','hr','a','span','font','table','thead','tbody','tr','th','td','code','figure','figcaption','img']);
+const DROP=new Set(['script','style','iframe','object','embed','link','meta','svg','math','form','input','button','textarea','select','noscript','template']);
+function safeStyle(st){const out=[];String(st||'').split(';').forEach(d=>{const i=d.indexOf(':');if(i<0)return;const k=d.slice(0,i).trim().toLowerCase(),v=d.slice(i+1).trim();
+ if(k==='color'&&/^(#[0-9a-f]{3,8}|rgba?\([\d\s,.%]+\)|[a-z]{3,20})$/i.test(v))out.push('color:'+v);
+ else if(k==='text-align'&&/^(left|right|center|justify)$/i.test(v))out.push('text-align:'+v.toLowerCase())});return out.join(';')}
+function clean(node){[...node.childNodes].forEach(ch=>{
+ if(ch.nodeType===3)return;
+ if(ch.nodeType!==1){ch.remove();return}
+ const t=ch.tagName.toLowerCase();
+ if(DROP.has(t)){ch.remove();return}
+ clean(ch);
+ if(!ALLOW.has(t)){while(ch.firstChild)node.insertBefore(ch.firstChild,ch);ch.remove();return}
+ [...ch.attributes].forEach(a=>{const n=a.name.toLowerCase(),v=a.value;let ok=false;
+  if(n==='style'){const s=safeStyle(v);if(s)ch.setAttribute('style',s);else ch.removeAttribute('style');return}
+  if(t==='a'&&n==='href')ok=/^(https?:|mailto:|tel:|\/)/i.test(v.trim());
+  else if(t==='a'&&(n==='target'||n==='rel'))ok=true;
+  else if(t==='img'&&n==='src')ok=/^https?:\/\//i.test(v.trim());
+  else if(t==='img'&&n==='alt')ok=true;
+  else if(t==='font'&&n==='color')ok=/^(#[0-9a-f]{3,8}|[a-z]{3,20})$/i.test(v.trim());
+  else if((t==='td'||t==='th')&&(n==='colspan'||n==='rowspan'))ok=/^\d{1,2}$/.test(v);
+  else if(n==='class')ok=(v==='callout');
+  if(!ok)ch.removeAttribute(a.name)});
+ if(t==='a'){ch.setAttribute('target','_blank');ch.setAttribute('rel','noopener noreferrer nofollow')}
+})}
+function sanitize(h){const tpl=document.createElement('template');tpl.innerHTML=String(h||'');clean(tpl.content);return tpl.innerHTML}
+const RICH=/<\/?(p|div|br|h[1-6]|ul|ol|li|b|strong|i|em|u|s|a|blockquote|table|span|font|hr|figure|img)\b[^>]*>/i;
+
+window._isRichDesc=function(v){return RICH.test(String(v||''))};
+window._sanitizeDesc=sanitize;
+})();
 function escFe(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -17305,7 +17358,7 @@ function moodEvidence(p,mood){
   if(!mood.kw.length)return null;
   var head=lc(p.name)+' '+lc(p.category)+' '+lc(p.sub_category);
   if(mood.kw.some(function(k){return kwHit(head,k)}))return {type:'kw',w:.6};
-  var d=lc(p.description);
+  var d=lc(String(p.description||'').replace(/<[^>]*>/g,' '));
   if(mood.kw.filter(function(k){return kwHit(d,k)}).length>=2)return {type:'kw',w:.4};
   return null;
 }
