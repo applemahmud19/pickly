@@ -260,6 +260,27 @@ body.page-category-open .nav-cats,
 body.page-category-open .mobile-search-row {
   display: none !important;
 }
+body.page-category-open.search-results-open .mobile-search-row { display: block !important; }
+/* ── লাইভ সার্চ সাজেশন ── */
+.search-wrap{position:relative}
+.mobile-search-row{position:relative}
+.sg-box{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 14px 36px rgba(60,20,20,.22);z-index:10000;overflow:hidden;max-height:min(72vh,470px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sg-box.open{display:block}
+.mobile-search-row .sg-box{left:12px;right:12px;top:calc(100% - 4px)}
+.sg-item{display:flex;align-items:center;gap:11px;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f3eaea;transition:background .12s}
+.sg-item:hover,.sg-item.active{background:var(--blue-light,#fbeeee)}
+.sg-thumb{width:38px;height:52px;flex-shrink:0;border-radius:6px;background:#f6f1f1;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--blue,#AA2C2D)}
+.sg-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.sg-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sg-name{font-size:.88rem;font-weight:600;color:var(--text,#222);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sg-sub{font-size:.74rem;color:var(--text-light,#888);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg-price{flex-shrink:0;text-align:right;display:flex;flex-direction:column;align-items:flex-end;line-height:1.25}
+.sg-price b{font-size:.92rem;color:var(--blue-dark,#8a1f20);font-weight:700}
+.sg-price s{font-size:.7rem;color:#999}
+.sg-all{padding:11px 14px;font-size:.82rem;font-weight:600;color:var(--blue,#AA2C2D);cursor:pointer;text-align:center;background:#fcf7f7}
+.sg-all:hover{background:var(--blue-light,#fbeeee)}
+.sg-empty{padding:16px 14px;font-size:.83rem;color:var(--text-light,#777);display:flex;align-items:center;gap:9px}
+
 
 /* ── SINGLE SCROLLBAR GLOBAL RULE ── */
 /* Prevent any container from creating a second scrollbar alongside body */
@@ -5836,8 +5857,8 @@ html.gm-boot #gmSplash{display:flex}
     <div class="search-wrap">
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="পণ্য, ব্র্যান্ড বা ক্যাটাগরি খুঁজুন..." oninput="filterProducts()">
-        <button class="search-btn bn">খুঁজুন</button>
+        <input type="text" id="searchInput" placeholder="পণ্য, ব্র্যান্ড বা ক্যাটাগরি খুঁজুন..." enterkeyhint="search" autocomplete="off" spellcheck="false">
+        <button type="button" class="search-btn bn" onclick="submitSearch('searchInput')">খুঁজুন</button>
       </div>
     </div>
 
@@ -5961,8 +5982,8 @@ html.gm-boot #gmSplash{display:flex}
       <!-- Search icon: SVG always renders, FA hidden on mobile -->
       <i class="fa-solid fa-magnifying-glass"></i>
       <svg class="svg-icon mob-icon" width="15" height="15" viewBox="0 0 24 24" style="margin:0 10px;stroke:var(--text-light)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="mobileSearchInput" placeholder="পণ্য খুঁজুন..." oninput="filterProducts()">
-      <button class="search-btn bn">খুঁজুন</button>
+      <input type="text" id="mobileSearchInput" placeholder="পণ্য খুঁজুন..." enterkeyhint="search" autocomplete="off" spellcheck="false">
+      <button type="button" class="search-btn bn" onclick="submitSearch('mobileSearchInput')">খুঁজুন</button>
     </div>
   </div>
 
@@ -8257,6 +8278,13 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path === '/search') {
+    const _q = new URLSearchParams(location.search).get('q');
+    if (_q && _q.trim()) openSearchPage(_q, false);
+    else history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+    return;
+  }
+
   if (path === '/all-products') {
     { const _sp = new URLSearchParams(location.search); openAllBooksPage(parseInt(_sp.get('page')) || 1, false, false, _sp.get('type') || 'all'); }
     return;
@@ -9100,6 +9128,8 @@ const BUDGET_RANGES = [            // এখানের সংখ্যা ব�
   { min: 600, max: 800  },
   { min: 800, max: 1000 }
 ];
+let currentSearchMode = false;    // true = হেডার সার্চের রেজাল্ট পেজ (/search?q=...)
+let currentSearchQuery = '';
 let currentAllMode = false;       // true = "আরও দেখুন" থেকে খোলা সব-পণ্যের পেজ (পেজিনেশন সহ)
 let currentAllPage = 1;
 let currentAllType = 'all';        // 'all' | 'book' | 'product'(বই ছাড়া অন্য পণ্য)
@@ -9138,7 +9168,7 @@ function renderBudgetButtons(show) {
 function openBudgetPage(key, pushUrl = true) {
   const r = typeof key === 'object' && key ? key : parseBudgetKey(key);
   if (!r) return;
-  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব'; currentAllMode = false;
+  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব'; currentAllMode = false; currentSearchMode = false; document.body.classList.remove('search-results-open');
   const title = r.min === 0 ? `${budgetLabel(r)} সেরা বই` : `${budgetLabel(r)} দামের সেরা বই`;
   document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
   document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-wallet" style="color:white;font-size:1.4rem"></i>';
@@ -9152,7 +9182,8 @@ function openBudgetPage(key, pushUrl = true) {
   openPage('category');
 }
 function resetBudgetMode() {
-  currentBudget = 0; currentBudgetCat = 'সব'; currentAllMode = false;
+  currentBudget = 0; currentBudgetCat = 'সব'; currentAllMode = false; currentSearchMode = false;
+  document.body.classList.remove('search-results-open');
   const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = 'none';
   const top = document.getElementById('catPageSort')?.parentElement; if (top) top.style.display = '';
 }
@@ -9289,6 +9320,248 @@ document.addEventListener('click', e => {
   if (b && !b.disabled && currentAllMode) openAllBooksPage(parseInt(b.dataset.allpage), true, true);
 });
 
+/* ══════════════════════════════════════════════════
+   সার্চ রেজাল্ট পেজ — /search?q=...
+   হেডারে Enter বা "খুঁজুন" চাপলে আলাদা পেজে রেজাল্ট দেখায় (স্ট্যান্ডার্ড ওয়েবসাইটের মতো)
+   ══════════════════════════════════════════════════ */
+function submitSearch(inputId) {
+  const el = document.getElementById(inputId);
+  const q = (el ? el.value : '').trim();
+  if (!q) { if (el) el.focus(); return; }
+  sgClose();
+  openSearchPage(q);
+  if (el) el.blur();
+}
+/* ══════════════════════════════════════════════════
+   স্মার্ট সার্চ ইঞ্জিন — বাংলা ↔ ইংরেজি (ফোনেটিক) + ছোটখাটো বানান ভুল সহ্য করে
+   "kathgolap" / "kathgolop" / "কাঠগোলাপ" — সবই একই বই খুঁজে দেয়
+   ══════════════════════════════════════════════════ */
+// বাংলা/ইংরেজি যেকোনো টেক্সট → ব্যঞ্জনের "উচ্চারণ-কঙ্কাল" শব্দের তালিকা (স্বরবর্ণ বাদ, কাছাকাছি ধ্বনি এক)
+function _skelWords(str) {
+  let t = String(bnTranslit(String(str || ''))).toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+  t = t.replace(/chh|ch/g, 'C').replace(/sh|ss/g, 's').replace(/kh|q|ck/g, 'k').replace(/gh/g, 'g')
+       .replace(/jh|z/g, 'j').replace(/th/g, 't').replace(/dh/g, 'd').replace(/ph/g, 'f')
+       .replace(/bh|v/g, 'b').replace(/ng/g, 'n').replace(/x/g, 'ks').replace(/c/g, 'k')
+       .replace(/[aeiouywh]/g, '').replace(/(.)\1+/g, '$1');
+  return t.split(/\s+/).filter(Boolean);
+}
+function _lev(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let rowMin = i;
+    for (let j = 1; j <= b.length; j++) {
+      const v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      cur[j] = v; if (v < rowMin) rowMin = v;
+    }
+    if (rowMin > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+function _fieldData(text) {
+  const raw = String(text || '').toLowerCase();
+  const words = _skelWords(raw);
+  const roman = String(bnTranslit(raw)).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return { raw, roman, words, joined: words.join('') };
+}
+function _prodSearchData(p) {
+  const sig = [p.name, p.author, p.brand, p.publisher, p.category].join('\u0001');
+  if (p.__sk && p.__sk.sig === sig) return p.__sk;
+  const d = { sig, f: [
+    [3, _fieldData(p.name)],
+    [2, _fieldData(p.author)], [2, _fieldData(p.brand)], [2, _fieldData(p.publisher)],
+    [1, _fieldData(p.category)]
+  ] };
+  try { Object.defineProperty(p, '__sk', { value: d, writable: true, configurable: true, enumerable: false }); } catch (e) { p.__sk = d; }
+  return d;
+}
+// একটা শব্দ (token) একটা ফিল্ডের সাথে কতটা মেলে: 0 = মেলে না (বেশি = ভালো মিল)
+function _tokLevel(t, fd) {
+  if (fd.raw.includes(t.raw)) return 4;                            // হুবহু (বাংলা/ইংরেজি যেটাই লিখুক)
+  if (t.roman.length >= 2 && fd.roman.includes(t.roman)) return 3.5; // ইংরেজি বানানে হুবহু (podda, misir…)
+  const tk = t.key;
+  if (!tk || tk.length < 2) return 0;
+  if (fd.words.some(w => w.startsWith(tk))) return 2.5;            // উচ্চারণ মিলে যায় (শব্দের শুরু)
+  if (tk.length >= 3 && fd.joined.includes(tk)) return 2;          // উচ্চারণ মিলে যায় (ভেতরে)
+  const d = tk.length >= 7 ? 2 : tk.length >= 3 ? 1 : 0;           // ছোটখাটো বানান ভুল
+  if (d) {
+    for (const w of fd.words) {
+      if (w[0] !== tk[0]) continue;
+      if (_lev(tk, w, d) <= d || (w.length > tk.length && _lev(tk, w.slice(0, tk.length), d) <= d)) return 1.5;
+    }
+    if (tk.length >= 5) {
+      const j = fd.joined;
+      for (let i = 0; i + tk.length <= j.length; i++) if (_lev(tk, j.substr(i, tk.length), d) <= d) return 1;
+    }
+  }
+  return 0;
+}
+// প্রোডাক্ট তালিকা → মিল অনুযায়ী সাজানো রেজাল্ট (সব শব্দ মিলতে হবে; of/the/a-র মতো ছোট শব্দ না মিললে বাদ)
+function smartSearchProducts(query, list) {
+  const toks = String(query || '').trim().toLowerCase().split(/\s+/).filter(Boolean).map(w => ({
+    raw: w,
+    roman: String(bnTranslit(w)).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(),
+    key: _skelWords(w).join('')
+  })).filter(t => t.raw.length >= 2 || /[\u0980-\u09FF]/.test(t.raw));
+  if (!toks.length) return [];
+  const small = toks.map(t => t.raw.length <= 3 && t.key.length <= 1 && !/[\u0980-\u09FF]/.test(t.raw));
+  const res = [];
+  for (const p of list) {
+    const d = _prodSearchData(p);
+    let total = 0, minLv = 9, matched = 0, ok = true;
+    for (let i = 0; i < toks.length; i++) {
+      let best = 0, bestLv = 0;
+      for (const [wt, fd] of d.f) {
+        const lv = _tokLevel(toks[i], fd);
+        if (lv && lv * 4 + wt > best) { best = lv * 4 + wt; bestLv = lv; }
+      }
+      if (best) { total += best; matched++; if (bestLv < minLv) minLv = bestLv; }
+      else if (!small[i]) { ok = false; break; }
+    }
+    if (ok && matched) res.push({ p, score: total, lv: minLv });
+  }
+  if (!res.length) return [];
+  const top = Math.max(...res.map(r => r.lv));
+  const floor = top >= 4 ? 3.1 : top - 0.9;                        // জোরালো মিল থাকলে দুর্বল আন্দাজি মিল বাদ
+  return res.filter(r => r.lv >= floor).sort((a, b) => b.score - a.score).map(r => r.p);
+}
+
+function openSearchPage(q, pushUrl = true) {
+  q = String(q || '').trim().replace(/\s+/g, ' ');
+  if (!q) return;
+  resetBudgetMode();
+  currentSearchMode = true; currentSearchQuery = q; currentCatPage = 'সব';
+  document.body.classList.add('search-results-open');
+  ['searchInput', 'mobileSearchInput'].forEach(id => { const i = document.getElementById(id); if (i) i.value = q; });
+  document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
+  document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-magnifying-glass" style="color:white;font-size:1.4rem"></i>';
+  document.getElementById('catPageTitle').textContent = '“' + q + '” — সার্চ রেজাল্ট';
+  document.getElementById('catPageBreadcrumb').textContent = 'সার্চ: ' + q;
+  document.getElementById('catPageSort').value = 'popular';
+  renderCatPageProducts();
+  const url = '/search?q=' + encodeURIComponent(q);
+  _navTo({ page: 'category', cat: 'সব', search: q }, `${q} — সার্চ রেজাল্ট — বুক গ্যালাক্সি`, url, pushUrl);
+  _setMeta(`${q} — বুক গ্যালাক্সি-তে সার্চ রেজাল্ট।`, '/search');
+  let rm = document.querySelector('meta[name="robots"]'); if (!rm) { rm = document.createElement('meta'); rm.name = 'robots'; document.head.appendChild(rm); }
+  rm.content = 'noindex,follow';
+  openPage('category');
+  const pg = document.getElementById('page-category'); if (pg) pg.scrollTop = 0;
+}
+function renderSearchPageProducts() {
+  const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
+  const sort = document.getElementById('catPageSort')?.value || 'popular';
+  const price = p => getEffectiveSalePrice(p).displayPrice;
+  const list = smartSearchProducts(currentSearchQuery, products);   // সবচেয়ে ভালো মিল আগে
+  if (sort === 'low') list.sort((a, b) => price(a) - price(b));
+  else if (sort === 'high') list.sort((a, b) => price(b) - price(a));
+  else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4) || popularCmp(a, b));
+  else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
+  /* sort === 'popular' → মিলের ক্রমই থাকে */
+  const subtitle = document.getElementById('catPageSubtitle');
+  if (subtitle) subtitle.textContent = `${_bnDigits(list.length)} টি পণ্য পাওয়া গেছে`;
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    if (empty.lastElementChild) empty.lastElementChild.textContent = '“' + currentSearchQuery + '” নামে কোনো বই বা পণ্য পাওয়া যায়নি। অন্য নাম বা বানান দিয়ে চেষ্টা করুন।';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   লাইভ সাজেশন — সার্চ বারে লেখার সময়ই নিচে বইয়ের নাম, লেখক ও দাম দেখায়
+   ↑ ↓ দিয়ে বাছা যায়, Enter-এ বই খোলে (কিছু না বাছলে সব রেজাল্টের পেজ), Esc-এ বন্ধ
+   ══════════════════════════════════════════════════ */
+const SUGGEST_MAX = 6;
+const _sg = { idx: -1, list: [], q: '', id: '' };
+function _sgEsc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function _sgBox(inputId) {
+  const inp = document.getElementById(inputId); if (!inp) return null;
+  const host = inp.closest('.search-wrap, .mobile-search-row'); if (!host) return null;
+  let box = host.querySelector('.sg-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'sg-box'; box.setAttribute('role', 'listbox');
+    // মাউস ক্লিকে ইনপুট ফোকাস না হারাক
+    box.addEventListener('mousedown', e => e.preventDefault());
+    box.addEventListener('click', e => {
+      const it = e.target.closest('[data-sgid]');
+      if (it) { _sgOpenProduct(it.getAttribute('data-sgid')); return; }
+      if (e.target.closest('[data-sgall]')) submitSearch(_sg.id || inputId);
+    });
+    host.appendChild(box);
+  }
+  return box;
+}
+function sgClose() {
+  document.querySelectorAll('.sg-box.open').forEach(b => { b.classList.remove('open'); b.innerHTML = ''; });
+  _sg.idx = -1; _sg.list = [];
+}
+function _sgOpenProduct(id) {
+  const p = products.find(x => String(x.id) === String(id)); if (!p) return;
+  sgClose();
+  ['searchInput', 'mobileSearchInput'].forEach(i => { const e = document.getElementById(i); if (e) e.blur(); });
+  openProduct(p.id);
+}
+function sgUpdate(inputId) {
+  const inp = document.getElementById(inputId), box = _sgBox(inputId); if (!inp || !box) return;
+  const q = inp.value.trim();
+  document.querySelectorAll('.sg-box.open').forEach(b => { if (b !== box) { b.classList.remove('open'); b.innerHTML = ''; } });
+  if (!q || !Array.isArray(products) || !products.length) { sgClose(); return; }
+  const all = smartSearchProducts(q, products);
+  _sg.q = q; _sg.id = inputId; _sg.idx = -1; _sg.list = all.slice(0, SUGGEST_MAX);
+  if (!all.length) {
+    box.innerHTML = `<div class="sg-empty bn"><i class="fa-solid fa-magnifying-glass"></i><span>“${_sgEsc(q)}” নামে কিছু পাওয়া যায়নি — বানান বদলে দেখুন</span></div>`;
+    box.classList.add('open'); return;
+  }
+  box.innerHTML = _sg.list.map((p, i) => {
+    const pr = getEffectiveSalePrice(p);
+    const sub = isBookProduct(p) ? (p.author || p.brand || '') : (p.brand || '');
+    const img = p.image_url
+      ? `<img src="${_sgEsc(p.image_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<i class="fa-solid ${_sgEsc(p.icon || 'fa-book')}"></i>`;
+    return `<div class="sg-item" role="option" data-i="${i}" data-sgid="${_sgEsc(p.id)}">
+      <span class="sg-thumb">${img}</span>
+      <span class="sg-info"><span class="sg-name bn">${_sgEsc(p.name)}</span>${sub ? `<span class="sg-sub bn">${_sgEsc(sub)}</span>` : ''}</span>
+      <span class="sg-price bn">${p.old_price && pr.originalPrice > pr.displayPrice ? `<s>৳${fmtPrice(pr.originalPrice)}</s>` : ''}<b>৳${fmtPrice(pr.displayPrice)}</b></span>
+    </div>`;
+  }).join('') + `<div class="sg-all bn" data-sgall="1"><i class="fa-solid fa-magnifying-glass"></i> “${_sgEsc(q)}” এর সব রেজাল্ট দেখুন (${_bnDigits(all.length)})</div>`;
+  box.classList.add('open');
+}
+function _sgMove(inputId, dir) {
+  const box = _sgBox(inputId); if (!box || !box.classList.contains('open') || !_sg.list.length) return;
+  const n = _sg.list.length;
+  _sg.idx = (_sg.idx + dir + n + 1) % (n + 1) - 0;        // -1 (কিছু বাছা নেই) থেকে শুরু, ঘুরে আসে
+  if (_sg.idx === n) _sg.idx = -1;
+  box.querySelectorAll('.sg-item').forEach((el, i) => el.classList.toggle('active', i === _sg.idx));
+  const act = box.querySelector('.sg-item.active'); if (act) act.scrollIntoView({ block: 'nearest' });
+}
+(function initSearchSuggest() {
+  function wire() {
+    ['searchInput', 'mobileSearchInput'].forEach(id => {
+      const inp = document.getElementById(id); if (!inp || inp.dataset.sgWired) return;
+      inp.dataset.sgWired = '1';
+      let t;
+      inp.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => sgUpdate(id), 110); });
+      inp.addEventListener('focus', () => { if (inp.value.trim()) sgUpdate(id); });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); _sgMove(id, 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); _sgMove(id, -1); }
+        else if (e.key === 'Escape') { sgClose(); }
+        else if (e.key === 'Enter') {
+          e.preventDefault(); clearTimeout(t);
+          if (_sg.idx >= 0 && _sg.list[_sg.idx]) _sgOpenProduct(_sg.list[_sg.idx].id);
+          else submitSearch(id);
+        }
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+  document.addEventListener('click', e => { if (!e.target.closest('.search-wrap, .mobile-search-row')) sgClose(); });
+})();
+
 function getFiltered() {
   return _lastFiltered = products.filter(p => {
     const catOk = activeFilter.cat === 'সব' || p.category === activeFilter.cat;
@@ -9323,10 +9596,8 @@ function filterRating(r, el) {
 function filterProducts() {
   activeFilter.minPrice = parseInt(document.getElementById('priceMin')?.value)||0;
   activeFilter.maxPrice = parseInt(document.getElementById('priceMax')?.value)||999999;
-  // Use whichever search input is visible
-  const mobileSearch = document.getElementById('mobileSearchInput');
-  const desktopSearch = document.getElementById('searchInput');
-  activeFilter.search = (mobileSearch?.value || desktopSearch?.value || '').trim();
+  // হেডার সার্চ এখন আলাদা /search পেজে যায়, হোম গ্রিড আর সার্চ টেক্সট দিয়ে ফিল্টার হয় না
+  activeFilter.search = '';
   renderProducts(getFiltered());
 }
 function sortProducts(v) {
@@ -9642,7 +9913,7 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
-  if (name === 'category' && /^\/(category|budget|all-products)(\/|$)/.test(_safeDecode(location.pathname))) restoreHomeUrl();
+  if (name === 'category' && /^\/(category|budget|all-products|search)(\/|$)/.test(_safeDecode(location.pathname))) { restoreHomeUrl(); if (currentSearchMode) { ['searchInput','mobileSearchInput'].forEach(id => { const i = document.getElementById(id); if (i) i.value = ''; }); currentSearchMode = false; document.body.classList.remove('search-results-open'); } }
   if (name === 'author' && /^\/(author|publisher|subcategory)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
@@ -15230,6 +15501,7 @@ function renderCatPageProducts() {
   const _pgr = document.getElementById('catPagePager'); if (_pgr) _pgr.innerHTML = '';
   const _afb = document.getElementById('allFilterBar'); if (_afb) _afb.style.display = 'none';
   if (currentBudget) return renderBudgetPageProducts();
+  if (currentSearchMode) return renderSearchPageProducts();
   if (currentAllMode) return renderAllPageProducts();
   const grid  = document.getElementById('catPageGrid');
   const empty = document.getElementById('catPageEmpty');
@@ -16422,6 +16694,9 @@ window.addEventListener('popstate', function(e) {
   } else if (state.page === 'wishlist') {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
     else document.title = 'বুক গ্যালাক্সি';
+
+  } else if (state.page === 'category' && state.search) {
+    openSearchPage(state.search, false);
 
   } else if (state.page === 'category' && state.all) {
     openAllBooksPage(state.all, false, true, state.type || 'all');
