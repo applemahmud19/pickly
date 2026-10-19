@@ -11253,6 +11253,15 @@ async function placeOrder() {
   );
   btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
   if(error){ if (!error.isTimeout) toast('ত্রুটি!','অর্ডার দেওয়া যায়নি, আবার চেষ্টা করুন','e'); return; }
+  // ── Telegram নোটিফিকেশন (best-effort — অর্ডার সফলতায় কোনো প্রভাব ফেলে না) ──
+  try {
+    fetch('/api/notify-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_number: orderNum }),
+      keepalive: true
+    }).catch(e => console.warn('[telegram_notify] failed (non-critical):', e));
+  } catch (e) { console.warn('[telegram_notify] failed (non-critical):', e); }
   // Insert initial status history (best-effort, no timeout needed)
   // Best-effort history insert — don't block success UX if it fails
   sb.from('order_status_history').insert({order_id:data.id, status:'pending', note:'অর্ডার নিশ্চিত হয়েছে'}).then(({error:he}) => {
