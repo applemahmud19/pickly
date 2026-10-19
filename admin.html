@@ -1947,6 +1947,7 @@ body {
               <button class="btn btn-ghost btn-sm" onclick="backfillProductSlugs(true)" title="সব পণ্যের slug নতুন নিয়মে আবার তৈরি করুন (পুরনো লিঙ্ক বদলাবে)">
                 <i class="fa-solid fa-rotate"></i> সব পুনঃতৈরি
               </button>
+              <button class="btn btn-ghost btn-sm" onclick="bulkOpen()" title="CSV দিয়ে একসাথে অনেক বই আপলোড"><i class="fa-solid fa-file-csv"></i> Bulk Import</button>
               <button class="btn btn-primary btn-sm" onclick="openProductModal()">
                 <i class="fa-solid fa-plus"></i> পণ্য যোগ করুন
               </button>
@@ -6144,7 +6145,7 @@ function refreshOrderModal(id) {
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
       <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px"><i class="fa-solid fa-calculator" style="margin-right:4px"></i>Price Breakdown</div>
       <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text2);margin-bottom:6px"><span>Subtotal</span><span style="font-weight:600">৳${subtotal.toLocaleString()}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text2);margin-bottom:6px"><span>Delivery Charge</span><span style="font-weight:600;color:${deliveryFeeAmt > 0 ? 'var(--text)' : 'var(--green)'}">৳${deliveryFeeAmt > 0 ? deliveryFeeAmt.toLocaleString() : '0 (Free)'}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--text2);margin-bottom:6px"><span>Delivery Charge <button type="button" onclick="quickEditDelivery()" title="Delivery charge edit করুন" style="border:none;background:var(--bg);color:var(--blue);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.68rem;margin-left:4px"><i class="fa-solid fa-pen"></i> Edit</button></span><span id="ov-delivery-val" style="font-weight:600;color:${deliveryFeeAmt > 0 ? 'var(--text)' : 'var(--green)'}">৳${deliveryFeeAmt > 0 ? deliveryFeeAmt.toLocaleString() : '0 (Free)'}</span></div>
       <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:6px"><span style="color:var(--red)"><i class="fa-solid fa-tag" style="font-size:0.65rem"></i> Discount</span><span style="font-weight:600;color:${discountAmt > 0 ? 'var(--red)' : 'var(--text3)'}">-৳${discountAmt.toLocaleString()}</span></div>
       <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;padding-top:9px;border-top:2px solid var(--border)"><span>Total</span><span style="color:var(--blue)">৳${Number(o.total||0).toLocaleString()}</span></div>
     </div>`;
@@ -6519,6 +6520,42 @@ async function saveCourierInfo() {
   }
 }
 
+function quickEditDelivery() {
+  const o = allOrders.find(x => x.id === currentOrderId); if (!o) return;
+  const el = document.getElementById('ov-delivery-val'); if (!el) return;
+  el.innerHTML = `<span style="display:inline-flex;gap:4px;align-items:center">
+    <input type="number" id="ov-delivery-inp" min="0" value="${Number(o.delivery_fee||0)}" style="width:80px;padding:4px 7px;font-size:0.8rem;border:1.5px solid var(--blue);border-radius:6px;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')saveQuickDelivery();if(event.key==='Escape')refreshOrderModal(currentOrderId)">
+    <button type="button" class="btn btn-primary btn-sm" onclick="saveQuickDelivery()" style="padding:4px 9px"><i class="fa-solid fa-check"></i></button>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="refreshOrderModal(currentOrderId)" style="padding:4px 9px"><i class="fa-solid fa-xmark"></i></button>
+  </span>`;
+  const inp = document.getElementById('ov-delivery-inp'); if (inp) { inp.focus(); inp.select(); }
+}
+
+async function saveQuickDelivery() {
+  const o = allOrders.find(x => x.id === currentOrderId); if (!o || !sb) return;
+  const newFee = parseFloat(document.getElementById('ov-delivery-inp')?.value);
+  if (isNaN(newFee) || newFee < 0) { toast('Error', 'সঠিক delivery charge দিন', 'error'); return; }
+  const oldFee = Number(o.delivery_fee || 0);
+  // keep any manual total override: only shift total by the fee difference
+  const newTotal = Math.max(0, Number(o.total || 0) - oldFee + newFee);
+  const updates = { delivery_fee: newFee, total: newTotal, updated_at: new Date().toISOString() };
+  try {
+    const { data, error } = await sb.from('orders').update(updates).eq('id', currentOrderId).select('id, delivery_fee, total');
+    if (error) { toast('Save Failed', error.message, 'error'); return; }
+    if (!data || !data.length) {
+      toast('Save Failed', 'Database কোনো row আপডেট করেনি — Supabase RLS-এ orders table-এর UPDATE policy চেক করুন', 'error');
+      return;
+    }
+    Object.assign(o, updates);
+    renderOrders(); renderDashboard();
+    refreshOrderModal(currentOrderId);
+    fillOrderEditForm(o);
+    toast('Delivery Updated', `Delivery charge ৳${newFee} • নতুন Total ৳${newTotal.toLocaleString()}`, 'success');
+  } catch (err) {
+    toast('Save Failed', err.message || 'Unknown error', 'error');
+  }
+}
+
 async function saveOrderEdits() {
   console.log('[saveOrderEdits] ▶ START — orderId:', currentOrderId);
   if (!sb || !currentOrderId) {
@@ -6593,7 +6630,7 @@ async function saveOrderEdits() {
   // --- Step 7: Execute Supabase update ---
   console.log('[saveOrderEdits] Step 7 — Calling Supabase update...');
   try {
-    const { error } = await sb.from('orders').update(updates).eq('id', currentOrderId);
+    const { data: savedRows, error } = await sb.from('orders').update(updates).eq('id', currentOrderId).select('id');
     clearTimeout(timeoutId);
     if (timedOut) {
       console.warn('[saveOrderEdits] ✗ Response arrived after timeout — ignoring');
@@ -6603,6 +6640,12 @@ async function saveOrderEdits() {
       console.error('[saveOrderEdits] ✗ Supabase error:', error);
       if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
       toast('Save Failed', error.message, 'error');
+      return;
+    }
+    if (!savedRows || !savedRows.length) {
+      console.error('[saveOrderEdits] ✗ 0 rows updated (RLS/permission?)');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
+      toast('Save Failed', 'Database কোনো row আপডেট করেনি — Supabase RLS-এ orders table-এর UPDATE policy চেক করুন', 'error');
       return;
     }
     console.log('[saveOrderEdits] ✓ Supabase update successful');
@@ -11199,5 +11242,372 @@ function get(){if(src)ED.innerHTML=sanitize(SRC.value);
 window.PDE={cmd,load,get};
 })();
 </script>
+<!-- ══════════ BULK CSV IMPORT ══════════ -->
+<div class="modal-overlay" id="bulkImportModal" onclick="if(event.target===this && !_bulkRunning)closeModal('bulkImportModal')">
+  <div class="modal-box" style="max-width:820px;width:94vw">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-file-csv" style="color:var(--blue);margin-right:6px"></i>Bulk Import — CSV থেকে বই আপলোড</div>
+      <button class="modal-close" onclick="if(!_bulkRunning)closeModal('bulkImportModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="display:grid;gap:14px">
+
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:0.78rem;line-height:1.7;color:var(--text2)">
+        <b>কীভাবে করবেন:</b><br>
+        ১) নিচের বাটন থেকে <b>Sample CSV</b> নামান, Excel/Google Sheets-এ বইয়ের তথ্য বসান (<b>CSV UTF-8</b> হিসেবে সেভ করুন)।<br>
+        ২) <code>image</code> কলামে ছবির <b>ফাইলের নাম</b> (যেমন <code>book1.jpg</code>) অথবা পুরো <b>URL</b> দিন। একাধিক ছবি হলে <code>|</code> দিয়ে আলাদা করুন।<br>
+        ৩) CSV ও ছবিগুলো নিচে সিলেক্ট করুন → Preview দেখুন → Import চালান।
+        <div style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="bulkDownloadTemplate()"><i class="fa-solid fa-download"></i> Sample CSV নামান</button></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="oe-inner-grid">
+        <div class="form-group" style="gap:4px">
+          <label class="form-label">১) CSV ফাইল</label>
+          <input class="form-inp" type="file" id="bulkCsvFile" accept=".csv,.txt,text/csv" onchange="bulkLoadCsv(this)">
+        </div>
+        <div class="form-group" style="gap:4px">
+          <label class="form-label">২) ছবি (ঐচ্ছিক) — <span id="bulkImgCount" style="color:var(--text3)">০টি</span></label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer"><i class="fa-solid fa-images"></i> ছবি বাছুন
+              <input type="file" id="bulkImgFiles" accept="image/*" multiple style="display:none" onchange="bulkPickImages(this)"></label>
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer"><i class="fa-solid fa-folder-open"></i> ফোল্ডার বাছুন
+              <input type="file" id="bulkImgFolder" webkitdirectory directory multiple style="display:none" onchange="bulkPickImages(this)"></label>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.78rem">
+        <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkSkipDup" checked onchange="bulkRender()"> ডুপ্লিকেট (একই নাম+লেখক বা ISBN) বাদ দিন</label>
+        <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkAutoCat" checked onchange="bulkRender()"> নতুন ক্যাটাগরি অটো তৈরি করুন</label>
+      </div>
+
+      <div id="bulkPreview" style="display:none"></div>
+
+      <div id="bulkProgressWrap" style="display:none">
+        <div style="height:8px;background:var(--bg3);border-radius:6px;overflow:hidden"><div id="bulkBar" style="height:100%;width:0;background:var(--blue);transition:width .2s"></div></div>
+        <div id="bulkStatus" style="font-size:0.76rem;color:var(--text2);margin-top:6px"></div>
+        <textarea id="bulkLog" readonly style="width:100%;height:110px;margin-top:8px;font-family:monospace;font-size:0.68rem;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px;resize:vertical"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="bulkErrBtn" style="display:none" onclick="bulkDownloadErrors()"><i class="fa-solid fa-triangle-exclamation"></i> Failed rows CSV</button>
+        <button class="btn btn-ghost" id="bulkCancelBtn" style="display:none" onclick="_bulkCancel=true">Stop</button>
+        <button class="btn btn-primary" id="bulkStartBtn" onclick="bulkStartImport()" disabled><i class="fa-solid fa-cloud-arrow-up"></i> Import শুরু করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════ BULK CSV IMPORT LOGIC ══════════ */
+let _bulkRows = [], _bulkImgMap = new Map(), _bulkRunning = false, _bulkCancel = false, _bulkFailed = [];
+const BULK_COLS = ['name','author','category','sub_category','publisher','price','old_price','stock','isbn','edition','pages','language','country','cover_type','badge','description','image'];
+const BULK_ALIAS = {
+  name:['name','title','book_name','book','বইয়ের নাম','নাম'],
+  author:['author','writer','author_name','লেখক'],
+  category:['category','genre','main_category','ক্যাটাগরি'],
+  sub_category:['sub_category','subcategory','sub category','সাব ক্যাটাগরি'],
+  publisher:['publisher','প্রকাশনী'],
+  price:['price','sale_price','selling_price','দাম','মূল্য'],
+  old_price:['old_price','mrp','regular_price','list_price','আগের দাম'],
+  stock:['stock','quantity','qty','স্টক'],
+  isbn:['isbn'], edition:['edition','সংস্করণ'], pages:['pages','page','পৃষ্ঠা'],
+  language:['language','ভাষা'], country:['country','দেশ'],
+  cover_type:['cover_type','binding','cover','book_binding','বাঁধাই'],
+  badge:['badge'], description:['description','details','desc','বিবরণ'],
+  image:['image','images','image_url','photo','picture','ছবি']
+};
+
+function bulkOpen(){ openModal('bulkImportModal'); }
+
+function bulkDownloadTemplate(){
+  const rows = [
+    BULK_COLS,
+    ['পথের পাঁচালী','বিভূতিভূষণ বন্দ্যোপাধ্যায়','উপন্যাস','ক্লাসিক','প্রকাশনী নাম','350','450','20','9789841234567','১ম','320','বাংলা','বাংলাদেশ','Hardcover','','বইয়ের বিবরণ এখানে','pather-panchali.jpg'],
+    ['Sample Book 2','Author Name','গল্প','','Publisher','200','','10','','','150','বাংলা','বাংলাদেশ','Paperback','New','Short description','book2-front.jpg|book2-back.jpg']
+  ];
+  const csv = '\uFEFF' + rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'books_import_template.csv'; a.click();
+}
+
+function bulkParseCSV(text){
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const first = text.split(/\r?\n/, 1)[0] || '';
+  const delim = [',','\t',';'].map(d => [d, first.split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const out = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i+1] === '"'){ cur += '"'; i++; } else q = false; }
+      else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === delim){ row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r'){
+      if (ch === '\r' && text[i+1] === '\n') i++;
+      row.push(cur); cur = '';
+      if (row.some(c => c.trim() !== '')) out.push(row);
+      row = [];
+    } else cur += ch;
+  }
+  row.push(cur); if (row.some(c => c.trim() !== '')) out.push(row);
+  return out;
+}
+
+function bulkLoadCsv(input){
+  const f = input.files && input.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const table = bulkParseCSV(String(rd.result));
+    if (table.length < 2){ toast('CSV খালি', 'হেডার ও অন্তত একটি সারি লাগবে', 'error'); return; }
+    const head = table[0].map(h => h.trim().toLowerCase());
+    const idx = {};
+    for (const key in BULK_ALIAS){ idx[key] = head.findIndex(h => BULK_ALIAS[key].includes(h)); }
+    if (idx.name < 0 || idx.price < 0 || idx.category < 0){
+      toast('হেডার ভুল', 'name, category, price কলাম থাকতেই হবে (Sample CSV দেখুন)', 'error'); return;
+    }
+    _bulkRows = table.slice(1).map((r, i) => {
+      const g = k => idx[k] >= 0 ? String(r[idx[k]] ?? '').trim() : '';
+      return { line: i + 2, name:g('name'), author:g('author'), category:g('category'), sub_category:g('sub_category'),
+        publisher:g('publisher'), price:g('price'), old_price:g('old_price'), stock:g('stock'), isbn:g('isbn'),
+        edition:g('edition'), pages:g('pages'), language:g('language'), country:g('country'), cover_type:g('cover_type'),
+        badge:g('badge'), description:g('description'), image:g('image') };
+    });
+    bulkRender();
+  };
+  rd.readAsText(f, 'utf-8');
+}
+
+function bulkPickImages(input){
+  Array.from(input.files || []).forEach(f => {
+    if (!/^image\//.test(f.type) && !/\.(jpe?g|png|webp|gif|avif)$/i.test(f.name)) return;
+    const base = f.name.split(/[\\/]/).pop().toLowerCase();
+    _bulkImgMap.set(base, f);
+    _bulkImgMap.set(base.replace(/\.[^.]+$/, ''), f);
+  });
+  const n = new Set(Array.from(_bulkImgMap.values())).size;
+  document.getElementById('bulkImgCount').textContent = n.toLocaleString() + 'টি নির্বাচিত';
+  input.value = '';
+  bulkRender();
+}
+
+function bulkNum(v){ const n = parseFloat(String(v).replace(/[,৳\s]/g,'')); return isNaN(n) ? null : n; }
+function bulkDigits(v){ // Bangla digits -> English
+  return String(v).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+}
+
+function bulkAnalyze(){
+  const catSet = new Map((typeof allCategories !== 'undefined' ? allCategories : []).map(c => [String(c.name).trim().toLowerCase(), c.name]));
+  const existing = new Set(), existingIsbn = new Set();
+  (allProducts || []).forEach(p => {
+    existing.add((p.name||'').trim().toLowerCase() + '|' + (p.author_name||p.author||'').trim().toLowerCase());
+    if (p.isbn) existingIsbn.add(String(p.isbn).trim());
+  });
+  const skipDup = document.getElementById('bulkSkipDup').checked;
+  const seen = new Set(), seenIsbn = new Set();
+  const res = { ok:[], bad:[], dup:[], missingImg:0, newCats:new Set() };
+  _bulkRows.forEach(r => {
+    const price = bulkNum(bulkDigits(r.price));
+    const errs = [];
+    if (!r.name) errs.push('name নেই');
+    if (!price || price <= 0) errs.push('price ভুল/নেই');
+    if (!r.category) errs.push('category নেই');
+    if (errs.length){ res.bad.push({ r, err: errs.join(', ') }); return; }
+    const key = r.name.toLowerCase() + '|' + r.author.toLowerCase();
+    const isDup = existing.has(key) || seen.has(key) || (r.isbn && (existingIsbn.has(r.isbn) || seenIsbn.has(r.isbn)));
+    seen.add(key); if (r.isbn) seenIsbn.add(r.isbn);
+    if (isDup && skipDup){ res.dup.push(r); return; }
+    const tokens = r.image ? r.image.split(/[|;]/).map(s => s.trim()).filter(Boolean) : [];
+    let missing = 0;
+    tokens.forEach(t => { if (!/^https?:\/\//i.test(t) && !_bulkImgMap.has(t.split(/[\\/]/).pop().toLowerCase())) missing++; });
+    res.missingImg += missing;
+    const canon = catSet.get(r.category.toLowerCase());
+    if (!canon) res.newCats.add(r.category);
+    res.ok.push({ r, price, tokens, category: canon || r.category });
+  });
+  return res;
+}
+
+function bulkRender(){
+  const box = document.getElementById('bulkPreview'), btn = document.getElementById('bulkStartBtn');
+  if (!_bulkRows.length){ box.style.display = 'none'; btn.disabled = true; return; }
+  const a = bulkAnalyze(); window._bulkPlan = a;
+  const autoCat = document.getElementById('bulkAutoCat').checked;
+  const blockCats = a.newCats.size && !autoCat;
+  const pill = (t, c) => `<span style="background:${c};color:#fff;border-radius:20px;padding:3px 10px;font-size:0.72rem;font-weight:700">${t}</span>`;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      ${pill('মোট সারি ' + _bulkRows.length, '#64748B')}
+      ${pill('Import হবে ' + a.ok.length, '#16A34A')}
+      ${a.dup.length ? pill('ডুপ্লিকেট বাদ ' + a.dup.length, '#D97706') : ''}
+      ${a.bad.length ? pill('ভুল সারি ' + a.bad.length, '#DC2626') : ''}
+      ${a.missingImg ? pill('ছবি পাওয়া যায়নি ' + a.missingImg, '#D97706') : ''}
+    </div>
+    ${a.newCats.size ? `<div style="font-size:0.74rem;margin-bottom:6px;color:${blockCats?'var(--red)':'var(--text2)'}">${autoCat ? 'নতুন ক্যাটাগরি তৈরি হবে' : '⚠ এই ক্যাটাগরিগুলো নেই (অটো-তৈরি বন্ধ)'}: <b>${[...a.newCats].map(esc).join(', ')}</b></div>` : ''}
+    ${a.bad.length ? `<div style="font-size:0.72rem;color:var(--red);margin-bottom:6px">ভুল সারি (লাইন): ${a.bad.slice(0,8).map(b => b.r.line + ' — ' + b.err).join(' • ')}${a.bad.length>8?' …':''}</div>` : ''}
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px"><table style="width:100%;font-size:0.72rem;border-collapse:collapse">
+      <tr style="background:var(--bg3);text-align:left"><th style="padding:6px">নাম</th><th>লেখক</th><th>ক্যাটাগরি</th><th>দাম</th><th>স্টক</th><th>ছবি</th></tr>
+      ${a.ok.slice(0,6).map(o => `<tr style="border-top:1px solid var(--border)"><td style="padding:6px">${esc(o.r.name)}</td><td>${esc(o.r.author)}</td><td>${esc(o.category)}</td><td>৳${o.price}</td><td>${esc(o.r.stock||0)}</td><td>${o.tokens.length}</td></tr>`).join('')}
+    </table></div>
+    <div style="font-size:0.68rem;color:var(--text3);margin-top:4px">প্রথম ৬টি সারি দেখানো হলো</div>`;
+  btn.disabled = !a.ok.length || blockCats;
+}
+
+function bulkLog(msg){ const t = document.getElementById('bulkLog'); t.value += msg + '\n'; t.scrollTop = t.scrollHeight; }
+function bulkProgress(done, total, label){
+  document.getElementById('bulkBar').style.width = (total ? Math.round(done/total*100) : 0) + '%';
+  document.getElementById('bulkStatus').textContent = `${label}: ${done.toLocaleString()} / ${total.toLocaleString()}`;
+}
+
+async function bulkPool(items, n, fn){
+  let i = 0;
+  await Promise.all(Array.from({length: Math.min(n, items.length)}, async () => {
+    while (i < items.length && !_bulkCancel){ const k = i++; await fn(items[k], k); }
+  }));
+}
+
+async function bulkShrink(file){
+  try {
+    if (file.size < 120 * 1024) return file;
+    const bmp = await createImageBitmap(file);
+    const max = 1000, sc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.85));
+    return (blob && blob.size < file.size) ? blob : file;
+  } catch { return file; }
+}
+
+async function bulkUpload(file){
+  const bucket = getConfig().bucket;
+  const blob = await bulkShrink(file);
+  const ext = blob === file ? (file.name.split('.').pop() || 'jpg').toLowerCase() : 'jpg';
+  const name = `bulk_${Date.now()}_${Math.random().toString(36).slice(2,9)}.${ext}`;
+  for (let t = 0; t < 2; t++){
+    const { error } = await sb.storage.from(bucket).upload(name, blob, { cacheControl:'3600', upsert:false, contentType: blob.type || file.type || 'image/jpeg' });
+    if (!error) return sb.storage.from(bucket).getPublicUrl(name).data.publicUrl;
+    if (t) throw error;
+  }
+}
+
+async function bulkStartImport(){
+  if (_bulkRunning || !sb) return;
+  const plan = bulkAnalyze(); if (!plan.ok.length) return;
+  if (!confirm(`${plan.ok.length.toLocaleString()} টি বই Import করবেন?`)) return;
+  _bulkRunning = true; _bulkCancel = false; _bulkFailed = [];
+  document.getElementById('bulkProgressWrap').style.display = 'block';
+  document.getElementById('bulkLog').value = '';
+  document.getElementById('bulkStartBtn').disabled = true;
+  document.getElementById('bulkCancelBtn').style.display = '';
+  document.getElementById('bulkErrBtn').style.display = 'none';
+  plan.bad.forEach(b => _bulkFailed.push({ ...b.r, error: b.err }));
+  let created = 0, failed = 0;
+
+  try {
+    // 1) Missing categories
+    if (plan.newCats.size && document.getElementById('bulkAutoCat').checked){
+      for (const name of plan.newCats){
+        const slug = (typeof slugifyCategoryName === 'function') ? slugifyCategoryName(name) : makeSlug(name);
+        const { data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single();
+        if (error) bulkLog(`✗ ক্যাটাগরি "${name}" তৈরি হয়নি: ${error.message}`);
+        else { bulkLog(`✓ ক্যাটাগরি তৈরি: ${name}`); if (typeof allCategories !== 'undefined') allCategories.push(data); }
+      }
+    }
+
+    // 2) Upload unique local images
+    const needed = new Map();
+    plan.ok.forEach(o => o.tokens.forEach(t => {
+      if (/^https?:\/\//i.test(t)) return;
+      const f = _bulkImgMap.get(t.split(/[\\/]/).pop().toLowerCase());
+      if (f) needed.set(f, null);
+    }));
+    const files = [...needed.keys()]; let up = 0;
+    if (files.length){
+      bulkLog(`ছবি আপলোড শুরু: ${files.length}টি`);
+      await bulkPool(files, 4, async f => {
+        try { needed.set(f, await bulkUpload(f)); }
+        catch(e){ bulkLog(`✗ ছবি আপলোড ব্যর্থ ${f.name}: ${e.message || e}`); }
+        bulkProgress(++up, files.length, 'ছবি আপলোড');
+      });
+    }
+    if (_bulkCancel) throw new Error('ব্যবহারকারী বন্ধ করেছেন');
+
+    // 3) Build payloads
+    const usedSlugs = new Set((allProducts || []).map(p => p.slug || makeSlug(p.name)));
+    const mkSlug = name => {
+      const base = makeSlug(name) || 'book'; let s = base, n = 2;
+      while (usedSlugs.has(s)) s = base + '-' + (n++);
+      usedSlugs.add(s); return s;
+    };
+    const payloads = plan.ok.map(o => {
+      const r = o.r;
+      const urls = o.tokens.map(t => /^https?:\/\//i.test(t) ? t : needed.get(_bulkImgMap.get(t.split(/[\\/]/).pop().toLowerCase()))).filter(Boolean);
+      const cover = r.cover_type || 'Hardcover';
+      return { _line: r.line, _src: r, p: {
+        name: r.name, slug: mkSlug(r.name), category: o.category, product_type:'book',
+        sub_category: r.sub_category || null, brand: null, color:'#AA2C2D', badge: r.badge || null,
+        price: o.price, old_price: bulkNum(bulkDigits(r.old_price)),
+        stock: parseInt(bulkDigits(r.stock)) || 0,
+        variants: [], specifications: [], faqs: [],
+        description: r.description || null,
+        author_name: r.author || null, author: r.author || null,
+        publisher: r.publisher || null, cover_type: cover, book_binding: cover,
+        isbn: r.isbn || null, edition: r.edition || null,
+        pages: parseInt(bulkDigits(r.pages)) || null,
+        country: r.country || null, language: r.language || null,
+        is_active: true,
+        ...(urls.length ? { image_url: urls[0], images: urls } : {})
+      }};
+    });
+
+    // 4) Insert in batches
+    const B = 100; let noSlug = false;
+    const strip = p => { const { slug, ...rest } = p; return rest; };
+    for (let i = 0; i < payloads.length && !_bulkCancel; i += B){
+      const chunk = payloads.slice(i, i + B);
+      let { error } = await sb.from('products').insert(chunk.map(c => noSlug ? strip(c.p) : c.p));
+      if (error && /slug/i.test(error.message || '')){
+        noSlug = true; bulkLog('ℹ products টেবিলে slug কলাম নেই — slug ছাড়া সেভ হচ্ছে');
+        ({ error } = await sb.from('products').insert(chunk.map(c => strip(c.p))));
+      }
+      if (!error){ created += chunk.length; }
+      else {
+        bulkLog(`ব্যাচ ${i/B + 1} ব্যর্থ (${error.message}) — একটা একটা করে চেষ্টা হচ্ছে…`);
+        for (const c of chunk){
+          const { error: e2 } = await sb.from('products').insert(noSlug ? strip(c.p) : c.p);
+          if (e2){ failed++; _bulkFailed.push({ ...c._src, error: e2.message }); bulkLog(`✗ লাইন ${c._line} (${c._src.name}): ${e2.message}`); }
+          else created++;
+        }
+      }
+      bulkProgress(Math.min(i + B, payloads.length), payloads.length, 'ডাটাবেসে সেভ');
+    }
+  } catch(e){
+    bulkLog('✗ ' + (e.message || e)); toast('Import থেমেছে', e.message || '', 'error');
+  }
+
+  _bulkRunning = false;
+  document.getElementById('bulkCancelBtn').style.display = 'none';
+  const nBad = _bulkFailed.length;
+  bulkLog(`\n✅ সম্পন্ন — সফল: ${created}, ব্যর্থ/ভুল: ${nBad}`);
+  document.getElementById('bulkStatus').textContent = `সফল ${created.toLocaleString()} • ব্যর্থ/ভুল ${nBad.toLocaleString()}`;
+  if (nBad) document.getElementById('bulkErrBtn').style.display = '';
+  toast('Bulk Import শেষ', `${created} টি বই যোগ হয়েছে${nBad ? `, ${nBad} টি ব্যর্থ` : ''}`, nBad ? 'info' : 'success');
+  try { await loadProducts(); renderDashboard(); } catch {}
+}
+
+function bulkDownloadErrors(){
+  if (!_bulkFailed.length) return;
+  const cols = [...BULK_COLS, 'error'];
+  const csv = '\uFEFF' + [cols, ..._bulkFailed.map(r => cols.map(c => r[c] ?? ''))]
+    .map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'failed_rows.csv'; a.click();
+}
+</script>
+
 </body>
 </html>
