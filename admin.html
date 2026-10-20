@@ -230,7 +230,8 @@ body {
 }
 
 .sb-brand {
-  padding: 20px 18px 16px;
+  box-sizing: border-box; height: 60px; /* topbar-এর সাথে একই height, যাতে নিচের border এক লাইনে থাকে */
+  padding: 0 18px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 11px;
 }
@@ -1538,6 +1539,75 @@ body {
   #appShell, #mainContent, .page-wrap, .section { max-width: 100vw; overflow-x: hidden; }
 }
 
+
+/* Low stock alert - compact & collapsible */
+.ls-head{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+.ls-head-text{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+.ls-sub{font-size:0.66rem;font-family:var(--mono);color:var(--text-3,#888);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls-count{font-size:0.68rem;font-family:var(--mono);color:var(--amber);background:rgba(255,159,10,0.12);padding:3px 10px;border-radius:100px;white-space:nowrap;flex-shrink:0}
+.ls-chev{font-size:0.7rem;color:var(--amber);transition:transform .2s;flex-shrink:0}
+.ls-panel.open .ls-chev{transform:rotate(180deg)}
+.ls-body{border-top:1px solid rgba(255,159,10,0.2);padding:10px 12px}
+.ls-items{display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow-y:auto;padding-right:2px}
+.ls-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid rgba(255,159,10,0.3);border-radius:8px;padding:4px 9px;cursor:pointer;max-width:100%}
+.ls-chip:hover{border-color:var(--amber)}
+.ls-chip-name{font-size:0.74rem;font-weight:600;color:var(--text);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.ls-chip-st{font-size:0.62rem;font-family:var(--mono);font-weight:700;white-space:nowrap}
+@media(max-width:768px){
+  .ls-head{padding:9px 12px}
+  .ls-items{flex-direction:column;flex-wrap:nowrap;max-height:200px}
+  .ls-chip{width:100%;justify-content:space-between}
+  .ls-chip-name{max-width:none;flex:1;min-width:0}
+}
+
+/* ═══ Mobile fixes: admins · edit items · requests · orders ═══ */
+.oe-f{display:contents}
+.oe-f>span{display:none}
+.oe-item-row>div:first-child{min-width:0}
+@media (max-width:700px){
+  /* Manage Admins: এক কলাম, নাম/ব্যাজ ওভারল্যাপ বন্ধ */
+  .adm-grid{grid-template-columns:1fr !important;gap:14px !important}
+  .adm-row{flex-wrap:wrap}
+  .adm-info{flex:1 1 calc(100% - 50px) !important}
+  .adm-info>div{overflow-wrap:anywhere}
+  .adm-right{flex:1 1 100%;margin-left:49px;padding-bottom:2px}
+
+  /* Edit Info → items: নাম এক লাইনে, নিচে Qty / Price / ✕ */
+  .oe-item-row{grid-template-columns:1fr 1fr 34px !important;gap:6px 8px !important;align-items:end !important}
+  .oe-item-row>div:first-child{grid-column:1/-1}
+  .oe-item-name{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;line-height:1.35}
+  .oe-f{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .oe-f>span{display:block;font-size:.62rem;color:var(--text3);font-family:var(--mono)}
+  .oe-f input{width:100% !important;min-width:0}
+  .oe-item-remove{width:34px;height:34px}
+
+  /* Filter bar (Orders + Requests): এক সারিতে ছোট ও পরিষ্কার */
+  #sec-orders .panel-actions,#sec-requests .panel-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  #sec-orders .panel-actions select,#sec-requests .panel-actions select{flex:1 1 0 !important;min-width:0 !important;width:auto !important;text-overflow:ellipsis;padding:8px 8px !important;font-size:.74rem !important}
+  .filter-refresh{flex:0 0 40px !important;width:40px;padding:0 !important;justify-content:center}
+  .filter-refresh span{display:none}
+
+  /* Order Requests: কমপ্যাক্ট কার্ড */
+  #orTableBody tr.mc-row,#orTableBody tr{display:grid !important;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 12px;margin-bottom:8px}
+  #orTableBody td::before{display:none !important}
+  #orTableBody td{padding:0 !important;border:0 !important;text-align:left;justify-content:flex-start;margin:0}
+  #orTableBody td:nth-child(1){grid-column:1;grid-row:1;border:0 !important;margin:0 !important;padding:0 !important}
+  #orTableBody td:nth-child(4){grid-column:2;grid-row:1;justify-self:end}
+  #orTableBody td:nth-child(2){grid-column:1;grid-row:2;font-size:.74rem !important;color:var(--text2)}
+  #orTableBody td:nth-child(2) div{display:inline;margin-left:6px}
+  #orTableBody td:nth-child(5){grid-column:2;grid-row:2;justify-self:end}
+  #orTableBody td:nth-child(3){grid-column:1;grid-row:3;max-width:none !important;padding-top:4px !important}
+  #orTableBody td:nth-child(6){grid-column:2;grid-row:3;align-self:end;border:0 !important;margin:0 !important;padding:0 !important;justify-self:end}
+  #orTableBody td:nth-child(6) .btn{width:auto !important;padding:5px 12px;min-height:32px}
+
+  /* Orders: শুধু Order ID + ডানে Status Update, ট্যাপ করলে ডিটেইলস */
+  #orderTableBody tr.order-row{display:grid !important;grid-template-columns:1fr 150px;align-items:center;gap:8px;padding:8px 10px;margin-bottom:8px;cursor:pointer}
+  #orderTableBody tr.order-row td{display:none !important}
+  #orderTableBody tr.order-row td:nth-child(1),#orderTableBody tr.order-row td:nth-child(9){display:block !important;padding:0 !important;border:0 !important;margin:0 !important}
+  #orderTableBody tr.order-row td::before{display:none !important}
+  #orderTableBody tr.order-row td:nth-child(1){font-size:.8rem !important;text-align:left}
+  #orderTableBody tr.order-row td:nth-child(9) select{width:100%;min-height:38px}
+}
 </style>
 </head>
 <body>
@@ -1845,16 +1915,20 @@ body {
         </div>
 
         <!-- Low Stock Alert -->
-        <div id="lowStockAlert" style="display:none;margin-bottom:18px">
-          <div class="panel" style="border-color:rgba(255,159,10,0.35);background:rgba(255,159,10,0.04)">
-            <div class="panel-header" style="border-bottom-color:rgba(255,159,10,0.2)">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(255,159,10,0.15);color:var(--amber)"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <span style="font-family:var(--font-bn);color:var(--amber)">লো স্টক সতর্কতা</span>
+        <div id="lowStockAlert" style="display:none;margin-bottom:14px">
+          <div class="panel ls-panel" style="border-color:rgba(255,159,10,0.35);background:rgba(255,159,10,0.04)">
+            <div class="ls-head" id="lowStockHead" onclick="toggleLowStock()" role="button" tabindex="0">
+              <div class="panel-title-icon" style="background:rgba(255,159,10,0.15);color:var(--amber);width:28px;height:28px;font-size:0.8rem;flex-shrink:0"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="ls-head-text">
+                <span style="font-family:var(--font-bn);color:var(--amber);font-weight:700;font-size:0.88rem">লো স্টক সতর্কতা</span>
+                <span class="ls-sub" id="lowStockSub"></span>
               </div>
-              <span style="font-size:0.68rem;font-family:var(--mono);color:var(--amber);background:rgba(255,159,10,0.12);padding:3px 10px;border-radius:100px" id="lowStockCount">0 পণ্য</span>
+              <span class="ls-count" id="lowStockCount">0 পণ্য</span>
+              <i class="fa-solid fa-chevron-down ls-chev" id="lowStockChev"></i>
             </div>
-            <div style="padding:12px 20px 14px;display:flex;flex-wrap:wrap;gap:8px" id="lowStockItems"></div>
+            <div class="ls-body" id="lowStockBody" style="display:none">
+              <div class="ls-items" id="lowStockItems"></div>
+            </div>
           </div>
         </div>
 
@@ -2038,8 +2112,8 @@ body {
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </select>
-              <button class="btn btn-ghost btn-sm" onclick="loadOrders()">
-                <i class="fa-solid fa-rotate-right"></i> Refresh
+              <button class="btn btn-ghost btn-sm filter-refresh" onclick="loadOrders()">
+                <i class="fa-solid fa-rotate-right"></i> <span>Refresh</span>
               </button>
             </div>
           </div>
@@ -2278,7 +2352,7 @@ body {
                 <option value="">সব ধরন</option><option value="cancel_request">বাতিলের অনুরোধ</option><option value="report">রিপোর্ট</option><option value="self_cancel">নিজে বাতিল</option></select>
               <select class="form-inp" style="padding:7px 11px;font-size:0.76rem" id="orStatusFilter" onchange="renderOrderRequests()">
                 <option value="">সব স্ট্যাটাস</option><option value="open">নতুন</option><option value="in_progress">দেখা হচ্ছে</option><option value="resolved">সমাধান</option><option value="rejected">প্রত্যাখ্যাত</option></select>
-              <button class="btn btn-ghost btn-sm" onclick="loadOrderRequests()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+              <button class="btn btn-ghost btn-sm filter-refresh" onclick="loadOrderRequests()"><i class="fa-solid fa-rotate-right"></i> <span>Refresh</span></button>
             </div>
           </div>
           <div class="table-wrap"><table class="data-table">
@@ -2946,7 +3020,7 @@ end $$;
 
       <!-- ══ MANAGE ADMINS ══ -->
       <div class="section" id="sec-admins">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+        <div class="adm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
           <!-- Admin List Panel -->
           <div class="panel">
             <div class="panel-header">
@@ -5215,12 +5289,22 @@ function renderDashboard() {
 /* ══════════════════════════════════════
    LOW STOCK ALERT
 ══════════════════════════════════════ */
+function toggleLowStock(force) {
+  const body = document.getElementById('lowStockBody');
+  const panel = document.querySelector('#lowStockAlert .ls-panel');
+  if (!body || !panel) return;
+  const open = typeof force === 'boolean' ? force : body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  panel.classList.toggle('open', open);
+}
+
 function renderLowStockAlert() {
   const LOW_STOCK_THRESHOLD = 5;
   const lowStockProducts = allProducts.filter(p => p.is_active !== false && (p.stock || 0) < LOW_STOCK_THRESHOLD && (p.stock || 0) >= 0);
   const alertEl = document.getElementById('lowStockAlert');
   const itemsEl = document.getElementById('lowStockItems');
   const countEl = document.getElementById('lowStockCount');
+  const subEl = document.getElementById('lowStockSub');
   if (!alertEl || !itemsEl) return;
 
   if (!lowStockProducts.length) {
@@ -5229,14 +5313,21 @@ function renderLowStockAlert() {
   }
   alertEl.style.display = 'block';
   countEl.textContent = lowStockProducts.length + ' পণ্য';
-  itemsEl.innerHTML = lowStockProducts.map(p => `
-    <div onclick="navTo('products')" title="Products পেজে যান" style="display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid rgba(255,159,10,0.3);border-radius:10px;padding:8px 12px;cursor:pointer;transition:all var(--t)" onmouseover="this.style.borderColor='var(--amber)'" onmouseout="this.style.borderColor='rgba(255,159,10,0.3)'">
-      <div style="width:28px;height:28px;border-radius:7px;background:${p.color || '#AA2C2D'}18;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:${p.color || '#AA2C2D'};flex-shrink:0"><i class="fa-solid fa-box"></i></div>
-      <div>
-        <div style="font-size:0.78rem;font-weight:600;color:var(--text);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">${p.name || '—'}</div>
-        <div style="font-size:0.65rem;font-family:var(--mono);color:${p.stock === 0 ? 'var(--red)' : 'var(--amber)' };font-weight:700">${p.stock === 0 ? '⚠ Out of Stock' : p.stock + ' বাকি'}</div>
-      </div>
-    </div>`).join('');
+
+  // Out of stock আগে, তারপর কম স্টক
+  lowStockProducts.sort((a, b) => (a.stock || 0) - (b.stock || 0));
+  const outCount = lowStockProducts.filter(p => (p.stock || 0) === 0).length;
+  const lowCount = lowStockProducts.length - outCount;
+  if (subEl) subEl.textContent = [outCount ? outCount + ' Out of Stock' : '', lowCount ? lowCount + ' কম স্টক' : ''].filter(Boolean).join(' · ');
+
+  itemsEl.innerHTML = lowStockProducts.map(p => {
+    const out = (p.stock || 0) === 0;
+    const name = String(p.name || '—').replace(/</g, '&lt;');
+    return `<div class="ls-chip" onclick="navTo('products')" title="${name}">
+      <span class="ls-chip-name">${name}</span>
+      <span class="ls-chip-st" style="color:${out ? 'var(--red)' : 'var(--amber)'}">${out ? 'Out of Stock' : p.stock + ' বাকি'}</span>
+    </div>`;
+  }).join('');
 }
 
 /* ══════════════════════════════════════
@@ -5307,16 +5398,16 @@ function renderAdminList() {
     return;
   }
   el.innerHTML = allAdmins.map(a => `
-    <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border)">
+    <div class="adm-row" style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border)">
       <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:700;color:white;flex-shrink:0;overflow:hidden">
         ${a.avatar ? `<img src="${a.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : a.name.charAt(0).toUpperCase()}
       </div>
-      <div style="flex:1;min-width:0">
+      <div class="adm-info" style="flex:1;min-width:0">
         <div style="font-size:0.84rem;font-weight:600;color:var(--text)">${a.name}</div>
-        <div style="font-size:0.68rem;color:var(--text3);font-family:var(--mono)">${a.email}</div>
+        <div class="adm-email" style="font-size:0.68rem;color:var(--text3);font-family:var(--mono)">${a.email}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:7px">
-        <span style="font-size:0.65rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;background:${roleColors[a.role]}18;color:${roleColors[a.role]};display:flex;align-items:center;gap:4px">
+      <div class="adm-right" style="display:flex;align-items:center;gap:7px">
+        <span style="font-size:0.65rem;font-weight:700;font-family:var(--mono);white-space:nowrap;padding:3px 9px;border-radius:100px;background:${roleColors[a.role]}18;color:${roleColors[a.role]};display:flex;align-items:center;gap:4px">
           <i class="fa-solid ${roleIcons[a.role]}" style="font-size:0.55rem"></i>${roleLabels[a.role] || a.role}
         </span>
         ${allAdmins.length > 1 ? `<button class="btn btn-danger btn-xs" onclick="removeAdmin(${a.id})" title="Remove"><i class="fa-solid fa-trash"></i></button>` : ''}
@@ -5948,6 +6039,14 @@ async function quickUpdate(productId, field) {
 /* ══════════════════════════════════════
    ORDERS TABLE
 ══════════════════════════════════════ */
+function orderRowTap(ev, id) {
+  // মোবাইলে কার্ডের যেকোনো জায়গায় ট্যাপ করলে অর্ডার ডিটেইলস খুলবে
+  if (!window.matchMedia('(max-width:700px)').matches) return;
+  if (ev.target.closest('select, button, a, input, option')) return;
+  if (ev.target.closest('td:first-child')) return; // এটার নিজস্ব onclick আছে
+  viewOrder(id);
+}
+
 function renderOrders() {
   const q = (document.getElementById('orderSearch')?.value || '').toLowerCase();
   const sf = document.getElementById('orderStatusFilter')?.value || '';
@@ -5976,7 +6075,7 @@ function renderOrders() {
     const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled'].includes(o.status))
       ? o.status
       : (['in_stock','collecting','collected'].includes(o.status) ? 'processing' : 'pending');
-    return `<tr>
+    return `<tr class="order-row" onclick="orderRowTap(event,'${o.id}')">
       <td style="font-family:var(--mono);font-size:0.74rem;color:var(--blue);cursor:pointer;font-weight:600" onclick="viewOrder('${o.id}')">${o.order_number || '—'}</td>
       <td style="font-weight:500">${o.customer_name || '—'}</td>
       <td style="font-size:0.76rem;color:var(--text2);font-family:var(--mono)">${o.customer_phone || '—'}</td>
@@ -6541,10 +6640,9 @@ function rebuildItemsUI() {
     <div class="oe-item-row ${item._manual ? 'manual-item' : ''}">
       <div>
         <div class="oe-item-name">${item.name || 'Item'}${item._manual ? ' <span style="font-size:0.6rem;color:var(--purple);font-family:var(--mono);font-weight:700">MANUAL</span>' : ''}</div>
-        <div class="oe-item-sub">Unit Price</div>
-      </div>
-      <input class="form-inp" type="number" value="${item.qty||1}" min="1" style="font-size:0.78rem;padding:6px 9px;text-align:center" id="oe-qty-${idx}" placeholder="Qty" oninput="updateItemCache(${idx})">
-      <input class="form-inp" type="number" value="${item.price||0}" min="0" style="font-size:0.78rem;padding:6px 9px" id="oe-price-${idx}" placeholder="Price" oninput="updateItemCache(${idx})">
+        </div>
+      <label class="oe-f"><span>Qty</span><input class="form-inp" type="number" value="${item.qty||1}" min="1" style="font-size:0.78rem;padding:6px 9px;text-align:center" id="oe-qty-${idx}" placeholder="Qty" oninput="updateItemCache(${idx})"></label>
+      <label class="oe-f"><span>Unit Price</span><input class="form-inp" type="number" value="${item.price||0}" min="0" style="font-size:0.78rem;padding:6px 9px" id="oe-price-${idx}" placeholder="Price" oninput="updateItemCache(${idx})"></label>
       <button class="oe-item-remove" onclick="removeEditItem(${idx})" title="Remove item"><i class="fa-solid fa-xmark"></i></button>
     </div>`).join('');
   recalcOrderTotal();
