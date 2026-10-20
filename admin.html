@@ -2994,15 +2994,15 @@ end $$;
       <div class="form-group" style="gap:6px;margin-bottom:14px">
         <label class="form-label bn-label" style="font-size:0.7rem">পণ্যের ধরণ (Product Type) <span class="required">*</span></label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <label class="ptype-option active" id="ptypeGeneralWrap" for="ptypeGeneral">
-            <input type="radio" name="productType" id="ptypeGeneral" value="general" checked onchange="handleProductTypeChange('general')">
+          <label class="ptype-option" id="ptypeGeneralWrap" for="ptypeGeneral">
+            <input type="radio" name="productType" id="ptypeGeneral" value="general" onchange="handleProductTypeChange('general')">
             <div>
               <div class="ptype-title">সাধারণ পণ্য</div>
               <div class="ptype-sub">General Product</div>
             </div>
           </label>
-          <label class="ptype-option" id="ptypeBookWrap" for="ptypeBook">
-            <input type="radio" name="productType" id="ptypeBook" value="book" onchange="handleProductTypeChange('book')">
+          <label class="ptype-option active" id="ptypeBookWrap" for="ptypeBook">
+            <input type="radio" name="productType" id="ptypeBook" value="book" checked onchange="handleProductTypeChange('book')">
             <div>
               <div class="ptype-title">বই</div>
               <div class="ptype-sub">Book</div>
@@ -3032,7 +3032,7 @@ end $$;
           <div class="upload-zone" id="uploadZone" style="padding:8px 6px;gap:2px;min-height:unset">
             <input type="file" id="imageFile" accept="image/*" multiple onchange="handleImageSelect(this)">
             <i class="fa-solid fa-cloud-arrow-up uz-icon" style="font-size:1rem"></i>
-            <div class="uz-title" style="font-size:0.68rem;font-weight:600">ক্লিক বা ড্র্যাগ করুন</div>
+            <div class="uz-title" style="font-size:0.68rem;font-weight:600">ক্লিক, ড্র্যাগ বা <b>Ctrl+V</b> দিয়ে পেস্ট করুন</div>
             <div class="uz-sub" style="font-size:0.58rem">PNG · JPG · WEBP · Max 5MB · ৫টি পর্যন্ত</div>
           </div>
           <div class="upload-progress" id="uploadProgress" style="display:none">
@@ -5391,12 +5391,7 @@ function renderProducts() {
             <i class="fa-solid fa-check"></i>
           </button>
         </div>
-        ${showStrike ? `<div style="font-size:0.68rem;text-decoration:line-through;color:var(--text3);margin-top:2px" title="মূল দাম (original_price) — অপরিবর্তিত">৳${originalPrice.toLocaleString()}</div>` : ''}
-        ${disc ? `<div style="font-size:0.64rem;font-weight:700;margin-top:1px;display:flex;align-items:center;gap:4px">
-          <span style="color:var(--red)">-${disc}%</span>
-          ${hasBulk ? `<span style="color:var(--amber);font-size:0.58rem;background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.25);border-radius:4px;padding:0 4px" title="bulk_discount_percentage = ${bulkPct}%">+${bulkPct}% বাল্ক</span>` : ''}
-        </div>` : ''}
-        ${hasBulk ? `<div style="font-size:0.6rem;color:var(--cyan);font-family:var(--mono);margin-top:1px" title="effective sale price = original_price × (1 - totalDisc%)">→ ৳${displayPrice.toLocaleString()} effective</div>` : ''}
+        <div id="iq-price-meta-${p.id}">${iqPriceMetaHtml(p)}</div>
       </td>
       <td>
         <div class="iq-wrap">
@@ -5592,13 +5587,25 @@ function populateBdCategoryDropdown() {
  *   effectiveSalePrice – original_price এর উপর totalDiscPct প্রয়োগ করা দাম
  *   hasBulk         – bulk discount সক্রিয় আছে কিনা
  */
+// দামের নিচের অংশ: মূল দাম (strike-through), -% ছাড়, বাল্ক ব্যাজ — দাম বদলালে এটাই আবার আঁকা হয়
+function iqPriceMetaHtml(p) {
+  const { originalPrice, bulkPct, totalDiscPct, salePrice, hasBulk } = getEffectiveSalePrice(p);
+  const disc = Math.round(totalDiscPct);
+  return `${totalDiscPct > 0 ? `<div style="font-size:0.68rem;text-decoration:line-through;color:var(--text3);margin-top:2px" title="মূল দাম (original_price) — অপরিবর্তিত">৳${originalPrice.toLocaleString()}</div>` : ''}
+        ${disc > 0 ? `<div style="font-size:0.64rem;font-weight:700;margin-top:1px;display:flex;align-items:center;gap:4px">
+          <span style="color:var(--red)">-${disc}%</span>
+          ${hasBulk ? `<span style="color:var(--amber);font-size:0.58rem;background:rgba(255,159,10,0.1);border:1px solid rgba(255,159,10,0.25);border-radius:4px;padding:0 4px" title="bulk_discount_percentage = ${bulkPct}%">+${bulkPct}% বাল্ক</span>` : ''}
+        </div>` : ''}
+        ${hasBulk ? `<div style="font-size:0.6rem;color:var(--cyan);font-family:var(--mono);margin-top:1px" title="effective sale price = original_price × (1 - totalDisc%)">→ ৳${salePrice.toLocaleString()} effective</div>` : ''}`;
+}
+
 function getEffectiveSalePrice(p) {
   // original_price: কখনো পরিবর্তন হয় না — এটি হিসেবের ভিত্তি
-  const originalPrice    = Number(p.old_price || p.price);
+  const originalPrice    = (Number(p.old_price) > Number(p.price)) ? Number(p.old_price) : Number(p.price);   // old_price ≤ price হলে ছাড় নেই
   // normalSalePrice: DB-তে থাকা price — কখনো পরিবর্তন হয় না
   const normalSalePrice  = Number(p.price);
   // base discount: old_price → price পর্যন্ত কতটা ছাড় আছে
-  const baseDiscPct      = p.old_price
+  const baseDiscPct      = (Number(p.old_price) > normalSalePrice)
     ? (1 - normalSalePrice / Number(p.old_price)) * 100
     : 0;
   // bulk discount: শুধু এই ফিল্ডটিই পরিবর্তন হয়
@@ -5862,6 +5869,12 @@ async function quickUpdate(productId, field) {
 
     // Update local cache
     if (prod) prod[field] = rawVal;
+
+    // দাম বদলালে নিচের মূল দাম / -% ছাড় সাথে সাথে নতুন করে হিসাব হয়ে দেখায়
+    if (field === 'price' && prod) {
+      const meta = document.getElementById(`iq-price-meta-${productId}`);
+      if (meta) meta.innerHTML = iqPriceMetaHtml(prod);
+    }
 
     // Success flash
     input.classList.remove('saving');
@@ -7103,7 +7116,7 @@ async function openProductModal(product = null) {
   // the legacy category text for products saved before this field existed.
   const productType = product
     ? (product.product_type || (product.category === 'বই' ? 'book' : 'general'))
-    : 'general';
+    : 'book';   // নতুন পণ্য যোগ করলে সবসময় ডিফল্ট "বই"
   const ptypeGeneralEl = document.getElementById('ptypeGeneral');
   const ptypeBookEl    = document.getElementById('ptypeBook');
   if (ptypeGeneralEl) ptypeGeneralEl.checked = productType === 'general';
@@ -7113,35 +7126,11 @@ async function openProductModal(product = null) {
   document.getElementById('imageFile').value = '';
   document.getElementById('uploadFileName').textContent = '';
 
-  // Reset thumbnail strip
-  const strip = document.getElementById('adminThumbStrip');
-  if (strip) { strip.innerHTML = ''; strip.style.display = 'none'; }
-
-  // Reset / populate image preview
-  const prev = document.getElementById('imagePreview');
-  const existingImages = product?.images || (product?.image_url ? [product.image_url] : []);
-  if (existingImages.length) {
-    prev.classList.remove('empty');
-    prev.innerHTML = `<img src="${existingImages[0]}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-    // Show existing image thumbnails if more than one
-    if (existingImages.length > 1 && strip) {
-      strip.style.display = 'flex';
-      existingImages.forEach((src, idx) => {
-        const chip = document.createElement('div');
-        chip.style.cssText = `width:42px;height:42px;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid ${idx===0?'var(--blue)':'var(--border)'};flex-shrink:0;background:var(--bg3)`;
-        chip.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover">`;
-        chip.onclick = () => {
-          prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-          strip.querySelectorAll('div').forEach(c => c.style.borderColor = 'var(--border)');
-          chip.style.borderColor = 'var(--blue)';
-        };
-        strip.appendChild(chip);
-      });
-    }
-  } else {
-    prev.classList.add('empty');
-    prev.innerHTML = `<i class="fa-regular fa-image" style="font-size:2rem;color:var(--text4)"></i>`;
-  }
+  // ছবির তালিকা: আগের (সেভ করা) ছবিগুলো তালিকায় ঢোকানো হয়, যাতে নতুন ছবি যোগ করলে মুছে না যায়
+  { const ex = Array.isArray(product?.images) && product.images.length ? product.images : (product?.image_url ? [product.image_url] : []);
+    _adminImgList = ex.filter(Boolean).map(url => ({ kind: 'url', url }));
+    _adminImgDirty = false; }
+  _rebuildAdminStrip();
 
   // Sub-category select: for books this holds the genre (stored in the
   // `category` column); for General products it holds the ordinary
@@ -7305,17 +7294,47 @@ function handleSubCategorySelectChange(val) {
 // ── Admin gallery sortable state ──
 let _adminSortable = null;
 
+/* ── ছবির তালিকা: _adminImgList = [{kind:'url', url} (আগে থেকে সেভ করা) | {kind:'file', file} (নতুন)] — ক্রম = ছবির ক্রম ── */
+let _adminImgList = [], _adminImgDirty = false;
+function _adminImgSrc(it){
+  if (it.kind === 'url') return it.url;
+  if (!it.file._objUrl) it.file._objUrl = URL.createObjectURL(it.file);
+  return it.file._objUrl;
+}
+function _adminSyncLegacy(){
+  selectedImageFiles = _adminImgList.filter(x => x.kind === 'file').map(x => x.file);
+  selectedImageFile  = selectedImageFiles[0] || null;
+}
+function _adminUpdateImgLabel(){
+  const n = _adminImgList.length, nf = _adminImgList.filter(x => x.kind === 'file').length;
+  const el = document.getElementById('uploadFileName');
+  if (el) el.textContent = !n ? '' : (nf ? `মোট ${n}টি ছবি (নতুন ${nf}টি)` : `${n}টি ছবি`);
+}
+// নতুন ছবি তালিকার শেষে যোগ হয় (আগেরগুলো থাকে); মোট সর্বোচ্চ ৫টি
+function _adminImgAddFiles(files){
+  files = Array.from(files || []).filter(f => f && f.type && f.type.startsWith('image/'));
+  if (!files.length) return 0;
+  let room = 5 - _adminImgList.length;
+  if (room <= 0){ toast('সর্বোচ্চ ৫টি ছবি', 'আগে একটি ছবি সরিয়ে (×) তারপর যোগ করুন', 'error'); return 0; }
+  let added = 0;
+  for (const f of files){
+    if (room <= 0){ toast('সর্বোচ্চ ৫টি ছবি', 'বাকি ছবিগুলো যোগ করা হয়নি', 'warning'); break; }
+    if (f.size > 5 * 1024 * 1024){ toast('ছবি অনেক বড়', `${f.name || 'ছবি'} — Max 5MB`, 'error'); continue; }
+    _adminImgList.push({ kind: 'file', file: f }); room--; added++;
+  }
+  if (added){ _adminImgDirty = true; _adminSyncLegacy(); _rebuildAdminStrip(); }
+  return added;
+}
 function _rebuildAdminStrip() {
   const strip = document.getElementById('adminThumbStrip');
   const prev  = document.getElementById('imagePreview');
-  if (!strip) return;
-
+  if (!strip || !prev) return;
   if (_adminSortable) { try { _adminSortable.destroy(); } catch(e){} _adminSortable = null; }
+  _adminSyncLegacy();
+  _adminUpdateImgLabel();
 
-  // Always show hint line
   const hintHTML = `<div class="admin-thumb-strip-hint"><i class="fa-solid fa-grip-dots" style="margin-right:3px"></i>ড্র্যাগ করে সাজান — প্রথমটি Main Image হবে</div>`;
-
-  if (!selectedImageFiles.length) {
+  if (!_adminImgList.length) {
     strip.style.display = 'none';
     strip.innerHTML = hintHTML;
     prev.classList.add('empty');
@@ -7323,100 +7342,56 @@ function _rebuildAdminStrip() {
     return;
   }
 
+  prev.classList.remove('empty');
+  prev.innerHTML = `<img src="${_adminImgSrc(_adminImgList[0])}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
   strip.style.display = 'flex';
   strip.innerHTML = hintHTML;
-
-  let rendered = 0;
-  selectedImageFiles.forEach((file, idx) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target.result;
-      file._previewSrc = src;
-      rendered++;
-
-      if (idx === 0) {
-        prev.classList.remove('empty');
-        prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-      }
-
-      const chip = document.createElement('div');
-      chip.className = 'admin-thumb-chip';
-      chip.dataset.idx = String(idx);
-      chip.innerHTML = `
-        <img src="${src}" alt="image ${idx+1}">
-        <div class="admin-thumb-badge">${idx+1}</div>
-        <div class="admin-thumb-remove" title="সরান" onclick="event.stopPropagation();_adminRemoveImg(${idx})">×</div>`;
-      chip.addEventListener('click', () => {
-        prev.classList.remove('empty');
-        prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-      });
-
-      // Insert before hint
-      const hint = strip.querySelector('.admin-thumb-strip-hint');
-      strip.insertBefore(chip, hint);
-
-      // Init Sortable once all chips rendered
-      if (rendered === selectedImageFiles.length) {
-        setTimeout(() => {
-          if (typeof Sortable === 'undefined') return;
-          _adminSortable = Sortable.create(strip, {
-            animation: 180,
-            filter: '.admin-thumb-strip-hint,.admin-thumb-remove',
-            draggable: '.admin-thumb-chip',
-            ghostClass: 'sortable-drag',
-            chosenClass: 'sortable-chosen',
-            onEnd: () => {
-              const chips = strip.querySelectorAll('.admin-thumb-chip');
-              const newOrder = Array.from(chips).map(c => parseInt(c.dataset.idx));
-              const reordered = newOrder.map(i => selectedImageFiles[i]).filter(Boolean);
-              selectedImageFiles = reordered;
-              selectedImageFile  = reordered[0] || null;
-              // Update badges + onclick indices
-              chips.forEach((c, i) => {
-                c.dataset.idx = String(i);
-                const badge = c.querySelector('.admin-thumb-badge');
-                if (badge) badge.textContent = i + 1;
-                const rm = c.querySelector('.admin-thumb-remove');
-                if (rm) rm.setAttribute('onclick', `event.stopPropagation();_adminRemoveImg(${i})`);
-              });
-              // Refresh main preview
-              if (reordered[0]?._previewSrc) {
-                prev.classList.remove('empty');
-                prev.innerHTML = `<img src="${reordered[0]._previewSrc}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
-              }
-              document.getElementById('uploadFileName').textContent =
-                reordered.length === 1 ? reordered[0].name : `${reordered.length}টি ছবি (সাজানো হয়েছে)`;
-            }
-          });
-        }, 60);
-      }
-    };
-    reader.readAsDataURL(file);
+  const hint = strip.querySelector('.admin-thumb-strip-hint');
+  _adminImgList.forEach((it, idx) => {
+    const src = _adminImgSrc(it);
+    const chip = document.createElement('div');
+    chip.className = 'admin-thumb-chip';
+    chip.dataset.idx = String(idx);
+    chip.innerHTML = `
+      <img src="${src}" alt="image ${idx+1}">
+      <div class="admin-thumb-badge">${idx+1}</div>
+      <div class="admin-thumb-remove" title="সরান" onclick="event.stopPropagation();_adminRemoveImg(${idx})">×</div>`;
+    chip.addEventListener('click', () => {
+      prev.classList.remove('empty');
+      prev.innerHTML = `<img src="${src}" alt="preview" style="width:100%;height:100%;object-fit:contain">`;
+    });
+    strip.insertBefore(chip, hint);
   });
+
+  if (typeof Sortable !== 'undefined') {
+    _adminSortable = Sortable.create(strip, {
+      animation: 180,
+      filter: '.admin-thumb-strip-hint,.admin-thumb-remove',
+      draggable: '.admin-thumb-chip',
+      ghostClass: 'sortable-drag',
+      chosenClass: 'sortable-chosen',
+      onEnd: () => {
+        const order = Array.from(strip.querySelectorAll('.admin-thumb-chip')).map(c => parseInt(c.dataset.idx));
+        const reordered = order.map(i => _adminImgList[i]).filter(Boolean);
+        if (reordered.length === _adminImgList.length){ _adminImgList = reordered; _adminImgDirty = true; }
+        setTimeout(_rebuildAdminStrip, 0);
+      }
+    });
+  }
 }
 
 function _adminRemoveImg(idx) {
-  selectedImageFiles.splice(idx, 1);
-  selectedImageFile = selectedImageFiles[0] || null;
+  if (idx < 0 || idx >= _adminImgList.length) return;
+  _adminImgList.splice(idx, 1);
+  _adminImgDirty = true;
   _rebuildAdminStrip();
-  document.getElementById('uploadFileName').textContent =
-    selectedImageFiles.length
-      ? (selectedImageFiles.length === 1 ? selectedImageFiles[0].name : `${selectedImageFiles.length}টি ছবি নির্বাচিত`)
-      : '';
 }
 
+// ফাইল বাছলে আগের ছবির সাথে যোগ হয় (আগে এটা সব বদলে দিত)
 function handleImageSelect(input) {
-  const files = Array.from(input.files || []).slice(0, 5);
-  if (!files.length) return;
-  const oversized = files.find(f => f.size > 5 * 1024 * 1024);
-  if (oversized) { toast('File too large', `${oversized.name} — Max 5MB allowed`, 'error'); return; }
-
-  selectedImageFiles = files;
-  selectedImageFile  = files[0];
-  document.getElementById('uploadFileName').textContent =
-    files.length === 1 ? files[0].name : `${files.length}টি ছবি নির্বাচিত`;
-
-  _rebuildAdminStrip();
+  const files = Array.from(input.files || []);
+  if (files.length) _adminImgAddFiles(files);
+  try { input.value = ''; } catch(e) {}
 }
 
 // Upload a single file — returns public URL or null
@@ -7499,6 +7474,24 @@ async function uploadAllImages() {
   document.getElementById('uploadProgressBar').style.width = '100%';
   setTimeout(() => document.getElementById('uploadProgress').style.display = 'none', 800);
   return urls;
+}
+
+// তালিকার ক্রম ঠিক রেখে: আগের ছবির URL যেমন আছে তেমন, নতুন ফাইলগুলো আপলোড করে URL বসানো
+async function _adminResolveImages() {
+  const items = _adminImgList.slice();
+  const files = items.filter(x => x.kind === 'file');
+  const bar = document.getElementById('uploadProgressBar'), wrap = document.getElementById('uploadProgress');
+  if (files.length && wrap) wrap.style.display = 'block';
+  const urls = []; let failed = 0, done = 0;
+  for (const it of items) {
+    if (it.kind === 'url') { urls.push(it.url); continue; }
+    if (bar) bar.style.width = `${Math.round((done / files.length) * 90)}%`;
+    const u = await uploadOneImage(it.file); done++;
+    if (u) urls.push(u); else failed++;
+  }
+  if (bar) bar.style.width = '100%';
+  if (wrap) setTimeout(() => wrap.style.display = 'none', 800);
+  return { urls, failed };
 }
 
 // নাম লিখলে slug স্বয়ংক্রিয়ভাবে ইংরেজিতে তৈরি হয় (হাতে বদলালে আর অটো বদলায় না)
@@ -7584,18 +7577,21 @@ async function saveProduct() {
     // ── STEP 1: Upload all images — wait for URLs before DB write ──
     let imageUrl  = null;
     let imageUrls = [];
-    const hasNewFiles = selectedImageFiles.length > 0 || selectedImageFile;
+    const imgDirty = _adminImgDirty;   // ছবি যোগ/সরানো/সাজানো হলেই কেবল ছবির ফিল্ড আপডেট হবে
 
-    if (hasNewFiles) {
-      imageUrls = await uploadAllImages();
-      if (!imageUrls.length) {
+    if (imgDirty) {
+      const hasFiles = _adminImgList.some(x => x.kind === 'file');
+      const r = await _adminResolveImages();
+      imageUrls = r.urls;
+      if (hasFiles && !imageUrls.length) {
         clearTimeout(timeoutId);
         console.error('[saveProduct] Aborting save: all image uploads failed for product:', name);
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Product';
         return;
       }
-      imageUrl = imageUrls[0]; // primary image
+      if (r.failed) toast('কিছু ছবি আপলোড হয়নি', `${r.failed}টি ছবি আপলোড ব্যর্থ — বাকিগুলো সেভ হচ্ছে`, 'warning');
+      imageUrl = imageUrls[0] || null;   // primary image
     }
 
     // Publisher & Cover Type (books only) — "বইয়ের ধরণ" dropdown removed
@@ -7654,8 +7650,7 @@ async function saveProduct() {
       author:       authorVal,
       book_binding: cover_type,
       is_active:   true,
-      ...(imageUrl    ? { image_url: imageUrl }     : {}),
-      ...(imageUrls.length ? { images: imageUrls } : {}),
+      ...(imgDirty ? { image_url: imageUrl, images: imageUrls } : {}),
     };
 
     // ── STEP 2: Write to DB only after upload confirmed ──
@@ -7683,6 +7678,7 @@ async function saveProduct() {
     closeModal('productModal');
     selectedImageFiles = [];
     selectedImageFile  = null;
+    _adminImgList = []; _adminImgDirty = false;
     await loadProducts();
     renderDashboard();
 
@@ -7903,11 +7899,26 @@ uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag
 uploadZone.addEventListener('drop', e => {
   e.preventDefault();
   uploadZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    document.getElementById('imageFile').files = e.dataTransfer.files;
-    handleImageSelect(document.getElementById('imageFile'));
-  }
+  const imgs = Array.from(e.dataTransfer.files || []).filter(f => f.type && f.type.startsWith('image/'));
+  if (imgs.length) _adminImgAddFiles(imgs);
+});
+
+/* ── Ctrl+V: কপি করা ছবি সরাসরি পণ্যের ছবিতে যোগ (স্ক্রিনশট / ওয়েবসাইট থেকে Copy Image) ── */
+document.addEventListener('paste', e => {
+  const m = document.getElementById('productModal');
+  if (!m || !m.classList.contains('open')) return;
+  if (e.target && e.target.closest && e.target.closest('#pdeEd, #pdeSrc')) return;   // বিবরণের এডিটরে নিজস্ব পেস্ট চলে
+  const cd = e.clipboardData; if (!cd) return;
+  let imgs = Array.from(cd.files || []).filter(f => f.type && f.type.startsWith('image/'));
+  if (!imgs.length && cd.items) imgs = Array.from(cd.items).filter(it => it.kind === 'file' && it.type.startsWith('image/')).map(it => it.getAsFile()).filter(Boolean);
+  if (!imgs.length) return;           // শুধু টেক্সট হলে স্বাভাবিক পেস্ট
+  e.preventDefault();
+  const add = imgs.map((f, i) => {
+    const ext = (f.type.split('/')[1] || 'png').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '') || 'png';
+    return new File([f], `pasted_${Date.now()}_${i}.${ext}`, { type: f.type });
+  });
+  const n = _adminImgAddFiles(add);
+  if (n) toast('ছবি যোগ হয়েছে', `${n}টি ছবি পেস্ট হয়েছে`, 'success');
 });
 
 /* ══════════════════════════════════════
@@ -8670,7 +8681,45 @@ const BN_WORDS_RAW = {
   'সহীহ':'sahih','বুখারী':'bukhari','মুসলিম':'muslim','ঈমান':'iman','আরবি':'arabi','আরবী':'arabi','মুহাম্মদ':'muhammad','মুহাম্মাদ':'muhammad',
   'মোহাম্মদ':'mohammad','মোঃ':'md','মো':'md','আব্দুল':'abdul','আবদুল':'abdul','আব্দুর':'abdur','আবদুর':'abdur','হুমায়ূন':'humayun',
   'আহমেদ':'ahmed','আহমদ':'ahmad','বই':'boi','বাংলা':'bangla','বাংলাদেশ':'bangladesh','ঢাকা':'dhaka','ভারত':'bharat','কলকাতা':'kolkata',
-  'উপন্যাস':'uponnash','অনুবাদ':'anubad','রচনাসমগ্র':'rochonasomogro','সমগ্র':'somogro','ইতিহাস':'itihas','সায়েন্স-ফিকশন':'science-fiction'
+  'উপন্যাস':'uponnash','অনুবাদ':'anubad','রচনাসমগ্র':'rochonasomogro','সমগ্র':'somogro','ইতিহাস':'itihas','সায়েন্স-ফিকশন':'science-fiction',
+
+  // ── বই/টাইটেলে বহুল ব্যবহৃত ইংরেজি শব্দ (বাংলা বানানের বিভিন্ন রূপসহ) ──
+  'গোস্ট':'ghost','ঘোস্ট':'ghost','হান্টার':'hunter','হান্টিং':'hunting','হান্ট':'hunt','হরর':'horror','হররস':'horrors','থ্রিলার':'thriller','থ্রিলারস':'thrillers',
+  'ডিটেকটিভ':'detective','ডিটেক্টিভ':'detective','ডিটেকটিভস':'detectives','মিস্ট্রি':'mystery','মিস্টেরি':'mystery','মিস্ট্রিজ':'mysteries','অ্যাডভেঞ্চার':'adventure',
+  'এডভেঞ্চার':'adventure','অ্যাডভেঞ্চারস':'adventures','ফ্যান্টাসি':'fantasy','ফ্যান্টাসী':'fantasy','রোমান্স':'romance','রোমান্টিক':'romantic','ড্রামা':'drama',
+  'কমেডি':'comedy','ট্র্যাজেডি':'tragedy','ক্রাইম':'crime','মার্ডার':'murder','কিলার':'killer','ডেভিল':'devil','ডেমন':'demon','অ্যাঞ্জেল':'angel','এঞ্জেল':'angel',
+  'ভ্যাম্পায়ার':'vampire','ওয়েরউলফ':'werewolf','উইচ':'witch','উইজার্ড':'wizard','ড্রাগন':'dragon','কিংডম':'kingdom','এম্পায়ার':'empire','ওয়ারিয়র':'warrior',
+  'সোলজার':'soldier','আর্মি':'army','ফোর্স':'force','স্পাই':'spy','এজেন্ট':'agent','মিশন':'mission','ডেঞ্জার':'danger','ডেডলি':'deadly','ডেড':'dead','ব্লাড':'blood',
+  'ব্ল্যাক':'black','ব্লাক':'black','হোয়াইট':'white','রেড':'red','ব্লু':'blue','গ্রিন':'green','ইয়েলো':'yellow','গ্রে':'grey','শ্যাডো':'shadow','ডার্কনেস':'darkness',
+  'সাইলেন্ট':'silent','সাইলেন্স':'silence','মিডনাইট':'midnight','লাইব্রেরি':'library','লাইব্রেরী':'library','আলকেমিস্ট':'alchemist','অ্যালকেমিস্ট':'alchemist','কোড':'code',
+  'ডা':'da','ভিঞ্চি':'vinci','প্যাশন':'passion','পেশেন্ট':'patient','পেশেন্স':'patience','স্পিরিট':'spirit','সোল':'soul','হার্ট':'heart','ব্রেন':'brain','ব্রেইন':'brain',
+  'কাউন্ট':'count','মন্টে':'monte','ক্রিস্টো':'cristo','লর্ড':'lord','লেডি':'lady','মিস্টার':'mister','ফরএভার':'forever','ইটারনাল':'eternal','ইনফিনিট':'infinite',
+  'ইউনিভার্স':'universe','গ্যালাক্সি':'galaxy','প্ল্যানেট':'planet','স্পেস':'space','রকেট':'rocket','রোবট':'robot','রোবোট':'robot','এলিয়েন':'alien','মেশিন':'machine',
+  'টেকনোলজি':'technology','ফিউচার':'future','পাস্ট':'past','প্রেজেন্ট':'present','হিরো':'hero','হিরোইন':'heroine','ভিলেন':'villain','লেজেন্ড':'legend','মিথ':'myth',
+  'টেল':'tale','টেলস':'tales','ফেয়ারি':'fairy','অ্যালিস':'alice','এলিস':'alice','ওয়ান্ডারল্যান্ড':'wonderland','ল্যান্ড':'land','আইল্যান্ড':'island','ট্রেজার':'treasure',
+  'পাইরেট':'pirate','জার্নি':'journey','ট্রাভেল':'travel','ট্যুর':'tour','ওয়ে':'way','রোড':'road','সিটি':'city','ভিলেজ':'village','কান্ট্রি':'country','স্ট্রিট':'street',
+  'হোটেল':'hotel','ক্যাসল':'castle','প্যালেস':'palace','টাওয়ার':'tower','ব্রিজ':'bridge','ফরেস্ট':'forest','ওয়াইল্ড':'wild','অ্যানিমাল':'animal','লায়ন':'lion','টাইগার':'tiger',
+  'উলফ':'wolf','ফক্স':'fox','বিয়ার':'bear','হর্স':'horse','স্নেক':'snake','ফিশ':'fish','বাটারফ্লাই':'butterfly','ফোর':'four','ফাইভ':'five','সিক্স':'six','সেভেন':'seven',
+  'এইট':'eight','নাইন':'nine','টেন':'ten','টু':'to','হান্ড্রেড':'hundred','থাউজেন্ড':'thousand','মিলিয়ন':'million','ইয়ার':'year','ইয়ার্স':'years','মান্থ':'month','উইক':'week',
+  'সামার':'summer','উইন্টার':'winter','স্প্রিং':'spring','অটাম':'autumn','রেইন':'rain','স্নো':'snow','উইন্ড':'wind','স্টর্ম':'storm','আইস':'ice','আর্থ':'earth','স্কাই':'sky',
+  'হেভেন':'heaven','হেল':'hell','প্যারাডাইস':'paradise','ফেইথ':'faith','হোপ':'hope','ট্রুথ':'truth','লাই':'lie','ফ্রিডম':'freedom','জাস্টিস':'justice','ফরচুন':'fortune',
+  'ডেস্টিনি':'destiny','লাক':'luck','চান্স':'chance','গেম':'game','গেমস':'games','প্লে':'play','ফাইট':'fight','ব্যাটল':'battle','রিভেঞ্জ':'revenge','প্রমিস':'promise',
+  'মেমোরি':'memory','মেমোরিজ':'memories','জার্নাল':'journal','মেসেজ':'message','ফোন':'phone','ফটো':'photo','পিকচার':'picture','মুভি':'movie','ফিল্ম':'film','মিউজিক':'music',
+  'সং':'song','ড্যান্স':'dance','আর্ট':'art','পেইন্টিং':'painting','ডিজাইন':'design','ফ্যাশন':'fashion','ফুড':'food','কুকিং':'cooking','রেসিপি':'recipe','হেলথ':'health',
+  'ফিটনেস':'fitness','ইয়োগা':'yoga','মেডিটেশন':'meditation','হ্যাপি':'happy','হ্যাপিনেস':'happiness','সেড':'sad','ফিয়ার':'fear','কারেজ':'courage','ব্রেভ':'brave',
+  'স্ট্রং':'strong','স্মার্ট':'smart','জিনিয়াস':'genius','ইন্টেলিজেন্স':'intelligence','নলেজ':'knowledge','উইজডম':'wisdom','লার্ন':'learn','লার্নিং':'learning','ট্রেনিং':'training',
+  'কোচিং':'coaching','কনফিডেন্স':'confidence','কমিউনিকেশন':'communication','রিলেশনশিপ':'relationship','ম্যারেজ':'marriage','ফ্যামিলি':'family','চাইল্ড':'child','চিলড্রেন':'children',
+  'বেবি':'baby','টিন':'teen','ইয়ং':'young','ওল্ড':'old','লাইফস্টাইল':'lifestyle','ইনকাম':'income','ফাইনান্স':'finance','ট্রেডিং':'trading','ক্রিপ্টো':'crypto','বিটকয়েন':'bitcoin',
+  'এআই':'ai','ডেটা':'data','অ্যালগরিদম':'algorithm','পাইথন':'python','জাভা':'java','সিস্টেম':'system','ওয়েব':'web','ওয়েবসাইট':'website','অ্যাপ':'app','নেটওয়ার্ক':'network',
+  'সিকিউরিটি':'security','হ্যাকিং':'hacking','হ্যাকার':'hacker','নস্টালজিয়া':'nostalgia','নস্টালজিয়ায়':'nostalgia','গ্রেট':'great','গ্যাটসবি':'gatsby','অ্যালকেমি':'alchemy',
+  'হরর-স্টোরি':'horror-story','সাইকো':'psycho','সাইকোপ্যাথ':'psychopath','সাসপেন্স':'suspense','অ্যাকশন':'action','ক্লাব':'club','ক্যাফে':'cafe','কফি':'coffee','টি':'tea',
+  'চকলেট':'chocolate','কেক':'cake','বিস্কুট':'biscuit','মিল্ক':'milk','হানি':'honey','রোজ':'rose','লিলি':'lily','সানফ্লাওয়ার':'sunflower','গ্রাস':'grass','স্টোন':'stone',
+  'ডায়মন্ড':'diamond','পার্ল':'pearl','কিস':'kiss','হাগ':'hug','টিয়ার':'tear','টিয়ারস':'tears','স্মাইল':'smile','লাফ':'laugh','ক্রাই':'cry','ড্রিমস':'dreams','নাইটমেয়ার':'nightmare',
+  // হ্যারি পটার সিরিজ ও জনপ্রিয় নাম/শিরোনাম
+  'ফিলোসফার':'philosopher','ফিলসফার':'philosopher','চেম্বার':'chamber','সিক্রেটস':'secrets','প্রিজনার':'prisoner','আজকাবান':'azkaban','আজকাবানের':'azkaban','গবলেট':'goblet',
+  'ফিনিক্স':'phoenix','অর্ডার':'order','হাফ':'half','ডেথলি':'deathly','হ্যালোজ':'hallows','হগওয়ার্টস':'hogwarts','ডাম্বলডোর':'dumbledore','হারমায়নি':'hermione','রন':'ron',
+  'ভোল্ডেমর্ট':'voldemort','টুইলাইট':'twilight','হাঙ্গার':'hunger','গেমস্':'games','দ্যা':'the','লর্ড':'lord','রিংস':'rings','হবিট':'hobbit','নার্নিয়া':'narnia',
+  'শার্লক':'sherlock','ওয়াটসন':'watson','আগাথা':'agatha','ক্রিস্টি':'christie','ড্রাকুলা':'dracula','ফ্র্যাঙ্কেনস্টাইন':'frankenstein','জেকিল':'jekyll','হাইড':'hyde','ডন':'don','কিহোতে':'quixote'
 };
 const BN_WORDS = {};
 Object.keys(BN_WORDS_RAW).forEach(k => { BN_WORDS[_bnNorm(k)] = BN_WORDS_RAW[k]; });
@@ -8683,7 +8732,7 @@ function _bnDouble(r) {
   const t = m[0];
   return (t.length > 1 && t.endsWith('h') && t !== 'sh') ? r.slice(0, -t.length) + t[0] + t : r + t;
 }
-const _FINAL_NO_O = ['নড','নট','নস','সট','কস'];
+const _FINAL_NO_O = ['নড','নট','নস','সট','কস','রস','রড','লড','লস','ফট','সক'];   // শব্দের শেষে এই যুক্তবর্ণ থাকলে শেষে 'o' বসে না (hunters, world)
 // মাঝের 'o' বাদ যাবে এমন জোড়া (সরকার → sorkar, ইসলামী → islami, আহমেদ → ahmed, আবদুল → abdul)
 const _SCHWA_DROP = ['রক','রজ','রহ','রম','রত','রদ','রব','রস','সল','সম','সর','সজ','হম','হর','বদ','বর','লম','লত'];
 
@@ -8755,10 +8804,21 @@ function _bnTranslitRun(run) {
 }
 
 // পুরো টেক্সট → ইংরেজি অক্ষরে (বাংলা অংশ অভিধান/নিয়মে, বাকি অংশ যেমন আছে)
+// অভিধানে শব্দ খোঁজা — সরাসরি না পেলে বহুবচন (-s) ছাড়িয়ে মূল শব্দ খোঁজে: হান্টার্স → হান্টার + s → hunters
+function _bnLookup(run) {
+  if (BN_WORDS_EXTRA[run] !== undefined) return BN_WORDS_EXTRA[run];
+  if (BN_WORDS[run] !== undefined) return BN_WORDS[run];
+  const m = run.match(/^(.{2,}?)(\u09CD\u09B8|\u09B8)$/);      // শেষে '্স' বা 'স'
+  if (m) {
+    const st = BN_WORDS_EXTRA[m[1]] !== undefined ? BN_WORDS_EXTRA[m[1]] : BN_WORDS[m[1]];
+    if (st !== undefined) return /s$/.test(st) ? st : st + 's';
+  }
+  return undefined;
+}
 function bnTranslit(input) {
   const s = _bnNorm(input);
   return s.replace(BN_RUN_RE, run => {
-    const w = BN_WORDS_EXTRA[run] !== undefined ? BN_WORDS_EXTRA[run] : BN_WORDS[run];
+    const w = _bnLookup(run);
     return ' ' + (w !== undefined ? w : _bnTranslitRun(run)) + ' ';
   }).replace(/[^\u0000-\u007F]/g, c => c.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
 }
@@ -11543,7 +11603,7 @@ async function migStart(){
 
       <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.78rem">
         <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkSkipDup" checked onchange="bulkRender()"> ডুপ্লিকেট (একই নাম+লেখক বা ISBN) বাদ দিন</label>
-        <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkAutoCat" checked onchange="bulkRender()"> নতুন ক্যাটাগরি অটো তৈরি করুন</label>
+        <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkAutoCat" checked onchange="bulkRender()"> CSV-তে থাকা নতুন ক্যাটাগরি/সাব-ক্যাটাগরি অটো তৈরি করুন</label>
         <label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="CSV-তে যে ছবির লিংক (http/https) দেওয়া আছে সেগুলো ডাউনলোড হয়ে আপনার নিজের সার্ভারে (Storage) সেভ হবে"><input type="checkbox" id="bulkDlExt" checked> বাইরের ছবি আমার মিডিয়া লাইব্রেরিতে ডাউনলোড করুন</label>
       </div>
 
@@ -11585,7 +11645,16 @@ const BULK_ALIAS = {
   image:['image','images','image_url','photo','picture','ছবি']
 };
 
-function bulkOpen(){ openModal('bulkImportModal'); bulkLoadSubCats(); }
+function bulkOpen(){ openModal('bulkImportModal'); bulkLoadSubCats(); bulkReloadCats(); }
+// মোডাল খোলার সময় ওয়েবসাইটের সর্বশেষ মেইন ক্যাটাগরি তালিকা আবার আনা হয়
+async function bulkReloadCats(){
+  try {
+    if (typeof loadCategoriesFromSupabase === 'function'){
+      await loadCategoriesFromSupabase();
+      if (_bulkRows.length) bulkRender();
+    }
+  } catch(e) {}
+}
 
 /* ── Drag & Drop: CSV (এবং ছবি) ── */
 function bulkHandleDrop(files){
@@ -11703,7 +11772,7 @@ function bulkDigits(v){ // Bangla digits -> English
 }
 
 function bulkAnalyze(){
-  const catSet = new Map((typeof allCategories !== 'undefined' ? allCategories : []).map(c => [String(c.name).trim().toLowerCase(), c.name]));
+  const catSet = new Map((typeof allCategories !== 'undefined' ? allCategories : []).map(c => [bulkKey(c.name), c.name]));
   const existing = new Set(), existingIsbn = new Set();
   (allProducts || []).forEach(p => {
     existing.add((p.name||'').trim().toLowerCase() + '|' + (p.author_name||p.author||'').trim().toLowerCase());
@@ -11711,7 +11780,7 @@ function bulkAnalyze(){
   });
   const skipDup = document.getElementById('bulkSkipDup').checked;
   const seen = new Set(), seenIsbn = new Set();
-  const res = { ok:[], bad:[], dup:[], missingImg:0, newCats:new Set() };
+  const res = { ok:[], bad:[], dup:[], missingImg:0, newCats:new Set(), userNew:new Set() };
   _bulkRows.forEach(r => {
     const price = bulkNum(bulkDigits(r.price));
     const errs = [];
@@ -11735,9 +11804,12 @@ function bulkAnalyze(){
       }
     });
     res.missingImg += missing;
-    const canon = catSet.get(r.category.toLowerCase());
-    if (!canon) res.newCats.add(r.category);
-    res.ok.push({ r, price, tokens, category: canon || r.category });
+    const ck = bulkKey(r.category);
+    const canon = catSet.get(ck);
+    const pend = !canon ? _bulkPendMains.find(n => bulkKey(n) === ck) : null;
+    if (!canon && !pend) res.newCats.add(r.category);
+    if (pend) res.userNew.add(pend);
+    res.ok.push({ r, price, tokens, category: canon || pend || r.category });
   });
   return res;
 }
@@ -11759,9 +11831,9 @@ async function bulkLoadSubCats(){
   if (sb){
     try {
       for (let from = 0; from < 20000; from += 1000){
-        const { data, error } = await sb.from('sub_categories').select('name, category_name').order('name', { ascending: true }).range(from, from + 999);
+        let { data, error } = await sb.from('sub_categories').select('*').range(from, from + 999);
         if (error || !data) break;
-        data.forEach(r => { (map[r.category_name] = map[r.category_name] || []).push(r.name); });
+        data.forEach(r => { const nm = r.name || r.sub_name; if (nm && r.category_name) (map[r.category_name] = map[r.category_name] || []).push(nm); });
         if (data.length < 1000) break;
       }
     } catch (e) { /* লোকাল/ডিফল্ট তালিকা ব্যবহার হবে */ }
@@ -11769,21 +11841,84 @@ async function bulkLoadSubCats(){
   _bulkSubCats = map; _bulkSubLoading = false;
   if (_bulkRows.length) bulkRender();
 }
-function bulkMainList(){
+// নাম মেলানোর জন্য: Unicode NFC, অদৃশ্য অক্ষর/বাড়তি স্পেস বাদ, ছোট হাতের অক্ষর
+function bulkKey(v){ return String(v ?? '').normalize('NFC').replace(/[\u200B-\u200D\uFEFF]/g,'').replace(/\s+/g,' ').trim().toLowerCase(); }
+let _bulkPendMains = [];          // এই Import-এ নতুন বানানো মেইন ক্যাটাগরি (Import-এর সময় সেভ হবে)
+let _bulkPendSubs = {};           // { মেইন ক্যাটাগরি: [নতুন সাব-ক্যাটাগরি…] }
+function bulkMainBase(){
   const skip = (typeof HARDCODED_PRIMARY_CATEGORY !== 'undefined') ? HARDCODED_PRIMARY_CATEGORY.name : 'বই';
   return (typeof allCategories !== 'undefined' ? allCategories : []).filter(c => c.is_active !== false && c.name !== skip).map(c => c.name);
 }
+function bulkMainList(){
+  const base = bulkMainBase(), keys = new Set(base.map(bulkKey));
+  return base.concat(_bulkPendMains.filter(n => !keys.has(bulkKey(n))));
+}
+function bulkPendSubsFor(cat){
+  const k = bulkKey(cat), out = [];
+  Object.keys(_bulkPendSubs).forEach(c => { if (bulkKey(c) === k) out.push(..._bulkPendSubs[c]); });
+  return out;
+}
+// শুধু ডাটাবেসের (sub_categories) তালিকা
+function bulkSubDb(cat){
+  if (!cat || !_bulkSubCats) return [];
+  const k = bulkKey(cat), out = [];
+  Object.keys(_bulkSubCats).forEach(c => { if (bulkKey(c) === k) out.push(..._bulkSubCats[c]); });
+  return out;
+}
+// ওয়েবসাইটে যে সাব-ক্যাটাগরিগুলো সত্যিই আছে: ডাটাবেস (না থাকলে লোকাল) + এই ক্যাটাগরির বইগুলোতে ব্যবহৃত মান
+function bulkSubExisting(cat){
+  if (!cat) return [];
+  const out = [], seen = new Set();
+  const add = n => { const k = bulkKey(n); if (k && !seen.has(k)){ seen.add(k); out.push(String(n).trim()); } };
+  const db = bulkSubDb(cat);
+  if (db.length) db.forEach(add);
+  else (typeof _getLocalSubCats === 'function' ? _getLocalSubCats(cat) : []).forEach(x => add(x.name));
+  const ck = bulkKey(cat);
+  (typeof allProducts !== 'undefined' ? allProducts : []).forEach(p => { if (p && p.sub_category && bulkKey(p.category) === ck) add(p.sub_category); });
+  return out;
+}
 function bulkSubList(cat){
   if (!cat) return [];
-  const fromDb = _bulkSubCats && _bulkSubCats[cat];
-  if (fromDb && fromDb.length) return fromDb;
-  return (typeof _getLocalSubCats === 'function' ? _getLocalSubCats(cat) : []).map(x => x.name);
+  const base = bulkSubExisting(cat), keys = new Set(base.map(bulkKey));
+  return base.concat(bulkPendSubsFor(cat).filter(n => !keys.has(bulkKey(n))));
 }
-function bulkOpts(list, current, blank){
-  const has = !current || list.includes(current);
+function bulkCanonSub(cat, sub){
+  if (!sub) return '';
+  const k = bulkKey(sub), hit = bulkSubList(cat).find(n => bulkKey(n) === k);
+  return hit || String(sub).trim();
+}
+// ড্রপডাউনের অপশন। newLabel দিলে শেষে "➕ নতুন তৈরি করুন" অপশন যোগ হয়; pend = এই Import-এ নতুন বানানো নামগুলো
+function bulkOpts(list, current, blank, newLabel, pend){
+  const ck = bulkKey(current), pk = new Set((pend || []).map(bulkKey));
+  const hit = current ? list.find(n => bulkKey(n) === ck) : null;
   return `<option value="">${blank}</option>` +
-    list.map(n => `<option value="${_bEsc(n)}"${n === current ? ' selected' : ''}>${_bEsc(n)}</option>`).join('') +
-    (has ? '' : `<option value="${_bEsc(current)}" selected>${_bEsc(current)} (তালিকায় নেই)</option>`);
+    list.map(n => `<option value="${_bEsc(n)}"${n === hit ? ' selected' : ''}>${_bEsc(n)}${pk.has(bulkKey(n)) ? ' (নতুন)' : ''}</option>`).join('') +
+    (current && !hit ? `<option value="${_bEsc(current)}" selected>${_bEsc(current)} (তালিকায় নেই)</option>` : '') +
+    (newLabel ? `<option value="__new__">➕ ${newLabel}</option>` : '');
+}
+function bulkAskName(msg){
+  const v = prompt(msg);
+  const n = String(v ?? '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  return n || '';
+}
+// নতুন মেইন ক্যাটাগরি: আগে থেকে থাকলে সেটাই ফেরত, নইলে "পেন্ডিং" তালিকায় যোগ
+function bulkAddMain(name){
+  const k = bulkKey(name), hit = bulkMainList().find(n => bulkKey(n) === k);
+  if (hit){ toast('আগে থেকেই আছে', `"${hit}" তালিকায় আছে — সেটাই বাছা হলো`, 'info'); return hit; }
+  _bulkPendMains.push(name);
+  toast('নতুন ক্যাটাগরি', `"${name}" — Import করার সময় ওয়েবসাইটে তৈরি হবে`, 'success');
+  return name;
+}
+function bulkAddSub(cat, name){
+  const k = bulkKey(name), hit = bulkSubList(cat).find(n => bulkKey(n) === k);
+  if (hit){ toast('আগে থেকেই আছে', `"${hit}" তালিকায় আছে — সেটাই বাছা হলো`, 'info'); return hit; }
+  (_bulkPendSubs[cat] = _bulkPendSubs[cat] || []).push(name);
+  toast('নতুন সাব-ক্যাটাগরি', `"${name}" — Import করার সময় তৈরি হবে`, 'success');
+  return name;
+}
+function bulkRowCatName(r){
+  const k = bulkKey(r.category);
+  return bulkMainList().find(n => bulkKey(n) === k) || r.category || '';
 }
 function bulkRowByLine(line){ return _bulkRows.find(r => r.line === line); }
 function bulkFiltered(a){
@@ -11815,8 +11950,8 @@ function bulkRender(){
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(170,44,45,0.05);border:1px solid rgba(170,44,45,0.22);border-radius:10px;padding:8px 10px;margin-bottom:8px">
       <span id="bulkSelCount" style="font-size:0.76rem;font-weight:700;color:var(--blue);white-space:nowrap">০টি সিলেক্টেড</span>
-      <select class="form-inp" id="bulkBarCat" onchange="bulkBarCatChange()" style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)">${bulkOpts(mains, '', '— মেইন ক্যাটাগরি —')}</select>
-      <select class="form-inp" id="bulkBarSub" disabled style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)"><option value="">— আগে মেইন ক্যাটাগরি —</option></select>
+      <select class="form-inp" id="bulkBarCat" onchange="bulkBarCatChange()" style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)"></select>
+      <select class="form-inp" id="bulkBarSub" onchange="bulkBarSubChange()" disabled style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)"><option value="">— আগে মেইন ক্যাটাগরি —</option></select>
       <button class="btn btn-primary btn-sm" type="button" onclick="bulkApplySelected()"><i class="fa-solid fa-check-double"></i> সিলেক্টেডগুলোতে প্রয়োগ করুন</button>
     </div>
     <div style="max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:8px">
@@ -11852,6 +11987,7 @@ function bulkRefresh(){
       ${a.missingImg ? pill('ছবি পাওয়া যায়নি ' + a.missingImg, '#D97706') : ''}
     </div>
     ${a.newCats.size ? `<div style="font-size:0.74rem;margin-bottom:6px;color:${blockCats?'var(--red)':'var(--text2)'}">${autoCat ? 'নতুন ক্যাটাগরি তৈরি হবে' : '⚠ এই ক্যাটাগরিগুলো নেই (অটো-তৈরি বন্ধ)'}: <b>${[...a.newCats].map(_bEsc).join(', ')}</b> <span style="color:var(--text3)">— নিচের তালিকা থেকে বদলে নিতে পারেন</span></div>` : ''}
+    ${(a.userNew.size || Object.values(_bulkPendSubs).some(x => x.length)) ? `<div style="font-size:0.74rem;margin-bottom:6px;color:var(--green)">➕ Import-এর সময় তৈরি হবে — ${a.userNew.size ? 'ক্যাটাগরি: <b>' + [...a.userNew].map(_bEsc).join(', ') + '</b> ' : ''}${Object.entries(_bulkPendSubs).filter(([c, l]) => l.length).map(([c, l]) => 'সাব-ক্যাটাগরি (' + _bEsc(c) + '): <b>' + l.map(_bEsc).join(', ') + '</b>').join(' • ')}</div>` : ''}
     ${a.bad.length ? `<div style="font-size:0.72rem;color:var(--red);margin-bottom:6px">ভুল সারি (লাইন): ${a.bad.slice(0,8).map(b => b.r.line + ' — ' + b.err).join(' • ')}${a.bad.length>8?' …':''}</div>` : ''}`;
 
   const mains = bulkMainList();
@@ -11864,8 +12000,8 @@ function bulkRefresh(){
       <td style="padding:6px"><input type="checkbox" ${_bulkSel.has(r.line) ? 'checked' : ''} onchange="bulkToggleRow(${r.line},this.checked)"></td>
       <td style="padding:6px;min-width:150px">${_bEsc(r.name)}</td>
       <td style="min-width:100px">${_bEsc(r.author)}</td>
-      <td style="padding:4px"><select class="form-inp" onchange="bulkRowCat(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(mains, o.category, '— বাছুন —')}</select></td>
-      <td style="padding:4px"><select class="form-inp" onchange="bulkRowSub(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(bulkSubList(o.category), r.sub_category, '— নেই —')}</select></td>
+      <td style="padding:4px"><select class="form-inp" onchange="bulkRowCat(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(mains, o.category, '— বাছুন —', 'নতুন ক্যাটাগরি তৈরি করুন…', _bulkPendMains)}</select></td>
+      <td style="padding:4px"><select class="form-inp" onchange="bulkRowSub(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(bulkSubList(o.category), r.sub_category, '— নেই —', 'নতুন সাব-ক্যাটাগরি তৈরি করুন…', bulkPendSubsFor(o.category))}</select></td>
       <td>৳${o.price}</td><td>${_bEsc(r.stock||0)}</td><td>${o.tokens.length}</td></tr>`;
   }).join('') : `<tr><td colspan="8" style="padding:14px;text-align:center;color:var(--text3)">কোনো বই পাওয়া যায়নি</td></tr>`;
 
@@ -11885,6 +12021,7 @@ function bulkRefresh(){
     all.indeterminate = n > 0 && n < window._bulkFilteredLines.length;
   }
   btn.disabled = !a.ok.length || blockCats || _bulkRunning;
+  bulkBarSync();
 }
 
 function bulkSetQuery(v){ _bulkQuery = v || ''; _bulkShown = BULK_PAGE; bulkRefresh(); }
@@ -11895,27 +12032,67 @@ function bulkToggleAll(on){ (window._bulkFilteredLines || []).forEach(l => on ? 
 
 function bulkRowCat(line, val){
   const r = bulkRowByLine(line); if (!r) return;
+  if (val === '__new__'){
+    const n = bulkAskName('নতুন মেইন ক্যাটাগরির নাম লিখুন:');
+    if (!n){ bulkRefresh(); return; }
+    val = bulkAddMain(n);
+  }
   r.category = val;
   // নতুন মেইন ক্যাটাগরির তালিকায় না থাকলে আগের সাব-ক্যাটাগরি সরিয়ে দিন
-  if (r.sub_category && !bulkSubList(val).includes(r.sub_category)) r.sub_category = '';
+  if (r.sub_category && !bulkSubList(val).some(n => bulkKey(n) === bulkKey(r.sub_category))) r.sub_category = '';
   bulkRefresh();
 }
 function bulkRowSub(line, val){
   const r = bulkRowByLine(line); if (!r) return;
+  if (val === '__new__'){
+    const cat = bulkRowCatName(r);
+    if (!cat){ toast('আগে মেইন ক্যাটাগরি বাছুন', 'সাব-ক্যাটাগরি কোন ক্যাটাগরির অধীনে হবে তা জানা দরকার', 'warning'); bulkRefresh(); return; }
+    const n = bulkAskName(`"${cat}" ক্যাটাগরির নতুন সাব-ক্যাটাগরির নাম লিখুন:`);
+    if (!n){ bulkRefresh(); return; }
+    val = bulkAddSub(cat, n);
+  }
   r.sub_category = val;
   bulkRefresh();
 }
+// সিলেক্ট-বারের দুটো ড্রপডাউন নতুন করে সাজায় (সিলেকশন ঠিক রেখে)
+function bulkBarSync(cat, sub){
+  const catEl = document.getElementById('bulkBarCat'), subEl = document.getElementById('bulkBarSub');
+  if (!catEl || !subEl) return;
+  if (cat === undefined) cat = catEl.value === '__new__' ? '' : catEl.value;
+  if (sub === undefined) sub = subEl.value === '__new__' ? '' : subEl.value;
+  const mains = bulkMainList();
+  if (cat && !mains.some(n => bulkKey(n) === bulkKey(cat))) cat = '';
+  catEl.innerHTML = bulkOpts(mains, cat, '— মেইন ক্যাটাগরি —', 'নতুন ক্যাটাগরি তৈরি করুন…', _bulkPendMains);
+  if (!cat){ subEl.disabled = true; subEl.innerHTML = '<option value="">— আগে মেইন ক্যাটাগরি —</option>'; return; }
+  const pk = new Set(bulkPendSubsFor(cat).map(bulkKey));
+  subEl.disabled = false;
+  subEl.innerHTML = '<option value="">— সাব-ক্যাটাগরি (অপরিবর্তিত) —</option><option value="__none__">— সাব-ক্যাটাগরি মুছে দিন —</option>' +
+    bulkSubList(cat).map(n => `<option value="${_bEsc(n)}"${n === sub ? ' selected' : ''}>${_bEsc(n)}${pk.has(bulkKey(n)) ? ' (নতুন)' : ''}</option>`).join('') +
+    '<option value="__new__">➕ নতুন সাব-ক্যাটাগরি তৈরি করুন…</option>';
+  if (sub === '__none__') subEl.value = '__none__';
+}
 function bulkBarCatChange(){
+  const catEl = document.getElementById('bulkBarCat');
+  let cat = catEl.value;
+  if (cat === '__new__'){
+    const n = bulkAskName('নতুন মেইন ক্যাটাগরির নাম লিখুন:');
+    cat = n ? bulkAddMain(n) : '';
+  }
+  bulkBarSync(cat, '');
+  if (cat) bulkRefresh();   // সামারিতে নতুন ক্যাটাগরির তথ্য দেখানোর জন্য
+}
+function bulkBarSubChange(){
   const cat = document.getElementById('bulkBarCat').value;
-  const sub = document.getElementById('bulkBarSub');
-  if (!cat){ sub.disabled = true; sub.innerHTML = '<option value="">— আগে মেইন ক্যাটাগরি —</option>'; return; }
-  sub.disabled = false;
-  sub.innerHTML = '<option value="">— সাব-ক্যাটাগরি (অপরিবর্তিত) —</option><option value="__none__">— সাব-ক্যাটাগরি মুছে দিন —</option>' +
-    bulkSubList(cat).map(n => `<option value="${_bEsc(n)}">${_bEsc(n)}</option>`).join('');
+  const subEl = document.getElementById('bulkBarSub');
+  if (subEl.value !== '__new__') return;
+  const n = cat ? bulkAskName(`"${cat}" ক্যাটাগরির নতুন সাব-ক্যাটাগরির নাম লিখুন:`) : '';
+  const sub = n ? bulkAddSub(cat, n) : '';
+  bulkBarSync(cat, sub);
+  if (sub) bulkRefresh();
 }
 function bulkApplySelected(){
-  const cat = document.getElementById('bulkBarCat').value;
-  const sub = document.getElementById('bulkBarSub').value;
+  let cat = document.getElementById('bulkBarCat').value; if (cat === '__new__') cat = '';
+  let sub = document.getElementById('bulkBarSub').value; if (sub === '__new__') sub = '';
   if (!_bulkSel.size){ toast('কোনো বই সিলেক্ট করা নেই', 'আগে তালিকা থেকে টিক দিন', 'warning'); return; }
   if (!cat){ toast('মেইন ক্যাটাগরি বাছুন', 'কোন ক্যাটাগরি প্রয়োগ করবেন তা বেছে নিন', 'warning'); return; }
   const subList = bulkSubList(cat);
@@ -11925,7 +12102,7 @@ function bulkApplySelected(){
     r.category = cat;
     if (sub === '__none__') r.sub_category = '';
     else if (sub) r.sub_category = sub;
-    else if (r.sub_category && !subList.includes(r.sub_category)) r.sub_category = '';   // অপরিবর্তিত চাইলে শুধু মিললে রাখা হয়
+    else if (r.sub_category && !subList.some(n => bulkKey(n) === bulkKey(r.sub_category))) r.sub_category = '';   // অপরিবর্তিত চাইলে শুধু মিললে রাখা হয়
     n++;
   });
   toast('প্রয়োগ হয়েছে', `${n}টি বইয়ের ক্যাটাগরি আপডেট হয়েছে`, 'success');
@@ -12077,15 +12254,38 @@ async function bulkStartImport(){
   let created = 0, failed = 0;
 
   try {
-    // 1) Missing categories
-    if (plan.newCats.size && document.getElementById('bulkAutoCat').checked){
-      for (const name of plan.newCats){
-        const slug = (typeof slugifyCategoryName === 'function') ? slugifyCategoryName(name) : makeSlug(name);
-        const { data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single();
-        if (error) bulkLog(`✗ ক্যাটাগরি "${name}" তৈরি হয়নি: ${error.message}`);
-        else { bulkLog(`✓ ক্যাটাগরি তৈরি: ${name}`); if (typeof allCategories !== 'undefined') allCategories.push(data); }
+    // 1) নতুন ক্যাটাগরি: হাতে বানানোগুলো সবসময়, CSV থেকে আসাগুলো অটো-তৈরি চালু থাকলে
+    const autoCatOn = document.getElementById('bulkAutoCat').checked;
+    const mkNames = [], mkSeen = new Set();
+    [...plan.userNew, ...(autoCatOn ? plan.newCats : [])].forEach(n => { const k = bulkKey(n); if (!mkSeen.has(k)){ mkSeen.add(k); mkNames.push(n); } });
+    for (const name of mkNames){
+      const slug = (typeof slugifyCategoryName === 'function') ? slugifyCategoryName(name) : makeSlug(name);
+      const { data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single();
+      if (error) bulkLog(`✗ ক্যাটাগরি "${name}" তৈরি হয়নি: ${error.message}`);
+      else {
+        bulkLog(`✓ ক্যাটাগরি তৈরি: ${name}`);
+        if (typeof allCategories !== 'undefined') allCategories.push({ id: data.id, name: data.name, slug: data.slug, icon: data.icon || 'fa-book', color: data.color || '#AA2C2D', is_active: true, _fromSupabase: true });
       }
     }
+    _bulkPendMains = _bulkPendMains.filter(n => !mkSeen.has(bulkKey(n)));
+    if (mkNames.length && typeof broadcastCmsUpdate === 'function'){ try { broadcastCmsUpdate('categories', allCategories); } catch(e){} }
+
+    // 1b) নতুন সাব-ক্যাটাগরি: sub_categories টেবিলে সেভ (হাতে বানানোগুলো সবসময়, CSV-র অজানাগুলো অটো-তৈরি চালু থাকলে)
+    const subPairs = new Map();
+    plan.ok.forEach(o => {
+      const sname = (o.r.sub_category || '').trim(); if (!sname) return;
+      const inDb = bulkSubDb(o.category).some(n => bulkKey(n) === bulkKey(sname));
+      const isPend = bulkPendSubsFor(o.category).some(n => bulkKey(n) === bulkKey(sname));
+      if (inDb || (!isPend && !autoCatOn)) return;
+      subPairs.set(bulkKey(o.category) + '|' + bulkKey(sname), { cat: o.category, name: sname });
+    });
+    for (const { cat, name } of subPairs.values()){
+      let { error } = await sb.from('sub_categories').insert({ name, category_name: cat });
+      if (error && /sub_name|column/i.test(error.message || '')) ({ error } = await sb.from('sub_categories').insert({ sub_name: name, category_name: cat }));
+      if (error) bulkLog(`✗ সাব-ক্যাটাগরি "${cat} → ${name}" তৈরি হয়নি: ${error.message}`);
+      else { bulkLog(`✓ সাব-ক্যাটাগরি তৈরি: ${cat} → ${name}`); _bulkSubCats = _bulkSubCats || {}; (_bulkSubCats[cat] = _bulkSubCats[cat] || []).push(name); }
+    }
+    _bulkPendSubs = {};
 
     // 2) Upload unique local images
     const needed = new Map();
@@ -12136,7 +12336,7 @@ async function bulkStartImport(){
       const cover = r.cover_type || 'Hardcover';
       return { _line: r.line, _src: r, p: {
         name: r.name, slug: mkSlug(r.name), category: o.category, product_type:'book',
-        sub_category: r.sub_category || null, brand: null, color:'#AA2C2D', badge: r.badge || null,
+        sub_category: bulkCanonSub(o.category, r.sub_category) || null, brand: null, color:'#AA2C2D', badge: r.badge || null,
         price: o.price, old_price: bulkNum(bulkDigits(r.old_price)),
         stock: parseInt(bulkDigits(r.stock)) || 0,
         variants: [], specifications: [], faqs: [],
