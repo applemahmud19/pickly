@@ -8450,6 +8450,12 @@ async function _restorePageFromUrl() {
 async function handleUser(user) {
   currentUser = user;
 
+  // প্রোফাইল রো নিশ্চিত করো — সবার আগে, session cache/admin check-এর আগে, যাতে নতুন ইউজার সবসময় অ্যাডমিনের লিস্টে আসে
+  if (window.__gmProfileEnsuredFor !== user.id) {
+    window.__gmProfileEnsuredFor = user.id;
+    gmEnsureProfile(user);
+  }
+
   // ── SESSION CACHE: যদি একই user-এর জন্য TTL-এর মধ্যে আগেই check করা হয়েছে,
   //    তাহলে DB-তে আবার যাবে না — session থেকে সরাসরি পড়বে ──
   const now = Date.now();
@@ -8478,6 +8484,30 @@ async function handleUser(user) {
   _sessionCache.checkedAt  = Date.now();
 
   updateAuthUI();
+}
+
+// প্রতিটি লগইন/সাইনআপের পর profiles-এ রো আছে কিনা নিশ্চিত করে (থাকলে কিছুই বদলায় না)
+async function gmEnsureProfile(user) {
+  if (!user || !sb) return;
+  try {
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || (user.email ? user.email.split('@')[0] : '');
+    const { error } = await sb.from('profiles').upsert(
+      { id: user.id, full_name: name || null, email: user.email || null },
+      { onConflict: 'id', ignoreDuplicates: true }
+    );
+    if (error) console.warn('[ensure_profile] failed:', error.message);
+  } catch (e) { console.warn('[ensure_profile] failed:', e); }
+}
+
+// profiles-এ সেভ: পুরো ডেটা না গেলে (কলাম/পলিসি সমস্যা) অন্তত নাম-ফোন-ইমেইল সেভ করে
+async function gmSaveProfileRow(row) {
+  let r = await sb.from('profiles').upsert(row, { onConflict: 'id' });
+  if (!r.error) return r;
+  console.warn('[profile_save] full save failed, retrying minimal:', r.error.message);
+  const min = { id: row.id, full_name: row.full_name || null, phone: row.phone || null, email: row.email || null, updated_at: row.updated_at };
+  const r2 = await sb.from('profiles').upsert(min, { onConflict: 'id' });
+  if (r2.error) console.warn('[profile_save] minimal save failed:', r2.error.message);
+  return r2;
 }
 
 function updateAuthUI() {
@@ -11237,7 +11267,7 @@ function saveCheckoutAddress() {
   toast('সংরক্ষিত হয়েছে', 'ঠিকানা সংরক্ষণ করা হয়েছে', 's');
 
   if (currentUser) {
-    sb.from('profiles').upsert({
+    gmSaveProfileRow({
       id: currentUser.id, ...prof, updated_at: new Date().toISOString()
     }).then(({ error }) => {
       if (error) console.warn('[checkout_address_save] failed (non-critical):', error.message);
@@ -11367,12 +11397,12 @@ async function placeOrder() {
   //    reuse next time (Rokomari-style "remembered address"). Best-effort —
   //    never blocks the success toast/redirect below. ──
   if (currentUser) {
-    sb.from('profiles').upsert({
+    gmSaveProfileRow({
       id: currentUser.id,
       full_name: name,
       phone: phone,
       alternate_phone: altPhone || null,
-      email: email || null,
+      email: email || currentUser.email || null,
       district, upazila, union_area: thana,
       full_address: address,
       updated_at: new Date().toISOString()
@@ -16610,10 +16640,11 @@ async function saveProfile() {
 
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ হচ্ছে...';
 
-  const { error } = await sb.from('profiles').upsert({
+  const { error } = await gmSaveProfileRow({
     id: currentUser.id,
     full_name: name,
     phone: phone,
+    email: currentUser.email || null,
     address: addr,
     updated_at: new Date().toISOString()
   });
