@@ -18715,6 +18715,37 @@ window.openBlogList=list;window.openBlogPost=open;
   .pcard .pname { margin-bottom: 1px !important; }
   .pcard-body .pfooter { gap: 5px !important; }
 }
+
+/* ═══ অর্ডার ডিটেইলস (mobile): hero ব্যাজ বক্সের বাইরে যাওয়া ও stepper-এর লেখা ভেঙে যাওয়া ঠিক ═══ */
+@media (max-width: 768px) {
+  #odPageHero .od-hero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    padding: 11px 12px !important;
+    overflow: hidden;
+  }
+  #odPageHero .od-hero > div:nth-child(2) { min-width: 0; }
+  #odPageHero .od-hero-num { font-size: .86rem !important; letter-spacing: 0 !important; white-space: nowrap; }
+  #odPageHero .od-copy-btn { padding: 4px 7px !important; }
+  #odPageHero .od-copy-btn #copyOrderIdTxt { display: none !important; }
+  #odPageHero .order-status-badge {
+    position: static !important; margin: 0 !important;
+    font-size: .64rem !important; padding: 4px 9px !important;
+    white-space: nowrap; gap: 4px !important; align-self: center;
+  }
+
+  .tp-stp-box { padding: 12px 4px !important; }
+  .tp-stp-dot { width: 26px !important; height: 26px !important; }
+  .tp-stp-line { flex: 0 0 4px !important; min-width: 0 !important; margin-top: 12px !important; }
+  .tp-stp-step { flex: 1 1 0 !important; min-width: 0 !important; }
+  .tp-stp-lbl {
+    font-size: .55rem !important; line-height: 1.35 !important;
+    white-space: normal !important; word-break: normal !important; overflow-wrap: normal !important;
+    hyphens: none !important; padding: 0 !important; text-align: center;
+  }
+}
 </style>
 <script>
 /* ── অর্ডার বাতিল / বাতিলের অনুরোধ / রিপোর্ট (গ্রাহকের দিক) ── */
