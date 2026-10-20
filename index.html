@@ -20,7 +20,9 @@
 <meta property="og:title" content="বুক গ্যালাক্সি - A Trusted Online Bookstore">
 <meta property="og:description" content="বাংলাদেশের বিশ্বস্ত অনলাইন বইয়ের দোকান। সেরা বই কম দামে, সারা দেশে ডেলিভারি।">
 <meta property="og:url" content="https://bookgalaxybd.vercel.app/">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://bookgalaxybd.vercel.app/favicon.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bookgalaxybd.vercel.app/favicon.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"বুক গ্যালাক্সি","alternateName":"Book Galaxy","url":"https://bookgalaxybd.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://bookgalaxybd.vercel.app/search?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"Organization","name":"বুক গ্যালাক্সি","url":"https://bookgalaxybd.vercel.app/","logo":"https://bookgalaxybd.vercel.app/favicon.png"}]}</script>
 <!--/HOME-SEO-->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -7390,13 +7392,19 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
           <span class="bn">Google দিয়ে লগইন করুন</span>
         </button>
 
-        <div class="auth-divider"><span>অথবা ইমেইল দিয়ে</span></div>
+        <p class="bn" style="text-align:center;font-size:.76rem;color:var(--text-light);margin:10px 0 12px;line-height:1.5">
+          নতুন বা পুরোনো — সবাই এক ক্লিকে Google দিয়ে প্রবেশ করুন। আলাদা পাসওয়ার্ড বা ইমেইল ভেরিফিকেশন লাগবে না।
+        </p>
 
         <!-- Error banner -->
         <div id="authLoginError" class="auth-banner error">
           <i class="fa-solid fa-triangle-exclamation" style="flex-shrink:0"></i>
           <span id="authLoginErrorMsg"></span>
         </div>
+
+        <!-- ইমেইল+পাসওয়ার্ড লগইন বন্ধ রাখা হয়েছে (শুধু Google)। ফেরাতে চাইলে নিচের display:none তুলে দিন -->
+        <div id="emailAuthLegacy" style="display:none">
+        <div class="auth-divider"><span>অথবা ইমেইল দিয়ে</span></div>
 
         <!-- Email -->
         <div class="form-group">
@@ -7450,6 +7458,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         <button class="btn-outline bn" style="width:100%;justify-content:center;margin-bottom:0" onclick="switchAuthView('signup')">
           <i class="fa-solid fa-user-plus"></i>নতুন অ্যাকাউন্ট তৈরি করুন
         </button>
+        </div><!-- /emailAuthLegacy -->
 
         <p class="auth-note bn">লগইন করে আপনি আমাদের <a href="#" onclick="openTermsModal();return false;" style="color:var(--blue);font-weight:600">শর্তাবলী</a> মেনে নিচ্ছেন।</p>
       </div>
@@ -11478,6 +11487,7 @@ async function trackOrder() {
 
 /* ── Auth modal view switcher ── */
 function switchAuthView(view) {
+  view = 'login'; // শুধু Google লগইন — ইমেইল সাইনআপ বন্ধ
   const loginView  = document.getElementById('authViewLogin');
   const signupView = document.getElementById('authViewSignup');
   if (!loginView || !signupView) return;
