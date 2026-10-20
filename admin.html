@@ -4534,6 +4534,7 @@ async function doLogout() {
 async function refreshAll() {
   await Promise.all([loadProducts(), loadOrders(), loadVisitorStats(), loadProductQuestionsAdmin()]);
   renderDashboard();
+  loadUsers(0, true); // Users badge যেন ক্লিক ছাড়াই শুরুতেই সংখ্যা দেখায়
   setupRealtimeSubscription();
   startVisitorPolling(); // auto-refresh live visitor count every 60s
 }
@@ -5224,6 +5225,14 @@ function setupRealtimeSubscription() {
     })
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'visitor_logs' }, async () => {
       await loadVisitorStats();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (payload) => {
+      // নতুন ইউজার অ্যাকাউন্ট খুললেই অ্যাডমিনে লাইভ আপডেট
+      if (payload.eventType === 'INSERT') {
+        const n = payload.new || {};
+        toast('👤 নতুন ইউজার!', `${n.full_name || n.email || 'নতুন অ্যাকাউন্ট'} রেজিস্টার করেছেন`, 'success');
+      }
+      loadUsers(0, true);
     })
     .subscribe();
 }
@@ -10008,20 +10017,22 @@ let userSortDesc = true; // newest first by default
 let currentViewUserId = null;
 
 /* ── Load users from Supabase ── */
-async function loadUsers(retryCount = 0) {
+async function loadUsers(retryCount = 0, silent = false) {
   if (!sb) return;
 
-  const tbody = document.getElementById('userTableBody');
+  // silent = true হলে (পেজ লোডের সময় ব্যাকগ্রাউন্ডে) টেবিলে স্পিনার/এরর দেখাবে না, শুধু সংখ্যা আপডেট করবে
+  const tbody = silent ? null : document.getElementById('userTableBody');
   if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div><div style="margin-top:10px;font-size:0.78rem;color:var(--text3);font-family:var(--font-bn)">ইউজার ডাটা লোড হচ্ছে…</div></td></tr>';
 
   // Show dashes in KPI cards while loading
-  ['kpi-total-users','kpi-active-users','kpi-blocked-users','kpi-new-today-users'].forEach(id => {
+  if (!silent) ['kpi-total-users','kpi-active-users','kpi-blocked-users','kpi-new-users-today'].forEach(id => {
     const el = document.getElementById(id); if (el) el.textContent = '—';
   });
 
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
+    if (silent) return;
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--red)">
       <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;margin-bottom:8px;display:block"></i>
       <div style="font-family:var(--font-bn);margin-bottom:8px">সংযোগ বিলম্ব — ডাটা লোড হয়নি।</div>
@@ -10050,6 +10061,7 @@ async function loadUsers(retryCount = 0) {
     if (timedOut) return;
 
     if (error) {
+      if (silent) { console.warn('[loadUsers:silent]', error.message); return; }
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3)">
         <div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-database"></i></div>
         <div class="empty-title">টেবিল পাওয়া যায়নি</div>
@@ -10076,6 +10088,16 @@ async function loadUsers(retryCount = 0) {
       raw:          u,
     }));
 
+    // ── অর্ডার থেকে ইউজার মেলানো: প্রোফাইল রো না থাকলেও যারা অর্ডার করেছে তারা লিস্টে আসবে,
+    //    আর প্রোফাইলে ফোন না থাকলে অর্ডারের ফোন/ঠিকানা দেখাবে ──
+    try {
+      if (!allOrders.length) {
+        const ro = await sb.from('orders').select('*').order('created_at', { ascending: false });
+        if (!ro.error) allOrders = ro.data || [];
+      }
+      mergeOrderCustomersIntoUsers();
+    } catch (e) { console.warn('[loadUsers] order merge failed:', e && e.message); }
+
     const nbEl = document.getElementById('nb-users');
     if (nbEl) nbEl.textContent = allUsers.length;
 
@@ -10087,6 +10109,7 @@ async function loadUsers(retryCount = 0) {
     if (timedOut) return;
 
     console.error('[loadUsers] Error:', e.message);
+    if (silent) return;
     // Auto-retry up to 2 times
     if (retryCount < 2) {
       console.warn(`[loadUsers] Auto-retry ${retryCount + 1}/2…`);
@@ -10104,6 +10127,47 @@ async function loadUsers(retryCount = 0) {
     </td></tr>`;
     toast('❌ লোড ব্যর্থ', 'ইউজার ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
   }
+}
+
+/* ── অর্ডারের তথ্য থেকে ইউজার লিস্ট পূরণ ── */
+function _normPhone(v) {
+  let d = String(v || '').replace(/[০-৯]/g, c => '০১২৩৪৫৬৭৮৯'.indexOf(c)).replace(/\D/g, '');
+  d = d.replace(/^(00880|880)/, '0');
+  return d;
+}
+function mergeOrderCustomersIntoUsers() {
+  const orders = (allOrders || []).slice().sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)); // নতুন আগে
+  const byId = {}, byEmail = {}, byPhone = {};
+  allUsers.forEach(u => {
+    if (u.id) byId[u.id] = u;
+    if (u.email) byEmail[u.email.toLowerCase()] = u;
+    const ph = _normPhone(u.phone); if (ph) byPhone[ph] = u;
+  });
+  orders.forEach(o => {
+    const em = (o.customer_email || '').toLowerCase(), ph = _normPhone(o.customer_phone);
+    let u = (o.user_id && byId[o.user_id]) || (em && byEmail[em]) || (ph && byPhone[ph]) || null;
+    if (u) {
+      // প্রোফাইলে খালি তথ্য অর্ডার থেকে পূরণ (শুধু দেখানোর জন্য)
+      if (!u.phone && o.customer_phone) { u.phone = o.customer_phone; u.phone_from_order = true; }
+      if (!u.district && o.customer_district) u.district = o.customer_district;
+      if (!u.address && o.customer_address) u.address = o.customer_address;
+      if (!u.email && o.customer_email) u.email = o.customer_email;
+      if ((!u.name || u.name === 'Unknown') && o.customer_name) u.name = o.customer_name;
+      return;
+    }
+    // প্রোফাইল নেই → অর্ডার থেকে ইউজার বানাও
+    const key = o.user_id || (ph ? 'ph-' + ph : (em ? 'em-' + em : null));
+    if (!key) return;
+    u = {
+      id: o.user_id || ('order-' + key), name: o.customer_name || 'Unknown', email: o.customer_email || '', phone: o.customer_phone || '',
+      district: o.customer_district || '', address: o.customer_address || '', avatar_url: null, status: 'active', is_blocked: false,
+      created_at: o.created_at || null, updated_at: null, raw: {}, synthetic: true
+    };
+    allUsers.push(u);
+    if (o.user_id) byId[o.user_id] = u;
+    if (em) byEmail[em] = u;
+    if (ph) byPhone[ph] = u;
+  });
 }
 
 /* ── KPI cards ── */
@@ -10219,9 +10283,11 @@ function renderUsers() {
           <button class="btn btn-secondary btn-xs" onclick="viewUserDetail('${u.id}')">
             <i class="fa-solid fa-eye"></i> View
           </button>
-          <button class="btn ${blockBtnClass} btn-xs" onclick="quickToggleBlock('${u.id}')">
+          ${u.synthetic
+            ? `<span class="pill pill-pending" title="এই ইউজারের প্রোফাইল রো নেই — অর্ডারের তথ্য থেকে দেখানো হচ্ছে">অর্ডার থেকে</span>`
+            : `<button class="btn ${blockBtnClass} btn-xs" onclick="quickToggleBlock('${u.id}')">
             <i class="fa-solid ${u.is_blocked ? 'fa-unlock' : 'fa-ban'}"></i> ${blockBtnLabel}
-          </button>
+          </button>`}
         </div>
       </td>
     </tr>`;
