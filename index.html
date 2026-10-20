@@ -8139,7 +8139,7 @@ function buildRecCard(p) {
        <i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#AA2C2D'};display:none"></i>`
     : `<i class="fa-solid ${p.icon||'fa-box'}" style="color:${p.color||'#AA2C2D'}"></i>`;
   return `
-    <div class="rec-card" onclick="openProduct('${p.id}')">
+    <a class="rec-card" href="${productHref(p.id)}" onclick="return _pcLinkClick(event,'${p.id}')">
       <div class="rec-card-img" style="background:${p.image_url?'#fff':`linear-gradient(135deg,${p.color}22,${p.color}11)`}">
         ${recImgHtml}
       </div>
@@ -8152,11 +8152,11 @@ function buildRecCard(p) {
           ${p.old_price ? `<span class="rec-card-old bn">৳${fmtPrice(originalPrice)}</span>` : ''}
           ${disc ? `<span class="rec-card-disc">-${disc}%</span>` : ''}
         </div>
-        <button class="rec-card-btn bn" onclick="event.stopPropagation();quickAddToCart('${p.id}')">
+        <button class="rec-card-btn bn" onclick="event.preventDefault();event.stopPropagation();quickAddToCart('${p.id}')">
           <i class="fa-solid fa-cart-plus"></i> কার্টে
         </button>
       </div>
-    </div>`;
+    </a>`;
 }
 
 function renderRecSection(key, items, sectionId, trackId, catLabel) {
@@ -8906,7 +8906,7 @@ function renderTopSellingBooks(books) {
       ? `<img src="${p.image_url}" alt="${(p.name||'').replace(/"/g,'')}" onerror="this.style.display='none'">`
       : `<i class="fa-solid fa-book" style="color:var(--blue);font-size:1rem"></i>`;
     return `
-      <div class="hts-item" onclick="openProduct('${p.id}')">
+      <a class="hts-item" href="${productHref(p.id)}" onclick="return _pcLinkClick(event,'${p.id}')">
         <div class="hts-rank${i===0?' r1':''} bn">#${i+1}</div>
         <div class="hts-img">${imgHtml}</div>
         <div class="hts-info">
@@ -8914,7 +8914,7 @@ function renderTopSellingBooks(books) {
           ${author ? `<div class="hts-author bn">${author}</div>` : ''}
           <div class="hts-price bn">৳${fmtPrice(displayPrice)}</div>
         </div>
-      </div>`;
+      </a>`;
   }).join('');
   syncHeroTopsellHeight();
 }
@@ -8979,11 +8979,11 @@ function buildProductCard(p) {
       </div>
     </div>`;
 
-  return `<div class="pcard" onclick="openProduct('${p.id}')">
+  return `<a class="pcard" href="${productHref(p.id)}" onclick="return _pcLinkClick(event,'${p.id}')">
     <div class="pcard-img">
       ${imgHtml}${iconHtml}
       ${badgeHtml}
-      <button class="wish-btn${isWishlisted(p.id)?' liked':''}" onclick="event.stopPropagation();toggleCardWish(this,'${p.id}')">${isWishlisted(p.id)?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>'}</button>
+      <button class="wish-btn${isWishlisted(p.id)?' liked':''}" onclick="event.preventDefault();event.stopPropagation();toggleCardWish(this,'${p.id}')">${isWishlisted(p.id)?'<i class="fa-solid fa-heart"></i>':'<i class="fa-regular fa-heart"></i>'}</button>
     </div>
     <div class="pcard-body">
       <div class="pname bn">${p.name}</div>
@@ -8992,11 +8992,11 @@ function buildProductCard(p) {
       <div class="pfooter">
         ${priceBlockHtml}
         <div class="card-btns">
-          <button class="btn-cart bn" style="width:100%" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
+          <button class="btn-cart bn" style="width:100%" onclick="event.preventDefault();event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-cart-plus"></i>কার্টে যোগ</button>
         </div>
       </div>
     </div>
-  </div>`;
+  </a>`;
 }
 
 /* ══════════════════════════════════════════════════
@@ -9251,7 +9251,14 @@ function renderHomeReviews(show) {
 }
 document.addEventListener('click', e => {
   const c = e.target.closest && e.target.closest('.rv-card');
-  if (c) openProduct(c.dataset.pid);
+  if (!c) return;
+  if (e.ctrlKey || e.metaKey) { window.open(productHref(c.dataset.pid), '_blank'); return; }
+  openProduct(c.dataset.pid);
+});
+document.addEventListener('auxclick', e => {          // মাঝের বাটন → নতুন ট্যাব
+  if (e.button !== 1) return;
+  const c = e.target.closest && e.target.closest('.rv-card');
+  if (c) { e.preventDefault(); window.open(productHref(c.dataset.pid), '_blank'); }
 });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
@@ -11681,8 +11688,11 @@ function openAdmin() {
   if(!isAdmin){ toast('অ্যাক্সেস নেই','আপনি এই সাইটের অ্যাডমিন নন','e'); return; }
   // মূল অ্যাডমিন ড্যাশবোর্ড (admin.html) নতুন ট্যাবে খোলে — এটাই আসল প্যানেল।
   // admin.html নিজেও লগইন ও admin_users দিয়ে যাচাই করে।
-  const w = window.open('/admin.html', '_blank', 'noopener');
-  if (!w) window.location.href = '/admin.html';   // পপআপ ব্লক থাকলে একই ট্যাবে খুলবে
+  // ⚠ 'noopener' দিলে window.open সবসময় null ফেরত দেয় — তাই আগে "পপআপ ব্লক" ভেবে একই ট্যাবও admin-এ চলে যেত।
+  // এখন noopener ছাড়া খুলে opener হাতে null করা হচ্ছে।
+  const w = window.open('/admin.html', '_blank');
+  if (w) { try { w.opener = null; } catch (e) {} }
+  else window.location.href = '/admin.html';      // সত্যিই পপআপ ব্লক থাকলে তবেই একই ট্যাবে খুলবে
 }
 function closeAdmin() { closeModal('adminOverlay'); }
 
@@ -12136,6 +12146,19 @@ function switchTrackTab(tab, el) {
 // ══════════════════════════════════════════════════
 
 // ── Helpers ──
+// ── Product card → আসল <a href> লিংক (Ctrl/Cmd+Click, মাঝের বাটন, ডান-ক্লিক → New Tab কাজ করবে) ──
+function productHref(id) {
+  const p = products.find(x => String(x.id) === String(id));
+  return p ? '/product/' + encodeURIComponent(productSlug(p)) : '#';
+}
+function _pcLinkClick(e, id) {
+  // modifier/মাঝের বাটন হলে ব্রাউজারকেই নতুন ট্যাবে খুলতে দাও
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button === 1) return true;
+  e.preventDefault();
+  openProduct(id);
+  return false;
+}
+
 // ── Tracking helpers ──
 function _tpEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function _tpSafeUrl(u){ u=String(u||'').trim(); return /^https?:\/\//i.test(u) ? _tpEsc(u) : '#'; }
@@ -18250,6 +18273,9 @@ window.addEventListener('popstate',function(){
     z-index: 50;
   }
 }
+/* product cards এখন <a> — লিংকের ডিফল্ট স্টাইল বন্ধ */
+a.pcard, a.rec-card, a.hts-item { color: inherit; text-decoration: none; }
+a.pcard:hover, a.rec-card:hover, a.hts-item:hover, a.pcard *, a.rec-card *, a.hts-item * { text-decoration: none; }
 </style>
 <a class="custom-live-chat" href="https://m.me/bookgalaxybd" target="_blank" rel="noopener noreferrer" title="লাইভ চ্যাট করুন">
   <!-- Messenger icon -->
