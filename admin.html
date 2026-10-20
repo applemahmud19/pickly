@@ -11470,6 +11470,14 @@ window.PDE={cmd,load,get};
 .bulk-miss-wrap{border:1px solid rgba(217,119,6,0.4);background:rgba(217,119,6,0.06);border-radius:10px;padding:10px;margin-bottom:8px}
 .bulk-miss-head{font-size:0.74rem;color:var(--text2);margin-bottom:8px;line-height:1.6}
 .bulk-miss-list{display:grid;gap:6px;max-height:240px;overflow:auto}
+.bulk-rowimg{display:flex;align-items:center;gap:4px;padding:3px;border:2px dashed transparent;border-radius:9px;cursor:pointer;min-width:132px}
+.bulk-rowimg:hover{border-color:var(--border)}
+.bulk-rowimg.active{border-color:var(--blue);background:rgba(170,44,45,0.06)}
+.bulk-rowimg.over{border-color:var(--blue);background:rgba(170,44,45,0.12)}
+.bulk-rowimg-th{position:relative;width:38px;height:38px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text3);flex:none;font-size:0.9rem}
+.bulk-rowimg-th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
+.bulk-rowimg-n{font-size:0.66rem;font-weight:700;min-width:24px;text-align:center}
+.bulk-rowimg .btn{padding:3px 6px;font-size:0.68rem;line-height:1}
 .bulk-miss{display:flex;align-items:center;gap:10px;padding:6px 8px;border:2px dashed var(--border);border-radius:10px;background:var(--bg2,var(--bg3));cursor:pointer;outline:none}
 .bulk-miss.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(170,44,45,0.15)}
 .bulk-miss.over{border-color:var(--blue);background:rgba(170,44,45,0.08)}
@@ -11745,7 +11753,7 @@ function bulkLoadCsvFile(f){
         edition:g('edition'), pages:g('pages'), language:g('language'), country:g('country'), cover_type:g('cover_type'),
         badge:g('badge'), description:g('description'), image:g('image') };
     });
-    _bulkSlots = new Map(); _bulkActiveKey = null;
+    _bulkSlots = new Map(); _bulkActiveKey = null; _bulkActiveRow = null;
     if (dt){ dt.innerHTML = '✅ <b></b>'; dt.querySelector('b').textContent = f.name + ' (' + _bulkRows.length + ' সারি)'; dz.classList.add('done'); }
     _bulkSel.clear(); _bulkShown = BULK_PAGE; _bulkQuery = ''; _bulkRowFilter = '';
     bulkRender();
@@ -11954,6 +11962,7 @@ function bulkRender(){
       <select class="form-inp" id="bulkBarSub" onchange="bulkBarSubChange()" disabled style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)"><option value="">— আগে মেইন ক্যাটাগরি —</option></select>
       <button class="btn btn-primary btn-sm" type="button" onclick="bulkApplySelected()"><i class="fa-solid fa-check-double"></i> সিলেক্টেডগুলোতে প্রয়োগ করুন</button>
     </div>
+    <div style="font-size:0.72rem;color:var(--text2);margin:0 0 6px">🖼 প্রতিটি বইয়ের <b>ছবি</b> ঘরে — <b>ক্যামেরা বাটনে</b> ছবি বাছুন, ছবি <b>ড্র্যাগ করে ফেলুন</b>, অথবা ঘরে ক্লিক করে কপি করা ছবি <b>Ctrl+V</b> দিয়ে পেস্ট করুন। (ছবি থাকলে বদলে যাবে, না থাকলে যোগ হবে)</div>
     <div style="max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:8px">
       <table style="width:100%;font-size:0.72rem;border-collapse:collapse">
         <thead><tr style="background:var(--bg3);text-align:left;position:sticky;top:0;z-index:1">
@@ -12002,7 +12011,7 @@ function bulkRefresh(){
       <td style="min-width:100px">${_bEsc(r.author)}</td>
       <td style="padding:4px"><select class="form-inp" onchange="bulkRowCat(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(mains, o.category, '— বাছুন —', 'নতুন ক্যাটাগরি তৈরি করুন…', _bulkPendMains)}</select></td>
       <td style="padding:4px"><select class="form-inp" onchange="bulkRowSub(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(bulkSubList(o.category), r.sub_category, '— নেই —', 'নতুন সাব-ক্যাটাগরি তৈরি করুন…', bulkPendSubsFor(o.category))}</select></td>
-      <td>৳${o.price}</td><td>${_bEsc(r.stock||0)}</td><td>${o.tokens.length}</td></tr>`;
+      <td>৳${o.price}</td><td>${_bEsc(r.stock||0)}</td>${bulkRowImgCell(o)}</tr>`;
   }).join('') : `<tr><td colspan="8" style="padding:14px;text-align:center;color:var(--text3)">কোনো বই পাওয়া যায়নি</td></tr>`;
 
   const more = list.length - shown.length;
@@ -12022,6 +12031,7 @@ function bulkRefresh(){
   }
   btn.disabled = !a.ok.length || blockCats || _bulkRunning;
   bulkBarSync();
+  const _sw = document.getElementById('bulkSlotsWrap'); if (_sw) _sw.innerHTML = bulkSlotsHtml(_bEsc);   // "ছবি পাওয়া যায়নি" তালিকাও আপডেট
 }
 
 function bulkSetQuery(v){ _bulkQuery = v || ''; _bulkShown = BULK_PAGE; bulkRefresh(); }
@@ -12109,6 +12119,74 @@ function bulkApplySelected(){
   bulkRefresh();
 }
 
+/* ══════════ প্রতিটি বইয়ের ছবি বদলানো / যোগ / মোছা (সারি অনুযায়ী) ══════════
+   • সারির ছবি = r.image (CSV-র নাম/URL, | দিয়ে আলাদা)। ছবি বদলালে r.image নতুন টোকেনে (rowimg_…) বদলে যায়, Import-এর সময় সেগুলোই আপলোড হয়
+   • প্রথমবার বদলালে CSV-র ছবি সরে যায় (↺ দিয়ে ফেরানো যায়); এরপর যোগ করলে আগের নতুন ছবির সাথে যুক্ত হয় (সর্বোচ্চ ৫টি) */
+let _bulkActiveRow = null, _bulkRowImgSeq = 0;
+function bulkRowToks(r){ return String(r.image || '').split(/[|;]/).map(t => t.trim()).filter(Boolean); }
+function bulkTokKey(t){ return t.split(/[\\/]/).pop().toLowerCase(); }
+function bulkSlotsDrop(r, toks){   // যে ছবির নাম আর কোনো বইয়ে লাগছে না, সেটা "পাওয়া যায়নি" তালিকা থেকে সরানো
+  toks.forEach(t => {
+    if (/^https?:\/\//i.test(t)) return;
+    const k = bulkTokKey(t), sl = _bulkSlots.get(k);
+    if (sl){ sl.books.delete(r.name); if (!sl.books.size) _bulkSlots.delete(k); }
+  });
+}
+function bulkRowImgCell(o){
+  const r = o.r, toks = o.tokens, line = r.line;
+  const first = toks[0];
+  let missing = 0;
+  toks.forEach(t => { if (!/^https?:\/\//i.test(t) && !_bulkImgMap.has(bulkTokKey(t))) missing++; });
+  let img = '';
+  if (first){
+    if (/^https?:\/\//i.test(first)) img = `<img src="${_bEsc(first)}" referrerpolicy="no-referrer" loading="lazy" alt="" onerror="this.style.visibility='hidden'">`;
+    else { const f = _bulkImgMap.get(bulkTokKey(first)); if (f) img = `<img src="${bulkThumb(f)}" alt="">`; }
+  }
+  const icon = missing && !img ? '<i class="fa-solid fa-triangle-exclamation" style="color:var(--amber)"></i>' : '<i class="fa-regular fa-image"></i>';
+  const changed = r._origImage !== undefined && r.image !== r._origImage;
+  return `<td style="padding:3px"><div class="bulk-rowimg${_bulkActiveRow === line ? ' active' : ''}" data-line="${line}" title="ক্লিক করে Ctrl+V দিয়ে ছবি পেস্ট করুন, অথবা ছবি এখানে ড্র্যাগ করুন">
+    <div class="bulk-rowimg-th">${icon}${img}</div>
+    <span class="bulk-rowimg-n" style="color:${missing ? 'var(--amber)' : 'var(--text2)'}">${toks.length.toLocaleString('bn-BD')}টি${missing ? ' ⚠' : ''}</span>
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="ছবি বাছুন (বদলান / যোগ করুন)"><i class="fa-solid fa-camera"></i>
+      <input type="file" accept="image/*" multiple style="display:none" onchange="bulkRowImgPick(${line}, this)"></label>
+    ${toks.length ? `<button type="button" class="btn btn-ghost btn-sm" onclick="bulkRowImgClear(${line})" title="এই বইয়ের ছবি মুছুন"><i class="fa-solid fa-xmark"></i></button>` : ''}
+    ${changed ? `<button type="button" class="btn btn-ghost btn-sm" onclick="bulkRowImgReset(${line})" title="CSV-র আসল ছবি ফিরিয়ে আনুন"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+  </div></td>`;
+}
+function bulkRowImgSet(line, files){
+  const r = bulkRowByLine(line); if (!r) return 0;
+  files = Array.from(files || []).filter(f => f && (/^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name || '')));
+  if (!files.length){ toast('ভুল ফাইল', 'ছবির ফাইল দিন', 'error'); return 0; }
+  const toks = bulkRowToks(r);
+  const isOwn = toks.length > 0 && toks.every(t => /^rowimg_/i.test(t));
+  const keep = isOwn ? toks : [];
+  if (r._origImage === undefined) r._origImage = r.image;
+  if (!isOwn) bulkSlotsDrop(r, toks);
+  const room = 5 - keep.length;
+  if (room <= 0){ toast('সর্বোচ্চ ৫টি ছবি', 'আগে একটি ছবি মুছুন (×)', 'error'); return 0; }
+  const add = [];
+  files.slice(0, room).forEach(f => {
+    const ext = (((f.type || '').split('/')[1] || (f.name || '').split('.').pop() || 'png').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '').toLowerCase()) || 'png';
+    const key = `rowimg_${line}_${++_bulkRowImgSeq}.${ext}`;
+    bulkAssign(key, f); add.push(key);
+  });
+  r.image = keep.concat(add).join('|');
+  _bulkActiveRow = line;
+  bulkRefresh();
+  if (files.length > room) toast('সর্বোচ্চ ৫টি ছবি', `${files.length - room}টি ছবি বাদ গেছে`, 'warning');
+  return add.length;
+}
+function bulkRowImgPick(line, input){ const f = Array.from(input.files || []); input.value = ''; if (f.length) bulkRowImgSet(line, f); }
+function bulkRowImgClear(line){
+  const r = bulkRowByLine(line); if (!r) return;
+  if (r._origImage === undefined) r._origImage = r.image;
+  bulkSlotsDrop(r, bulkRowToks(r)); r.image = ''; bulkRefresh();
+}
+function bulkRowImgReset(line){
+  const r = bulkRowByLine(line); if (!r || r._origImage === undefined) return;
+  bulkSlotsDrop(r, bulkRowToks(r)); r.image = r._origImage; delete r._origImage; bulkRefresh();
+}
+
 /* ── পাওয়া-না-যাওয়া ছবি: ড্র্যাগ/ফাইল বাছাই/পেস্ট ── */
 const _bulkThumbs = new Map();
 function bulkThumb(f){ if (!_bulkThumbs.has(f)) _bulkThumbs.set(f, URL.createObjectURL(f)); return _bulkThumbs.get(f); }
@@ -12145,8 +12223,26 @@ function bulkMissPick(input, i){
   const box = document.getElementById('bulkPreview');
   const keyOf = el => { const r = el.closest && el.closest('.bulk-miss'); return r ? [..._bulkSlots.keys()][+r.dataset.i] : null; };
   const isImg = f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name);
+  // সারির ছবির ঘর: ক্লিক = সক্রিয় (Ctrl+V এখানে যাবে), ড্র্যাগ-ড্রপ = ছবি বসবে
+  const rowOf = el => { const c = el.closest && el.closest('.bulk-rowimg'); return c ? +c.dataset.line : null; };
+  box.addEventListener('click', e => {
+    const ln = rowOf(e.target); if (ln === null) return;
+    if (e.target.closest('button, label, input')) return;
+    _bulkActiveRow = ln; _bulkActiveKey = null;
+    box.querySelectorAll('.bulk-rowimg').forEach(c => c.classList.toggle('active', +c.dataset.line === ln));
+    box.querySelectorAll('.bulk-miss').forEach(c => c.classList.remove('active'));
+  });
+  box.addEventListener('dragover', e => { const c = e.target.closest && e.target.closest('.bulk-rowimg'); if (!c) return; e.preventDefault(); c.classList.add('over'); });
+  box.addEventListener('dragleave', e => { const c = e.target.closest && e.target.closest('.bulk-rowimg'); if (c) c.classList.remove('over'); });
+  box.addEventListener('drop', e => {
+    const ln = rowOf(e.target); if (ln === null) return;
+    e.preventDefault(); e.stopPropagation();
+    const c = e.target.closest('.bulk-rowimg'); if (c) c.classList.remove('over');
+    bulkRowImgSet(ln, Array.from(e.dataTransfer.files || []).filter(isImg));
+  });
   box.addEventListener('click', e => {
     const k = keyOf(e.target); if (!k) return;
+    _bulkActiveRow = null; box.querySelectorAll('.bulk-rowimg.active').forEach(c => c.classList.remove('active'));
     _bulkActiveKey = k;
     box.querySelectorAll('.bulk-miss').forEach(r => r.classList.toggle('active', [..._bulkSlots.keys()][+r.dataset.i] === k));
   });
@@ -12164,10 +12260,18 @@ function bulkMissPick(input, i){
   // Ctrl+V — অন্য জায়গা থেকে কপি করা ছবি পেস্ট
   document.addEventListener('paste', e => {
     if (!document.getElementById('bulkImportModal').classList.contains('open') || _bulkRunning) return;
-    const files = Array.from((e.clipboardData && e.clipboardData.files) || []).filter(isImg);
+    const cd = e.clipboardData;
+    let files = Array.from((cd && cd.files) || []).filter(isImg);
+    if (!files.length && cd && cd.items) files = Array.from(cd.items).filter(it => it.kind === 'file' && /^image\//.test(it.type)).map(it => it.getAsFile()).filter(Boolean);
     if (!files.length) return;
     e.preventDefault();
-    if (!_bulkSlots.size){ toast('পেস্ট হয়নি', 'আগে CSV লোড করুন — যে ছবিগুলো বাকি আছে সেগুলো এখানে আসবে', 'error'); return; }
+    // সারির ছবির ঘর সক্রিয় থাকলে ছবি সেই বইয়ে যাবে
+    if (_bulkActiveRow !== null && bulkRowByLine(_bulkActiveRow)){
+      const n = bulkRowImgSet(_bulkActiveRow, files);
+      if (n) toast('ছবি যোগ হয়েছে', `${n}টি ছবি পেস্ট হয়েছে`, 'success');
+      return;
+    }
+    if (!_bulkSlots.size){ toast('পেস্ট হয়নি', 'যে বইয়ের ছবি দিতে চান তার ছবির ঘরে আগে ক্লিক করুন, তারপর Ctrl+V', 'error'); return; }
     const unfilled = () => [..._bulkSlots.keys()].find(k => !_bulkImgMap.has(k));
     let first = true, used = 0;
     for (const f of files){
@@ -12259,8 +12363,14 @@ async function bulkStartImport(){
     const mkNames = [], mkSeen = new Set();
     [...plan.userNew, ...(autoCatOn ? plan.newCats : [])].forEach(n => { const k = bulkKey(n); if (!mkSeen.has(k)){ mkSeen.add(k); mkNames.push(n); } });
     for (const name of mkNames){
-      const slug = (typeof slugifyCategoryName === 'function') ? slugifyCategoryName(name) : makeSlug(name);
-      const { data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single();
+      const baseSlug = ((typeof slugifyCategoryName === 'function') ? slugifyCategoryName(name) : makeSlug(name)) || 'category';
+      const takenSlugs = new Set((typeof allCategories !== 'undefined' ? allCategories : []).map(c => c.slug));
+      let slug = baseSlug, sn = 2; while (takenSlugs.has(slug)) slug = baseSlug + '-' + (sn++);
+      let { data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single();
+      for (let tries = 0; error && /slug/i.test(error.message || '') && tries < 3; tries++){   // slug আগে থেকে থাকলে -2, -3… দিয়ে আবার চেষ্টা
+        slug = baseSlug + '-' + (sn++);
+        ({ data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single());
+      }
       if (error) bulkLog(`✗ ক্যাটাগরি "${name}" তৈরি হয়নি: ${error.message}`);
       else {
         bulkLog(`✓ ক্যাটাগরি তৈরি: ${name}`);
