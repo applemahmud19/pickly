@@ -8259,6 +8259,7 @@ async function init() {
   // Hero banners হোম পেজের জন্য — আলাদাভাবে লোড হোক, প্রোডাক্ট/পেজ খোলা যেন এর জন্য না আটকায়
   const _heroDone = loadHeroBanners().then(() => {
     loadTopSellingBooks(); // hero sidebar — non-blocking
+    loadRatingMap();       // জনপ্রিয় লেখক/প্রকাশনী র‍্যাংকের জন্য আসল রিভিউ রেটিং — non-blocking
     syncHeroTopsellHeight();
   }).catch(e => console.warn('[hero]', e));
 
@@ -9073,13 +9074,26 @@ function renderMaxDiscount(show) {
 
 
 /* ══════════════════════════════════════════════════
-   জনপ্রিয় লেখক / প্রকাশনী — রেটিং হিসাব করে র‍্যাংক।
-   স্কোর = বইগুলোর গড় রেটিং (কম বইয়ের ক্ষেত্রে ৪.০ এর দিকে একটু টেনে — ১টা বইয়ে ৫ স্টার পেয়ে
-   ২০টা বইয়ের লেখকের উপরে উঠে যাবে না)। স্কোর সমান হলে বেশি বিক্রি, তারপর বেশি বই আগে।
-   লেখক তালিকায় ক্রম: মূল লেখক → (অনুবাদক) → (সম্পাদক) সবার শেষে।
+   জনপ্রিয় লেখক / প্রকাশনী — অটো র‍্যাংকিং (রিভিউ রেটিং + বিক্রি)।
+   • রেটিং: প্রতিটি বইয়ের আসল approved রিভিউয়ের গড় (reviews টেবিল থেকে)। রিভিউ না থাকলে অ্যাডমিনের দেওয়া রেটিং (না থাকলে ৪.০)।
+     কম রিভিউ/কম বইয়ে হঠাৎ ৫ স্টার পেয়ে উপরে উঠে যাওয়া ঠেকাতে গড়টা ৪.০ এর দিকে একটু টানা হয়।
+   • বিক্রি: orders টেবিল থেকে (cancelled বাদে) লেখক/প্রকাশনীর সব বইয়ের মোট বিক্রি।
+   • স্কোর = TP_W_RATING × (রেটিং ÷ ৫) + TP_W_SOLD × √(বিক্রি ÷ সর্বোচ্চ বিক্রি)। ওজন নিচের দুই সংখ্যা বদলালেই বদলে যাবে।
+   • স্কোর সমান হলে বেশি বিক্রি, তারপর বেশি বই আগে।
+   • নতুন অর্ডার/রিভিউ আসলে পেজ রিলোডে এবং প্রতি ৫ মিনিটে নিজে নিজে র‍্যাংক আপডেট হয়।
+   • লেখক তালিকায় ক্রম: মূল লেখক → (অনুবাদক) → (সম্পাদক) সবার শেষে।
    ══════════════════════════════════════════════════ */
 const TOP_PEOPLE_COUNT = 10;    // প্রতি লাইনে কতজন
+const TP_W_RATING = 0.4;        // স্কোরে রেটিংয়ের ওজন
+const TP_W_SOLD   = 0.6;        // স্কোরে বিক্রির ওজন
+const TP_REFRESH_MS = 5 * 60 * 1000;   // কত সময় পরপর অটো আপডেট
+let _ratingMap = {};            // product id → { sum, n } (approved রিভিউ থেকে)
 function _tpEsc(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function _bookRating(p) {
+  const r = _ratingMap[String(p.id)];
+  if (r && r.n > 0) return (r.sum + 4 * 2) / (r.n + 2);   // আসল রিভিউ (৪.০ এর দিকে হালকা টান)
+  return Number(p.rating) || 4;                            // রিভিউ নেই → অ্যাডমিনের রেটিং / ডিফল্ট ৪.০
+}
 function rankTopPeople(kind) {
   const map = new Map();
   products.forEach(p => {
@@ -9091,16 +9105,51 @@ function rankTopPeople(kind) {
       const k = n.toLowerCase();
       if (!map.has(k)) map.set(k, { name: n, n: 0, sum: 0, sold: 0 });
       const e = map.get(k);
-      e.n++; e.sum += Number(p.rating) || 4; e.sold += _soldMap[p.id] || 0;
+      e.n++; e.sum += _bookRating(p); e.sold += _soldMap[p.id] || 0;
     });
   });
   const PRIOR = 4, W = 2;
-  return [...map.values()]
-    .map(e => ({ ...e, avg: e.sum / e.n, score: (e.sum + PRIOR * W) / (e.n + W),
-                 tr: kind !== 'author' ? 0 : /সম্পাদক/.test(e.name) ? 2 : /অনুবাদক/.test(e.name) ? 1 : 0 }))   // ০ = মূল লেখক, ১ = (অনুবাদক), ২ = (সম্পাদক)
+  const all = [...map.values()];
+  const maxSold = all.reduce((m, e) => Math.max(m, e.sold), 0);
+  return all
+    .map(e => {
+      const rating = (e.sum + PRIOR * W) / (e.n + W);
+      const pop = TP_W_RATING * (rating / 5) + TP_W_SOLD * (maxSold ? Math.sqrt(e.sold / maxSold) : 0);
+      return { ...e, avg: e.sum / e.n, score: pop,
+               tr: kind !== 'author' ? 0 : /সম্পাদক/.test(e.name) ? 2 : /অনুবাদক/.test(e.name) ? 1 : 0 };   // ০ = মূল লেখক, ১ = (অনুবাদক), ২ = (সম্পাদক)
+    })
     .sort((a, b) => (a.tr - b.tr) || (b.score - a.score) || (b.sold - a.sold) || (b.n - a.n))   // মূল লেখক → অনুবাদক → সম্পাদক (সবার শেষে)
     .slice(0, TOP_PEOPLE_COUNT);
 }
+// approved রিভিউ থেকে প্রতি বইয়ের রেটিং যোগফল/সংখ্যা — তারপর র‍্যাংক আবার আঁকে
+async function loadRatingMap() {
+  try {
+    const map = {}, PAGE = 1000;
+    let ok = true;
+    for (let from = 0; from < 50000; from += PAGE) {
+      const { data, error } = await sbQuery(
+        () => sb.from('reviews').select('product_id,rating').eq('status', 'approved').range(from, from + PAGE - 1),
+        'রেটিং লোড'
+      );
+      if (error || !data) { ok = false; break; }
+      data.forEach(r => {
+        const k = String(r.product_id || ''), v = Number(r.rating);
+        if (!k || !(v >= 1 && v <= 5)) return;
+        if (!map[k]) map[k] = { sum: 0, n: 0 };
+        map[k].sum += v; map[k].n++;
+      });
+      if (data.length < PAGE) break;
+    }
+    if (ok) _ratingMap = map;     // লোড ব্যর্থ হলে আগের ডেটাই থাকে
+  } catch (e) { console.warn('[top_people] rating load failed (non-critical):', e); }
+  try { renderTopPeople(isHomeDefaultView() && _gridList === _lastFiltered); } catch (e) {}
+}
+// পেজ খোলা থাকলে নিজে নিজে বিক্রি + রিভিউ রিফ্রেশ করে র‍্যাংক আপডেট
+setInterval(() => {
+  if (document.hidden || !products.length) return;
+  loadTopSellingBooks();
+  loadRatingMap();
+}, TP_REFRESH_MS);
 function renderTopPeople(show) {
   [['author', 'topAuthorsSec', 'topAuthorsRow'], ['publisher', 'topPublishersSec', 'topPublishersRow']].forEach(([kind, secId, rowId]) => {
     const sec = document.getElementById(secId), row = document.getElementById(rowId);
