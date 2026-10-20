@@ -5986,8 +5986,27 @@ async function updateOrderStatus(id, status, customNote) {
   const dbStatus = DB_STATUS_MAP[status] || status;  // actual value saved to orders.status
   const note = customNote || BN_STATUS_NOTE[status] || `Status updated to ${status} by admin`;
   const now = new Date().toISOString();
-  const { error } = await sb.from('orders').update({ status: dbStatus, updated_at: now }).eq('id', id);
+  // ── AUTO ITEM STATUS ─────────────────────────────────────────────────────
+  //  Confirmed → স্টকে থাকলে "স্টকে আছে", না থাকলে "সংগ্রহ করা হচ্ছে"
+  //              (শুধু যেসব item এখনো Pending — অ্যাডমিনের ম্যানুয়াল পরিবর্তন অক্ষুণ্ণ থাকে)
+  //  Shipped   → সব item "পাঠানো হয়েছে"
+  const ordForItems = allOrders.find(x => x.id === id);
+  let newItems = null;
+  if (ordForItems && Array.isArray(ordForItems.items) && ordForItems.items.length) {
+    if (status === 'confirmed' && allProducts.length) {
+      newItems = ordForItems.items.map(it =>
+        (!it.item_status || it.item_status === 'pending')
+          ? { ...it, item_status: _itemInStock(it) ? 'in_stock' : 'sourcing' }
+          : it);
+    } else if (status === 'shipped') {
+      newItems = ordForItems.items.map(it => ({ ...it, item_status: 'dispatched' }));
+    }
+  }
+  const orderUpdate = { status: dbStatus, updated_at: now };
+  if (newItems) orderUpdate.items = newItems;
+  const { error } = await sb.from('orders').update(orderUpdate).eq('id', id);
   if (error) { toast('Update Failed', error.message, 'error'); return; }
+  if (newItems) ordForItems.items = newItems;
   // Push to local cache IMMEDIATELY — so history panel updates without waiting for DB round-trip
   if (!localStatusHistoryCache[id]) localStatusHistoryCache[id] = [];
   localStatusHistoryCache[id].unshift({ status, note, created_at: now, _local: true });
@@ -6024,6 +6043,25 @@ async function updateOrderStatus(id, status, customNote) {
     })));
     trackCh.close();
   } catch(e) { console.warn('[BroadcastChannel] order_status_update failed:', e.message); }
+  // Items auto-changed → customer tracking page-এও সাথে সাথে পাঠাও
+  if (newItems) {
+    try {
+      const ch = new BroadcastChannel('gm_order_sync');
+      ch.postMessage(JSON.parse(JSON.stringify({
+        type: 'item_status_update', orderId: String(id), itemIdx: 0, newStatus: String(newItems[0].item_status || 'pending'),
+        items: newItems.map(it => ({ name: String(it.name || ''), qty: Number(it.qty || 0), price: Number(it.price || 0), item_status: String(it.item_status || 'pending'), product_id: it.product_id != null ? String(it.product_id) : undefined })),
+      })));
+      ch.close();
+    } catch(e) { console.warn('[BroadcastChannel] auto item sync failed:', e.message); }
+  }
+}
+
+// পণ্য স্টকে আছে কিনা (product_id দিয়ে, না পেলে নাম দিয়ে মিলিয়ে; স্টক ≥ অর্ডারের পরিমাণ)
+function _itemInStock(item) {
+  const p = allProducts.find(x => item.product_id != null && String(x.id) === String(item.product_id))
+         || allProducts.find(x => x.name === item.name);
+  if (!p) return false;
+  return Number(p.stock || 0) >= Math.max(1, Number(item.qty || 1));
 }
 
 /* ── Part 2: Item-level status update ── */
