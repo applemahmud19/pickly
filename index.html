@@ -18675,6 +18675,46 @@ window.openBlogList=list;window.openBlogPost=open;
   .rec-card-name { line-height: 1.5 !important; }
   .pauthor, .rec-card-brand { line-height: 1.55 !important; margin-bottom: 4px !important; }
 }
+
+/* ═══ Mobile হোম: Hero banner ও Magical Book Finder strip-এর উচ্চতা কমানো (final override) ═══ */
+@media (max-width: 768px) {
+  /* Hero */
+  .hero { padding: 8px 10px 8px !important; }
+  .hero .hero-slider { min-height: 0 !important; height: auto !important; }
+  .hero .hero-slide:not(:has(> img)) { min-height: 0 !important; }
+  .hero .hslide-content { padding: 12px 14px 12px !important; max-width: 100% !important; gap: 0 !important; }
+  .hero .hslide-tag { font-size: .58rem !important; padding: 2px 8px !important; margin-bottom: 4px !important; }
+  .hero .hslide-title { font-size: clamp(.98rem, 4.4vw, 1.15rem) !important; line-height: 1.3 !important; margin-bottom: 3px !important; }
+  .hero .hslide-sub { font-size: .68rem !important; line-height: 1.4 !important; margin-bottom: 8px !important; -webkit-line-clamp: 1 !important; max-width: 100% !important; }
+  .hero .hslide-btn, .hero .hslide-btn-outline { padding: 5px 12px !important; font-size: .68rem !important; }
+  .hero .hslide-stats { margin-top: 6px !important; padding-top: 5px !important; }
+  .hero .hslider-dots { bottom: 7px !important; padding: 3px 8px !important; }
+  .hero .hero-slide > img { min-height: 0 !important; max-height: 170px !important; }
+
+  /* Magical Book Finder strip */
+  .bf-strip-wrap { padding: 0 10px 8px !important; }
+  .bf-strip { padding: 7px 10px !important; gap: 9px !important; border-radius: 12px !important; }
+  .bf-strip-ic { width: 30px !important; height: 30px !important; font-size: .9rem !important; border-radius: 9px !important; }
+  .bf-h { font-size: .88rem !important; line-height: 1.2 !important; }
+  .bf-sub { font-size: .68rem !important; line-height: 1.35 !important; margin: 0 !important; }
+  .bf-cta { padding: 6px 12px !important; font-size: .78rem !important; }
+  .bf-cta .bn { font-size: .78rem !important; line-height: 1.3 !important; }
+}
+
+/* ═══ প্রোডাক্ট কার্ড: ছবির ধূসর ব্যান্ড ও রেটিং-দামের মাঝের ফাঁকা জায়গা ঠিক ═══ */
+.pcard .pcard-img, .pcard:hover .pcard-img { background: #fff !important; border-bottom: 1px solid #F1F4F8; }
+.pcard .pcard-img img { padding: 6px !important; }
+/* নাম সবসময় ২ লাইনের জায়গা নেবে — তাই পাশের কার্ডে নাম লম্বা হলেও দাম নিচে ঠেলে ফাঁকা তৈরি হবে না */
+.pcard .pname { min-height: calc(1.5em * 2) !important; }
+.pcard .pauthor { min-height: 1.55em; }
+.pcard .prating { margin-bottom: 0 !important; min-height: 1.1em; }
+.pcard-body { gap: 1px !important; }
+.pcard-body .pfooter { padding-top: 4px !important; gap: 4px !important; }
+@media (max-width: 768px) {
+  .pcard .prating { margin-bottom: 0 !important; }
+  .pcard .pname { margin-bottom: 1px !important; }
+  .pcard-body .pfooter { gap: 5px !important; }
+}
 </style>
 <script>
 /* ── অর্ডার বাতিল / বাতিলের অনুরোধ / রিপোর্ট (গ্রাহকের দিক) ── */
