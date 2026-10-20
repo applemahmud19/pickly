@@ -12719,6 +12719,10 @@ function bulkDownloadErrors(){
   .tb-refresh{font-size:0 !important;display:inline-flex !important;align-items:center;justify-content:center}
   .tb-refresh i{font-size:.9rem}
   .theme-toggle{flex-shrink:0}
+  .mob-menu-btn{transition:opacity .15s}
+  body:has(#sidebar.open) .mob-menu-btn{opacity:0;pointer-events:none}
+  #mbNav{transition:transform .2s}
+  body:has(#sidebar.open) #mbNav{transform:translateY(110%)}
   .btn,.btn-sm{min-height:38px}
   .nav-item{min-height:44px}
   .panel-actions>*{flex:1 1 calc(50% - 6px);min-width:0}
