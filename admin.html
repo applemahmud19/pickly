@@ -10409,6 +10409,16 @@ async function loadOrderRequests() {
   if (error) { if (tb) tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red)">লোড হয়নি — Supabase-এ <code>order_requests_setup.sql</code> চালিয়েছেন? (${escHtml(error.message)})</td></tr>`; return; }
   allOrderReqs = data || []; renderOrderRequests(); orBadge();
 }
+function orFiles(r) {
+  let a = r.attachments; if (typeof a === 'string') { try { a = JSON.parse(a); } catch (e) { a = []; } }
+  return Array.isArray(a) ? a.filter(x => x && x.url) : [];
+}
+function orFilesHtml(r) {
+  const f = orFiles(r); if (!f.length) return '';
+  return `<div style="margin-top:8px"><b>সংযুক্ত ফাইল (${f.length}):</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${f.map(x => x.type === 'pdf'
+    ? `<a href="${escHtml(x.url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:.75rem;text-decoration:none;color:inherit">📄 ${escHtml(x.name || 'PDF')}</a>`
+    : `<a href="${escHtml(x.url)}" target="_blank" rel="noopener"><img src="${escHtml(x.url)}" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></a>`).join('')}</div></div>`;
+}
 function orBadge() {
   const el = document.getElementById('nb-requests'); if (!el) return;
   const n = allOrderReqs.filter(r => r.status === 'open' && r.kind !== 'self_cancel').length;
@@ -10430,7 +10440,7 @@ function renderOrderRequests() {
   tb.innerHTML = list.map(r => `<tr>
     <td><b>${escHtml(r.order_number || '—')}</b><div style="font-size:.7rem;color:var(--text3)">${escHtml(r.customer_name || '')} ${escHtml(r.customer_phone || '')}</div></td>
     <td>${OR_KIND[r.kind] || r.kind}${r.report_type ? `<div style="font-size:.7rem;color:var(--text3)">${OR_RTYPE[r.report_type] || ''}</div>` : ''}</td>
-    <td style="max-width:300px;font-family:var(--font-bn);font-size:.8rem"><b>${escHtml(r.reason || '')}</b>${r.product_name ? `<div style="color:var(--text3)">পণ্য: ${escHtml(r.product_name)}</div>` : ''}${r.details ? `<div style="color:var(--text2)">${escHtml(r.details)}</div>` : ''}</td>
+    <td style="max-width:300px;font-family:var(--font-bn);font-size:.8rem"><b>${escHtml(r.reason || '')}</b>${r.product_name ? `<div style="color:var(--text3)">পণ্য: ${escHtml(r.product_name)}</div>` : ''}${r.details ? `<div style="color:var(--text2)">${escHtml(r.details)}</div>` : ''}${orFiles(r).length ? `<div style="color:var(--text3);font-size:.72rem">📎 ${orFiles(r).length}টি ফাইল</div>` : ''}</td>
     <td><span class="pill ${OR_PILL[r.status] || ''}">${OR_STATUS[r.status] || r.status}</span></td>
     <td style="font-size:.72rem;color:var(--text3)">${fmtDate(r.created_at)}</td>
     <td><button class="btn btn-ghost btn-sm" onclick="orOpen('${r.id}')">Manage</button></td></tr>`).join('');
@@ -10440,6 +10450,7 @@ function orOpen(id) {
   const ord = (typeof allOrders !== 'undefined' ? allOrders : []).find(o => o.id === r.order_id);
   document.getElementById('orMeta').innerHTML = `<b>${escHtml(r.order_number || '')}</b> — ${escHtml(r.customer_name || '')} ${escHtml(r.customer_phone || '')}<br>
     <b>${OR_KIND[r.kind] || r.kind}:</b> ${escHtml(r.reason || '')}${r.product_name ? `<br><b>পণ্য:</b> ${escHtml(r.product_name)}` : ''}${r.details ? `<br>${escHtml(r.details)}` : ''}
+    ${orFilesHtml(r)}
     ${ord ? `<br><span style="color:var(--text3)">অর্ডারের বর্তমান স্ট্যাটাস: ${escHtml(ord.status)}</span>` : ''}`;
   document.getElementById('orStatus').value = r.status; document.getElementById('orNote').value = r.admin_note || '';
   document.getElementById('orAcceptBtn').style.display = (r.kind === 'cancel_request' && r.status !== 'resolved' && !(ord && ord.status === 'cancelled')) ? '' : 'none';
