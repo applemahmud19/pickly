@@ -8760,7 +8760,15 @@ function _syncOrderCardStatus(orderId, newStatus) {
 }
 
 // ── Helper: re-render the full order-detail page for a given orderId ──
-async function _refreshOrderDetailPage(orderId) {
+// একই অর্ডারের জন্য ৩টা চ্যানেল (realtime orders / history / BroadcastChannel) একসাথে ফায়ার করে —
+// তাই ডুপ্লিকেট রিফ্রেশ ও বারবার toast এড়াতে debounce
+const _tpRefreshTimers = {};
+function _refreshOrderDetailPage(orderId) {
+  clearTimeout(_tpRefreshTimers[orderId]);
+  _tpRefreshTimers[orderId] = setTimeout(() => _refreshOrderDetailPageNow(orderId), 350);
+}
+window._tpToasted = window._tpToasted || {};
+async function _refreshOrderDetailPageNow(orderId) {
   const cached = window._tpOrderMap?.[orderId];
   let order = cached?.order || null;
   let hist  = cached?.hist  || [];
@@ -8817,7 +8825,10 @@ async function _refreshOrderDetailPage(orderId) {
   bodyEl.innerHTML = buildOrderDetailPanel(order, hist);
 
   // Show a subtle "সর্বশেষ আপডেট" toast
-  toast('🔄 আপডেট', `অর্ডার স্ট্যাটাস পরিবর্তিত হয়েছে: ${statusLabel}`, 's');
+  if (window._tpToasted[orderId] !== order.status) {
+    window._tpToasted[orderId] = order.status;
+    toast('🔄 আপডেট', `অর্ডার স্ট্যাটাস পরিবর্তিত হয়েছে: ${statusLabel}`, 's');
+  }
 }
 
 async function loadProducts() {
@@ -12125,6 +12136,16 @@ function switchTrackTab(tab, el) {
 // ══════════════════════════════════════════════════
 
 // ── Helpers ──
+// ── Tracking helpers ──
+function _tpEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function _tpSafeUrl(u){ u=String(u||'').trim(); return /^https?:\/\//i.test(u) ? _tpEsc(u) : '#'; }
+// in_stock/collecting/collected → প্রগ্রেস বারে "processing" ধাপ; delivered → সব ধাপ সম্পন্ন
+function _tpCurIdx(status, steps){
+  if (status === 'cancelled') return -1;
+  if (status === 'delivered') return steps.length;
+  const norm = ['in_stock','collecting','collected'].includes(status) ? 'processing' : status;
+  return steps.indexOf(norm);
+}
 const STATUS_LABEL = {
   pending:    'অপেক্ষায় আছে',
   confirmed:  'নিশ্চিত হয়েছে',
@@ -12169,7 +12190,7 @@ function fmtDateTime(iso) {
 
 function buildOrderCard(data, history) {
   const steps = ['pending','confirmed','processing','shipped','delivered'];
-  const curIdx = data.status==='cancelled' ? -1 : steps.indexOf(data.status);
+  const curIdx = _tpCurIdx(data.status, steps);
   const items = (data.items||[]).map(i=>i.name).join(', ');
 
   // ── Progress Steps ──
@@ -12198,7 +12219,7 @@ function buildOrderCard(data, history) {
             <div class="hitem">
               <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
               <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status_name||h.status]||STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status_name||h.status]||h.status_name||h.status}</div>
-              ${h.note?`<div class="hitem-note">${h.note}</div>`:''}
+              ${h.note?`<div class="hitem-note">${_tpEsc(h.note)}</div>`:''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
         </div>
@@ -12218,9 +12239,9 @@ function buildOrderCard(data, history) {
     <div class="order-info-card">
       <div class="oid-lbl">অর্ডার নম্বর</div>
       <div style="font-size:.95rem;font-weight:800;color:var(--blue);margin-bottom:3px;font-family:'Sora',sans-serif">${data.order_number}</div>
-      <div class="oname bn">${items.slice(0,55)}${items.length>55?'...':''}</div>
+      <div class="oname bn">${_tpEsc(items.slice(0,55))}${items.length>55?'...':''}</div>
       <div class="oeta bn" style="margin-top:4px">
-        <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:3px"></i>${data.customer_district||'—'}
+        <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:3px"></i>${_tpEsc(data.customer_district||'—')}
         &nbsp;·&nbsp;
         <strong style="color:var(--blue)">৳${Number(data.total).toLocaleString('en-US')}</strong>
         &nbsp;·&nbsp;
@@ -12238,7 +12259,7 @@ function buildOrderCard(data, history) {
 }
 
 async function tpTrackOrder() {
-  const num = (document.getElementById('tpTrackInput')?.value || '').trim();
+  const num = (document.getElementById('tpTrackInput')?.value || '').trim().replace(/\s+/g, '').toUpperCase();
   if (!num) { toast('ত্রুটি', 'Order ID লিখুন', 'w'); return; }
   const res = document.getElementById('tpSearchResult');
   res.innerHTML = '<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>খোঁজা হচ্ছে...</div>';
@@ -12417,7 +12438,7 @@ async function tpLoadMyOrders(retryCount = 0) {
       return `<div class="tp-oc-thumb" style="background:${bg}"><i class="fa-solid ${icon}" style="color:${clr}"></i></div>`;
     }).join('');
     const moreHtml = extraCount > 0 ? `<div class="tp-oc-more">+${extraCount}</div>` : '';
-    const namesSummary = items.map(i => i.name || 'পণ্য').join(' · ');
+    const namesSummary = _tpEsc(items.map(i => i.name || 'পণ্য').join(' · '));
 
     return `
     <div class="tp-order-card">
@@ -12464,7 +12485,7 @@ function tpToggleDetail(id, btn) {
 // ── Detail panel builder for new track page ──
 function buildTpOrderDetail(data, history) {
   const steps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
-  const curIdx = data.status === 'cancelled' ? -1 : steps.indexOf(data.status);
+  const curIdx = _tpCurIdx(data.status, steps);
   const items = (data.items || []).map(i => i.name).filter(Boolean);
 
   // Meta row: Order ID | জেলা | মোট | পণ্য সংখ্যা
@@ -12476,7 +12497,7 @@ function buildTpOrderDetail(data, history) {
       </div>
       <div class="tp-detail-meta-item">
         <div class="tp-detail-meta-lbl">জেলা</div>
-        <div class="tp-detail-meta-val">${data.customer_district || '—'}</div>
+        <div class="tp-detail-meta-val">${_tpEsc(data.customer_district || '—')}</div>
       </div>
       <div class="tp-detail-meta-item">
         <div class="tp-detail-meta-lbl">মোট মূল্য</div>
@@ -12505,7 +12526,7 @@ function buildTpOrderDetail(data, history) {
         const bdgIcon= isDisp ? 'fa-truck-fast' : 'fa-clock';
         return `<div style="font-family:'Hind Siliguri',sans-serif;font-size:.82rem;color:var(--text-mid);padding:7px 0;border-bottom:1px solid var(--blue-light);display:flex;align-items:center;gap:8px">
           <i class="fa-solid fa-book" style="color:var(--blue);font-size:.72rem;flex-shrink:0"></i>
-          <span style="flex:1">${item.name||'পণ্য'}${item.qty > 1 ? ` × ${item.qty}` : ''}</span>
+          <span style="flex:1">${_tpEsc(item.name||'পণ্য')}${item.qty > 1 ? ` × ${item.qty}` : ''}</span>
           <span style="display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;color:${bdgTxt};background:${bdgBg};border:${bdgBdr};border-radius:20px;padding:2px 9px;white-space:nowrap"><i class="fa-solid ${bdgIcon}" style="font-size:.58rem"></i>${iLabel}</span>
         </div>`;
       }).join('')}
@@ -12538,7 +12559,7 @@ function buildTpOrderDetail(data, history) {
             <div class="hitem">
               <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
               <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status_name||h.status] || STATUS_ICON[h.status] || 'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status_name||h.status] || h.status_name||h.status}</div>
-              ${(h.note||h.tracking_note) ? `<div class="hitem-note">${h.note||h.tracking_note}</div>` : ''}
+              ${(h.note||h.tracking_note) ? `<div class="hitem-note">${_tpEsc(h.note||h.tracking_note)}</div>` : ''}
               <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.created_at)}</div>
             </div>`).join('')}
         </div>
@@ -12570,6 +12591,8 @@ async function tpOpenOrderDetail(orderId) {
     </div>`;
   document.getElementById('odPageBody').innerHTML = '';
   openPage('order-detail');
+  window._tpToasted = window._tpToasted || {};
+  if (window._tpOrderMap?.[orderId]?.order) window._tpToasted[orderId] = window._tpOrderMap[orderId].order.status;
 
   // Try in-memory map first (populated by tpLoadMyOrders)
   let order = window._tpOrderMap?.[orderId]?.order || null;
@@ -12646,7 +12669,7 @@ async function loadMyOrders() { await tpLoadMyOrders(); }
 
 function buildOrderDetailPanel(data, history) {
   const steps = ['pending','confirmed','processing','shipped','delivered'];
-  const curIdx = data.status==='cancelled' ? -1 : steps.indexOf(data.status);
+  const curIdx = _tpCurIdx(data.status, steps);
   const items  = Array.isArray(data.items) ? data.items : [];
 
   // Progress steps
@@ -12663,7 +12686,7 @@ function buildOrderDetailPanel(data, history) {
         ${steps.map((s,i) => {
           const done   = i < curIdx;
           const active = i === curIdx;
-          const bgClr  = done ? 'linear-gradient(135deg,var(--blue),var(--blue-dark))' : active ? 'linear-gradient(135deg,#0EA5E9,var(--blue))' : 'white';
+          const bgClr  = done ? 'linear-gradient(135deg,var(--blue),var(--blue-dark))' : active ? 'linear-gradient(135deg,#D64A4B,var(--blue))' : 'white';
           const borderClr = done||active ? 'var(--blue)' : 'var(--border)';
           const txtClr = done||active ? 'var(--blue)' : 'var(--text-light)';
           const iconName = done ? 'fa-check' : active ? (STATUS_ICON[s]||'fa-circle-dot') : 'fa-circle';
@@ -12687,17 +12710,17 @@ function buildOrderDetailPanel(data, history) {
       <div style="font-size:.62rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;font-family:'Hind Siliguri',sans-serif">
         <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:4px"></i>ডেলিভারি তথ্য
       </div>
-      <div class="bn" style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:2px">${data.customer_name||'—'}</div>
-      <div class="bn" style="font-size:.74rem;color:var(--text-mid);margin-bottom:1px"><i class="fa-solid fa-phone" style="font-size:.62rem;color:var(--blue);margin-right:4px"></i>${data.customer_phone||'—'}</div>
-      <div class="bn" style="font-size:.74rem;color:var(--text-mid)"><i class="fa-solid fa-map-marker-alt" style="font-size:.62rem;color:var(--blue);margin-right:4px"></i>${data.customer_district||''} · ${data.customer_address||'—'}</div>
+      <div class="bn" style="font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:2px">${_tpEsc(data.customer_name||'—')}</div>
+      <div class="bn" style="font-size:.74rem;color:var(--text-mid);margin-bottom:1px"><i class="fa-solid fa-phone" style="font-size:.62rem;color:var(--blue);margin-right:4px"></i>${_tpEsc(data.customer_phone||'—')}</div>
+      <div class="bn" style="font-size:.74rem;color:var(--text-mid)"><i class="fa-solid fa-map-marker-alt" style="font-size:.62rem;color:var(--blue);margin-right:4px"></i>${_tpEsc(data.customer_district||'')} · ${_tpEsc(data.customer_address||'—')}</div>
     </div>`;
 
   // Courier info
   const courierHtml = data.tracking_link ? `
-    <div style="background:#E0F2FE;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:12px;border:1px solid rgba(170,44,45,.2)">
+    <div style="background:#FBEFEF;border-radius:var(--radius-sm);padding:10px 13px;margin-bottom:12px;border:1px solid rgba(170,44,45,.2)">
       <div class="bn" style="font-size:.72rem;font-weight:700;color:var(--blue);margin-bottom:5px"><i class="fa-solid fa-truck-fast" style="margin-right:4px"></i>কুরিয়ার ট্র্যাকিং</div>
-      <div class="bn" style="font-size:.78rem;font-weight:600;margin-bottom:3px">${data.courier_service||''} ${data.tracking_id?`· ${data.tracking_id}`:''}</div>
-      <a href="${data.tracking_link}" target="_blank" style="font-size:.72rem;color:var(--blue-dark);word-break:break-all">${data.tracking_link}</a>
+      <div class="bn" style="font-size:.78rem;font-weight:600;margin-bottom:3px">${_tpEsc(data.courier_service||'')} ${data.tracking_id?`· ${_tpEsc(data.tracking_id)}`:''}</div>
+      <a href="${_tpSafeUrl(data.tracking_link)}" target="_blank" style="font-size:.72rem;color:var(--blue-dark);word-break:break-all">${_tpEsc(data.tracking_link)}</a>
     </div>` : '';
 
   // Items summary — with per-item delivery status badge + product image
@@ -12707,8 +12730,10 @@ function buildOrderDetailPanel(data, history) {
 
   // Price breakdown figures
   const subtotal    = Number(data.subtotal    || items.reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||1),0) || 0);
-  const shippingFee = Number(data.shipping_fee ?? data.delivery_fee ?? 60);
   const discAmt     = Number(data.discount    || 0);
+  // ফি সেভ না থাকলে ভুল করে ৬০ না ধরে total থেকে হিসাব করে বের করো
+  const _feeRaw     = data.shipping_fee ?? data.delivery_fee;
+  const shippingFee = _feeRaw != null ? Number(_feeRaw) : (data.total ? Math.max(0, Number(data.total) - subtotal + discAmt) : 60);
   const totalAmt    = Number(data.total       || (subtotal + shippingFee - discAmt));
 
   const itemsHtml = items.length ? `
@@ -12738,12 +12763,12 @@ function buildOrderDetailPanel(data, history) {
           <!-- Product image thumbnail -->
           <div style="width:50px;height:50px;border-radius:8px;background:#F1F5F9;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
             ${imgSrc
-              ? `<img src="${imgSrc}" alt="${item.name||''}" style="width:100%;height:100%;object-fit:cover;border-radius:7px;display:block" onerror="this.style.display='none'">`
+              ? `<img src="${imgSrc}" alt="${_tpEsc(item.name||'')}" style="width:100%;height:100%;object-fit:cover;border-radius:7px;display:block" onerror="this.style.display='none'">`
               : `<span style="font-size:1.4rem;opacity:.18">📦</span>`}
           </div>
           <!-- Name + qty + status badge -->
           <div style="flex:1;min-width:0">
-            <div class="bn" style="font-size:.78rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.45">${item.name||'পণ্য'}</div>
+            <div class="bn" style="font-size:.78rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.45">${_tpEsc(item.name||'পণ্য')}</div>
             <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
               <span class="bn" style="font-size:.64rem;color:var(--text-light)">পরিমাণ: ${item.qty||1} · ৳${Number(item.price||0).toLocaleString('en-US')}</span>
               <!-- Status badge -->
@@ -12803,7 +12828,7 @@ function buildOrderDetailPanel(data, history) {
           <div class="hitem">
             <div class="hitem-dot"><i class="fa-solid fa-circle"></i></div>
             <div class="hitem-status bn"><i class="fa-solid ${STATUS_ICON[h.status_name||h.status]||STATUS_ICON[h.status]||'fa-circle-dot'}" style="color:var(--blue);margin-right:5px;font-size:.75rem"></i>${STATUS_LABEL[h.status_name||h.status]||h.status_name||h.status}</div>
-            ${(h.note||h.tracking_note)?`<div class="hitem-note">${h.note||h.tracking_note}</div>`:''}
+            ${(h.note||h.tracking_note)?`<div class="hitem-note">${_tpEsc(h.note||h.tracking_note)}</div>`:''}
             <div class="hitem-time"><i class="fa-regular fa-clock"></i>${fmtDateTime(h.changed_at||h.created_at)}</div>
           </div>`).join('')}
       </div>
