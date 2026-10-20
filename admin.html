@@ -804,11 +804,6 @@ textarea.form-inp { resize: vertical; min-height: 82px; }
 }
 
 /* ── Bulk Discount Card ── */
-.pbd-bar { display:none; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 20px; background:rgba(255,59,48,0.06); border-bottom:1px solid rgba(255,59,48,0.2); }
-.pbd-bar.show { display:flex; }
-.pbd-count { font-size:0.8rem; font-weight:700; color:var(--red); font-family:'Hind Siliguri',var(--font-bn),sans-serif; }
-.pbd-chk { width:17px; height:17px; cursor:pointer; accent-color:#AA2C2D; vertical-align:middle; }
-tr.pbd-selected > td { background:rgba(255,59,48,0.05); }
 .bulk-disc-card {
   padding: 16px 20px; border-bottom: 1px solid var(--border);
   background: linear-gradient(135deg, rgba(255,159,10,0.04) 0%, rgba(175,82,222,0.04) 100%);
@@ -1682,6 +1677,9 @@ body {
       <div class="tb-title" id="topbarTitle">Dashboard</div>
       <div class="tb-right">
         <div class="live-badge"><div class="live-dot"></div>Live</div>
+        <button class="btn btn-ghost btn-sm tb-bulk-btn" onclick="bulkOpen()" style="gap:6px;padding:7px 13px;font-size:0.76rem" title="CSV ফাইল ড্র্যাগ &amp; ড্রপ করে একসাথে অনেক বই আপলোড">
+          <i class="fa-solid fa-file-csv"></i> <span style="font-family:var(--font-bn)">Bulk Import</span>
+        </button>
         <button class="btn btn-primary btn-sm" onclick="openModal('quickActionsModal')" style="gap:6px;padding:7px 13px;font-size:0.76rem" title="দ্রুত কাজ করুন">
           <i class="fa-solid fa-bolt"></i> <span style="font-family:var(--font-bn)">Quick Actions</span>
         </button>
@@ -1953,6 +1951,7 @@ body {
                 <i class="fa-solid fa-rotate"></i> সব পুনঃতৈরি
               </button>
               <button class="btn btn-ghost btn-sm" onclick="bulkOpen()" title="CSV দিয়ে একসাথে অনেক বই আপলোড"><i class="fa-solid fa-file-csv"></i> Bulk Import</button>
+              <button class="btn btn-ghost btn-sm" onclick="migOpen()" title="যেসব বইয়ের ছবি বাইরের লিংক থেকে আসছে সেগুলো নিজের সার্ভারে আনুন"><i class="fa-solid fa-cloud-arrow-down"></i> ছবি নিজের সার্ভারে আনুন</button>
               <button class="btn btn-primary btn-sm" onclick="openProductModal()">
                 <i class="fa-solid fa-plus"></i> পণ্য যোগ করুন
               </button>
@@ -1984,20 +1983,13 @@ body {
             </div>
           </div>
 
-          <!-- ── Multi-select Delete Bar ── -->
-          <div class="pbd-bar" id="pbdBar">
-            <span class="pbd-count"><i class="fa-solid fa-square-check"></i> <span id="pbdCount">0</span>টি পণ্য সিলেক্ট করা হয়েছে</span>
-            <button class="btn btn-danger btn-sm" id="pbdDeleteBtn" onclick="deleteSelectedProducts()"><i class="fa-solid fa-trash"></i> সিলেক্টেড মুছুন</button>
-            <button class="btn btn-ghost btn-sm" onclick="pbdClear()"><i class="fa-solid fa-xmark"></i> সিলেকশন বাতিল</button>
-          </div>
-
           <div class="table-wrap">
             <table class="data-table">
               <thead><tr>
-                <th style="width:38px"><input type="checkbox" class="pbd-chk" id="pbdSelectAll" onchange="pbdToggleAll(this.checked)" title="সব সিলেক্ট করুন (বর্তমানে দেখানো পণ্যগুলো)"></th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
+                <th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
               </tr></thead>
               <tbody id="productTableBody">
-                <tr><td colspan="7" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -3475,22 +3467,26 @@ end $$;
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="oe-inner-grid">
               <div class="form-group" style="gap:3px">
-                <label class="form-label" style="font-size:0.58rem">জেলা (District)</label>
-                <select class="form-inp" id="oe-district" onchange="oeOnDistrictChange()" style="min-width:0;font-size:0.8rem;padding:7px 9px;font-family:var(--font-bn)">
-                  <option value="">— জেলা বেছে নিন —</option>
+                <label class="form-label" style="font-size:0.58rem">District</label>
+                <select class="form-inp" id="oe-district" style="min-width:0;font-size:0.8rem;padding:7px 9px">
+                  <option value="">— Select District —</option>
+                  <option>Dhaka</option><option>Chittagong</option><option>Sylhet</option><option>Rajshahi</option>
+                  <option>Khulna</option><option>Barisal</option><option>Rangpur</option><option>Mymensingh</option>
+                  <option>Comilla</option><option>Narayanganj</option><option>Gazipur</option><option>Narsingdi</option>
+                  <option>Munshiganj</option><option>Manikganj</option><option>Faridpur</option><option>Madaripur</option>
+                  <option>Gopalganj</option><option>Shariatpur</option><option>Kishoreganj</option><option>Tangail</option>
+                  <option>Jamalpur</option><option>Sherpur</option><option>Netrokona</option><option>Brahmanbaria</option>
+                  <option>Chandpur</option><option>Lakshmipur</option><option>Noakhali</option><option>Feni</option>
+                  <option>Cox's Bazar</option><option>Rangamati</option><option>Khagrachhari</option><option>Bandarban</option>
+                  <option>Bogura</option><option>Joypurhat</option><option>Naogaon</option><option>Natore</option>
+                  <option>Chapainawabganj</option><option>Pabna</option><option>Sirajganj</option><option>Kurigram</option>
+                  <option>Lalmonirhat</option><option>Nilphamari</option><option>Gaibandha</option><option>Thakurgaon</option>
+                  <option>Dinajpur</option><option>Panchagarh</option><option>Jashore</option><option>Satkhira</option>
+                  <option>Magura</option><option>Jhenaidah</option><option>Narail</option><option>Chuadanga</option>
+                  <option>Meherpur</option><option>Kushtia</option><option>Bagerhat</option><option>Pirojpur</option>
+                  <option>Jhalokati</option><option>Bhola</option><option>Patuakhali</option><option>Barguna</option>
+                  <option>Habiganj</option><option>Moulvibazar</option><option>Sunamganj</option>
                 </select>
-              </div>
-              <div class="form-group" style="gap:3px">
-                <label class="form-label" style="font-size:0.58rem">উপজেলা / থানা (Upazila)</label>
-                <select class="form-inp" id="oe-upazila" style="min-width:0;font-size:0.8rem;padding:7px 9px;font-family:var(--font-bn)">
-                  <option value="">— আগে জেলা বেছে নিন —</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="oe-inner-grid">
-              <div class="form-group" style="gap:3px">
-                <label class="form-label" style="font-size:0.58rem">ইউনিয়ন / পৌরসভা / ওয়ার্ড</label>
-                <input class="form-inp" type="text" id="oe-union" placeholder="নাম লিখুন" maxlength="120" autocomplete="off" style="font-size:0.8rem;padding:7px 9px;font-family:var(--font-bn)">
               </div>
               <div class="form-group" style="gap:3px">
                 <label class="form-label" style="font-size:0.58rem">Delivery Fee (৳)</label>
@@ -5354,13 +5350,10 @@ function renderProducts() {
   const tbody = document.getElementById('productTableBody');
 
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-box-open"></i></div><div class="empty-title">No products found</div><div class="empty-sub">Add your first product above</div></div></td></tr>`;
-    _pbdVisible = [];
-    pbdRefresh();
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-box-open"></i></div><div class="empty-title">No products found</div><div class="empty-sub">Add your first product above</div></div></td></tr>`;
     return;
   }
 
-  _pbdVisible = filtered.map(p => String(p.id));
   tbody.innerHTML = filtered.map(p => {
     const cleanName = stripEmojis(p.name || '');
     // ── Effective price calculation using bulk_discount_percentage ──
@@ -5372,8 +5365,7 @@ function renderProducts() {
     const imgEl = p.image_url
       ? `<img src="${p.image_url}" style="width:52px;height:52px;border-radius:8px;object-fit:contain;border:1px solid var(--border);background:#f8f9fa;padding:2px" onerror="this.style.display='none'">`
       : `<div style="width:38px;height:38px;border-radius:8px;background:${p.color||'#AA2C2D'}18;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;color:${p.color||'#AA2C2D'}"><i class="fa-solid ${p.icon||'fa-box'}"></i></div>`;
-    return `<tr class="${_pbdSel.has(String(p.id)) ? 'pbd-selected' : ''}" data-pid="${p.id}">
-      <td><input type="checkbox" class="pbd-chk pbd-row-chk" data-pid="${p.id}" ${_pbdSel.has(String(p.id)) ? 'checked' : ''} onclick="pbdRowClick(event,'${p.id}')"></td>
+    return `<tr>
       <td><div style="display:flex;align-items:center;gap:10px">${imgEl}<div><div style="font-weight:600;font-size:0.84rem">${cleanName || '—'}</div><div style="font-size:0.7rem;color:var(--text3)">${p.category==='বই' && p.author ? p.author : (p.brand || '—')}</div></div></div></td>
       <td><span style="font-size:0.7rem;font-weight:700;font-family:var(--mono);background:var(--blue-ll);color:var(--blue);padding:2px 8px;border-radius:6px;border:1px solid rgba(170,44,45,0.2)">${p.category || '—'}</span></td>
       <td>
@@ -5413,109 +5405,6 @@ function renderProducts() {
       </div></td>
     </tr>`;
   }).join('');
-  pbdRefresh();
-}
-
-/* ══════════════════════════════════════
-   MULTI-SELECT DELETE (Products)
-   - প্রতিটি সারির চেকবক্স, Shift+Click দিয়ে রেঞ্জ সিলেক্ট
-   - হেডারের চেকবক্স = বর্তমানে ফিল্টার/সার্চ করা সব পণ্য সিলেক্ট
-══════════════════════════════════════ */
-const _pbdSel = new Set();      // selected product ids (String)
-let _pbdVisible = [];           // ids currently shown in table (in order)
-let _pbdLastIdx = -1;           // last clicked row index (for shift-select)
-
-function pbdRowClick(ev, id) {
-  id = String(id);
-  const idx = _pbdVisible.indexOf(id);
-  const checked = ev.target.checked;
-  if (ev.shiftKey && _pbdLastIdx > -1 && idx > -1) {
-    const [a, b] = [Math.min(_pbdLastIdx, idx), Math.max(_pbdLastIdx, idx)];
-    for (let i = a; i <= b; i++) checked ? _pbdSel.add(_pbdVisible[i]) : _pbdSel.delete(_pbdVisible[i]);
-  } else {
-    checked ? _pbdSel.add(id) : _pbdSel.delete(id);
-  }
-  _pbdLastIdx = idx;
-  pbdSyncRows();
-  pbdRefresh();
-}
-
-function pbdToggleAll(checked) {
-  _pbdVisible.forEach(id => checked ? _pbdSel.add(id) : _pbdSel.delete(id));
-  _pbdLastIdx = -1;
-  pbdSyncRows();
-  pbdRefresh();
-}
-
-function pbdClear() {
-  _pbdSel.clear();
-  _pbdLastIdx = -1;
-  pbdSyncRows();
-  pbdRefresh();
-}
-
-function pbdSyncRows() {
-  document.querySelectorAll('#productTableBody tr[data-pid]').forEach(tr => {
-    const on = _pbdSel.has(tr.dataset.pid);
-    tr.classList.toggle('pbd-selected', on);
-    const c = tr.querySelector('.pbd-row-chk');
-    if (c) c.checked = on;
-  });
-}
-
-function pbdRefresh() {
-  // আর নেই এমন পণ্য সিলেকশন থেকে বাদ দিন
-  const existing = new Set(allProducts.map(p => String(p.id)));
-  [..._pbdSel].forEach(id => { if (!existing.has(id)) _pbdSel.delete(id); });
-
-  const n = _pbdSel.size;
-  const bar = document.getElementById('pbdBar');
-  if (bar) bar.classList.toggle('show', n > 0);
-  const cnt = document.getElementById('pbdCount');
-  if (cnt) cnt.textContent = n;
-
-  const all = document.getElementById('pbdSelectAll');
-  if (all) {
-    const visSel = _pbdVisible.filter(id => _pbdSel.has(id)).length;
-    all.checked = _pbdVisible.length > 0 && visSel === _pbdVisible.length;
-    all.indeterminate = visSel > 0 && visSel < _pbdVisible.length;
-  }
-}
-
-async function deleteSelectedProducts() {
-  if (!sb) return;
-  const ids = [..._pbdSel];
-  if (!ids.length) { toast('কিছু সিলেক্ট করা নেই', 'প্রথমে পণ্য সিলেক্ট করুন', 'warning'); return; }
-
-  const items = allProducts.filter(p => _pbdSel.has(String(p.id)));
-  const preview = items.slice(0, 5).map(p => '• ' + (stripEmojis(p.name || '') || '—')).join('\n')
-                + (items.length > 5 ? `\n… এবং আরও ${items.length - 5}টি` : '');
-  if (!confirm(`${items.length}টি পণ্য স্থায়ীভাবে মুছে ফেলবেন?\n\n${preview}\n\nএই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।`)) return;
-
-  const btn = document.getElementById('pbdDeleteBtn');
-  const oldHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> মুছছে...';
-
-  // allProducts থেকে আসল id (type সহ) নিন
-  const realIds = items.map(p => p.id);
-  const CHUNK = 50;
-  let deleted = 0, failed = 0, lastErr = '';
-  for (let i = 0; i < realIds.length; i += CHUNK) {
-    const part = realIds.slice(i, i + CHUNK);
-    const { error } = await sb.from('products').delete().in('id', part);
-    if (error) { failed += part.length; lastErr = error.message; }
-    else { deleted += part.length; part.forEach(id => _pbdSel.delete(String(id))); }
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = oldHtml;
-
-  if (failed) toast('আংশিক সমস্যা', `${deleted}টি মুছেছে, ${failed}টি মোছা যায়নি: ${lastErr}`, 'error');
-  else toast('Deleted', `${deleted}টি পণ্য স্থায়ীভাবে মুছে ফেলা হয়েছে`, 'info');
-
-  await loadProducts();
-  renderDashboard();
 }
 
 /* ══════════════════════════════════════
@@ -6338,69 +6227,24 @@ function refreshOrderModal(id) {
   loadStatusHistory(id);
 }
 
-/* ══════════════════════════════════════
-   অর্ডার এডিট — জেলা / উপজেলা / ইউনিয়ন
-   customer_district = "জেলা > উপজেলা > ইউনিয়ন/পৌরসভা" (ওয়েবসাইটের চেকআউটের মতোই)
-   জেলা ও উপজেলা তালিকা থেকে বাছা যায়; ইউনিয়ন/পৌরসভা নিজে লেখা যায়।
-   তালিকায় নেই এমন আগের মান (যেমন পুরনো ইংরেজি জেলার নাম) হারায় না — অপশন হিসেবে থেকে যায়।
-══════════════════════════════════════ */
-const OE_BD_UPAZILAS = {"ঢাকা":["ধানমন্ডি","গুলশান","মিরপুর","পল্লবী","কাফরুল","মোহাম্মদপুর","আদাবর","শেরে বাংলা নগর","উত্তরা পশ্চিম","উত্তরা পূর্ব","উত্তরখান","দক্ষিণখান","তেজগাঁও","তেজগাঁও শিল্পাঞ্চল","বাড্ডা","খিলক্ষেত","রমনা","পল্টন","মতিঝিল","শাহবাগ","লালবাগ","চকবাজার","কামরাঙ্গীরচর","হাজারীবাগ","ওয়ারী","কোতোয়ালি","সুত্রাপুর","গেন্ডারিয়া","সাভার","কেরানীগঞ্জ","দোহার","নবাবগঞ্জ"],"গাজীপুর":["গাজীপুর সদর","কালিয়াকৈর","কাপাসিয়া","শ্রীপুর","টঙ্গী পূর্ব","টঙ্গী পশ্চিম"],"নারায়ণগঞ্জ":["নারায়ণগঞ্জ সদর","আড়াইহাজার","রূপগঞ্জ","সোনারগাঁও","বন্দর"],"মানিকগঞ্জ":["মানিকগঞ্জ সদর","সিঙ্গাইর","শিবালয়","ঘিওর","হরিরামপুর","দৌলতপুর","সাটুরিয়া"],"মুন্সিগঞ্জ":["মুন্সিগঞ্জ সদর","লৌহজং","সিরাজদিখান","টঙ্গীবাড়ী"],"রাজবাড়ী":["রাজবাড়ী সদর","গোয়ালন্দ","পাংশা"],"মাদারীপুর":["মাদারীপুর সদর","কালকিনি","শিবচর"],"শরীয়তপুর":["শরীয়তপুর সদর","ডামুড্যা","নড়িয়া"],"কিশোরগঞ্জ":["কিশোরগঞ্জ সদর","ভৈরব","হোসেনপুর"],"টাঙ্গাইল":["টাঙ্গাইল সদর","মির্জাপুর","সখিপুর","গোপালপুর"],"ময়মনসিংহ":["ময়মনসিংহ সদর","ভালুকা","ত্রিশাল","গফরগাঁও","নান্দাইল"],"জামালপুর":["জামালপুর সদর","সরিষাবাড়ী","মেলান্দহ"],"নেত্রকোনা":["নেত্রকোনা সদর","কেন্দুয়া","মোহনগঞ্জ"],"নরসিংদী":["নরসিংদী সদর","মনোহরদী","রায়পুরা","শিবপুর"],"চট্টগ্রাম":["চট্টগ্রাম সদর","হাটহাজারী","রাঙ্গুনিয়া","সীতাকুণ্ড","মিরসরাই","বোয়ালখালী","ফটিকছড়ি","পটিয়া","লোহাগাড়া","সাতকানিয়া","রাউজান","সন্দ্বীপ"],"কক্সবাজার":["কক্সবাজার সদর","রামু","উখিয়া","টেকনাফ"],"ব্রাহ্মণবাড়িয়া":["ব্রাহ্মণবাড়িয়া সদর","আশুগঞ্জ","নবীনগর"],"কুমিল্লা":["কুমিল্লা সদর","কুমিল্লা সদর দক্ষিণ","দাউদকান্দি","দেবিদ্বার","চান্দিনা","লাকসাম","বরুড়া","মুরাদনগর","মেঘনা","হোমনা","তিতাস","নাঙ্গলকোট","লালমাই","ব্রাহ্মণপাড়া","বুড়িচং","চৌদ্দগ্রাম"],"চাঁদপুর":["চাঁদপুর সদর","মতলব উত্তর","হাজিগঞ্জ"],"ফেনী":["ফেনী সদর","ছাগলনাইয়া","সোনাগাজী"],"নোয়াখালী":["নোয়াখালী সদর","কোম্পানীগঞ্জ","সেনবাগ","বেগমগঞ্জ"],"লক্ষ্মীপুর":["লক্ষ্মীপুর সদর","রামগঞ্জ","রায়পুর"],"সিলেট":["সিলেট সদর","বিয়ানীবাজার","জৈন্তাপুর","গোলাপগঞ্জ","কানাইঘাট","কোম্পানীগঞ্জ (সিলেট)","বালাগঞ্জ","বিশ্বনাথ","ফেঞ্চুগঞ্জ","গোয়াইনঘাট","জকিগঞ্জ","ওসমানীনগর","দক্ষিণ সুরমা"],"মৌলভীবাজার":["মৌলভীবাজার সদর","শ্রীমঙ্গল","কুলাউড়া","বড়লেখা"],"হবিগঞ্জ":["হবিগঞ্জ সদর","বাহুবল","চুনারুঘাট"],"সুনামগঞ্জ":["সুনামগঞ্জ সদর","দিরাই","ছাতক","জগন্নাথপুর"],"রাজশাহী":["রাজশাহী সদর","গোদাগাড়ী","তানোর","পুঠিয়া"],"চাঁপাইনবাবগঞ্জ":["চাঁপাইনবাবগঞ্জ সদর","শিবগঞ্জ","গোমস্তাপুর"],"নওগাঁ":["নওগাঁ সদর","বদলগাছী","পত্নীতলা"],"নাটোর":["নাটোর সদর","বাগাতিপাড়া","গুরুদাসপুর"],"সিরাজগঞ্জ":["সিরাজগঞ্জ সদর","উল্লাপাড়া","শাহজাদপুর"],"পাবনা":["পাবনা সদর","ঈশ্বরদী","চাটমোহর"],"বগুড়া":["বগুড়া সদর","শেরপুর","গাবতলী","সারিয়াকান্দি"],"জয়পুরহাট":["জয়পুরহাট সদর","পাঁচবিবি","কালাই"],"খুলনা":["খুলনা সদর","ডুমুরিয়া","ফুলতলা","রূপসা"],"বাগেরহাট":["বাগেরহাট সদর","মোংলা","মোরেলগঞ্জ"],"সাতক্ষীরা":["সাতক্ষীরা সদর","কালিগঞ্জ","শ্যামনগর"],"যশোর":["যশোর সদর","ঝিকরগাছা","কেশবপুর","মনিরামপুর"],"ঝিনাইদহ":["ঝিনাইদহ সদর","কালীগঞ্জ","কোটচাঁদপুর"],"নড়াইল":["নড়াইল সদর","কালিয়া"],"মাগুরা":["মাগুরা সদর","শালিখা"],"কুষ্টিয়া":["কুষ্টিয়া সদর","ভেড়ামারা","মিরপুর","খোকসা"],"মেহেরপুর":["মেহেরপুর সদর","গাংনী"],"চুয়াডাঙ্গা":["চুয়াডাঙ্গা সদর","দামুড়হুদা"],"বরিশাল":["বরিশাল সদর","বাবুগঞ্জ","বাকেরগঞ্জ","গৌরনদী"],"পটুয়াখালী":["পটুয়াখালী সদর","বাউফল","কলাপাড়া"],"ভোলা":["ভোলা সদর","বোরহানউদ্দিন","দৌলতখান"],"পিরোজপুর":["পিরোজপুর সদর","মঠবাড়িয়া","নাজিরপুর"],"ঝালকাঠি":["ঝালকাঠি সদর","কাঁঠালিয়া"],"বরগুনা":["বরগুনা সদর","পাথরঘাটা","আমতলী"],"রংপুর":["রংপুর সদর","বদরগঞ্জ","গঙ্গাচড়া","মিঠাপুকুর"],"গাইবান্ধা":["গাইবান্ধা সদর","সুন্দরগঞ্জ","সাঘাটা"],"লালমনিরহাট":["লালমনিরহাট সদর","পাটগ্রাম","কালীগঞ্জ"],"কুড়িগ্রাম":["কুড়িগ্রাম সদর","নাগেশ্বরী","ভুরুঙ্গামারী"],"নীলফামারী":["নীলফামারী সদর","সৈয়দপুর","ডিমলা"],"দিনাজপুর":["দিনাজপুর সদর","বীরগঞ্জ","পার্বতীপুর","বিরামপুর"],"ঠাকুরগাঁও":["ঠাকুরগাঁও সদর","পীরগঞ্জ","রানীশংকৈল"],"পঞ্চগড়":["পঞ্চগড় সদর","তেঁতুলিয়া","আটোয়ারী"],"ফরিদপুর":["ফরিদপুর সদর","ভাঙ্গা","বোয়ালমারী"],"গোপালগঞ্জ":["গোপালগঞ্জ সদর","টুঙ্গিপাড়া","কোটালীপাড়া"],"খাগড়াছড়ি":["খাগড়াছড়ি সদর","রাঙামাটি","দীঘিনালা"],"রাঙামাটি":["রাঙামাটি সদর","কাপ্তাই","বরকল"],"বান্দরবান":["বান্দরবান সদর","লামা","রোয়াংছড়ি"],"শেরপুর":["শেরপুর সদর","নালিতাবাড়ী","নকলা","ঝিনাইগাতী","শ্রীবর্দী"]};
-
-function oeSplitLocation(str) {
-  const parts = String(str || '').split('>').map(x => x.trim());
-  return { district: parts[0] || '', upazila: parts[1] || '', union: parts.slice(2).filter(Boolean).join(' > ') };
-}
-function oeSetSelect(sel, value, placeholder) {
-  // তালিকায় থাকলে সেটাই সিলেক্ট; না থাকলে (পুরনো/ভিন্ন নাম) অপশন যোগ করে সিলেক্ট
-  if (!sel) return;
-  if (!value) { sel.value = ''; return; }
-  let opt = Array.from(sel.options).find(o => o.value === value);
-  if (!opt) {
-    opt = document.createElement('option');
-    opt.value = value; opt.textContent = value;
-    sel.appendChild(opt);
-  }
-  sel.value = value;
-}
-function oeFillUpazilas(district, selected) {
-  const up = document.getElementById('oe-upazila');
-  if (!up) return;
-  const list = OE_BD_UPAZILAS[district] || [];
-  up.innerHTML = '';
-  const ph = document.createElement('option');
-  ph.value = '';
-  ph.textContent = district ? '— উপজেলা বেছে নিন —' : '— আগে জেলা বেছে নিন —';
-  up.appendChild(ph);
-  list.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; up.appendChild(o); });
-  oeSetSelect(up, selected || '');
-}
-function oeOnDistrictChange() {
-  oeFillUpazilas(document.getElementById('oe-district').value, '');
-}
-function oeFillLocation(str) {
-  const { district, upazila, union } = oeSplitLocation(str);
-  const dSel = document.getElementById('oe-district');
-  if (dSel) {
-    dSel.innerHTML = '<option value="">— জেলা বেছে নিন —</option>' +
-      Object.keys(OE_BD_UPAZILAS).sort((a, b) => a.localeCompare(b, 'bn')).map(d => `<option value="${d}">${d}</option>`).join('');
-    oeSetSelect(dSel, district);
-  }
-  oeFillUpazilas(district, upazila);
-  const un = document.getElementById('oe-union');
-  if (un) un.value = union;
-}
-function oeGetLocation() {
-  const g = id => (document.getElementById(id)?.value || '').trim();
-  return [g('oe-district'), g('oe-upazila'), g('oe-union')].filter(Boolean).join(' > ');
-}
-
 function fillOrderEditForm(o) {
   console.log('[fillOrderEditForm] Populating edit form for order:', o.id, o.order_number);
   document.getElementById('oe-name').value = o.customer_name || '';
   document.getElementById('oe-phone').value = o.customer_phone || '';
   document.getElementById('oe-email').value = o.customer_email || '';
-  // জেলা / উপজেলা / ইউনিয়ন — customer_district সংরক্ষিত থাকে "জেলা > উপজেলা > ইউনিয়ন" ফরম্যাটে
-  oeFillLocation(o.customer_district || '');
+  // District: try exact match in select, fall back to first option
+  const districtSel = document.getElementById('oe-district');
+  if (districtSel) {
+    const districtVal = o.customer_district || '';
+    const matchOpt = Array.from(districtSel.options).find(opt => opt.value === districtVal || opt.text === districtVal);
+    districtSel.value = matchOpt ? matchOpt.value : '';
+    // If not found as option but has a value, add a temporary option
+    if (!matchOpt && districtVal) {
+      const opt = document.createElement('option');
+      opt.value = districtVal; opt.text = districtVal; opt.selected = true;
+      districtSel.appendChild(opt);
+    }
+  }
   document.getElementById('oe-address').value = o.customer_address || '';
   document.getElementById('oe-delivery-fee').value = o.delivery_fee || '';
   // Reset override fields
@@ -6761,7 +6605,7 @@ async function saveOrderEdits() {
     customer_name:     document.getElementById('oe-name').value.trim(),
     customer_phone:    document.getElementById('oe-phone').value.trim(),
     customer_email:    document.getElementById('oe-email').value.trim(),
-    customer_district: oeGetLocation(),
+    customer_district: document.getElementById('oe-district').value.trim(),
     customer_address:  document.getElementById('oe-address').value.trim(),
     delivery_fee:      deliveryFee,
     discount:          discount,
@@ -11402,9 +11246,106 @@ function get(){if(src)ED.innerHTML=sanitize(SRC.value);
 window.PDE={cmd,load,get};
 })();
 </script>
+<style>
+.bulk-miss-wrap{border:1px solid rgba(217,119,6,0.4);background:rgba(217,119,6,0.06);border-radius:10px;padding:10px;margin-bottom:8px}
+.bulk-miss-head{font-size:0.74rem;color:var(--text2);margin-bottom:8px;line-height:1.6}
+.bulk-miss-list{display:grid;gap:6px;max-height:240px;overflow:auto}
+.bulk-miss{display:flex;align-items:center;gap:10px;padding:6px 8px;border:2px dashed var(--border);border-radius:10px;background:var(--bg2,var(--bg3));cursor:pointer;outline:none}
+.bulk-miss.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(170,44,45,0.15)}
+.bulk-miss.over{border-color:var(--blue);background:rgba(170,44,45,0.08)}
+.bulk-miss.ok{border-style:solid;border-color:var(--green)}
+.bulk-miss-th{width:44px;height:44px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text3);flex:none}
+.bulk-miss-th img{width:100%;height:100%;object-fit:cover}
+.bulk-miss-info{flex:1;min-width:0}
+.bulk-miss-fn{font-size:0.76rem;font-weight:700;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bulk-miss-bk{font-size:0.68rem;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bulk-drop{border:2px dashed var(--border);border-radius:12px;padding:16px 10px;text-align:center;cursor:pointer;background:var(--bg3);color:var(--text2);transition:.15s;font-size:0.78rem}
+.bulk-drop i{font-size:1.5rem;color:var(--blue);margin-bottom:4px}
+.bulk-drop-s{font-size:0.68rem;color:var(--text3);margin-top:2px}
+.bulk-drop:hover,.bulk-drop.over{border-color:var(--blue);background:rgba(170,44,45,0.07)}
+.bulk-drop.done{border-style:solid;border-color:var(--green)}
+.bulk-drop.done i{color:var(--green)}
+#bulkGlobalDrop{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);color:#fff;font-size:1.3rem;font-weight:700;pointer-events:none}
+#bulkGlobalDrop div{border:3px dashed #fff;border-radius:18px;padding:40px 60px;text-align:center}
+@media(max-width:700px){.tb-bulk-btn span{display:none}}
+</style>
+<div id="bulkGlobalDrop"><div><i class="fa-solid fa-file-csv" style="font-size:2.4rem"></i><br>CSV ফাইল এখানে ছাড়ুন</div></div>
+<div class="modal-overlay" id="migImgModal" onclick="if(event.target===this && !_migRunning)closeModal('migImgModal')">
+  <div class="modal-box" style="max-width:640px;width:94vw">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--blue);margin-right:6px"></i>বাইরের ছবি নিজের সার্ভারে আনুন</div>
+      <button class="modal-close" onclick="if(!_migRunning)closeModal('migImgModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="display:grid;gap:12px">
+      <div id="migInfo" style="font-size:0.8rem;line-height:1.7;color:var(--text2)"></div>
+      <div style="height:8px;background:var(--bg3);border-radius:6px;overflow:hidden"><div id="migBar" style="height:100%;width:0;background:var(--blue);transition:width .2s"></div></div>
+      <div id="migStatus" style="font-size:0.76rem;color:var(--text2)"></div>
+      <textarea id="migLog" readonly style="width:100%;height:170px;font-family:monospace;font-size:0.68rem;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:8px;resize:vertical"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost" id="migStopBtn" style="display:none" onclick="_migCancel=true">Stop</button>
+        <button class="btn btn-primary" id="migStartBtn" onclick="migStart()"><i class="fa-solid fa-cloud-arrow-down"></i> শুরু করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+/* ══════════ বিদ্যমান বইয়ের বাইরের ছবি → নিজের Storage ══════════ */
+let _migRunning = false, _migCancel = false;
+function migIsExternal(u){
+  if (!/^https?:\/\//i.test(u || '')) return false;
+  const base = (getConfig().url || '').replace(/\/$/, '');
+  return !(base && u.startsWith(base + '/storage/'));
+}
+function migScan(){
+  return (allProducts || []).map(p => {
+    const list = [...new Set([p.image_url, ...(Array.isArray(p.images) ? p.images : [])].filter(Boolean))];
+    return { p, list, ext: list.filter(migIsExternal) };
+  }).filter(x => x.ext.length);
+}
+function migOpen(){
+  const todo = migScan(), n = new Set(todo.flatMap(x => x.ext)).size;
+  document.getElementById('migInfo').innerHTML = todo.length
+    ? `<b>${todo.length.toLocaleString()}টি বই</b>-এর <b>${n.toLocaleString()}টি ছবি</b> বাইরের লিংক থেকে আসছে। শুরু করলে ছবিগুলো ডাউনলোড হয়ে আপনার Storage-এ যাবে এবং বইয়ের লিংক বদলে যাবে। ব্যর্থ ছবির পুরনো লিংক অপরিবর্তিত থাকবে।`
+    : '✅ সব বইয়ের ছবিই ইতিমধ্যে আপনার নিজের সার্ভারে আছে।';
+  document.getElementById('migStartBtn').disabled = !todo.length;
+  document.getElementById('migBar').style.width = '0'; document.getElementById('migStatus').textContent = ''; document.getElementById('migLog').value = '';
+  openModal('migImgModal');
+}
+async function migStart(){
+  if (_migRunning || !sb) return;
+  const todo = migScan(); if (!todo.length) return;
+  const urls = [...new Set(todo.flatMap(x => x.ext))];
+  if (!confirm(`${urls.length} টি ছবি ডাউনলোড করে নিজের সার্ভারে তুলবেন?`)) return;
+  _migRunning = true; _migCancel = false;
+  const log = m => { const t = document.getElementById('migLog'); t.value += m + '\n'; t.scrollTop = t.scrollHeight; };
+  document.getElementById('migStartBtn').disabled = true; document.getElementById('migStopBtn').style.display = '';
+  const map = new Map(); let done = 0, ok = 0, fail = 0;
+  await bulkPool(urls, 3, async u => {
+    try { map.set(u, await bulkUpload(await bulkFetchExternal(u))); ok++; }
+    catch(e){ fail++; log('✗ ' + u + '\n   ' + (e.message || e)); }
+    done++;
+    document.getElementById('migBar').style.width = Math.round(done / urls.length * 100) + '%';
+    document.getElementById('migStatus').textContent = `ছবি ${done} / ${urls.length} — সফল ${ok}, ব্যর্থ ${fail}`;
+  });
+  let upd = 0;
+  for (const x of todo){
+    if (_migCancel) break;
+    if (!x.ext.some(u => map.has(u))) continue;
+    const list = x.list.map(u => map.get(u) || u);
+    const { error } = await sb.from('products').update({ image_url: list[0], images: list }).eq('id', x.p.id);
+    if (error) log('✗ বই আপডেট ব্যর্থ ' + x.p.name + ': ' + error.message);
+    else { x.p.image_url = list[0]; x.p.images = list; upd++; }
+  }
+  log(`\n✅ সম্পন্ন — ${upd}টি বই আপডেট, ${fail}টি ছবি ব্যর্থ`);
+  if (fail) log('ℹ ব্যর্থের কারণ উপরে দেখুন। "প্রক্সি: HTTP 404" মানে /api/fetch-image ডেপ্লয় হয়নি; "HTTP 401" মানে Vercel-এ SUPABASE_URL / SUPABASE_ANON_KEY নেই বা ভুল।');
+  _migRunning = false; document.getElementById('migStopBtn').style.display = 'none'; document.getElementById('migStartBtn').disabled = false;
+  toast('ছবি স্থানান্তর শেষ', `${upd}টি বই আপডেট হয়েছে${fail ? ', ' + fail + 'টি ছবি ব্যর্থ' : ''}`, fail ? 'info' : 'success');
+  try { await loadProducts(); } catch {}
+}
+</script>
 <!-- ══════════ BULK CSV IMPORT ══════════ -->
 <div class="modal-overlay" id="bulkImportModal" onclick="if(event.target===this && !_bulkRunning)closeModal('bulkImportModal')">
-  <div class="modal-box" style="max-width:1040px;width:96vw">
+  <div class="modal-box" style="max-width:820px;width:94vw">
     <div class="modal-header">
       <div class="modal-title"><i class="fa-solid fa-file-csv" style="color:var(--blue);margin-right:6px"></i>Bulk Import — CSV থেকে বই আপলোড</div>
       <button class="modal-close" onclick="if(!_bulkRunning)closeModal('bulkImportModal')"><i class="fa-solid fa-xmark"></i></button>
@@ -11422,7 +11363,12 @@ window.PDE={cmd,load,get};
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="oe-inner-grid">
         <div class="form-group" style="gap:4px">
           <label class="form-label">১) CSV ফাইল</label>
-          <input class="form-inp" type="file" id="bulkCsvFile" accept=".csv,.txt,text/csv" onchange="bulkLoadCsv(this)">
+          <div class="bulk-drop" id="bulkDrop" tabindex="0" onclick="document.getElementById('bulkCsvFile').click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <div class="bulk-drop-t" id="bulkDropText">CSV ফাইল এখানে <b>ড্র্যাগ &amp; ড্রপ</b> করুন</div>
+            <div class="bulk-drop-s">অথবা ক্লিক করে ফাইল বাছুন</div>
+          </div>
+          <input type="file" id="bulkCsvFile" accept=".csv,.txt,text/csv" style="display:none" onchange="bulkLoadCsv(this)">
         </div>
         <div class="form-group" style="gap:4px">
           <label class="form-label">২) ছবি (ঐচ্ছিক) — <span id="bulkImgCount" style="color:var(--text3)">০টি</span></label>
@@ -11438,6 +11384,7 @@ window.PDE={cmd,load,get};
       <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.78rem">
         <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkSkipDup" checked onchange="bulkRender()"> ডুপ্লিকেট (একই নাম+লেখক বা ISBN) বাদ দিন</label>
         <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="bulkAutoCat" checked onchange="bulkRender()"> নতুন ক্যাটাগরি অটো তৈরি করুন</label>
+        <label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="CSV-তে যে ছবির লিংক (http/https) দেওয়া আছে সেগুলো ডাউনলোড হয়ে আপনার নিজের সার্ভারে (Storage) সেভ হবে"><input type="checkbox" id="bulkDlExt" checked> বাইরের ছবি আমার মিডিয়া লাইব্রেরিতে ডাউনলোড করুন</label>
       </div>
 
       <div id="bulkPreview" style="display:none"></div>
@@ -11460,6 +11407,7 @@ window.PDE={cmd,load,get};
 <script>
 /* ══════════ BULK CSV IMPORT LOGIC ══════════ */
 let _bulkRows = [], _bulkImgMap = new Map(), _bulkRunning = false, _bulkCancel = false, _bulkFailed = [];
+let _bulkSlots = new Map(), _bulkActiveKey = null; // পাওয়া-না-যাওয়া ছবির স্লট
 const BULK_COLS = ['name','author','category','sub_category','publisher','price','old_price','stock','isbn','edition','pages','language','country','cover_type','badge','description','image'];
 const BULK_ALIAS = {
   name:['name','title','book_name','book','বইয়ের নাম','নাম'],
@@ -11477,7 +11425,36 @@ const BULK_ALIAS = {
   image:['image','images','image_url','photo','picture','ছবি']
 };
 
-function bulkOpen(){ openModal('bulkImportModal'); bulkLoadSubCats(); }
+function bulkOpen(){ openModal('bulkImportModal'); }
+
+/* ── Drag & Drop: CSV (এবং ছবি) ── */
+function bulkHandleDrop(files){
+  const list = Array.from(files || []);
+  const csv = list.find(f => /\.(csv|txt)$/i.test(f.name) || f.type === 'text/csv');
+  const imgs = list.filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name));
+  if (!csv && !imgs.length){ toast('ভুল ফাইল', 'শুধু .csv (এবং ছবি) ড্রপ করুন', 'error'); return; }
+  openModal('bulkImportModal');
+  if (imgs.length) bulkPickImages({ files: imgs, value: '' });
+  if (csv) bulkLoadCsvFile(csv);
+}
+(function(){
+  const g = document.getElementById('bulkGlobalDrop'), dz = document.getElementById('bulkDrop');
+  const hasFiles = e => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+  let depth = 0;
+  window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); depth++;
+    if (!document.getElementById('bulkImportModal').classList.contains('open')) g.style.display = 'flex'; });
+  window.addEventListener('dragleave', e => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) g.style.display = 'none'; });
+  window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+  window.addEventListener('drop', e => {
+    if (!hasFiles(e)) return;
+    e.preventDefault(); depth = 0; g.style.display = 'none'; dz.classList.remove('over');
+    // product form-এর নিজস্ব ড্রপ-জোন থাকলে সেটাকে বিরক্ত না করা
+    if (e.target.closest && e.target.closest('[data-no-bulk-drop], .modal-overlay.open:not(#bulkImportModal)')) return;
+    bulkHandleDrop(e.dataTransfer.files);
+  });
+  dz.addEventListener('dragenter', () => dz.classList.add('over'));
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+})();
 
 function bulkDownloadTemplate(){
   const rows = [
@@ -11516,6 +11493,12 @@ function bulkParseCSV(text){
 
 function bulkLoadCsv(input){
   const f = input.files && input.files[0]; if (!f) return;
+  bulkLoadCsvFile(f);
+  input.value = '';
+}
+function bulkLoadCsvFile(f){
+  if (_bulkRunning){ toast('অপেক্ষা করুন', 'Import চলছে', 'error'); return; }
+  const dt = document.getElementById('bulkDropText'), dz = document.getElementById('bulkDrop');
   const rd = new FileReader();
   rd.onload = () => {
     const table = bulkParseCSV(String(rd.result));
@@ -11533,7 +11516,8 @@ function bulkLoadCsv(input){
         edition:g('edition'), pages:g('pages'), language:g('language'), country:g('country'), cover_type:g('cover_type'),
         badge:g('badge'), description:g('description'), image:g('image') };
     });
-    _bulkSel.clear(); _bulkShown = BULK_PAGE; _bulkQuery = ''; _bulkRowFilter = '';
+    _bulkSlots = new Map(); _bulkActiveKey = null;
+    if (dt){ dt.innerHTML = '✅ <b></b>'; dt.querySelector('b').textContent = f.name + ' (' + _bulkRows.length + ' সারি)'; dz.classList.add('done'); }
     bulkRender();
   };
   rd.readAsText(f, 'utf-8');
@@ -11580,7 +11564,15 @@ function bulkAnalyze(){
     if (isDup && skipDup){ res.dup.push(r); return; }
     const tokens = r.image ? r.image.split(/[|;]/).map(s => s.trim()).filter(Boolean) : [];
     let missing = 0;
-    tokens.forEach(t => { if (!/^https?:\/\//i.test(t) && !_bulkImgMap.has(t.split(/[\\/]/).pop().toLowerCase())) missing++; });
+    tokens.forEach(t => {
+      if (/^https?:\/\//i.test(t)) return;
+      const k = t.split(/[\\/]/).pop().toLowerCase();
+      if (!_bulkImgMap.has(k)) missing++;
+      if (!_bulkImgMap.has(k) || _bulkSlots.has(k)){
+        let sl = _bulkSlots.get(k); if (!sl){ sl = { token: t.split(/[\\/]/).pop(), books: new Set() }; _bulkSlots.set(k, sl); }
+        sl.books.add(r.name);
+      }
+    });
     res.missingImg += missing;
     const canon = catSet.get(r.category.toLowerCase());
     if (!canon) res.newCats.add(r.category);
@@ -11589,102 +11581,16 @@ function bulkAnalyze(){
   return res;
 }
 
-/* ══════════ REVIEW STEP — মেইন/সাব ক্যাটাগরি বদলানো ══════════
-   • প্রতিটি বইয়ের মেইন ক্যাটাগরি (categories টেবিল) ও সাব-ক্যাটাগরি (sub_categories টেবিল) ড্রপডাউন থেকে বদলানো যায়
-   • টিক দিয়ে অনেকগুলো বই সিলেক্ট করে একসাথে ক্যাটাগরি/সাব-ক্যাটাগরি প্রয়োগ করা যায়
-   • বদলানো মান সরাসরি CSV-র সারিতে বসে, তাই Import-এ সেটাই সেভ হয়
-══════════════════════════════════════════════════════ */
-let _bulkSubCats = null;          // { মেইন ক্যাটাগরি: [সাব-ক্যাটাগরি…] }
-const _bulkSel = new Set();       // সিলেক্ট করা সারির line নম্বর
-let _bulkShown = 50, _bulkQuery = '', _bulkRowFilter = '';
-const BULK_PAGE = 50;
-const _bEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-async function bulkLoadSubCats(){
-  const map = {};
-  if (sb){
-    try {
-      for (let from = 0; from < 20000; from += 1000){
-        const { data, error } = await sb.from('sub_categories').select('name, category_name').order('name', { ascending: true }).range(from, from + 999);
-        if (error || !data) break;
-        data.forEach(r => { (map[r.category_name] = map[r.category_name] || []).push(r.name); });
-        if (data.length < 1000) break;
-      }
-    } catch (e) { /* লোকাল/ডিফল্ট তালিকা ব্যবহার হবে */ }
-  }
-  _bulkSubCats = map;
-  if (_bulkRows.length) bulkRender();
-}
-function bulkMainList(){
-  const skip = (typeof HARDCODED_PRIMARY_CATEGORY !== 'undefined') ? HARDCODED_PRIMARY_CATEGORY.name : 'বই';
-  return (typeof allCategories !== 'undefined' ? allCategories : []).filter(c => c.is_active !== false && c.name !== skip).map(c => c.name);
-}
-function bulkSubList(cat){
-  if (!cat) return [];
-  const fromDb = _bulkSubCats && _bulkSubCats[cat];
-  if (fromDb && fromDb.length) return fromDb;
-  return (typeof _getLocalSubCats === 'function' ? _getLocalSubCats(cat) : []).map(x => x.name);
-}
-function bulkOpts(list, current, blank){
-  const has = !current || list.includes(current);
-  return `<option value="">${blank}</option>` +
-    list.map(n => `<option value="${_bEsc(n)}"${n === current ? ' selected' : ''}>${_bEsc(n)}</option>`).join('') +
-    (has ? '' : `<option value="${_bEsc(current)}" selected>${_bEsc(current)} (তালিকায় নেই)</option>`);
-}
-function bulkRowByLine(line){ return _bulkRows.find(r => r.line === line); }
-function bulkFiltered(a){
-  const q = _bulkQuery.trim().toLowerCase();
-  const mains = new Set(bulkMainList());
-  return a.ok.filter(o => {
-    if (q && !((o.r.name + ' ' + o.r.author).toLowerCase().includes(q))) return false;
-    if (_bulkRowFilter === 'newcat' && mains.has(o.category)) return false;
-    if (_bulkRowFilter === 'nosub' && o.r.sub_category) return false;
-    return true;
-  });
-}
-
 function bulkRender(){
   const box = document.getElementById('bulkPreview'), btn = document.getElementById('bulkStartBtn');
   if (!_bulkRows.length){ box.style.display = 'none'; btn.disabled = true; return; }
-  const mains = bulkMainList();
-  box.style.display = 'block';
-  box.innerHTML = `
-    <div id="bulkSummary"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0">
-      <input class="form-inp" id="bulkSearch" type="text" placeholder="নাম / লেখক দিয়ে খুঁজুন…" value="${_bEsc(_bulkQuery)}" oninput="bulkSetQuery(this.value)" style="flex:1;min-width:170px;font-size:0.76rem;padding:6px 9px">
-      <select class="form-inp" id="bulkRowFilter" onchange="bulkSetRowFilter(this.value)" style="font-size:0.76rem;padding:6px 9px;min-width:190px">
-        <option value=""${_bulkRowFilter===''?' selected':''}>সব বই</option>
-        <option value="newcat"${_bulkRowFilter==='newcat'?' selected':''}>ক্যাটাগরি তালিকায় নেই এমন বই</option>
-        <option value="nosub"${_bulkRowFilter==='nosub'?' selected':''}>সাব-ক্যাটাগরি নেই এমন বই</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(170,44,45,0.05);border:1px solid rgba(170,44,45,0.22);border-radius:10px;padding:8px 10px;margin-bottom:8px">
-      <span id="bulkSelCount" style="font-size:0.76rem;font-weight:700;color:var(--blue);white-space:nowrap">০টি সিলেক্টেড</span>
-      <select class="form-inp" id="bulkBarCat" onchange="bulkBarCatChange()" style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)">${bulkOpts(mains, '', '— মেইন ক্যাটাগরি —')}</select>
-      <select class="form-inp" id="bulkBarSub" disabled style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)"><option value="">— আগে মেইন ক্যাটাগরি —</option></select>
-      <button class="btn btn-primary btn-sm" type="button" onclick="bulkApplySelected()"><i class="fa-solid fa-check-double"></i> সিলেক্টেডগুলোতে প্রয়োগ করুন</button>
-    </div>
-    <div style="max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:8px">
-      <table style="width:100%;font-size:0.72rem;border-collapse:collapse">
-        <thead><tr style="background:var(--bg3);text-align:left;position:sticky;top:0;z-index:1">
-          <th style="padding:6px;width:30px"><input type="checkbox" id="bulkSelAll" onchange="bulkToggleAll(this.checked)" title="দেখানো তালিকার সব বই সিলেক্ট করুন"></th>
-          <th style="padding:6px">নাম</th><th>লেখক</th><th>মেইন ক্যাটাগরি</th><th>সাব-ক্যাটাগরি</th><th>দাম</th><th>স্টক</th><th>ছবি</th>
-        </tr></thead>
-        <tbody id="bulkRowsBody"></tbody>
-      </table>
-    </div>
-    <div id="bulkMoreWrap" style="font-size:0.7rem;color:var(--text3);margin-top:4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"></div>`;
-  bulkRefresh();
-}
-
-// সারি/সিলেকশন বদলালে পুরো প্যানেল না আঁকিয়ে শুধু সামারি + সারিগুলো নতুন করে আঁকে (স্ক্রল ও সার্চ ঠিক থাকে)
-function bulkRefresh(){
-  const btn = document.getElementById('bulkStartBtn');
   const a = bulkAnalyze(); window._bulkPlan = a;
   const autoCat = document.getElementById('bulkAutoCat').checked;
   const blockCats = a.newCats.size && !autoCat;
   const pill = (t, c) => `<span style="background:${c};color:#fff;border-radius:20px;padding:3px 10px;font-size:0.72rem;font-weight:700">${t}</span>`;
-  document.getElementById('bulkSummary').innerHTML = `
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  box.style.display = 'block';
+  box.innerHTML = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       ${pill('মোট সারি ' + _bulkRows.length, '#64748B')}
       ${pill('Import হবে ' + a.ok.length, '#16A34A')}
@@ -11692,86 +11598,88 @@ function bulkRefresh(){
       ${a.bad.length ? pill('ভুল সারি ' + a.bad.length, '#DC2626') : ''}
       ${a.missingImg ? pill('ছবি পাওয়া যায়নি ' + a.missingImg, '#D97706') : ''}
     </div>
-    ${a.newCats.size ? `<div style="font-size:0.74rem;margin-bottom:6px;color:${blockCats?'var(--red)':'var(--text2)'}">${autoCat ? 'নতুন ক্যাটাগরি তৈরি হবে' : '⚠ এই ক্যাটাগরিগুলো নেই (অটো-তৈরি বন্ধ)'}: <b>${[...a.newCats].map(_bEsc).join(', ')}</b> <span style="color:var(--text3)">— নিচের তালিকা থেকে বদলে নিতে পারেন</span></div>` : ''}
-    ${a.bad.length ? `<div style="font-size:0.72rem;color:var(--red);margin-bottom:6px">ভুল সারি (লাইন): ${a.bad.slice(0,8).map(b => b.r.line + ' — ' + b.err).join(' • ')}${a.bad.length>8?' …':''}</div>` : ''}`;
-
-  const mains = bulkMainList();
-  const list = bulkFiltered(a);
-  window._bulkFilteredLines = list.map(o => o.r.line);
-  const shown = list.slice(0, _bulkShown);
-  document.getElementById('bulkRowsBody').innerHTML = shown.length ? shown.map(o => {
-    const r = o.r;
-    return `<tr style="border-top:1px solid var(--border)">
-      <td style="padding:6px"><input type="checkbox" ${_bulkSel.has(r.line) ? 'checked' : ''} onchange="bulkToggleRow(${r.line},this.checked)"></td>
-      <td style="padding:6px;min-width:150px">${_bEsc(r.name)}</td>
-      <td style="min-width:100px">${_bEsc(r.author)}</td>
-      <td style="padding:4px"><select class="form-inp" onchange="bulkRowCat(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(mains, o.category, '— বাছুন —')}</select></td>
-      <td style="padding:4px"><select class="form-inp" onchange="bulkRowSub(${r.line},this.value)" style="font-size:0.72rem;padding:4px 6px;min-width:130px;font-family:var(--font-bn)">${bulkOpts(bulkSubList(o.category), r.sub_category, '— নেই —')}</select></td>
-      <td>৳${o.price}</td><td>${_bEsc(r.stock||0)}</td><td>${o.tokens.length}</td></tr>`;
-  }).join('') : `<tr><td colspan="8" style="padding:14px;text-align:center;color:var(--text3)">কোনো বই পাওয়া যায়নি</td></tr>`;
-
-  const more = list.length - shown.length;
-  document.getElementById('bulkMoreWrap').innerHTML =
-    `<span>${shown.length} / ${list.length}টি বই দেখানো হচ্ছে</span>` +
-    (more > 0 ? `<button class="btn btn-ghost btn-sm" type="button" onclick="bulkShowMore()">আরও ${Math.min(BULK_PAGE, more)}টি দেখান</button><button class="btn btn-ghost btn-sm" type="button" onclick="bulkShowMore(true)">সব দেখান (${more}টি)</button>` : '');
-
-  // সিলেকশন কাউন্ট ও হেডার চেকবক্স
-  const okLines = new Set(a.ok.map(o => o.r.line));
-  [..._bulkSel].forEach(l => { if (!okLines.has(l)) _bulkSel.delete(l); });
-  document.getElementById('bulkSelCount').textContent = _bulkSel.size.toLocaleString('bn-BD') + 'টি সিলেক্টেড';
-  const all = document.getElementById('bulkSelAll');
-  if (all){
-    const n = window._bulkFilteredLines.filter(l => _bulkSel.has(l)).length;
-    all.checked = window._bulkFilteredLines.length > 0 && n === window._bulkFilteredLines.length;
-    all.indeterminate = n > 0 && n < window._bulkFilteredLines.length;
-  }
-  btn.disabled = !a.ok.length || blockCats || _bulkRunning;
+    ${bulkSlotsHtml(esc)}
+    ${a.newCats.size ? `<div style="font-size:0.74rem;margin-bottom:6px;color:${blockCats?'var(--red)':'var(--text2)'}">${autoCat ? 'নতুন ক্যাটাগরি তৈরি হবে' : '⚠ এই ক্যাটাগরিগুলো নেই (অটো-তৈরি বন্ধ)'}: <b>${[...a.newCats].map(esc).join(', ')}</b></div>` : ''}
+    ${a.bad.length ? `<div style="font-size:0.72rem;color:var(--red);margin-bottom:6px">ভুল সারি (লাইন): ${a.bad.slice(0,8).map(b => b.r.line + ' — ' + b.err).join(' • ')}${a.bad.length>8?' …':''}</div>` : ''}
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px"><table style="width:100%;font-size:0.72rem;border-collapse:collapse">
+      <tr style="background:var(--bg3);text-align:left"><th style="padding:6px">নাম</th><th>লেখক</th><th>ক্যাটাগরি</th><th>দাম</th><th>স্টক</th><th>ছবি</th></tr>
+      ${a.ok.slice(0,6).map(o => `<tr style="border-top:1px solid var(--border)"><td style="padding:6px">${esc(o.r.name)}</td><td>${esc(o.r.author)}</td><td>${esc(o.category)}</td><td>৳${o.price}</td><td>${esc(o.r.stock||0)}</td><td>${o.tokens.length}</td></tr>`).join('')}
+    </table></div>
+    <div style="font-size:0.68rem;color:var(--text3);margin-top:4px">প্রথম ৬টি সারি দেখানো হলো</div>`;
+  btn.disabled = !a.ok.length || blockCats;
 }
 
-function bulkSetQuery(v){ _bulkQuery = v || ''; _bulkShown = BULK_PAGE; bulkRefresh(); }
-function bulkSetRowFilter(v){ _bulkRowFilter = v || ''; _bulkShown = BULK_PAGE; bulkRefresh(); }
-function bulkShowMore(all){ _bulkShown = all ? Infinity : _bulkShown + BULK_PAGE; bulkRefresh(); }
-function bulkToggleRow(line, on){ on ? _bulkSel.add(line) : _bulkSel.delete(line); bulkRefresh(); }
-function bulkToggleAll(on){ (window._bulkFilteredLines || []).forEach(l => on ? _bulkSel.add(l) : _bulkSel.delete(l)); bulkRefresh(); }
-
-function bulkRowCat(line, val){
-  const r = bulkRowByLine(line); if (!r) return;
-  r.category = val;
-  // নতুন মেইন ক্যাটাগরির তালিকায় না থাকলে আগের সাব-ক্যাটাগরি সরিয়ে দিন
-  if (r.sub_category && !bulkSubList(val).includes(r.sub_category)) r.sub_category = '';
-  bulkRefresh();
+/* ── পাওয়া-না-যাওয়া ছবি: ড্র্যাগ/ফাইল বাছাই/পেস্ট ── */
+const _bulkThumbs = new Map();
+function bulkThumb(f){ if (!_bulkThumbs.has(f)) _bulkThumbs.set(f, URL.createObjectURL(f)); return _bulkThumbs.get(f); }
+function bulkSlotsHtml(esc){
+  if (!_bulkSlots.size) return '';
+  const keys = [...(_bulkSlots.keys())];
+  const left = keys.filter(k => !_bulkImgMap.has(k)).length;
+  const rows = keys.map((k, i) => {
+    const sl = _bulkSlots.get(k), f = _bulkImgMap.get(k);
+    const books = [...sl.books]; const bl = books.slice(0, 2).map(esc).join(', ') + (books.length > 2 ? ' +' + (books.length - 2) : '');
+    return `<div class="bulk-miss ${f ? 'ok' : ''} ${k === _bulkActiveKey ? 'active' : ''}" data-i="${i}" tabindex="0">
+      <div class="bulk-miss-th">${f ? `<img src="${bulkThumb(f)}" alt="">` : '<i class="fa-regular fa-image"></i>'}</div>
+      <div class="bulk-miss-info"><div class="bulk-miss-fn">${esc(sl.token)}</div><div class="bulk-miss-bk">${bl}</div></div>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer;white-space:nowrap">${f ? 'বদলান' : 'ছবি বাছুন'}
+        <input type="file" accept="image/*" style="display:none" onchange="bulkMissPick(this, ${i})"></label>
+    </div>`;
+  }).join('');
+  return `<div class="bulk-miss-wrap">
+    <div class="bulk-miss-head">${left ? '⚠ ' + left.toLocaleString() + 'টি ছবি পাওয়া যায়নি' : '✅ সব ছবি যোগ হয়েছে'} — ঘরে <b>ড্র্যাগ করুন</b>, <b>ছবি বাছুন</b>, অথবা ঘরে ক্লিক করে কপি করা ছবি <b>Ctrl+V</b> দিয়ে পেস্ট করুন</div>
+    <div class="bulk-miss-list">${rows}</div></div>`;
 }
-function bulkRowSub(line, val){
-  const r = bulkRowByLine(line); if (!r) return;
-  r.sub_category = val;
-  bulkRefresh();
+function bulkAssign(key, file){
+  _bulkImgMap.set(key, file);
+  _bulkImgMap.set(key.replace(/\.[^.]+$/, ''), file);
+  const n = new Set(Array.from(_bulkImgMap.values())).size;
+  document.getElementById('bulkImgCount').textContent = n.toLocaleString() + 'টি নির্বাচিত';
 }
-function bulkBarCatChange(){
-  const cat = document.getElementById('bulkBarCat').value;
-  const sub = document.getElementById('bulkBarSub');
-  if (!cat){ sub.disabled = true; sub.innerHTML = '<option value="">— আগে মেইন ক্যাটাগরি —</option>'; return; }
-  sub.disabled = false;
-  sub.innerHTML = '<option value="">— সাব-ক্যাটাগরি (অপরিবর্তিত) —</option><option value="__none__">— সাব-ক্যাটাগরি মুছে দিন —</option>' +
-    bulkSubList(cat).map(n => `<option value="${_bEsc(n)}">${_bEsc(n)}</option>`).join('');
+function bulkMissPick(input, i){
+  const f = input.files && input.files[0]; if (!f) return;
+  const k = [..._bulkSlots.keys()][i]; if (!k) return;
+  bulkAssign(k, f); input.value = ''; bulkRender();
 }
-function bulkApplySelected(){
-  const cat = document.getElementById('bulkBarCat').value;
-  const sub = document.getElementById('bulkBarSub').value;
-  if (!_bulkSel.size){ toast('কোনো বই সিলেক্ট করা নেই', 'আগে তালিকা থেকে টিক দিন', 'warning'); return; }
-  if (!cat){ toast('মেইন ক্যাটাগরি বাছুন', 'কোন ক্যাটাগরি প্রয়োগ করবেন তা বেছে নিন', 'warning'); return; }
-  const subList = bulkSubList(cat);
-  let n = 0;
-  _bulkSel.forEach(line => {
-    const r = bulkRowByLine(line); if (!r) return;
-    r.category = cat;
-    if (sub === '__none__') r.sub_category = '';
-    else if (sub) r.sub_category = sub;
-    else if (r.sub_category && !subList.includes(r.sub_category)) r.sub_category = '';   // অপরিবর্তিত চাইলে শুধু মিললে রাখা হয়
-    n++;
+(function(){
+  const box = document.getElementById('bulkPreview');
+  const keyOf = el => { const r = el.closest && el.closest('.bulk-miss'); return r ? [..._bulkSlots.keys()][+r.dataset.i] : null; };
+  const isImg = f => /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name);
+  box.addEventListener('click', e => {
+    const k = keyOf(e.target); if (!k) return;
+    _bulkActiveKey = k;
+    box.querySelectorAll('.bulk-miss').forEach(r => r.classList.toggle('active', [..._bulkSlots.keys()][+r.dataset.i] === k));
   });
-  toast('প্রয়োগ হয়েছে', `${n}টি বইয়ের ক্যাটাগরি আপডেট হয়েছে`, 'success');
-  bulkRefresh();
-}
+  box.addEventListener('dragover', e => { const r = e.target.closest && e.target.closest('.bulk-miss'); if (!r) return; e.preventDefault(); r.classList.add('over'); });
+  box.addEventListener('dragleave', e => { const r = e.target.closest && e.target.closest('.bulk-miss'); if (r) r.classList.remove('over'); });
+  box.addEventListener('drop', e => {
+    const k = keyOf(e.target); if (!k) return;
+    e.preventDefault(); e.stopPropagation();
+    const imgs = Array.from(e.dataTransfer.files || []).filter(isImg);
+    if (!imgs.length){ toast('ভুল ফাইল', 'ছবির ফাইল ড্রপ করুন', 'error'); return; }
+    bulkAssign(k, imgs[0]);
+    if (imgs.length > 1) bulkPickImages({ files: imgs.slice(1), value: '' }); // বাকিগুলো ফাইলের নামে মিলবে
+    _bulkActiveKey = null; bulkRender();
+  });
+  // Ctrl+V — অন্য জায়গা থেকে কপি করা ছবি পেস্ট
+  document.addEventListener('paste', e => {
+    if (!document.getElementById('bulkImportModal').classList.contains('open') || _bulkRunning) return;
+    const files = Array.from((e.clipboardData && e.clipboardData.files) || []).filter(isImg);
+    if (!files.length) return;
+    e.preventDefault();
+    if (!_bulkSlots.size){ toast('পেস্ট হয়নি', 'আগে CSV লোড করুন — যে ছবিগুলো বাকি আছে সেগুলো এখানে আসবে', 'error'); return; }
+    const unfilled = () => [..._bulkSlots.keys()].find(k => !_bulkImgMap.has(k));
+    let first = true, used = 0;
+    for (const f of files){
+      const k = (first && _bulkActiveKey && _bulkSlots.has(_bulkActiveKey)) ? _bulkActiveKey : unfilled();
+      first = false; if (!k) break;
+      bulkAssign(k, f); used++;
+    }
+    _bulkActiveKey = null; bulkRender();
+    if (used) toast('ছবি যোগ হয়েছে', used + 'টি ছবি পেস্ট হয়েছে', 'success');
+    else toast('সব ছবি আছে', 'কোনো খালি ঘর নেই — বদলাতে চাইলে আগে ঘরে ক্লিক করুন', 'error');
+  });
+})();
 
 function bulkLog(msg){ const t = document.getElementById('bulkLog'); t.value += msg + '\n'; t.scrollTop = t.scrollHeight; }
 function bulkProgress(done, total, label){
@@ -11809,6 +11717,27 @@ async function bulkUpload(file){
     if (!error) return sb.storage.from(bucket).getPublicUrl(name).data.publicUrl;
     if (t) throw error;
   }
+}
+
+/* ── বাইরের ছবি ডাউনলোড → নিজের Storage ── */
+async function bulkFetchExternal(url){
+  const grab = async (u, headers) => {
+    const r = await fetch(u, headers ? { headers } : undefined);
+    if (!r.ok){ let m = ''; try { m = (await r.text()).slice(0, 80); } catch {} throw new Error('HTTP ' + r.status + (m ? ' ' + m : '')); }
+    const b = await r.blob();
+    if (!/^image\//i.test(b.type)) throw new Error('ছবি নয়');
+    if (b.size > 10 * 1024 * 1024) throw new Error('১০MB-এর বড়');
+    return b;
+  };
+  let blob;
+  try { blob = await grab(url); }                      // ১) সরাসরি (সার্ভার CORS দিলে)
+  catch (e1){                                          // ২) নিজের /api/fetch-image প্রক্সি
+    let tok = ''; try { tok = (await sb.auth.getSession()).data.session.access_token; } catch {}
+    try { blob = await grab('/api/fetch-image?url=' + encodeURIComponent(url), tok ? { Authorization: 'Bearer ' + tok } : {}); }
+    catch (e2){ throw new Error('সরাসরি: ' + (e1.message || 'CORS ব্লক') + ' | প্রক্সি: ' + (e2.message || e2)); }
+  }
+  const ext = ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif', 'image/avif':'avif' })[blob.type.toLowerCase()] || 'jpg';
+  return new File([blob], 'ext-image.' + ext, { type: blob.type });
 }
 
 async function bulkStartImport(){
@@ -11853,6 +11782,24 @@ async function bulkStartImport(){
     }
     if (_bulkCancel) throw new Error('ব্যবহারকারী বন্ধ করেছেন');
 
+    // 2b) বাইরের (http/https) ছবি ডাউনলোড করে নিজের Storage-এ তোলা
+    const extMap = new Map();
+    if (document.getElementById('bulkDlExt').checked){
+      const urls = [...new Set(plan.ok.flatMap(o => o.tokens).filter(t => /^https?:\/\//i.test(t)))];
+      if (urls.length){
+        bulkLog(`বাইরের ছবি ডাউনলোড শুরু: ${urls.length}টি`);
+        let dn = 0, okN = 0, failN = 0;
+        await bulkPool(urls, 4, async u => {
+          try { extMap.set(u, await bulkUpload(await bulkFetchExternal(u))); okN++; }
+          catch(e){ failN++; bulkLog(`✗ ডাউনলোড ব্যর্থ (মূল লিংকই রাখা হলো): ${u} — ${e.message || e}`); }
+          bulkProgress(++dn, urls.length, 'বাইরের ছবি ডাউনলোড');
+        });
+        bulkLog(`বাইরের ছবি: ${okN}টি নিজের সার্ভারে যোগ, ${failN}টি ব্যর্থ`);
+        if (failN && !okN) bulkLog('ℹ সম্ভবত ওই সাইট CORS বন্ধ রেখেছে — /api/fetch-image প্রক্সি ডেপ্লয় করলে এগুলোও ডাউনলোড হবে');
+      }
+      if (_bulkCancel) throw new Error('ব্যবহারকারী বন্ধ করেছেন');
+    }
+
     // 3) Build payloads
     const usedSlugs = new Set((allProducts || []).map(p => p.slug || makeSlug(p.name)));
     const mkSlug = name => {
@@ -11862,7 +11809,7 @@ async function bulkStartImport(){
     };
     const payloads = plan.ok.map(o => {
       const r = o.r;
-      const urls = o.tokens.map(t => /^https?:\/\//i.test(t) ? t : needed.get(_bulkImgMap.get(t.split(/[\\/]/).pop().toLowerCase()))).filter(Boolean);
+      const urls = o.tokens.map(t => /^https?:\/\//i.test(t) ? (extMap.get(t) || t) : needed.get(_bulkImgMap.get(t.split(/[\\/]/).pop().toLowerCase()))).filter(Boolean);
       const cover = r.cover_type || 'Hardcover';
       return { _line: r.line, _src: r, p: {
         name: r.name, slug: mkSlug(r.name), category: o.category, product_type:'book',
