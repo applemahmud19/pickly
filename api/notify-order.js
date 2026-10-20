@@ -41,30 +41,30 @@ function buildMessage(o) {
     : '';
 
   const parts = [
-    '🛒 <b>নতুন অর্ডার এসেছে!</b>',
+    '<b>নতুন অর্ডার এসেছে!</b>',
     '',
-    `🧾 <b>অর্ডার নং:</b> <code>${esc(o.order_number)}</code>`,
-    when ? `🕒 ${esc(when)}` : '',
+    `<b>অর্ডার নং:</b> <code>${esc(o.order_number)}</code>`,
+    when ? `${esc(when)}` : '',
     '',
-    '👤 <b>কাস্টমার</b>',
+    '<b>কাস্টমার</b>',
     `নাম: ${esc(o.customer_name)}`,
     `ফোন: ${esc(o.customer_phone)}`,
     o.customer_email ? `ইমেইল: ${esc(o.customer_email)}` : '',
     '',
-    '📍 <b>ডেলিভারি ঠিকানা</b>',
+    '<b>ডেলিভারি ঠিকানা</b>',
     esc(o.customer_address),
     o.customer_district ? esc(o.customer_district) : '',
     '',
-    `📦 <b>পণ্যের তালিকা</b> (${totalQty}টি)`,
+    `<b>পণ্যের তালিকা</b> (${totalQty}টি)`,
     lines.join('\n'),
     '',
-    '💰 <b>বিল</b>',
+    '<b>বিল</b>',
     `সাবটোটাল: ${money(o.subtotal)}`,
     `ডেলিভারি চার্জ: ${money(o.delivery_fee)}`,
     Number(o.discount) > 0 ? `ডিসকাউন্ট: -${money(o.discount)}` : '',
     `<b>মোট প্রদেয়: ${money(o.total)}</b>`,
     '',
-    '💵 পেমেন্ট: ক্যাশ অন ডেলিভারি',
+    'পেমেন্ট: ক্যাশ অন ডেলিভারি',
   ];
 
   // শর্তে বাদ পড়া লাইনের কারণে পরপর ফাঁকা লাইন হলে একটাই রাখা হয়
