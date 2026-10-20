@@ -494,6 +494,8 @@ body {
 .pill-delivered::before  { background: var(--green); }
 .pill-cancelled  { background: rgba(255,59,48,0.10);   color: var(--red);    border: 1px solid rgba(255,59,48,0.25); }
 .pill-cancelled::before  { background: var(--red); }
+.pill-returned   { background: rgba(232,89,12,0.10);   color: #E8590C;    border: 1px solid rgba(232,89,12,0.28); }
+.pill-returned::before   { background: #E8590C; }
 .pill-active     { background: rgba(52,199,89,0.10);   color: var(--green);  border: 1px solid rgba(52,199,89,0.25); }
 .pill-active::before     { background: var(--green); }
 .pill-inactive   { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
@@ -1775,145 +1777,6 @@ body {
 
       <!-- ══ DASHBOARD ══ -->
       <div class="section active" id="sec-dashboard">
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
-              <span class="kpi-badge na">Live</span>
-            </div>
-            <div class="kpi-val" id="kpi-revenue">—</div>
-            <div class="kpi-label">মোট আয়</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-cart-flatbed"></i></div>
-              <span class="kpi-badge up" id="kpi-orders-badge">—</span>
-            </div>
-            <div class="kpi-val" id="kpi-orders">—</div>
-            <div class="kpi-label">মোট অর্ডার</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-cubes-stacked"></i></div>
-              <span class="kpi-badge na">Active</span>
-            </div>
-            <div class="kpi-val" id="kpi-products">—</div>
-            <div class="kpi-label">পণ্য সংখ্যা</div>
-          </div>
-          <div class="kpi-card" onclick="navToOrders('pending')" style="cursor:pointer" title="পেন্ডিং অর্ডার দেখুন">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-clock"></i></div>
-              <span class="kpi-badge dn" id="kpi-pending-badge">—</span>
-            </div>
-            <div class="kpi-val" id="kpi-pending">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">পেন্ডিং অর্ডার <i class="fa-solid fa-arrow-right" style="font-size:0.55rem;opacity:0.5;margin-left:3px"></i></div>
-          </div>
-        </div>
-
-        <!-- Visitor KPI — Single Dynamic Card with Dropdown Filter -->
-        <div style="margin-bottom:12px">
-          <div class="kpi-card" id="visitorKPICard" style="cursor:default;border-color:rgba(50,173,230,0.35);background:linear-gradient(135deg,var(--surface) 0%,var(--surface) 100%);position:relative;overflow:visible">
-            <!-- Gradient accent top bar -->
-            <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;background:linear-gradient(90deg,var(--cyan),var(--blue))"></div>
-
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-              <!-- Left: icon + title -->
-              <div style="display:flex;align-items:center;gap:12px">
-                <div class="kpi-icon" id="visitorKPIIcon" style="background:rgba(50,173,230,0.12);color:var(--cyan);width:44px;height:44px;font-size:1.1rem;flex-shrink:0">
-                  <i class="fa-solid fa-eye"></i>
-                </div>
-                <div>
-                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিটর</div>
-                  <div style="display:flex;align-items:baseline;gap:8px">
-                    <div class="kpi-val" id="kpi-dynamic-visitors" style="font-size:2rem;line-height:1;color:var(--cyan)">—</div>
-                    <span id="visitorKPITrend" class="kpi-badge na" style="font-size:0.62rem"></span>
-                  </div>
-                  <div id="visitorKPILabel" class="kpi-label" style="font-family:var(--font-bn);margin-top:4px;font-size:0.78rem">আজকের ভিজিটর</div>
-                </div>
-              </div>
-
-              <!-- Right: Dropdown Filter -->
-              <div style="position:relative;flex-shrink:0" id="visitorDropdownWrap">
-                <button id="visitorFilterBtn" onclick="toggleVisitorDropdown()" style="
-                  display:flex;align-items:center;gap:6px;
-                  padding:7px 12px;border-radius:9px;
-                  background:var(--bg3);border:1.5px solid var(--border2);
-                  color:var(--text2);font-family:var(--font-bn);font-size:0.78rem;font-weight:600;
-                  cursor:pointer;transition:all var(--t);white-space:nowrap;
-                ">
-                  <i class="fa-solid fa-calendar-days" style="font-size:0.72rem;color:var(--cyan)"></i>
-                  <span id="visitorFilterLabel">আজ</span>
-                  <i class="fa-solid fa-chevron-down" id="visitorChevron" style="font-size:0.6rem;transition:transform 0.2s"></i>
-                </button>
-
-                <!-- Dropdown Menu -->
-                <div id="visitorDropdownMenu" style="
-                  display:none;position:absolute;top:100%;right:0;z-index:9990;margin-top:2px;
-                  background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;
-                  box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;min-width:165px;
-                ">
-                  <div class="visitor-dd-item active" data-period="today" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text);transition:background 0.15s;border-bottom:1px solid var(--border)">
-                    <i class="fa-regular fa-clock" style="color:var(--cyan);width:14px;text-align:center;font-size:0.78rem"></i> আজ
-                    <i class="fa-solid fa-check" style="margin-left:auto;color:var(--cyan);font-size:0.65rem"></i>
-                  </div>
-                  <div class="visitor-dd-item" data-period="yesterday" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s;border-bottom:1px solid var(--border)">
-                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--purple);width:14px;text-align:center;font-size:0.78rem"></i> গতকাল
-                  </div>
-                  <div class="visitor-dd-item" data-period="week" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s;border-bottom:1px solid var(--border)">
-                    <i class="fa-solid fa-calendar-week" style="color:var(--blue);width:14px;text-align:center;font-size:0.78rem"></i> শেষ ৭ দিন
-                  </div>
-                  <div class="visitor-dd-item" data-period="month" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s">
-                    <i class="fa-solid fa-calendar-days" style="color:var(--green);width:14px;text-align:center;font-size:0.78rem"></i> শেষ ৩০ দিন
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Mini sparkline dots (decorative) -->
-            <div style="margin-top:16px;display:flex;align-items:center;gap:6px">
-              <div style="flex:1;height:3px;border-radius:2px;background:linear-gradient(90deg,rgba(50,173,230,0.15),rgba(50,173,230,0.5),rgba(50,173,230,0.15))"></div>
-              <div style="font-size:0.62rem;font-family:var(--mono);color:var(--text3)" id="visitorKPISubnote">⟳ প্রতি ৬০ সেকেন্ডে আপডেট হয়</div>
-            </div>
-          </div>
-        </div>
-
-        <style>
-        .visitor-dd-item:hover { background: var(--hover) !important; color: var(--text) !important; }
-        .visitor-dd-item.active { color: var(--cyan) !important; background: rgba(50,173,230,0.06) !important; }
-        #visitorFilterBtn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(50,173,230,0.07); }
-        </style>
-
-        <!-- Live + Conversion + Revenue row -->
-        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
-          <!-- Live Active -->
-          <div class="kpi-card" style="cursor:default;border-color:rgba(52,199,89,0.3)">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(52,199,89,0.12);color:var(--green)"><i class="fa-solid fa-wifi"></i></div>
-              <span class="kpi-badge up" style="background:rgba(52,199,89,0.12);color:var(--green);border:1px solid rgba(52,199,89,0.3)"><i class="fa-solid fa-circle" style="font-size:0.45rem;animation:livePulse 1.4s ease-in-out infinite"></i> Live</span>
-            </div>
-            <div class="kpi-val" id="kpi-live-visitors" style="color:var(--green)">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">এখন Active ভিজিটর</div>
-          </div>
-          <!-- Conversion Rate -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-chart-line"></i></div>
-              <span class="kpi-badge up" id="kpi-conv-badge">—</span>
-            </div>
-            <div class="kpi-val" id="kpi-conv-rate">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">Conversion Rate</div>
-          </div>
-          <!-- Today Revenue -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-fire-flame-curved"></i></div>
-              <span class="kpi-badge na">আজ</span>
-            </div>
-            <div class="kpi-val" id="kpi-today-revenue">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের আয়</div>
-          </div>
-        </div>
-
         <!-- Low Stock Alert -->
         <div id="lowStockAlert" style="display:none;margin-bottom:14px">
           <div class="panel ls-panel" style="border-color:rgba(255,159,10,0.35);background:rgba(255,159,10,0.04)">
@@ -1932,82 +1795,89 @@ body {
           </div>
         </div>
 
-        <!-- Dynamic Revenue Area Chart + Status Breakdown -->
-        <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-bottom:18px" id="dashRow">
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-chart-area"></i></div>
-                <span id="revenueChartTitle" style="font-family:var(--font-bn)">আজকের রেভিনিউ</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div id="chartSummaryBadge" style="font-size:0.68rem;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(170,44,45,0.1);color:var(--blue)">—</div>
-                <div id="revenueCompareIndicator" style="display:none;font-size:0.7rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;display:flex;align-items:center;gap:4px"></div>
-                <div class="tf-dropdown-wrap" style="position:relative">
-                  <button class="tf-btn" id="tfBtn" onclick="toggleTfDropdown()" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-size:0.74rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all var(--t);font-family:var(--font)">
-                    <span id="tfLabel">আজ</span>
-                    <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;transition:transform 0.2s" id="tfChevron"></i>
-                  </button>
-                  <div id="tfDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:200;min-width:140px;overflow:hidden">
-                    <div class="tf-option active" data-tf="today" onclick="selectTimeframe(this)"><i class="fa-regular fa-clock"></i> আজ</div>
-                    <div class="tf-option" data-tf="7days" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-week"></i> শেষ ৭ দিন</div>
-                    <div class="tf-option" data-tf="30days" onclick="selectTimeframe(this)"><i class="fa-regular fa-calendar"></i> শেষ ৩০ দিন</div>
-                    <div class="tf-option" data-tf="year" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-days"></i> এই বছর</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style="padding:4px 16px 16px;position:relative;min-height:200px">
-              <canvas id="revenueChartCanvas" style="max-height:210px"></canvas>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-circle-half-stroke"></i></div>
-                <span style="font-family:var(--font-bn)">অর্ডার স্ট্যাটাস</span>
-              </div>
-            </div>
-            <div style="padding:16px 20px" id="statusBreakdown"></div>
-          </div>
-        </div>
+        <!-- ═══ ORDER MANAGEMENT (Dashboard) ═══ -->
+        <style>
+        .om-stats{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:16px}
+        .om-stat{position:relative;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 12px 11px;cursor:pointer;transition:all var(--t);overflow:hidden;min-width:0}
+        .om-stat::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--omc,#64748B);opacity:.85}
+        .om-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--omc)}
+        .om-stat.active{border-color:var(--omc);background:color-mix(in srgb,var(--omc) 8%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 16%,transparent)}
+        .om-stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+        .om-stat-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
+        .om-stat-n{font-size:1.55rem;font-weight:800;line-height:1;color:var(--text)}
+        .om-stat.has-alert .om-stat-n{color:var(--omc)}
+        .om-stat-l{font-size:.72rem;font-weight:700;color:var(--text);margin-top:6px;font-family:var(--font-bn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-stat-s{font-size:.6rem;color:var(--text3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-pulse{width:7px;height:7px;border-radius:50%;background:var(--omc);animation:livePulse 1.4s ease-in-out infinite}
+        .om-bulk{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:rgba(170,44,45,.06);border-bottom:1px solid var(--border);font-size:.78rem;font-family:var(--font-bn)}
+        .om-bulk.show{display:flex}
+        .om-list{display:flex;flex-direction:column}
+        .om-head,.om-row{display:grid;grid-template-columns:30px 1.15fr 1.35fr 1fr .7fr .8fr 1.6fr;gap:10px;align-items:center;padding:11px 18px}
+        .om-head{font-size:.64rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);background:var(--bg3);border-bottom:1px solid var(--border)}
+        .om-row{border-bottom:1px solid var(--border);transition:background var(--t);font-size:.8rem}
+        .om-row:hover{background:var(--hover)}
+        .om-row.sel{background:rgba(170,44,45,.05)}
+        .om-row.busy{opacity:.5;pointer-events:none}
+        .om-no{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--blue);cursor:pointer}
+        .om-sub{font-size:.68rem;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-cust{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-cust a{color:var(--text3);font-family:var(--mono);font-size:.68rem;text-decoration:none;font-weight:400}
+        .om-cust a:hover{color:var(--blue)}
+        .om-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+        .om-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-size:.72rem;font-weight:700;cursor:pointer;transition:all var(--t);font-family:inherit;white-space:nowrap}
+        .om-btn:hover{border-color:var(--text2);color:var(--text)}
+        .om-btn.primary{background:var(--omc,var(--blue));border-color:var(--omc,var(--blue));color:#fff}
+        .om-btn.primary:hover{filter:brightness(1.08)}
+        .om-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(255,59,48,.07)}
+        .om-btn.warn:hover{border-color:#E8590C;color:#E8590C;background:rgba(232,89,12,.07)}
+        .om-btn.icon{padding:6px 9px}
+        .om-chk{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+        .om-more{display:block;width:calc(100% - 36px);margin:12px 18px;text-align:center}
+        .om-empty{padding:42px 20px;text-align:center;color:var(--text3);font-family:var(--font-bn)}
+        .om-empty i{font-size:1.8rem;opacity:.4;display:block;margin-bottom:10px}
+        @media(max-width:1200px){.om-stats{grid-template-columns:repeat(4,1fr)}}
+        @media(max-width:900px){
+          .om-head{display:none}
+          .om-row{grid-template-columns:26px 1fr auto;grid-template-areas:"chk no pill" ". cust cust" ". items total" "acts acts acts";row-gap:6px;padding:13px 14px}
+          .om-row>.c-chk{grid-area:chk}.om-row>.c-no{grid-area:no}.om-row>.c-pill{grid-area:pill;justify-self:end}
+          .om-row>.c-cust{grid-area:cust}.om-row>.c-items{grid-area:items}.om-row>.c-total{grid-area:total;justify-self:end;font-weight:800}
+          .om-row>.c-dist,.om-row>.c-pillcol{display:none}
+          .om-row>.c-acts{grid-area:acts}.om-acts{justify-content:flex-start}
+          .om-btn{padding:8px 13px;font-size:.76rem}
+        }
+        @media(max-width:560px){.om-stats{grid-template-columns:repeat(2,1fr);gap:8px}}
+        </style>
 
-        <!-- Top Products + Recent Orders row -->
-        <div style="display:grid;grid-template-columns:1fr 1.8fr;gap:16px;margin-bottom:18px">
-          <!-- Top 5 Selling Products -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(255,159,10,0.12);color:var(--amber)"><i class="fa-solid fa-trophy"></i></div>
-                <span style="font-family:var(--font-bn)">টপ ৫ পণ্য</span>
-              </div>
-              <span style="font-size:0.65rem;font-family:var(--mono);color:var(--text3)" id="topProdPeriod">সব সময়</span>
-            </div>
-            <div style="padding:10px 16px 16px" id="topProductsList">
-              <div style="text-align:center;padding:24px"><div class="spinner" style="margin:auto"></div></div>
-            </div>
-          </div>
+        <div class="om-stats" id="omStats"></div>
 
-          <!-- Recent orders -->
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-bolt"></i></div>
-                <span style="font-family:var(--font-bn)">সাম্প্রতিক অর্ডার</span>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="navTo('orders')" style="font-family:var(--font-bn)">সব দেখুন <i class="fa-solid fa-arrow-right"></i></button>
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-list-check"></i></div>
+              <span style="font-family:var(--font-bn)" id="omTitle">অর্ডার ম্যানেজমেন্ট</span>
             </div>
-            <div class="table-wrap">
-              <table class="data-table">
-                <thead><tr>
-                  <th>Order #</th><th>Customer</th><th>District</th><th>Total</th><th>Status</th><th>Date</th>
-                </tr></thead>
-                <tbody id="recentOrdersBody">
-                  <tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner" style="margin:auto"></div></td></tr>
-                </tbody>
-              </table>
+            <div class="panel-actions">
+              <div class="search-bar" style="min-width:200px">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="omSearch" placeholder="Order #, নাম, ফোন..." oninput="omSetSearch(this.value)">
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="navTo('orders')" style="font-family:var(--font-bn)">সব অর্ডার <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
+          <div class="om-bulk" id="omBulk">
+            <b id="omBulkCount">0</b> <span>টি সিলেক্টেড</span>
+            <button class="om-btn primary" style="--omc:var(--blue)" onclick="omBulkNext()"><i class="fa-solid fa-forward-step"></i> পরের ধাপে পাঠান</button>
+            <button class="om-btn danger" onclick="omBulkCancel()"><i class="fa-solid fa-ban"></i> বাতিল</button>
+            <button class="om-btn" onclick="omClearSel()">সিলেকশন মুছুন</button>
+          </div>
+          <div class="om-list">
+            <div class="om-head">
+              <div><input type="checkbox" class="om-chk" id="omSelAll" onchange="omToggleAll(this.checked)" title="সব সিলেক্ট"></div>
+              <div>Order</div><div>Customer</div><div>District</div><div>Total</div><div>Status</div><div style="text-align:right">Quick Actions</div>
+            </div>
+            <div id="omList"></div>
+          </div>
+          <div style="padding:10px 18px;border-top:1px solid var(--border);font-size:.7rem;color:var(--text3);font-family:var(--mono)" id="omFooter"></div>
         </div>
       </div>
 
@@ -2111,6 +1981,7 @@ body {
                 <option value="shipped">পাঠানো হয়েছে</option>
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
+                <option value="returned">Returned</option>
               </select>
               <button class="btn btn-ghost btn-sm filter-refresh" onclick="loadOrders()">
                 <i class="fa-solid fa-rotate-right"></i> <span>Refresh</span>
@@ -2364,6 +2235,187 @@ body {
 
       <!-- ══ ANALYTICS ══ -->
       <div class="section" id="sec-analytics">
+        <!-- ═══ Overview KPIs (moved from Dashboard) ═══ -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
+              <span class="kpi-badge na">Live</span>
+            </div>
+            <div class="kpi-val" id="kpi-revenue">—</div>
+            <div class="kpi-label">মোট আয়</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-cart-flatbed"></i></div>
+              <span class="kpi-badge up" id="kpi-orders-badge">—</span>
+            </div>
+            <div class="kpi-val" id="kpi-orders">—</div>
+            <div class="kpi-label">মোট অর্ডার</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(175,82,222,0.1);color:var(--purple)"><i class="fa-solid fa-cubes-stacked"></i></div>
+              <span class="kpi-badge na">Active</span>
+            </div>
+            <div class="kpi-val" id="kpi-products">—</div>
+            <div class="kpi-label">পণ্য সংখ্যা</div>
+          </div>
+          <div class="kpi-card" onclick="navToOrders('pending')" style="cursor:pointer" title="পেন্ডিং অর্ডার দেখুন">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-clock"></i></div>
+              <span class="kpi-badge dn" id="kpi-pending-badge">—</span>
+            </div>
+            <div class="kpi-val" id="kpi-pending">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">পেন্ডিং অর্ডার <i class="fa-solid fa-arrow-right" style="font-size:0.55rem;opacity:0.5;margin-left:3px"></i></div>
+          </div>
+        </div>
+
+        <!-- Visitor KPI — Single Dynamic Card with Dropdown Filter -->
+        <div style="margin-bottom:12px">
+          <div class="kpi-card" id="visitorKPICard" style="cursor:default;border-color:rgba(50,173,230,0.35);background:linear-gradient(135deg,var(--surface) 0%,var(--surface) 100%);position:relative;overflow:visible">
+            <!-- Gradient accent top bar -->
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0;background:linear-gradient(90deg,var(--cyan),var(--blue))"></div>
+
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <!-- Left: icon + title -->
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="kpi-icon" id="visitorKPIIcon" style="background:rgba(50,173,230,0.12);color:var(--cyan);width:44px;height:44px;font-size:1.1rem;flex-shrink:0">
+                  <i class="fa-solid fa-eye"></i>
+                </div>
+                <div>
+                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিটর</div>
+                  <div style="display:flex;align-items:baseline;gap:8px">
+                    <div class="kpi-val" id="kpi-dynamic-visitors" style="font-size:2rem;line-height:1;color:var(--cyan)">—</div>
+                    <span id="visitorKPITrend" class="kpi-badge na" style="font-size:0.62rem"></span>
+                  </div>
+                  <div id="visitorKPILabel" class="kpi-label" style="font-family:var(--font-bn);margin-top:4px;font-size:0.78rem">আজকের ভিজিটর</div>
+                </div>
+              </div>
+
+              <!-- Right: Dropdown Filter -->
+              <div style="position:relative;flex-shrink:0" id="visitorDropdownWrap">
+                <button id="visitorFilterBtn" onclick="toggleVisitorDropdown()" style="
+                  display:flex;align-items:center;gap:6px;
+                  padding:7px 12px;border-radius:9px;
+                  background:var(--bg3);border:1.5px solid var(--border2);
+                  color:var(--text2);font-family:var(--font-bn);font-size:0.78rem;font-weight:600;
+                  cursor:pointer;transition:all var(--t);white-space:nowrap;
+                ">
+                  <i class="fa-solid fa-calendar-days" style="font-size:0.72rem;color:var(--cyan)"></i>
+                  <span id="visitorFilterLabel">আজ</span>
+                  <i class="fa-solid fa-chevron-down" id="visitorChevron" style="font-size:0.6rem;transition:transform 0.2s"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="visitorDropdownMenu" style="
+                  display:none;position:absolute;top:100%;right:0;z-index:9990;margin-top:2px;
+                  background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;
+                  box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;min-width:165px;
+                ">
+                  <div class="visitor-dd-item active" data-period="today" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text);transition:background 0.15s;border-bottom:1px solid var(--border)">
+                    <i class="fa-regular fa-clock" style="color:var(--cyan);width:14px;text-align:center;font-size:0.78rem"></i> আজ
+                    <i class="fa-solid fa-check" style="margin-left:auto;color:var(--cyan);font-size:0.65rem"></i>
+                  </div>
+                  <div class="visitor-dd-item" data-period="yesterday" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s;border-bottom:1px solid var(--border)">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--purple);width:14px;text-align:center;font-size:0.78rem"></i> গতকাল
+                  </div>
+                  <div class="visitor-dd-item" data-period="week" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s;border-bottom:1px solid var(--border)">
+                    <i class="fa-solid fa-calendar-week" style="color:var(--blue);width:14px;text-align:center;font-size:0.78rem"></i> শেষ ৭ দিন
+                  </div>
+                  <div class="visitor-dd-item" data-period="month" onclick="selectVisitorPeriod(this)" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:600;color:var(--text2);transition:background 0.15s">
+                    <i class="fa-solid fa-calendar-days" style="color:var(--green);width:14px;text-align:center;font-size:0.78rem"></i> শেষ ৩০ দিন
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mini sparkline dots (decorative) -->
+            <div style="margin-top:16px;display:flex;align-items:center;gap:6px">
+              <div style="flex:1;height:3px;border-radius:2px;background:linear-gradient(90deg,rgba(50,173,230,0.15),rgba(50,173,230,0.5),rgba(50,173,230,0.15))"></div>
+              <div style="font-size:0.62rem;font-family:var(--mono);color:var(--text3)" id="visitorKPISubnote">⟳ প্রতি ৬০ সেকেন্ডে আপডেট হয়</div>
+            </div>
+          </div>
+        </div>
+
+        <style>
+        .visitor-dd-item:hover { background: var(--hover) !important; color: var(--text) !important; }
+        .visitor-dd-item.active { color: var(--cyan) !important; background: rgba(50,173,230,0.06) !important; }
+        #visitorFilterBtn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(50,173,230,0.07); }
+        </style>
+
+        <!-- Live + Conversion + Revenue row -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+          <!-- Live Active -->
+          <div class="kpi-card" style="cursor:default;border-color:rgba(52,199,89,0.3)">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(52,199,89,0.12);color:var(--green)"><i class="fa-solid fa-wifi"></i></div>
+              <span class="kpi-badge up" style="background:rgba(52,199,89,0.12);color:var(--green);border:1px solid rgba(52,199,89,0.3)"><i class="fa-solid fa-circle" style="font-size:0.45rem;animation:livePulse 1.4s ease-in-out infinite"></i> Live</span>
+            </div>
+            <div class="kpi-val" id="kpi-live-visitors" style="color:var(--green)">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">এখন Active ভিজিটর</div>
+          </div>
+          <!-- Conversion Rate -->
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-chart-line"></i></div>
+              <span class="kpi-badge up" id="kpi-conv-badge">—</span>
+            </div>
+            <div class="kpi-val" id="kpi-conv-rate">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">Conversion Rate</div>
+          </div>
+          <!-- Today Revenue -->
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-fire-flame-curved"></i></div>
+              <span class="kpi-badge na">আজ</span>
+            </div>
+            <div class="kpi-val" id="kpi-today-revenue">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের আয়</div>
+          </div>
+        </div>
+
+        <!-- ═══ Revenue chart + Status breakdown (moved from Dashboard) ═══ -->
+        <!-- Dynamic Revenue Area Chart + Status Breakdown -->
+        <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-bottom:18px" id="dashRow">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-chart-area"></i></div>
+                <span id="revenueChartTitle" style="font-family:var(--font-bn)">আজকের রেভিনিউ</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="chartSummaryBadge" style="font-size:0.68rem;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(170,44,45,0.1);color:var(--blue)">—</div>
+                <div id="revenueCompareIndicator" style="display:none;font-size:0.7rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;display:flex;align-items:center;gap:4px"></div>
+                <div class="tf-dropdown-wrap" style="position:relative">
+                  <button class="tf-btn" id="tfBtn" onclick="toggleTfDropdown()" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-size:0.74rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all var(--t);font-family:var(--font)">
+                    <span id="tfLabel">আজ</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;transition:transform 0.2s" id="tfChevron"></i>
+                  </button>
+                  <div id="tfDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:200;min-width:140px;overflow:hidden">
+                    <div class="tf-option active" data-tf="today" onclick="selectTimeframe(this)"><i class="fa-regular fa-clock"></i> আজ</div>
+                    <div class="tf-option" data-tf="7days" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-week"></i> শেষ ৭ দিন</div>
+                    <div class="tf-option" data-tf="30days" onclick="selectTimeframe(this)"><i class="fa-regular fa-calendar"></i> শেষ ৩০ দিন</div>
+                    <div class="tf-option" data-tf="year" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-days"></i> এই বছর</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:4px 16px 16px;position:relative;min-height:200px">
+              <canvas id="revenueChartCanvas" style="max-height:210px"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                <span style="font-family:var(--font-bn)">অর্ডার স্ট্যাটাস</span>
+              </div>
+            </div>
+            <div style="padding:16px 20px" id="statusBreakdown"></div>
+          </div>
+        </div>
+
         <!-- KPI Row -->
         <div class="kpi-grid" id="analyticsKPIs" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px"></div>
 
@@ -4723,7 +4775,7 @@ function getTimeframeBuckets(tf) {
 function buildChartData(tf) {
   const buckets = getTimeframeBuckets(tf);
   allOrders.forEach(o => {
-    if (!o.created_at || o.status === 'cancelled') return;
+    if (!o.created_at || ['cancelled','returned'].includes(o.status)) return;
     const b = buckets.find(bk => bk.match(o.created_at));
     if (b) { b.total += Number(o.total || 0); b.orders += 1; }
   });
@@ -5090,7 +5142,7 @@ function renderVisitorStats() {
   const todayOrders = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr).length;
   const convRate = todayV > 0 ? ((todayOrders / todayV) * 100).toFixed(1) : '—';
   const todayRev = allOrders
-    .filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr && o.status !== 'cancelled')
+    .filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr && !['cancelled','returned'].includes(o.status))
     .reduce((s, o) => s + Number(o.total || 0), 0);
 
   // ── Update KPI cards ──
@@ -5163,7 +5215,7 @@ function renderVisitorStats() {
 function computeTopProducts() {
   const productSales = {};
   allOrders.forEach(o => {
-    if (o.status === 'cancelled') return;
+    if (['cancelled','returned'].includes(o.status)) return;
     const items = Array.isArray(o.items) ? o.items : [];
     items.forEach(i => {
       const key = i.product_id || i.name || 'Unknown';
@@ -5240,8 +5292,177 @@ function setupRealtimeSubscription() {
 /* ══════════════════════════════════════
    DASHBOARD RENDER
 ══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   DASHBOARD — ORDER MANAGER (quick actions)
+══════════════════════════════════════ */
+const OM_DEF = [
+  { k:'all',        en:'All Orders',  bn:'সব অর্ডার',      sub:'total',             ic:'fa-layer-group',   c:'#64748B' },
+  { k:'pending',    en:'Pending',     bn:'পেন্ডিং',        sub:'নতুন / অপেক্ষায়',  ic:'fa-clock',         c:'#FF9F0A' },
+  { k:'confirmed',  en:'Confirmed',   bn:'কনফার্মড',       sub:'নিশ্চিত',           ic:'fa-thumbs-up',     c:'#AA2C2D' },
+  { k:'processing', en:'Processing',  bn:'প্রসেসিং',       sub:'প্যাকিং চলছে',      ic:'fa-box-open',      c:'#32ADE6' },
+  { k:'shipped',    en:'Shipped',     bn:'শিপিং এ আছে',    sub:'on shipping',       ic:'fa-truck-fast',    c:'#AF52DE' },
+  { k:'delivered',  en:'Delivered',   bn:'ডেলিভারড',       sub:'সম্পন্ন',           ic:'fa-check-double',  c:'#34C759' },
+  { k:'cancelled',  en:'Cancelled',   bn:'বাতিল',          sub:'cancel',            ic:'fa-ban',           c:'#FF3B30' },
+  { k:'returned',   en:'Returned',    bn:'রিটার্ন',        sub:'ফেরত এসেছে',        ic:'fa-rotate-left',   c:'#E8590C' },
+];
+const OM_NEXT = {
+  pending:    { to:'confirmed',  label:'Confirm',   ic:'fa-check' },
+  confirmed:  { to:'processing', label:'Process',   ic:'fa-box-open' },
+  processing: { to:'shipped',    label:'Ship',      ic:'fa-truck-fast' },
+  shipped:    { to:'delivered',  label:'Delivered', ic:'fa-check-double' },
+};
+let omFilter = null;      // null = auto (pending থাকলে pending, না থাকলে all)
+let omSearchQ = '';
+let omLimit = 25;
+const omSelected = new Set();
+const omBusy = new Set();
+
+function omStatusOf(o) {
+  const s = o.status;
+  if (['pending','confirmed','processing','shipped','delivered','cancelled','returned'].includes(s)) return s;
+  if (['in_stock','collecting','collected'].includes(s)) return 'processing';
+  return 'pending';
+}
+function omEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function omAgo(iso) {
+  if (!iso) return '';
+  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 1) return 'এইমাত্র';
+  if (m < 60) return m + ' মি আগে';
+  if (m < 1440) return Math.floor(m / 60) + ' ঘণ্টা আগে';
+  return fmtDate(iso);
+}
+function omSetFilter(k) { omFilter = k; omLimit = 25; omClearSel(true); renderOrderManager(); }
+function omSetSearch(v) { omSearchQ = (v || '').trim().toLowerCase(); omLimit = 25; renderOrderManager(); }
+function omMore() { omLimit += 25; renderOrderManager(); }
+function omClearSel(silent) { omSelected.clear(); if (!silent) renderOrderManager(); }
+function omToggle(id, on) { on ? omSelected.add(id) : omSelected.delete(id); renderOrderManager(); }
+function omToggleAll(on) {
+  const ids = omVisible().map(o => String(o.id));
+  ids.forEach(id => on ? omSelected.add(id) : omSelected.delete(id));
+  renderOrderManager();
+}
+function omVisible() {
+  const f = omFilter || 'all';
+  return allOrders.filter(o => {
+    if (f !== 'all' && omStatusOf(o) !== f) return false;
+    if (omSearchQ) {
+      const hay = ((o.order_number || '') + ' ' + (o.customer_name || '') + ' ' + (o.customer_phone || '')).toLowerCase();
+      if (!hay.includes(omSearchQ)) return false;
+    }
+    return true;
+  });
+}
+
+async function omAct(id, status) {
+  id = String(id);
+  const o = allOrders.find(x => String(x.id) === id);
+  if (!o) return;
+  if (status === 'cancelled' && !confirm(`অর্ডার ${o.order_number || ''} বাতিল করবেন?`)) return;
+  if (status === 'returned' && !confirm(`অর্ডার ${o.order_number || ''} রিটার্ন হিসেবে মার্ক করবেন?`)) return;
+  omBusy.add(id); renderOrderManager();
+  try { await updateOrderStatus(o.id, status); }
+  finally { omBusy.delete(id); omSelected.delete(id); renderOrderManager(); }
+}
+async function omBulkNext() {
+  const list = [...omSelected].map(id => allOrders.find(o => String(o.id) === id)).filter(o => o && OM_NEXT[omStatusOf(o)]);
+  if (!list.length) { toast('Nothing to do', 'সিলেক্ট করা অর্ডারগুলো আর এগোনো যাবে না', 'info'); return; }
+  if (!confirm(`${list.length}টি অর্ডার পরের ধাপে পাঠাবেন?`)) return;
+  for (const o of list) { omBusy.add(String(o.id)); }
+  renderOrderManager();
+  for (const o of list) {
+    try { await updateOrderStatus(o.id, OM_NEXT[omStatusOf(o)].to); } catch (e) { console.warn(e); }
+    omBusy.delete(String(o.id)); omSelected.delete(String(o.id));
+  }
+  renderOrderManager();
+}
+async function omBulkCancel() {
+  const list = [...omSelected].map(id => allOrders.find(o => String(o.id) === id)).filter(o => o && !['cancelled','delivered','returned'].includes(omStatusOf(o)));
+  if (!list.length) { toast('Nothing to do', 'বাতিল করার মতো অর্ডার সিলেক্ট নেই', 'info'); return; }
+  if (!confirm(`${list.length}টি অর্ডার বাতিল করবেন?`)) return;
+  for (const o of list) omBusy.add(String(o.id));
+  renderOrderManager();
+  for (const o of list) {
+    try { await updateOrderStatus(o.id, 'cancelled'); } catch (e) { console.warn(e); }
+    omBusy.delete(String(o.id)); omSelected.delete(String(o.id));
+  }
+  renderOrderManager();
+}
+
+function renderOrderManager() {
+  const statsEl = document.getElementById('omStats');
+  const listEl  = document.getElementById('omList');
+  if (!statsEl || !listEl) return;
+
+  const counts = { all: allOrders.length };
+  OM_DEF.forEach(d => { if (d.k !== 'all') counts[d.k] = 0; });
+  allOrders.forEach(o => { counts[omStatusOf(o)]++; });
+
+  if (omFilter === null) omFilter = counts.pending > 0 ? 'pending' : 'all';
+  const cur = OM_DEF.find(d => d.k === omFilter) || OM_DEF[0];
+
+  statsEl.innerHTML = OM_DEF.map(d => {
+    const alert = d.k === 'pending' && counts.pending > 0;
+    return `<div class="om-stat ${omFilter === d.k ? 'active' : ''} ${alert ? 'has-alert' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
+      <div class="om-stat-top"><div class="om-stat-ic"><i class="fa-solid ${d.ic}"></i></div>${alert ? '<span class="om-pulse"></span>' : ''}</div>
+      <div class="om-stat-n">${counts[d.k] || 0}</div>
+      <div class="om-stat-l">${d.bn}</div>
+      <div class="om-stat-s">${d.en}</div>
+    </div>`;
+  }).join('');
+
+  const title = document.getElementById('omTitle');
+  if (title) title.textContent = cur.k === 'all' ? 'অর্ডার ম্যানেজমেন্ট' : `${cur.bn} অর্ডার`;
+
+  const all = omVisible();
+  const rows = all.slice(0, omLimit);
+
+  // prune stale selections
+  const visIds = new Set(all.map(o => String(o.id)));
+  [...omSelected].forEach(id => { if (!visIds.has(id)) omSelected.delete(id); });
+
+  if (!rows.length) {
+    listEl.innerHTML = `<div class="om-empty"><i class="fa-solid fa-inbox"></i>${omSearchQ ? 'কোনো অর্ডার পাওয়া যায়নি' : (cur.k === 'pending' ? 'সব পরিষ্কার — কোনো পেন্ডিং অর্ডার নেই 🎉' : 'এই স্ট্যাটাসে কোনো অর্ডার নেই')}</div>`;
+  } else {
+    listEl.innerHTML = rows.map(o => {
+      const id = String(o.id);
+      const st = omStatusOf(o);
+      const d  = OM_DEF.find(x => x.k === st);
+      const items = Array.isArray(o.items) ? o.items : [];
+      const names = items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
+      const nx = OM_NEXT[st];
+      const canCancel = ['pending','confirmed','processing','shipped'].includes(st);
+      const canReturn = ['shipped','delivered'].includes(st);
+      const phone = o.customer_phone ? omEsc(o.customer_phone) : '';
+      const acts = [
+        nx ? `<button class="om-btn primary" style="--omc:${OM_DEF.find(x => x.k === nx.to).c}" onclick="omAct('${id}','${nx.to}')"><i class="fa-solid ${nx.ic}"></i> ${nx.label}</button>` : '',
+        canReturn ? `<button class="om-btn warn" onclick="omAct('${id}','returned')" title="Return"><i class="fa-solid fa-rotate-left"></i> Return</button>` : '',
+        canCancel ? `<button class="om-btn danger" onclick="omAct('${id}','cancelled')" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>` : '',
+        `<button class="om-btn icon" onclick="viewOrder('${id}')" title="বিস্তারিত"><i class="fa-solid fa-eye"></i></button>`,
+      ].join('');
+      return `<div class="om-row ${omSelected.has(id) ? 'sel' : ''} ${omBusy.has(id) ? 'busy' : ''}">
+        <div class="c-chk"><input type="checkbox" class="om-chk" ${omSelected.has(id) ? 'checked' : ''} onchange="omToggle('${id}', this.checked)"></div>
+        <div class="c-no"><div class="om-no" onclick="viewOrder('${id}')">${omEsc(o.order_number || '—')}</div><div class="om-sub">${omAgo(o.created_at)}</div></div>
+        <div class="c-cust"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}"><i class="fa-solid fa-phone" style="font-size:.6rem"></i> ${phone}</a>` : ''}</div>
+        <div class="c-dist c-items"><div style="font-size:.76rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${omEsc(o.customer_district || '—')}</div><div class="om-sub">${omEsc(names) || '—'}</div></div>
+        <div class="c-total" style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</div>
+        <div class="c-pill">${pillHTML(st)}</div>
+        <div class="c-acts"><div class="om-acts">${acts}</div></div>
+      </div>`;
+    }).join('') + (all.length > rows.length ? `<button class="btn btn-ghost btn-sm om-more" onclick="omMore()">আরও দেখুন (${all.length - rows.length})</button>` : '');
+  }
+
+  const foot = document.getElementById('omFooter');
+  if (foot) foot.textContent = `Showing ${rows.length} of ${all.length} · Total ${allOrders.length} orders`;
+
+  const bulk = document.getElementById('omBulk');
+  if (bulk) { bulk.classList.toggle('show', omSelected.size > 0); document.getElementById('omBulkCount').textContent = omSelected.size; }
+  const selAll = document.getElementById('omSelAll');
+  if (selAll) selAll.checked = rows.length > 0 && rows.every(o => omSelected.has(String(o.id)));
+}
+
 function renderDashboard() {
-  const revenue  = allOrders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (isNaN(Number(o.total)) ? 0 : Number(o.total)), 0);
+  const revenue  = allOrders.filter(o => !['cancelled','returned'].includes(o.status)).reduce((s, o) => s + (isNaN(Number(o.total)) ? 0 : Number(o.total)), 0);
   const pending  = allOrders.filter(o => o.status === 'pending').length;
   const delivered = allOrders.filter(o => o.status === 'delivered').length;
   const activeProd = allProducts.filter(p => p.is_active !== false).length;
@@ -5253,25 +5474,15 @@ function renderDashboard() {
   document.getElementById('kpi-pending').textContent  = pending;
   document.getElementById('kpi-pending-badge').textContent = pending ? pending + ' waiting' : 'All clear';
 
-  // Recent orders
-  const recent = allOrders.slice(0, 8);
-  document.getElementById('recentOrdersBody').innerHTML = recent.length
-    ? recent.map(o => `<tr>
-        <td style="font-family:var(--mono);font-size:0.75rem;color:var(--blue);cursor:pointer" onclick="viewOrder('${o.id}')">${o.order_number || '—'}</td>
-        <td style="font-weight:500">${o.customer_name || '—'}</td>
-        <td style="font-size:0.76rem;color:var(--text2)">${o.customer_district || '—'}</td>
-        <td style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</td>
-        <td>${pillHTML(o.status)}</td>
-        <td style="font-size:0.72rem;color:var(--text3)">${fmtDate(o.created_at)}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div><div class="empty-title">No orders yet</div></div></td></tr>';
+  // Order manager (dashboard)
+  renderOrderManager();
 
   // Dynamic area chart
   renderRevenueChart(currentTimeframe);
 
   // Status breakdown
-  const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-  const statusColors = { pending:'var(--amber)', confirmed:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
+  const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
+  const statusColors = { pending:'var(--amber)', confirmed:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)', returned:'#E8590C' };
   const total = Math.max(allOrders.length, 1);
   document.getElementById('statusBreakdown').innerHTML = statuses.map(s => {
     const cnt = allOrders.filter(o => o.status === s).length;
@@ -5348,9 +5559,9 @@ function renderRevenueComparison() {
   const yest = new Date(now); yest.setDate(yest.getDate() - 1);
   const yestStr = yest.toDateString();
 
-  const todayRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr && o.status !== 'cancelled')
+  const todayRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === todayStr && !['cancelled','returned'].includes(o.status))
     .reduce((s, o) => s + Number(o.total || 0), 0);
-  const yestRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === yestStr && o.status !== 'cancelled')
+  const yestRev = allOrders.filter(o => o.created_at && new Date(o.created_at).toDateString() === yestStr && !['cancelled','returned'].includes(o.status))
     .reduce((s, o) => s + Number(o.total || 0), 0);
 
   const el = document.getElementById('revenueCompareIndicator');
@@ -5449,7 +5660,7 @@ function removeAdmin(id) {
 }
 
 function renderAnalytics() {
-  const revenue = allOrders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0);
+  const revenue = allOrders.filter(o => !['cancelled','returned'].includes(o.status)).reduce((s, o) => s + Number(o.total || 0), 0);
   const avg = allOrders.length ? Math.round(revenue / allOrders.length) : 0;
   const drRate = allOrders.length ? Math.round(allOrders.filter(o => o.status === 'delivered').length / allOrders.length * 100) : 0;
   const crRate = allOrders.length ? Math.round(allOrders.filter(o => o.status === 'cancelled').length / allOrders.length * 100) : 0;
@@ -6072,16 +6283,16 @@ function renderOrders() {
   }
 
   // Part 1: Standardized 6-status dropdown for global order status
-  const globalStatusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const globalStatusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
   const globalStatusLabels  = {
     pending:'Pending', confirmed:'Confirmed', processing:'Processing',
-    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled'
+    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled', returned:'Returned'
   };
   tbody.innerHTML = filtered.map(o => {
     const items = Array.isArray(o.items) ? o.items : [];
     const names = items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
     // Normalize legacy status values for the 6-status dropdown
-    const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled'].includes(o.status))
+    const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled','returned'].includes(o.status))
       ? o.status
       : (['in_stock','collecting','collected'].includes(o.status) ? 'processing' : 'pending');
     return `<tr class="order-row" onclick="orderRowTap(event,'${o.id}')">
@@ -6121,6 +6332,7 @@ async function updateOrderStatus(id, status, customNote) {
     shipped:     'পণ্যটি কুরিয়ারে পাঠানো হয়েছে — ডেলিভারির অপেক্ষায় আছে।',
     delivered:   'পণ্যটি সফলভাবে ডেলিভারি হয়েছে। ধন্যবাদ!',
     cancelled:   'অর্ডারটি বাতিল করা হয়েছে।',
+    returned:    'অর্ডারটি ফেরত (return) এসেছে।',
   };
   // ── DB STATUS MAPPING ──────────────────────────────────────────────────────
   // orders_status_check constraint only allows:
@@ -6161,7 +6373,12 @@ async function updateOrderStatus(id, status, customNote) {
   const orderUpdate = { status: dbStatus, updated_at: now };
   if (newItems) orderUpdate.items = newItems;
   const { error } = await sb.from('orders').update(orderUpdate).eq('id', id);
-  if (error) { toast('Update Failed', error.message, 'error'); return; }
+  if (error) {
+    const hint = (status === 'returned' && /check constraint|orders_status_check/i.test(error.message || ''))
+      ? ' — Supabase SQL Editor এ একবার চালান: ALTER TABLE orders DROP CONSTRAINT orders_status_check; ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN (\'pending\',\'confirmed\',\'processing\',\'shipped\',\'delivered\',\'cancelled\',\'returned\'));'
+      : '';
+    toast('Update Failed', error.message + hint, 'error'); return;
+  }
   if (newItems) ordForItems.items = newItems;
   // Push to local cache IMMEDIATELY — so history panel updates without waiting for DB round-trip
   if (!localStatusHistoryCache[id]) localStatusHistoryCache[id] = [];
@@ -6351,7 +6568,7 @@ async function viewOrder(id) {
   currentOrderId = id;
   document.getElementById('orderModalTitle').textContent = `Order #${o.order_number || id.slice(0,8)}`;
   const badge = document.getElementById('orderModalBadge');
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
   badge.className = 'pill ' + (pmap[o.status] || 'pill-pending');
   badge.textContent = cap(o.status || 'pending');
   switchOrderTab('overview');
@@ -6376,7 +6593,7 @@ function refreshOrderModal(id) {
   const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
   // Update badge
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
   const badge = document.getElementById('orderModalBadge');
   if (badge) { badge.className = 'pill ' + (pmap[o.status] || 'pill-pending'); badge.textContent = STATUS_LABEL_BN[o.status] || cap(o.status || 'pending'); }
 
@@ -8041,7 +8258,7 @@ function navTo(sec) {
   if (sec === 'cms')        initCms();
   if (sec === 'blog' && window.BL) BL.load();
   if (sec === 'users')      loadUsers();
-  if (sec === 'analytics')  loadVisitorStats();
+  if (sec === 'analytics')  { loadVisitorStats(); setTimeout(() => { try { renderRevenueChart(currentTimeframe); } catch(e) {} }, 60); }
   if (sec === 'questions')  loadProductQuestionsAdmin();
   if (sec === 'reviews')    loadReviewsAdmin();
   if (sec === 'requests')   loadOrderRequests();
@@ -8680,13 +8897,13 @@ function pillHTML(status) {
   const map = {
     pending:'pill-pending', confirmed:'pill-confirmed',
     processing:'pill-processing', shipped:'pill-shipped',
-    delivered:'pill-delivered', cancelled:'pill-cancelled',
+    delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned',
     // legacy aliases
     in_stock:'pill-confirmed', collecting:'pill-processing', collected:'pill-processing',
   };
   const labelMap = {
     pending:'Pending', confirmed:'Confirmed', processing:'Processing',
-    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
+    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled', returned:'Returned',
     in_stock:'Confirmed', collecting:'Processing', collected:'Processing',
   };
   const label = labelMap[status] || cap(status || 'pending');
@@ -8701,6 +8918,7 @@ const STATUS_COLOR_MAP = {
   shipped:    { color:'#AF52DE', border:'rgba(175,82,222,0.35)',bg:'rgba(175,82,222,0.08)'  },
   delivered:  { color:'#34C759', border:'rgba(52,199,89,0.35)', bg:'rgba(52,199,89,0.08)'   },
   cancelled:  { color:'#FF3B30', border:'rgba(255,59,48,0.3)',  bg:'rgba(255,59,48,0.07)'   },
+  returned:   { color:'#E8590C', border:'rgba(232,89,12,0.35)', bg:'rgba(232,89,12,0.08)'   },
 };
 
 function getStatusSelectStyle(status) {
@@ -8760,7 +8978,7 @@ async function loadStatusHistory(orderId) {
 
 function _renderHistoryFallback(el, o) {
   const colorMap2 = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
-  const pmap2 = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  const pmap2 = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
   const currentStatus = o?.status || 'pending';
   // Build synthetic history: initial pending + current status if different
   const entries = [];
@@ -8776,7 +8994,7 @@ function _renderHistoryFallback(el, o) {
 function _renderHistoryHTML(el, data, o) {
   const iconMap = { pending:'fa-clock', confirmed:'fa-circle-check', in_stock:'fa-boxes-stacked', collecting:'fa-hand-holding', collected:'fa-box-open', processing:'fa-gear', shipped:'fa-truck-fast', delivered:'fa-house-circle-check', cancelled:'fa-ban' };
   const colorMap = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
   el.innerHTML = `
     <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px"><i class="fa-solid fa-clock-rotate-left" style="margin-right:4px"></i>স্ট্যাটাস আপডেটের ইতিহাস</div>
     <div style="position:relative;padding-left:20px">
@@ -10247,7 +10465,7 @@ function renderUsers() {
       (o.customer_phone && u.phone && o.customer_phone === u.phone)
     );
     const orderCount  = userOrders.length;
-    const totalSpent  = userOrders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0);
+    const totalSpent  = userOrders.filter(o => !['cancelled','returned'].includes(o.status)).reduce((s, o) => s + Number(o.total || 0), 0);
 
     const statusPill = u.is_blocked
       ? `<span class="pill pill-blocked">Blocked</span>`
@@ -10335,7 +10553,7 @@ function viewUserDetail(userId) {
     (o.customer_email && o.customer_email === u.email) ||
     (o.customer_phone && u.phone && o.customer_phone === u.phone)
   );
-  const totalSpent = userOrders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + Number(o.total || 0), 0);
+  const totalSpent = userOrders.filter(o => !['cancelled','returned'].includes(o.status)).reduce((s, o) => s + Number(o.total || 0), 0);
   setEl('udmOrders', userOrders.length);
   setEl('udmSpent',  '৳' + totalSpent.toLocaleString());
 
@@ -10346,7 +10564,7 @@ function viewUserDetail(userId) {
     if (!recent.length) {
       recentEl.innerHTML = `<div style="color:var(--text3);font-size:0.78rem;text-align:center;padding:12px;font-family:var(--font-bn)">কোনো অর্ডার নেই</div>`;
     } else {
-      const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled' };
+      const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
       recentEl.innerHTML = recent.map(o => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:0.78rem">
           <div>
