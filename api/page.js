@@ -4,6 +4,16 @@ const { SITE, fetchAll, productSlugs, catSlug, buildIndex, esc, norm, loadProduc
 
 const clip = (s, n) => { s = norm(String(s || '').replace(/<[^>]*>/g, ' ')); return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; };
 const dec = s => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+// ছবির লিংক সবসময় absolute https হতে হবে; images[0] অবজেক্ট ({url:..}) হলেও কাজ করবে
+const absImg = v => {
+  if (v && typeof v === 'object') v = v.url || v.src || v.publicUrl || '';
+  v = String(v || '').trim();
+  if (!v) return '';
+  if (v.startsWith('//')) v = 'https:' + v;
+  else if (v.startsWith('/')) v = SITE + v;
+  else if (v.startsWith('http://')) v = 'https://' + v.slice(7);
+  return v.replace(/ /g, '%20');
+};
 
 async function meta(kind, slug) {
   const products = await loadProducts();
@@ -17,7 +27,7 @@ async function meta(kind, slug) {
     const by = norm(p.author || p.brand || '');
     const title = `${p.name}${by ? ' - ' + by : ''} | বুক গ্যালাক্সি`;
     const desc = clip(p.description, 155) || `${p.name}${by ? ' (' + by + ')' : ''} — বুক গ্যালাক্সি থেকে অনলাইনে অর্ডার করুন। মূল্য ৳${p.price}। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।`;
-    const img = p.image_url || (Array.isArray(p.images) && p.images[0]) || '';
+    const img = absImg(p.image_url || (Array.isArray(p.images) && p.images[0]) || '');
     const ld = {
       '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: desc,
       ...(img && { image: [img] }), sku: String(p.id),
@@ -55,6 +65,9 @@ module.exports = async (req, res) => {
       `<meta property="og:description" content="${esc(m.desc)}">`,
       `<meta property="og:url" content="${esc(m.url)}">`,
       m.img ? `<meta property="og:image" content="${esc(m.img)}">` : '',
+      m.img ? `<meta property="og:image:secure_url" content="${esc(m.img)}">` : '',
+      m.img ? `<meta property="og:image:alt" content="${esc(m.title)}">` : '',
+      m.img ? `<meta name="twitter:image" content="${esc(m.img)}">` : '',
       `<meta name="twitter:card" content="${m.img ? 'summary_large_image' : 'summary'}">`,
       m.ld ? `<script type="application/ld+json">${JSON.stringify(m.ld).replace(/</g, '\\u003c')}</script>` : ''
     ].join('\n');
