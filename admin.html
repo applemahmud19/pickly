@@ -1627,6 +1627,10 @@ body {
         <i class="fa-solid fa-star"></i> Reviews &amp; Ratings
         <span class="nav-badge" id="nb-reviews" style="display:none">—</span>
       </div>
+      <div class="nav-item" data-sec="requests">
+        <i class="fa-solid fa-flag"></i> Order Requests
+        <span class="nav-badge" id="nb-requests" style="display:none">—</span>
+      </div>
 
       <div class="sb-section">Insights</div>
       <div class="nav-item" data-sec="analytics">
@@ -2256,6 +2260,31 @@ body {
             </table>
           </div>
           <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="rvFooter">Loading...</div>
+        </div>
+      </div>
+
+      <!-- ══ ORDER REQUESTS ══ -->
+      <div class="section" id="sec-requests">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-flag"></i></div>
+              Order Requests &amp; Reports
+            </div>
+            <div class="panel-actions">
+              <div class="search-bar" style="min-width:200px"><i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="অর্ডার নম্বর, নাম, ফোন..." id="orSearch" oninput="renderOrderRequests()"></div>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem" id="orKindFilter" onchange="renderOrderRequests()">
+                <option value="">সব ধরন</option><option value="cancel_request">বাতিলের অনুরোধ</option><option value="report">রিপোর্ট</option><option value="self_cancel">নিজে বাতিল</option></select>
+              <select class="form-inp" style="padding:7px 11px;font-size:0.76rem" id="orStatusFilter" onchange="renderOrderRequests()">
+                <option value="">সব স্ট্যাটাস</option><option value="open">নতুন</option><option value="in_progress">দেখা হচ্ছে</option><option value="resolved">সমাধান</option><option value="rejected">প্রত্যাখ্যাত</option></select>
+              <button class="btn btn-ghost btn-sm" onclick="loadOrderRequests()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>Order / Customer</th><th>Type</th><th>Reason / Details</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="orTableBody"></tbody></table></div>
+          <div style="padding:12px 20px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text3);font-family:var(--mono)" id="orFooter"></div>
         </div>
       </div>
 
@@ -3648,6 +3677,25 @@ end $$;
 <!-- ══════════════════════════════════════
      BANNER MODAL
 ══════════════════════════════════════ -->
+<div class="modal-overlay" id="orModal" onclick="if(event.target===this)closeModal('orModal')">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header"><div class="modal-title">অনুরোধ / রিপোর্ট ম্যানেজ</div>
+      <button class="modal-close" onclick="closeModal('orModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body"><div style="display:grid;gap:13px">
+      <div id="orMeta" style="font-family:var(--font-bn);font-size:.84rem;line-height:1.7"></div>
+      <div class="form-group" id="orStatusRow"><label class="form-label">স্ট্যাটাস</label>
+        <select class="form-inp" id="orStatus" style="padding:8px 10px;font-size:0.84rem">
+          <option value="open">নতুন</option><option value="in_progress">দেখা হচ্ছে</option><option value="resolved">সমাধান হয়েছে</option><option value="rejected">প্রত্যাখ্যাত</option></select></div>
+      <div class="form-group"><label class="form-label">গ্রাহককে উত্তর / আপডেট <span style="font-weight:400;text-transform:none">(গ্রাহক নিজের অর্ডার পেজে দেখবে)</span></label>
+        <textarea class="form-inp" id="orNote" rows="3" style="font-family:var(--font-bn)" placeholder="যেমন: আপনার বই বদলে দেওয়া হবে, আমরা ফোন করব..."></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="orViewOrder()">অর্ডার দেখুন</button>
+        <button class="btn btn-sm" id="orAcceptBtn" style="background:var(--red);color:#fff" onclick="orAcceptCancel()">অনুরোধ গ্রহণ — অর্ডার বাতিল</button>
+        <button class="btn btn-primary btn-sm" onclick="orSave()">Save</button>
+      </div></div></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="reviewModal" onclick="if(event.target===this)closeModal('reviewModal')">
   <div class="modal-box" style="max-width:560px">
     <div class="modal-header">
@@ -7633,7 +7681,7 @@ async function saveProduct() {
     }
 
     // Publisher & Cover Type (books only) — "বইয়ের ধরণ" dropdown removed
-    const publisher = isBook ? document.getElementById('pPublisher').value.trim() || null : null;
+    const publisher = isBook ? adminCanonPublisher(document.getElementById('pPublisher').value) || null : null;
     const cover_type = isBook ? (document.getElementById('pBindingType')?.value || 'Hardcover') : null;
 
     // Optional book specification fields (books only)
@@ -7876,7 +7924,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
+  const titles = { requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -7889,6 +7937,7 @@ function navTo(sec) {
   if (sec === 'analytics')  loadVisitorStats();
   if (sec === 'questions')  loadProductQuestionsAdmin();
   if (sec === 'reviews')    loadReviewsAdmin();
+  if (sec === 'requests')   loadOrderRequests();
   if (sec === 'finder')     loadFinder();
   // ✅ URL: admin.html#/products, #/orders ...
   if (location.hash !== '#/' + sec) history.pushState({ sec }, '', '#/' + sec);
@@ -10248,6 +10297,73 @@ function rvProductName(pid) {
 }
 function rvStars(n) { n = Math.round(Number(n) || 0); return '★'.repeat(n) + '☆'.repeat(5 - n); }
 
+/* ══ ORDER REQUESTS — গ্রাহকের বাতিলের অনুরোধ ও রিপোর্ট ══ */
+let allOrderReqs = [], _orCur = null;
+const OR_KIND = { self_cancel:'নিজে বাতিল', cancel_request:'বাতিলের অনুরোধ', report:'রিপোর্ট' };
+const OR_RTYPE = { product:'পণ্য সমস্যা', delivery:'ডেলিভারি সমস্যা', order:'অর্ডার/পেমেন্ট', other:'অন্যান্য' };
+const OR_STATUS = { open:'নতুন', in_progress:'দেখা হচ্ছে', resolved:'সমাধান হয়েছে', rejected:'প্রত্যাখ্যাত' };
+const OR_PILL = { open:'pill-pending', in_progress:'pill-processing', resolved:'pill-delivered', rejected:'pill-cancelled' };
+async function loadOrderRequests() {
+  if (!sb) return;
+  const tb = document.getElementById('orTableBody');
+  if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>';
+  const { data, error } = await sb.from('order_requests').select('*').order('created_at', { ascending: false }).limit(500);
+  if (error) { if (tb) tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red)">লোড হয়নি — Supabase-এ <code>order_requests_setup.sql</code> চালিয়েছেন? (${escHtml(error.message)})</td></tr>`; return; }
+  allOrderReqs = data || []; renderOrderRequests(); orBadge();
+}
+function orBadge() {
+  const el = document.getElementById('nb-requests'); if (!el) return;
+  const n = allOrderReqs.filter(r => r.status === 'open' && r.kind !== 'self_cancel').length;
+  el.textContent = n; el.style.display = n ? 'inline-flex' : 'none';
+}
+async function orPollBadge() {
+  if (!sb) return;
+  try { const { count, error } = await sb.from('order_requests').select('id', { count: 'exact', head: true }).eq('status', 'open').neq('kind', 'self_cancel');
+    if (error) return; const el = document.getElementById('nb-requests'); if (el) { el.textContent = count || 0; el.style.display = count ? 'inline-flex' : 'none'; } } catch (e) {}
+}
+function renderOrderRequests() {
+  const q = (document.getElementById('orSearch')?.value || '').toLowerCase();
+  const kf = document.getElementById('orKindFilter')?.value || '', sf = document.getElementById('orStatusFilter')?.value || '';
+  const list = allOrderReqs.filter(r => (!kf || r.kind === kf) && (!sf || r.status === sf) &&
+    (!q || [r.order_number, r.customer_name, r.customer_phone, r.reason, r.details, r.product_name].join(' ').toLowerCase().includes(q)));
+  const foot = document.getElementById('orFooter'); if (foot) foot.textContent = `Showing ${list.length} of ${allOrderReqs.length}`;
+  const tb = document.getElementById('orTableBody'); if (!tb) return;
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-title">কোনো অনুরোধ / রিপোর্ট নেই</div></div></td></tr>'; return; }
+  tb.innerHTML = list.map(r => `<tr>
+    <td><b>${escHtml(r.order_number || '—')}</b><div style="font-size:.7rem;color:var(--text3)">${escHtml(r.customer_name || '')} ${escHtml(r.customer_phone || '')}</div></td>
+    <td>${OR_KIND[r.kind] || r.kind}${r.report_type ? `<div style="font-size:.7rem;color:var(--text3)">${OR_RTYPE[r.report_type] || ''}</div>` : ''}</td>
+    <td style="max-width:300px;font-family:var(--font-bn);font-size:.8rem"><b>${escHtml(r.reason || '')}</b>${r.product_name ? `<div style="color:var(--text3)">পণ্য: ${escHtml(r.product_name)}</div>` : ''}${r.details ? `<div style="color:var(--text2)">${escHtml(r.details)}</div>` : ''}</td>
+    <td><span class="pill ${OR_PILL[r.status] || ''}">${OR_STATUS[r.status] || r.status}</span></td>
+    <td style="font-size:.72rem;color:var(--text3)">${fmtDate(r.created_at)}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="orOpen('${r.id}')">Manage</button></td></tr>`).join('');
+}
+function orOpen(id) {
+  const r = allOrderReqs.find(x => x.id === id); if (!r) return; _orCur = r;
+  const ord = (typeof allOrders !== 'undefined' ? allOrders : []).find(o => o.id === r.order_id);
+  document.getElementById('orMeta').innerHTML = `<b>${escHtml(r.order_number || '')}</b> — ${escHtml(r.customer_name || '')} ${escHtml(r.customer_phone || '')}<br>
+    <b>${OR_KIND[r.kind] || r.kind}:</b> ${escHtml(r.reason || '')}${r.product_name ? `<br><b>পণ্য:</b> ${escHtml(r.product_name)}` : ''}${r.details ? `<br>${escHtml(r.details)}` : ''}
+    ${ord ? `<br><span style="color:var(--text3)">অর্ডারের বর্তমান স্ট্যাটাস: ${escHtml(ord.status)}</span>` : ''}`;
+  document.getElementById('orStatus').value = r.status; document.getElementById('orNote').value = r.admin_note || '';
+  document.getElementById('orAcceptBtn').style.display = (r.kind === 'cancel_request' && r.status !== 'resolved' && !(ord && ord.status === 'cancelled')) ? '' : 'none';
+  document.getElementById('orStatusRow').style.display = r.kind === 'self_cancel' ? 'none' : '';
+  openModal('orModal');
+}
+async function orSave(overrides) {
+  if (!_orCur) return;
+  const upd = Object.assign({ status: document.getElementById('orStatus').value, admin_note: document.getElementById('orNote').value.trim() || null, updated_at: new Date().toISOString() }, overrides || {});
+  const { error } = await sb.from('order_requests').update(upd).eq('id', _orCur.id);
+  if (error) { toast('Update Failed', error.message, 'error'); return false; }
+  toast('Saved', 'গ্রাহক তার অর্ডার পেজে এই আপডেট দেখতে পাবে'); closeModal('orModal'); loadOrderRequests(); return true;
+}
+async function orAcceptCancel() {
+  if (!_orCur || !confirm('অনুরোধ গ্রহণ করে অর্ডারটি বাতিল করবেন?')) return;
+  try { await updateOrderStatus(_orCur.order_id, 'cancelled', 'গ্রাহকের অনুরোধে অর্ডার বাতিল করা হয়েছে'); } catch (e) { toast('Cancel Failed', e.message, 'error'); return; }
+  const note = document.getElementById('orNote').value.trim() || 'আপনার অনুরোধ অনুযায়ী অর্ডার বাতিল করা হয়েছে।';
+  await orSave({ status: 'resolved', admin_note: note });
+}
+function orViewOrder() { if (_orCur) { closeModal('orModal'); viewOrder(_orCur.order_id); } }
+setTimeout(orPollBadge, 5000); setInterval(orPollBadge, 60000);
+
 async function loadReviewsAdmin() {
   if (!sb) return;
   const tbody = document.getElementById('rvTableBody');
@@ -11691,7 +11807,44 @@ const BULK_ALIAS = {
   image:['image','images','image_url','photo','picture','ছবি']
 };
 
-function bulkOpen(){ openModal('bulkImportModal'); bulkLoadSubCats(); bulkReloadCats(); }
+
+/* ── নাম পরিষ্কার + তুলনার কী (প্রকাশনী/লেখক duplicate ঠেকাতে) ──
+   অদৃশ্য অক্ষর (zero-width, NBSP, BOM), য়/ড়/ঢ় এর ভিন্ন এনকোডিং, বাড়তি স্পেস — সব এক করে দেয় */
+function bgCleanName(s){
+  return String(s == null ? '' : s).normalize('NFC')
+    .replace(/[\u200b\u200e\u200f\u2060\ufeff\u202a-\u202e]/g, '')
+    .replace(/[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]/g, ' ')
+    .replace(/\u09A1\u09BC/g, '\u09DC').replace(/\u09A2\u09BC/g, '\u09DD').replace(/\u09AF\u09BC/g, '\u09DF')
+    .replace(/\s+/g, ' ').trim();
+}
+function bgNameKey(s){
+  return bgCleanName(s).replace(/[\u200c\u200d]/g, '').toLowerCase()
+    .replace(/[\s.\-_,'"’“”()]+/g, '');
+}
+
+/* বই সেভ করার সময় প্রকাশনীর নাম: আগে থেকে একই নামে (একই কী) যে বানান আছে সেটাই ব্যবহার হবে */
+let _pubCanonMap = null;
+function adminCanonPublisher(name){
+  const c = bgCleanName(name);
+  if (!c) return '';
+  if (!_pubCanonMap) {
+    _pubCanonMap = new Map();
+    const cnt = new Map();   // কোন বানান কতবার আছে — সবচেয়ে বেশি যেটা সেটাই আসল
+    (typeof allProducts !== 'undefined' ? allProducts : []).forEach(p => {
+      const n = bgCleanName(p && p.publisher); if (!n) return;
+      const k = bgNameKey(n), ck = k + '\u0001' + n;
+      cnt.set(ck, (cnt.get(ck) || 0) + 1);
+    });
+    const best = new Map();
+    cnt.forEach((v, ck) => { const [k, n] = ck.split('\u0001'); if (!best.has(k) || v > best.get(k).v) best.set(k, { n, v }); });
+    best.forEach((o, k) => _pubCanonMap.set(k, o.n));
+  }
+  const k = bgNameKey(c);
+  if (!_pubCanonMap.has(k)) _pubCanonMap.set(k, c);   // একই ব্যাচের পরের সারিগুলোও এই বানানই পাবে
+  return _pubCanonMap.get(k);
+}
+
+function bulkOpen(){ _pubCanonMap = null; openModal('bulkImportModal'); bulkLoadSubCats(); bulkReloadCats(); }
 // মোডাল খোলার সময় ওয়েবসাইটের সর্বশেষ মেইন ক্যাটাগরি তালিকা আবার আনা হয়
 async function bulkReloadCats(){
   try {
@@ -12490,7 +12643,7 @@ async function bulkStartImport(){
         variants: [], specifications: [], faqs: [],
         description: r.description || null,
         author_name: r.author || null, author: r.author || null,
-        publisher: r.publisher || null, cover_type: cover, book_binding: cover,
+        publisher: adminCanonPublisher(r.publisher) || null, cover_type: cover, book_binding: cover,
         isbn: r.isbn || null, edition: r.edition || null,
         pages: parseInt(bulkDigits(r.pages)) || null,
         country: r.country || null, language: r.language || null,
