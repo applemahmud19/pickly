@@ -9110,10 +9110,10 @@ function rankTopPeople(kind) {
   products.forEach(p => {
     if (!isBookProduct(p)) return;
     const names = kind === 'publisher'
-      ? (p.publisher ? [String(p.publisher).trim().replace(/\s+/g, ' ')] : [])
-      : String(p.author || p.brand || '').split(/[,،]/).map(x => x.trim().replace(/\s+/g, ' '));
+      ? (p.publisher ? [bgCleanName(p.publisher)] : [])
+      : String(p.author || p.brand || '').split(/[,،]/).map(x => bgCleanName(x));
     names.filter(Boolean).forEach(n => {
-      const k = n.toLowerCase();
+      const k = bgNameKey(n);
       if (!map.has(k)) map.set(k, { name: n, n: 0, sum: 0, sold: 0 });
       const e = map.get(k);
       e.n++; e.sum += _bookRating(p); e.sold += _soldMap[p.id] || 0;
@@ -12598,7 +12598,7 @@ function buildTpOrderDetail(data, history) {
       </div>`;
   }
 
-  return metaHtml + itemsHtml + timelineHtml + histHtml;
+  return metaHtml + itemsHtml + timelineHtml + oaWrap(data) + histHtml;
 }
 
 // Opens the single order detail full page from the order list
@@ -12867,7 +12867,7 @@ function buildOrderDetailPanel(data, history) {
       <div class="bn" style="font-size:.8rem;color:var(--text-mid);line-height:1.65">${noteVal}</div>
     </div>` : '';
 
-  return `${stepsHtml}${deliveryHtml}${courierHtml}${itemsHtml}${noteHtml}${historyHtml}`;
+  return `${stepsHtml}${deliveryHtml}${courierHtml}${itemsHtml}${noteHtml}${oaWrap(data)}${historyHtml}`;
 }
 
 function openAuth() {
@@ -18284,14 +18284,28 @@ a.pcard:hover, a.rec-card:hover, a.hts-item:hover, a.pcard *, a.rec-card *, a.ht
   </svg>
 </a>
 <script>
+/* ── নাম পরিষ্কার + তুলনার কী (প্রকাশনী/লেখক duplicate ঠেকাতে) ──
+   অদৃশ্য অক্ষর (zero-width, NBSP, BOM), য়/ড়/ঢ় এর ভিন্ন এনকোডিং, বাড়তি স্পেস — সব এক করে দেয় */
+function bgCleanName(s){
+  return String(s == null ? '' : s).normalize('NFC')
+    .replace(/[\u200b\u200e\u200f\u2060\ufeff\u202a-\u202e]/g, '')
+    .replace(/[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]/g, ' ')
+    .replace(/\u09A1\u09BC/g, '\u09DC').replace(/\u09A2\u09BC/g, '\u09DD').replace(/\u09AF\u09BC/g, '\u09DF')
+    .replace(/\s+/g, ' ').trim();
+}
+function bgNameKey(s){
+  return bgCleanName(s).replace(/[\u200c\u200d]/g, '').toLowerCase()
+    .replace(/[\s.\-_,'"’“”()]+/g, '');
+}
+
 /* ══════════════════════════════════════════════════
    AUTHOR / PUBLISHER PROFILE PAGE — লেখক ও প্রকাশনীর আলাদা পেজ + সব বই
    URL: /author/<slug>  এবং  /publisher/<slug>
 ══════════════════════════════════════════════════ */
 (function () {
   const _digits = s => String(s).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
-  const _norm   = s => String(s || '').trim().replace(/\s+/g, ' ');
-  const _key    = s => _norm(s).toLowerCase();
+  const _norm   = s => bgCleanName(s);
+  const _key    = s => bgNameKey(s);
   const _esc    = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   const KIND = {
@@ -18530,6 +18544,110 @@ function home(){closePage('blog');closePage('blog-post');history.replaceState({p
 window.BG={list,open,home,render,send,copy,cedit,csave,cdel,cload:loadCm,cat:c=>{cat=c;render()}};
 window.openBlogList=list;window.openBlogPost=open;
 })();
+</script>
+
+<style>
+.oa-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin:12px 0;font-family:'Hind Siliguri',sans-serif}
+.oa-title{font-size:.7rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px}
+.oa-title i{color:var(--blue);margin-right:5px}
+.oa-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:9px;font:700 .82rem 'Hind Siliguri',sans-serif;cursor:pointer;border:1.5px solid}
+.oa-danger{background:#FEF2F2;color:#B91C1C;border-color:#FECACA}.oa-danger:hover{background:#B91C1C;color:#fff}
+.oa-warn{background:#FFFBEB;color:#B45309;border-color:#FDE68A}.oa-warn:hover{background:#B45309;color:#fff}
+.oa-hint{font-size:.72rem;color:var(--text-light);margin-top:7px;line-height:1.5}
+.oa-item{border:1px solid var(--border);border-radius:9px;padding:9px 11px;margin-bottom:8px;font-size:.78rem;color:var(--text-mid)}
+.oa-item b{color:var(--text)}.oa-st{float:right;font-size:.66rem;font-weight:700;padding:2px 9px;border-radius:20px}
+.oa-note{margin-top:6px;padding:7px 9px;background:rgba(170,44,45,.06);border-radius:7px;font-size:.76rem}
+.oa-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;display:none;align-items:center;justify-content:center;padding:14px}
+.oa-ov.open{display:flex}
+.oa-md{background:#fff;border-radius:16px;width:100%;max-width:440px;max-height:90vh;overflow:auto;padding:18px;font-family:'Hind Siliguri',sans-serif}
+.oa-md h3{margin:0 0 4px;font-size:1.02rem}.oa-md p{margin:0 0 12px;font-size:.78rem;color:var(--text-light)}
+.oa-rad{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;margin-bottom:6px;font-size:.84rem;cursor:pointer}
+.oa-md select,.oa-md textarea{width:100%;border:1px solid var(--border);border-radius:9px;padding:9px 10px;font:.84rem 'Hind Siliguri',sans-serif;margin-bottom:10px;box-sizing:border-box}
+.oa-md textarea{min-height:84px;resize:vertical}
+.oa-act{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+@media(max-width:560px){.oa-ov{align-items:flex-end;padding:0}.oa-md{border-radius:16px 16px 0 0;max-width:none}}
+</style>
+<script>
+/* ── অর্ডার বাতিল / বাতিলের অনুরোধ / রিপোর্ট (গ্রাহকের দিক) ── */
+window._oaCache = window._oaCache || {}; window._oaOrders = window._oaOrders || {}; window._oaTs = {};
+const OA_REASONS = ['ভুল পণ্য অর্ডার করেছি','অন্য জায়গায় কম দামে পেয়েছি','ঠিকানা/তথ্য ভুল দিয়েছি','আর প্রয়োজন নেই','ডেলিভারিতে অনেক দেরি হবে মনে হচ্ছে','অন্য কারণ'];
+const OA_RTYPES = { product:'পণ্য নিয়ে সমস্যা (ভুল / ক্ষতিগ্রস্ত / অসম্পূর্ণ)', delivery:'ডেলিভারি নিয়ে সমস্যা', order:'অর্ডার / পেমেন্ট নিয়ে সমস্যা', other:'অন্য সমস্যা' };
+const OA_ST = { open:['অপেক্ষায়','#FEF3C7','#92400E'], in_progress:['দেখা হচ্ছে','#DBEAFE','#1D4ED8'], resolved:['সমাধান হয়েছে','#D1FAE5','#065F46'], rejected:['গ্রহণ করা হয়নি','#FEE2E2','#991B1B'] };
+const oaEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function oaMode(st){ if (st === 'pending') return 'cancel'; if (st === 'cancelled') return 'none'; if (st === 'shipped' || st === 'delivered') return 'report'; return 'request'; }
+function oaInner(o){
+  const mode = oaMode(o.status), reqs = window._oaCache[o.id] || [];
+  const list = reqs.map(r => { const s = OA_ST[r.status] || OA_ST.open;
+    return `<div class="oa-item"><span class="oa-st" style="background:${s[1]};color:${s[2]}">${s[0]}</span><b>${r.kind === 'report' ? 'রিপোর্ট' : 'বাতিলের অনুরোধ'}</b> — ${oaEsc(r.reason)}${r.admin_note ? `<div class="oa-note"><b>আমাদের উত্তর:</b> ${oaEsc(r.admin_note)}</div>` : ''}</div>`; }).join('');
+  const pend = reqs.some(r => r.kind === 'cancel_request' && (r.status === 'open' || r.status === 'in_progress'));
+  let btn = '';
+  if (mode === 'cancel') btn = `<button class="oa-btn oa-danger" onclick="oaOpen('${o.id}','cancel')"><i class="fa-solid fa-ban"></i> অর্ডার বাতিল করুন</button><div class="oa-hint">আমরা কনফার্ম করার আগে পর্যন্ত আপনি নিজেই অর্ডার বাতিল করতে পারবেন।</div>`;
+  else if (mode === 'request' && !pend) btn = `<button class="oa-btn oa-danger" onclick="oaOpen('${o.id}','request')"><i class="fa-solid fa-hand"></i> বাতিলের অনুরোধ করুন</button><div class="oa-hint">অর্ডার কনফার্ম হয়ে গেছে। আপনার অনুরোধ আমাদের টিম দেখে সিদ্ধান্ত জানাবে।</div>`;
+  else if (mode === 'report') btn = `<button class="oa-btn oa-warn" onclick="oaOpen('${o.id}','report')"><i class="fa-solid fa-flag"></i> সমস্যা রিপোর্ট করুন</button><div class="oa-hint">পণ্য, ডেলিভারি বা অর্ডার নিয়ে কোনো সমস্যা হলে জানান।</div>`;
+  return (list || btn) ? `<div class="oa-box"><div class="oa-title"><i class="fa-solid fa-headset"></i>সহায়তা</div>${list}${btn}</div>` : '';
+}
+function oaWrap(o){ if (!o || !o.id) return ''; window._oaOrders[o.id] = o; setTimeout(() => oaRefresh(o), 0); return `<div class="oa-wrap" data-oid="${o.id}">${oaInner(o)}</div>`; }
+function oaPaint(oid){ const o = window._oaOrders[oid]; if (!o) return; document.querySelectorAll('.oa-wrap[data-oid="' + oid + '"]').forEach(w => { w.innerHTML = oaInner(o); }); }
+async function oaRefresh(o, force){
+  if (!document.querySelector('.oa-wrap[data-oid="' + o.id + '"]')) return;
+  if (!force && Date.now() - (window._oaTs[o.id] || 0) < 15000) return;
+  window._oaTs[o.id] = Date.now();
+  try { const { data, error } = await sb.rpc('customer_order_requests', { p_order_id: o.id }); if (!error) { window._oaCache[o.id] = data || []; oaPaint(o.id); } } catch (e) {}
+}
+function oaModal(){ let m = document.getElementById('oaModal'); if (!m) { m = document.createElement('div'); m.id = 'oaModal'; m.className = 'oa-ov'; m.onclick = e => { if (e.target === m) oaClose(); }; document.body.appendChild(m); } return m; }
+function oaClose(){ const m = document.getElementById('oaModal'); if (m) m.classList.remove('open'); }
+function oaOpen(oid, mode){
+  const o = window._oaOrders[oid]; if (!o) return; window._oaCur = { oid, mode };
+  let h;
+  if (mode === 'report') {
+    const names = (o.items || []).map(i => i.name).filter(Boolean);
+    h = `<h3>সমস্যা রিপোর্ট করুন</h3><p>অর্ডার ${oaEsc(o.order_number || '')}</p>
+      <select id="oaType" onchange="document.getElementById('oaProdWrap').style.display=this.value==='product'?'block':'none'">${Object.keys(OA_RTYPES).map(k => `<option value="${k}">${OA_RTYPES[k]}</option>`).join('')}</select>
+      <div id="oaProdWrap"><select id="oaProd"><option value="">কোন পণ্য? (বেছে নিন)</option>${names.map(n => `<option>${oaEsc(n)}</option>`).join('')}</select></div>
+      <textarea id="oaTxt" maxlength="1500" placeholder="সমস্যাটি বিস্তারিত লিখুন..."></textarea>`;
+  } else {
+    h = `<h3>${mode === 'cancel' ? 'অর্ডার বাতিল করুন' : 'বাতিলের অনুরোধ'}</h3><p>${mode === 'cancel' ? 'বাতিলের কারণ বেছে নিন। বাতিল করলে আর ফেরানো যাবে না।' : 'অর্ডার কনফার্ম হয়ে গেছে, তাই আমাদের টিম অনুরোধ দেখে জানাবে।'}</p>
+      ${OA_REASONS.map((r, i) => `<label class="oa-rad"><input type="radio" name="oaR" value="${r}" ${i === 0 ? 'checked' : ''}> ${r}</label>`).join('')}
+      <textarea id="oaTxt" maxlength="1500" placeholder="আরও কিছু জানাতে চাইলে লিখুন (অন্য কারণ হলে অবশ্যই লিখুন)"></textarea>`;
+  }
+  const m = oaModal();
+  m.innerHTML = `<div class="oa-md">${h}<div class="oa-act"><button class="oa-btn" style="background:#F3F4F6;border-color:#E5E7EB;color:#374151" onclick="oaClose()">ফিরে যান</button><button class="oa-btn ${mode === 'report' ? 'oa-warn' : 'oa-danger'}" id="oaGo" onclick="oaSubmit()">${mode === 'cancel' ? 'অর্ডার বাতিল করুন' : mode === 'request' ? 'অনুরোধ পাঠান' : 'রিপোর্ট পাঠান'}</button></div></div>`;
+  const pw = document.getElementById('oaProdWrap'); if (pw) pw.style.display = 'none';
+  m.classList.add('open');
+}
+async function oaSubmit(){
+  const { oid, mode } = window._oaCur || {}; const o = window._oaOrders[oid]; if (!o) return;
+  const txt = (document.getElementById('oaTxt').value || '').trim(); let reason, rtype = null, pname = null;
+  if (mode === 'report') {
+    rtype = document.getElementById('oaType').value; reason = OA_RTYPES[rtype];
+    if (rtype === 'product') pname = document.getElementById('oaProd').value || null;
+    if (txt.length < 10) { toast('বিস্তারিত লিখুন', 'অন্তত ১০ অক্ষরে সমস্যাটি লিখুন', 'w'); return; }
+  } else {
+    const r = document.querySelector('input[name=oaR]:checked'); reason = r ? r.value : '';
+    if (!reason) { toast('কারণ বাছাই করুন', '', 'w'); return; }
+    if (reason === 'অন্য কারণ' && !txt) { toast('কারণ লিখুন', 'অন্য কারণ হলে একটু লিখে জানান', 'w'); return; }
+  }
+  const btn = document.getElementById('oaGo'); btn.disabled = true;
+  const res = mode === 'cancel'
+    ? await sb.rpc('customer_cancel_order', { p_order_id: oid, p_reason: txt ? reason + ' — ' + txt : reason })
+    : await sb.rpc('customer_submit_order_request', { p_order_id: oid, p_kind: mode === 'report' ? 'report' : 'cancel_request', p_report_type: rtype, p_product_name: pname, p_reason: reason, p_details: txt });
+  btn.disabled = false;
+  if (res.error) {
+    const m = res.error.message || '';
+    if (/not_pending/.test(m)) { toast('অর্ডার কনফার্ম হয়ে গেছে', 'এখন বাতিলের অনুরোধ পাঠাতে পারবেন', 'w'); o.status = 'confirmed'; try { _refreshOrderDetailPageNow(oid); } catch (e) {} oaPaint(oid); oaClose(); }
+    else if (/already_requested/.test(m)) { toast('আগেই পাঠিয়েছেন', 'আপনার অনুরোধ আমরা দেখছি', 'w'); oaRefresh(o, true); oaClose(); }
+    else if (/not_allowed|order_not_found/.test(m)) toast('এটি করা যাচ্ছে না', 'অর্ডারের বর্তমান অবস্থায় এই অপশন নেই', 'e');
+    else toast('ত্রুটি!', 'আবার চেষ্টা করুন', 'e');
+    return;
+  }
+  oaClose();
+  if (mode === 'cancel') {
+    o.status = 'cancelled'; if (window._tpOrderMap && window._tpOrderMap[oid]) window._tpOrderMap[oid].order.status = 'cancelled';
+    toast('অর্ডার বাতিল হয়েছে', 'আপনার অর্ডারটি বাতিল করা হয়েছে', 's');
+    try { _refreshOrderDetailPageNow(oid); } catch (e) {}
+  } else toast(mode === 'report' ? 'রিপোর্ট পাঠানো হয়েছে' : 'অনুরোধ পাঠানো হয়েছে', 'আমাদের টিম শীঘ্রই জানাবে', 's');
+  oaPaint(oid); oaRefresh(o, true);
+}
 </script>
 
 </body>
