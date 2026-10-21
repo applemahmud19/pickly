@@ -1812,7 +1812,8 @@ body {
         .om-bulk{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:rgba(170,44,45,.06);border-bottom:1px solid var(--border);font-size:.78rem;font-family:var(--font-bn)}
         .om-bulk.show{display:flex}
         .om-list{display:flex;flex-direction:column}
-        .om-head,.om-row{display:grid;grid-template-columns:30px 1.15fr 1.35fr 1fr .7fr .8fr 1.6fr;gap:10px;align-items:center;padding:11px 18px}
+        .om-head,.om-row{display:grid;grid-template-columns:34px minmax(0,1.1fr) minmax(0,1.5fr) 100px 150px minmax(0,1fr);column-gap:18px;align-items:center;padding:16px 22px}
+.om-row{min-height:68px}
         .om-head{font-size:.64rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);background:var(--bg3);border-bottom:1px solid var(--border)}
         .om-row{border-bottom:1px solid var(--border);transition:background var(--t);font-size:.8rem}
         .om-row:hover{background:var(--hover)}
@@ -1831,6 +1832,8 @@ body {
         .om-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(255,59,48,.07)}
         .om-btn.warn:hover{border-color:#E8590C;color:#E8590C;background:rgba(232,89,12,.07)}
         .om-btn.icon{padding:6px 9px}
+        .om-sel{width:100%;padding:8px 10px;border-radius:9px;border:1.5px solid var(--border2);font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;outline:none}
+        .om-cust a{display:block;margin-top:3px}
         .om-chk{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
         .om-more{display:block;width:calc(100% - 36px);margin:12px 18px;text-align:center}
         .om-empty{padding:42px 20px;text-align:center;color:var(--text3);font-family:var(--font-bn)}
@@ -1838,12 +1841,10 @@ body {
         @media(max-width:1200px){.om-stats{grid-template-columns:repeat(4,1fr)}}
         @media(max-width:900px){
           .om-head{display:none}
-          .om-row{grid-template-columns:26px 1fr auto;grid-template-areas:"chk no pill" ". cust cust" ". items total" "acts acts acts";row-gap:6px;padding:13px 14px}
-          .om-row>.c-chk{grid-area:chk}.om-row>.c-no{grid-area:no}.om-row>.c-pill{grid-area:pill;justify-self:end}
-          .om-row>.c-cust{grid-area:cust}.om-row>.c-items{grid-area:items}.om-row>.c-total{grid-area:total;justify-self:end;font-weight:800}
-          .om-row>.c-dist,.om-row>.c-pillcol{display:none}
-          .om-row>.c-acts{grid-area:acts}.om-acts{justify-content:flex-start}
-          .om-btn{padding:8px 13px;font-size:.76rem}
+          .om-row{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"chk no total" ". cust cust" ". stat acts";row-gap:10px;column-gap:12px;padding:16px 14px}
+          .om-row>.c-chk{grid-area:chk}.om-row>.c-no{grid-area:no}.om-row>.c-total{grid-area:total;justify-self:end;font-weight:800}
+          .om-row>.c-cust{grid-area:cust}.om-row>.c-stat{grid-area:stat}.om-row>.c-acts{grid-area:acts}
+          .om-btn{padding:9px 14px;font-size:.78rem}
         }
         @media(max-width:560px){.om-stats{grid-template-columns:repeat(2,1fr);gap:8px}}
         </style>
@@ -1873,7 +1874,7 @@ body {
           <div class="om-list">
             <div class="om-head">
               <div><input type="checkbox" class="om-chk" id="omSelAll" onchange="omToggleAll(this.checked)" title="সব সিলেক্ট"></div>
-              <div>Order</div><div>Customer</div><div>District</div><div>Total</div><div>Status</div><div style="text-align:right">Quick Actions</div>
+              <div>Order</div><div>Customer</div><div>Total</div><div>Status (বদলান)</div><div style="text-align:right">Action</div>
             </div>
             <div id="omList"></div>
           </div>
@@ -5358,8 +5359,9 @@ async function omAct(id, status) {
   id = String(id);
   const o = allOrders.find(x => String(x.id) === id);
   if (!o) return;
-  if (status === 'cancelled' && !confirm(`অর্ডার ${o.order_number || ''} বাতিল করবেন?`)) return;
-  if (status === 'returned' && !confirm(`অর্ডার ${o.order_number || ''} রিটার্ন হিসেবে মার্ক করবেন?`)) return;
+  if (omStatusOf(o) === status) return;
+  if (status === 'cancelled' && !confirm(`অর্ডার ${o.order_number || ''} বাতিল করবেন?`)) { renderOrderManager(); return; }
+  if (status === 'returned' && !confirm(`অর্ডার ${o.order_number || ''} রিটার্ন হিসেবে মার্ক করবেন?`)) { renderOrderManager(); return; }
   omBusy.add(id); renderOrderManager();
   try { await updateOrderStatus(o.id, status); }
   finally { omBusy.delete(id); omSelected.delete(id); renderOrderManager(); }
@@ -5428,25 +5430,19 @@ function renderOrderManager() {
       const id = String(o.id);
       const st = omStatusOf(o);
       const d  = OM_DEF.find(x => x.k === st);
-      const items = Array.isArray(o.items) ? o.items : [];
-      const names = items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
       const nx = OM_NEXT[st];
-      const canCancel = ['pending','confirmed','processing','shipped'].includes(st);
-      const canReturn = ['shipped','delivered'].includes(st);
       const phone = o.customer_phone ? omEsc(o.customer_phone) : '';
+      const opts = OM_DEF.filter(x => x.k !== 'all').map(x => `<option value="${x.k}" ${x.k === st ? 'selected' : ''}>${x.en}</option>`).join('');
       const acts = [
         nx ? `<button class="om-btn primary" style="--omc:${OM_DEF.find(x => x.k === nx.to).c}" onclick="omAct('${id}','${nx.to}')"><i class="fa-solid ${nx.ic}"></i> ${nx.label}</button>` : '',
-        canReturn ? `<button class="om-btn warn" onclick="omAct('${id}','returned')" title="Return"><i class="fa-solid fa-rotate-left"></i> Return</button>` : '',
-        canCancel ? `<button class="om-btn danger" onclick="omAct('${id}','cancelled')" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>` : '',
         `<button class="om-btn icon" onclick="viewOrder('${id}')" title="বিস্তারিত"><i class="fa-solid fa-eye"></i></button>`,
       ].join('');
       return `<div class="om-row ${omSelected.has(id) ? 'sel' : ''} ${omBusy.has(id) ? 'busy' : ''}">
         <div class="c-chk"><input type="checkbox" class="om-chk" ${omSelected.has(id) ? 'checked' : ''} onchange="omToggle('${id}', this.checked)"></div>
         <div class="c-no"><div class="om-no" onclick="viewOrder('${id}')">${omEsc(o.order_number || '—')}</div><div class="om-sub">${omAgo(o.created_at)}</div></div>
-        <div class="c-cust"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}"><i class="fa-solid fa-phone" style="font-size:.6rem"></i> ${phone}</a>` : ''}</div>
-        <div class="c-dist c-items"><div style="font-size:.76rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${omEsc(o.customer_district || '—')}</div><div class="om-sub">${omEsc(names) || '—'}</div></div>
+        <div class="c-cust"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}">${phone}</a>` : ''}</div>
         <div class="c-total" style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</div>
-        <div class="c-pill">${pillHTML(st)}</div>
+        <div class="c-stat"><select class="om-sel" style="${getStatusSelectStyle(st)}" onchange="omAct('${id}', this.value)">${opts}</select></div>
         <div class="c-acts"><div class="om-acts">${acts}</div></div>
       </div>`;
     }).join('') + (all.length > rows.length ? `<button class="btn btn-ghost btn-sm om-more" onclick="omMore()">আরও দেখুন (${all.length - rows.length})</button>` : '');
