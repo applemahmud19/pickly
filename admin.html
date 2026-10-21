@@ -1797,18 +1797,18 @@ body {
 
         <!-- ═══ ORDER MANAGEMENT (Dashboard) ═══ -->
         <style>
-        .om-stats{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:16px}
-        .om-stat{position:relative;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 12px 11px;cursor:pointer;transition:all var(--t);overflow:hidden;min-width:0}
-        .om-stat::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--omc,#64748B);opacity:.85}
-        .om-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--omc)}
-        .om-stat.active{border-color:var(--omc);background:color-mix(in srgb,var(--omc) 8%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 16%,transparent)}
-        .om-stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-        .om-stat-ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
-        .om-stat-n{font-size:1.55rem;font-weight:800;line-height:1;color:var(--text)}
-        .om-stat.has-alert .om-stat-n{color:var(--omc)}
-        .om-stat-l{font-size:.72rem;font-weight:700;color:var(--text);margin-top:6px;font-family:var(--font-bn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .om-stat-s{font-size:.6rem;color:var(--text3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .om-pulse{width:7px;height:7px;border-radius:50%;background:var(--omc);animation:livePulse 1.4s ease-in-out infinite}
+        .om-tabs{display:flex;gap:8px;padding:12px 18px;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none}
+        .om-tabs::-webkit-scrollbar{display:none}
+        .om-tab{display:inline-flex;align-items:center;gap:8px;padding:7px 8px 7px 14px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:.8rem;font-weight:600;font-family:var(--font-bn);color:var(--text2);white-space:nowrap;transition:all var(--t);flex-shrink:0}
+        .om-tab .dot{width:8px;height:8px;border-radius:50%;background:var(--omc)}
+        .om-tab .cnt{min-width:24px;height:22px;padding:0 7px;border-radius:99px;background:var(--bg3);font-family:var(--mono);font-size:.72rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;color:var(--text2)}
+        .om-tab:hover{border-color:var(--omc);color:var(--text)}
+        .om-tab.active{background:var(--omc);border-color:var(--omc);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--omc) 35%,transparent)}
+        .om-tab.active .dot{background:#fff}
+        .om-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
+        .om-tab.zero:not(.active){opacity:.6}
+        .om-tab.alert:not(.active) .cnt{background:var(--omc);color:#fff}
+        .om-tab.alert .dot{animation:livePulse 1.4s ease-in-out infinite}
         .om-bulk{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:rgba(170,44,45,.06);border-bottom:1px solid var(--border);font-size:.78rem;font-family:var(--font-bn)}
         .om-bulk.show{display:flex}
         .om-list{display:flex;flex-direction:column}
@@ -1838,7 +1838,6 @@ body {
         .om-more{display:block;width:calc(100% - 36px);margin:12px 18px;text-align:center}
         .om-empty{padding:42px 20px;text-align:center;color:var(--text3);font-family:var(--font-bn)}
         .om-empty i{font-size:1.8rem;opacity:.4;display:block;margin-bottom:10px}
-        @media(max-width:1200px){.om-stats{grid-template-columns:repeat(4,1fr)}}
         @media(max-width:900px){
           .om-head{display:none}
           .om-row{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"chk no total" ". cust cust" ". stat acts";row-gap:10px;column-gap:12px;padding:16px 14px}
@@ -1846,10 +1845,7 @@ body {
           .om-row>.c-cust{grid-area:cust}.om-row>.c-stat{grid-area:stat}.om-row>.c-acts{grid-area:acts}
           .om-btn{padding:9px 14px;font-size:.78rem}
         }
-        @media(max-width:560px){.om-stats{grid-template-columns:repeat(2,1fr);gap:8px}}
         </style>
-
-        <div class="om-stats" id="omStats"></div>
 
         <div class="panel" style="margin-bottom:18px">
           <div class="panel-header">
@@ -1865,6 +1861,7 @@ body {
               <button class="btn btn-ghost btn-sm" onclick="navTo('orders')" style="font-family:var(--font-bn)">সব অর্ডার <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
+          <div class="om-tabs" id="omStats"></div>
           <div class="om-bulk" id="omBulk">
             <b id="omBulkCount">0</b> <span>টি সিলেক্টেড</span>
             <button class="om-btn primary" style="--omc:var(--blue)" onclick="omBulkNext()"><i class="fa-solid fa-forward-step"></i> পরের ধাপে পাঠান</button>
@@ -5404,12 +5401,10 @@ function renderOrderManager() {
   const cur = OM_DEF.find(d => d.k === omFilter) || OM_DEF[0];
 
   statsEl.innerHTML = OM_DEF.map(d => {
-    const alert = d.k === 'pending' && counts.pending > 0;
-    return `<div class="om-stat ${omFilter === d.k ? 'active' : ''} ${alert ? 'has-alert' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
-      <div class="om-stat-top"><div class="om-stat-ic"><i class="fa-solid ${d.ic}"></i></div>${alert ? '<span class="om-pulse"></span>' : ''}</div>
-      <div class="om-stat-n">${counts[d.k] || 0}</div>
-      <div class="om-stat-l">${d.bn}</div>
-      <div class="om-stat-s">${d.en}</div>
+    const n = counts[d.k] || 0;
+    const alert = d.k === 'pending' && n > 0;
+    return `<div class="om-tab ${omFilter === d.k ? 'active' : ''} ${alert ? 'alert' : ''} ${n === 0 && d.k !== 'all' ? 'zero' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
+      <span class="dot"></span><span>${d.k === 'all' ? 'সব' : d.bn}</span><span class="cnt">${n}</span>
     </div>`;
   }).join('');
 
