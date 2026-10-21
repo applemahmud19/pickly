@@ -4310,7 +4310,48 @@ end $$;
         <button class="btn btn-danger" id="udmBlockBtn" onclick="confirmToggleBlock()">
           <i class="fa-solid fa-ban"></i> Block User
         </button>
-        <button class="btn btn-ghost" onclick="closeModal('userDetailModal')">Close</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="udmEditBtn" onclick="openUserEdit(currentViewUserId)"><i class="fa-solid fa-pen"></i> Edit Info</button>
+          <button class="btn btn-ghost" onclick="closeModal('userDetailModal')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ USER EDIT MODAL ══ -->
+<div class="modal-overlay" id="userEditModal" onclick="if(event.target===this)closeModal('userEditModal')">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title" style="font-family:var(--font-bn)">কাস্টমারের তথ্য এডিট</div>
+      <button class="modal-close" onclick="closeModal('userEditModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="padding:20px;display:grid;gap:14px">
+      <input type="hidden" id="ueId">
+      <div class="form-group">
+        <label class="form-label bn-label">পুরো নাম <span class="required">*</span></label>
+        <input class="form-inp" type="text" id="ueName" placeholder="কাস্টমারের নাম">
+      </div>
+      <div class="form-group">
+        <label class="form-label bn-label">ফোন নম্বর</label>
+        <input class="form-inp" type="tel" id="uePhone" placeholder="01XXXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label class="form-label bn-label">জেলা</label>
+        <input class="form-inp" type="text" id="ueDistrict" placeholder="যেমন: ঢাকা">
+        <div style="font-size:.68rem;color:var(--text3);font-family:var(--font-bn)">চেকআউটে অটো-ফিল হয়, তাই সাইটের জেলার নামের মতোই লিখুন</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label bn-label">ঠিকানা</label>
+        <textarea class="form-inp" id="ueAddress" rows="3" placeholder="বাড়ি/ফ্ল্যাট, রাস্তা, এলাকা, জেলা..." style="resize:vertical"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label bn-label">ইমেইল <span style="font-weight:400;color:var(--text3)">(লগইন ইমেইল — পরিবর্তনযোগ্য নয়)</span></label>
+        <input class="form-inp" type="text" id="ueEmail" disabled>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+        <button class="btn btn-ghost" onclick="closeModal('userEditModal')">বাতিল</button>
+        <button class="btn btn-primary" id="ueSaveBtn" onclick="saveUserEdit()"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
       </div>
     </div>
   </div>
@@ -10591,6 +10632,7 @@ function renderUsers() {
           <button class="btn btn-secondary btn-xs" onclick="viewUserDetail('${u.id}')">
             <i class="fa-solid fa-eye"></i> View
           </button>
+          ${String(u.id).startsWith('order-') ? '' : `<button class="btn btn-ghost btn-xs" onclick="openUserEdit('${u.id}')" title="তথ্য এডিট করুন"><i class="fa-solid fa-pen"></i> Edit</button>`}
           ${u.synthetic
             ? `<span class="pill pill-pending" title="এই ইউজারের প্রোফাইল রো নেই — অর্ডারের তথ্য থেকে দেখানো হচ্ছে">অর্ডার থেকে</span>`
             : `<button class="btn ${blockBtnClass} btn-xs" onclick="quickToggleBlock('${u.id}')">
@@ -10679,6 +10721,75 @@ function viewUserDetail(userId) {
   }
 
   openModal('userDetailModal');
+}
+
+/* ── কাস্টমারের তথ্য এডিট (profiles টেবিল) ── */
+function openUserEdit(userId) {
+  const u = allUsers.find(x => String(x.id) === String(userId));
+  if (!u) { toast('Not Found', 'ইউজার পাওয়া যায়নি', 'error'); return; }
+  if (String(u.id).startsWith('order-')) { toast('এডিট করা যাবে না', 'এই কাস্টমারের অ্যাকাউন্ট নেই (শুধু অর্ডারে আছে)', 'warning'); return; }
+  document.getElementById('ueId').value       = u.id;
+  document.getElementById('ueName').value     = u.name && u.name !== 'Unknown' ? u.name : '';
+  document.getElementById('uePhone').value    = u.phone || '';
+  document.getElementById('ueDistrict').value = u.district || '';
+  document.getElementById('ueAddress').value  = u.address || '';
+  document.getElementById('ueEmail').value    = u.email || '';
+  closeModal('userDetailModal');
+  openModal('userEditModal');
+}
+
+async function saveUserEdit() {
+  if (!sb) { toast('Error', 'Supabase connected নেই', 'error'); return; }
+  const id = document.getElementById('ueId').value;
+  const u  = allUsers.find(x => String(x.id) === String(id));
+  if (!u) return;
+  const name     = document.getElementById('ueName').value.trim();
+  const rawPhone = document.getElementById('uePhone').value.trim();
+  const district = document.getElementById('ueDistrict').value.trim();
+  const address  = document.getElementById('ueAddress').value.trim();
+  if (!name) { toast('Validation Error', 'নাম দিন', 'error'); return; }
+  let phone = '';
+  if (rawPhone) {
+    phone = _normPhone(rawPhone);
+    if (!/^01\d{9}$/.test(phone)) { toast('Validation Error', 'সঠিক বাংলাদেশি ফোন নম্বর দিন (01XXXXXXXXX)', 'error'); return; }
+  }
+
+  const btn = document.getElementById('ueSaveBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ হচ্ছে...';
+  const full = { full_name: name, phone, address, district, updated_at: new Date().toISOString() };
+  const lite = { full_name: name, phone, address, updated_at: full.updated_at };
+
+  const tryUpdate = async (table, payload) => sb.from(table).update(payload).eq('id', u.id).select('id');
+  try {
+    let table = 'profiles';
+    let r = await tryUpdate(table, full);
+    if (r.error && (r.error.code === '42P01' || /does not exist/i.test(r.error.message || '')) && !/column/i.test(r.error.message || '')) {
+      table = 'users'; r = await tryUpdate(table, full);
+    }
+    if (r.error && /column/i.test(r.error.message || '')) r = await tryUpdate(table, lite);   // কোনো কলাম না থাকলে
+    // কোনো রো আপডেট হয়নি → প্রোফাইল রো নেই (শুধু অর্ডার থেকে এসেছে) অথবা RLS আটকেছে
+    if (!r.error && (!r.data || !r.data.length)) {
+      if (u.synthetic) {
+        r = await sb.from(table).upsert({ id: u.id, email: u.email || null, ...full }, { onConflict: 'id' }).select('id');
+        if (r.error && /column/i.test(r.error.message || '')) r = await sb.from(table).upsert({ id: u.id, email: u.email || null, ...lite }, { onConflict: 'id' }).select('id');
+      }
+      if (!r.error && (!r.data || !r.data.length)) {
+        r = { error: { message: 'ডাটাবেজ কোনো রো আপডেট করেনি — profiles টেবিলে অ্যাডমিনের UPDATE policy নেই (admin_edit_users.sql রান করুন)' } };
+      }
+    }
+    if (r.error) { toast('সেভ হয়নি', r.error.message, 'error'); return; }
+
+    u.name = name; u.phone = phone; u.address = address; u.district = district;
+    u.phone_from_order = false; u.synthetic = false; u.updated_at = full.updated_at;
+    closeModal('userEditModal');
+    renderUserKPIs(); renderUsers();
+    toast('সেভ হয়েছে!', `"${name}" এর তথ্য আপডেট হয়েছে`, 'success');
+    viewUserDetail(u.id);
+  } catch (e) {
+    toast('Error', e.message || 'আপডেট ব্যর্থ', 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> সেভ করুন';
+  }
 }
 
 /* ── Quick block toggle from table row ── */
