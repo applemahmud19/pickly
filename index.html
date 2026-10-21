@@ -5736,7 +5736,7 @@ html, body {
 #ncatMoreOverlay{position:fixed;inset:0;z-index:99998;background:rgba(20,10,10,.45);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .18s,visibility .18s}
 #ncatMoreOverlay.open{opacity:1;visibility:visible}
 #ncatMorePanel{position:fixed;z-index:99999;left:50%;top:50%;transform:translate(-50%,-46%) scale(.97);opacity:0;visibility:hidden;pointer-events:none;
-  width:min(600px,92vw);max-height:86vh;overflow-y:auto;overscroll-behavior:contain;
+  width:min(560px,92vw);max-height:86vh;overflow-y:auto;overscroll-behavior:contain;
   background:var(--dbgffffff,#fff);border:1px solid var(--border,var(--dbdeeeeee,#eee));border-radius:18px;padding:14px 14px 16px;box-shadow:0 24px 70px rgba(0,0,0,.28);
   transition:opacity .18s,transform .18s,visibility .18s}
 #ncatMorePanel.open{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
@@ -5744,10 +5744,10 @@ html, body {
 .ncat-more-top b{font:700 1rem 'Hind Siliguri',sans-serif;color:var(--text,#222)}
 .ncat-more-x{width:32px;height:32px;border:none;border-radius:50%;background:var(--bg,#f4f4f4);color:var(--text-mid,#555);cursor:pointer;font-size:.85rem;display:grid;place-items:center}
 .ncat-more-x:hover{background:var(--dbgfbeded,#FBEDED);color:var(--blue,#AA2C2D)}
-.ncat-more-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
-@media (max-width:480px){.ncat-more-grid{grid-template-columns:repeat(2,1fr);gap:7px}}
+.ncat-more-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (max-width:480px){.ncat-more-grid{gap:7px}.ncat-more-item{font-size:.78rem !important;padding:8px !important;gap:8px !important}.ncat-more-item .ico{width:26px !important;height:26px !important}}
 .ncat-more-head{padding:8px 12px 6px;font-size:.66rem;font-weight:700;letter-spacing:.04em;color:var(--text-light,#999);font-family:'Hind Siliguri',sans-serif}
-.ncat-more-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:1px solid var(--border,#eee);background:transparent;border-radius:12px;line-height:1.25;cursor:pointer;
+.ncat-more-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:1px solid var(--border,#eee);background:transparent;border-radius:12px;line-height:1.25;min-height:48px;white-space:nowrap;cursor:pointer;
   font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:500;color:var(--text-mid,var(--dfg444444,#444));text-align:left;min-width:0;transition:background .12s,color .12s}
 .ncat-more-item:hover{background:var(--dbgfbeded,#FBEDED);color:var(--blue,var(--dfgaa2c2d,#AA2C2D))}
 .ncat-more-item .ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:.78rem;flex-shrink:0}
@@ -16345,9 +16345,54 @@ function catCountId(c) { return 'cnt-cat-' + (c.id ?? c.slug ?? c.name); }
 
 /* Load categories: Supabase `categories` table first (source of truth,
    same table Admin writes to), localStorage/defaults as instant-paint + offline fallback */
+/* ── নাম অনুযায়ী ক্যাটাগরির আইকন/রং (ডিফল্ট বই-আইকন + লাল থাকলে বদলে দেয়) ── */
+const CAT_STYLE_RULES = [
+  [['ইসলাম','কুরআন','কোরআন','হাদিস','নামাজ','সিরাত'],            'fa-mosque',          '#16A34A'],
+  [['হরর','ভূত','গথিক','অলৌকিক'],                                   'fa-ghost',           '#7C3AED'],
+  [['রোমান্টিক','রোমান্স','প্রেম','ভালোবাসা'],                       'fa-heart',           '#E11D74'],
+  [['থ্রিলার','অ্যাকশন','ক্রাইম','অপরাধ'],                          'fa-bolt',            '#EA580C'],
+  [['রহস্য','গোয়েন্দা','মিস্ট্রি','ডিটেক্টিভ'],                      'fa-user-secret',     '#475569'],
+  [['ছাত্র','শিক্ষা','পড়াশোনা','একাডেমিক','ভর্তি','পরীক্ষা'],        'fa-graduation-cap',  '#2563EB'],
+  [['ব্যবসা','অর্থ','বিনিয়োগ','ফাইন্যান্স','উদ্যোক্তা'],            'fa-sack-dollar',     '#15803D'],
+  [['মোটিভেশন','ক্যারিয়ার','উন্নয়ন','আত্ম','সফলতা'],               'fa-arrow-trend-up',  '#9333EA'],
+  [['সায়েন্স','বিজ্ঞান','সাই-ফাই','সাইফাই'],                        'fa-rocket',          '#0EA5E9'],
+  [['ফ্যান্টাসি','রূপকথা'],                                          'fa-dragon',          '#C026D3'],
+  [['ইতিহাস','মুক্তিযুদ্ধ','ঐতিহ্য'],                                'fa-landmark',        '#B45309'],
+  [['রাজনীতি','রাষ্ট্র'],                                            'fa-landmark-flag',   '#B91C1C'],
+  [['জীবনী','আত্মজীবনী','স্মৃতিকথা'],                                'fa-user-pen',        '#0D9488'],
+  [['দর্শন','মনোবিজ্ঞান','মনস্তত্ত্ব'],                              'fa-brain',           '#DB2777'],
+  [['ধর্ম'],                                                          'fa-star-and-crescent','#059669'],
+  [['স্বাস্থ্য','চিকিৎসা','ডায়েট'],                                  'fa-heart-pulse',     '#DC2626'],
+  [['প্রযুক্তি','কম্পিউটার','প্রোগ্রামিং','আইটি'],                    'fa-laptop-code',     '#0284C7'],
+  [['রান্না','খাবার'],                                                'fa-utensils',        '#F59E0B'],
+  [['ভ্রমণ','ট্রাভেল'],                                               'fa-plane',           '#0891B2'],
+  [['আইন'],                                                           'fa-scale-balanced',  '#4B5563'],
+  [['শিশু','কিশোর','ছোটদের'],                                         'fa-child-reaching',  '#06B6D4'],
+  [['কমিক','হাস্য','রম্য','ব্যঙ্গ'],                                  'fa-face-laugh-beam', '#F59E0B'],
+  [['অনুবাদ'],                                                        'fa-language',        '#FF375F'],
+  [['কবিতা','ছড়া'],                                                  'fa-feather-pointed', '#CA8A04'],
+  [['গল্প'],                                                          'fa-feather',         '#F97316'],
+  [['ম্যাগাজিন','পত্রিকা'],                                           'fa-newspaper',       '#64748B'],
+  [['উপন্যাস'],                                                       'fa-book-open',       '#AA2C2D'],
+];
+const CAT_FALLBACK_COLORS = ['#AA2C2D','#2563EB','#16A34A','#9333EA','#EA580C','#0891B2','#DB2777','#CA8A04'];
+function smartCatStyle(name) {
+  const n = String(name || '').toLowerCase();
+  for (const [keys, icon, color] of CAT_STYLE_RULES) if (keys.some(k => n.includes(k))) return { icon, color };
+  let h = 0; for (const ch of n) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  return { icon: 'fa-book-open', color: CAT_FALLBACK_COLORS[h % CAT_FALLBACK_COLORS.length] };
+}
+function _catIsDefaultStyle(c) {
+  const ic = (c.icon || '').trim(), col = (c.color || '').trim().toUpperCase();
+  return (!ic || ic === 'fa-book' || ic === 'fa-box' || ic === 'fa-tag') && (!col || col === '#AA2C2D');
+}
+function _catFix(c) {
+  if (_catIsDefaultStyle(c)) { const s = smartCatStyle(c.name); return { ...c, icon: s.icon, color: s.color }; }
+  return c;
+}
 async function loadCategories() {
   // Paint instantly from cache/defaults so the nav is never empty on first load
-  allCategories = getLocalCategories().filter(c => c.is_active !== false);
+  allCategories = getLocalCategories().filter(c => c.is_active !== false).map(_catFix);
   renderCategoryNav();
   renderSidebarCatChips();
 
@@ -16357,7 +16402,7 @@ async function loadCategories() {
       localStorage.setItem(CAT_KEY, JSON.stringify(data));
       allCategories = data
         .filter(c => c.is_active !== false)
-        .map(c => ({ id: c.id, name: c.name, slug: c.slug, icon: c.icon || 'fa-box', color: c.color || '#AA2C2D', show_in_nav: c.show_in_nav !== false, nav_order: c.nav_order }));
+        .map(c => _catFix({ id: c.id, name: c.name, slug: c.slug, icon: c.icon || 'fa-box', color: c.color || '#AA2C2D', show_in_nav: c.show_in_nav !== false, nav_order: c.nav_order }));
       renderCategoryNav();
       renderSidebarCatChips();
       updateCounts();
@@ -16481,7 +16526,7 @@ function layoutNavCats() {
     const col = _ncatColor(c.color);
     return `<button type="button" class="ncat-more-item" role="menuitem" data-cat="${_ncatEsc(c.name)}">
       <span class="ico" style="background:${col}1a;color:${col}"><i class="fa-solid ${_ncatEsc(c.icon || 'fa-box')}"></i></span>
-      <span class="bn">${_ncatEsc(c.name)}</span></button>`;
+      <span class="bn" style="min-width:0;white-space:normal;overflow-wrap:anywhere">${_ncatEsc(c.name)}</span></button>`;
   }).join('') + '</div>';
 }
 
