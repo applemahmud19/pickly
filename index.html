@@ -17959,6 +17959,62 @@ window.addEventListener('popstate', function(e) {
   .bf-skip{width:100%;justify-content:center}
 }
 @media(max-width:380px){.bf-opt{padding:12px 10px 10px}.bf-opt b{font-size:.86rem}.bf-opt small{font-size:.72rem}}
+
+/* ── Finder v3: টপ ৫ বই এক স্ক্রিনে (স্ক্রল ছাড়া) ── */
+.bf-res:nth-child(4){animation-delay:.3s}.bf-res:nth-child(5){animation-delay:.4s}
+.bf-resmode .bf-shell{max-width:1360px;padding:10px 24px 18px}
+.bf-resmode .bf-stage{justify-content:flex-start;padding:0 0 6px}
+.bf-resmode .bf-wide{max-width:none}
+.bf-resmode .bf-q{font-size:clamp(1.25rem,2.4vw,1.75rem);margin:0 0 8px;line-height:1.3}
+.bf-resmode .bf-qs{display:none}
+.bf-resmode .bf-sum{margin:0 0 12px}
+.bf-resmode .bf-note{margin:0 auto 10px;max-width:760px;padding:6px 12px;font-size:.8rem;text-align:center}
+.bf-resmode .bf-skipnote{display:none}
+.bf-resmode .bf-foot{margin-top:14px}
+.bf-resmode .bf-btn2{padding:7px 16px;font-size:.88rem}
+.bf-resmode .bf-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;align-items:stretch}
+.bf-resmode .bf-res{grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 12px 14px;border-radius:16px;align-content:start;transition:transform .25s,box-shadow .25s}
+.bf-resmode .bf-res:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(170,44,45,.18)}
+.bf-resmode .bf-res--top{box-shadow:0 10px 28px rgba(245,166,35,.28)}
+.bf-resmode .bf-cover{width:min(100%,calc(25vh*.75));max-width:170px;min-width:96px;margin:0 auto;border-radius:9px}
+.bf-resmode .bf-info{display:flex;flex-direction:column;min-width:0;text-align:center}
+.bf-resmode .bf-badge{justify-content:center;gap:6px;margin-bottom:6px}
+.bf-resmode .bf-rank{font-size:.74rem;padding:0 10px}
+.bf-resmode .bf-pct{font-size:.76rem}
+.bf-resmode .bf-info h3{font-size:.95rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em}
+.bf-resmode .bf-auth{font-size:.8rem;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bf-resmode .bf-crit{display:none}
+.bf-resmode .bf-why{justify-content:center;margin:6px 0 2px;gap:4px;min-height:1.7em}
+.bf-resmode .bf-why span{font-size:.7rem;padding:0 8px}
+.bf-resmode .bf-price{justify-content:center;margin:6px 0 10px;gap:8px}
+.bf-resmode .bf-price b{font-size:1.25rem}
+.bf-resmode .bf-actions{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:auto}
+.bf-resmode .bf-buy{grid-column:1/-1;justify-content:center;padding:8px 10px;font-size:.88rem}
+.bf-resmode .bf-cart{justify-content:center;padding:7px 8px;font-size:.74rem;gap:5px;white-space:nowrap}
+.bf-resmode .bf-skip{width:auto;padding:7px 11px;font-size:.78rem;border-radius:99px}
+.bf-resmode .bf-skip .bt{display:none}
+@media(max-width:1180px){.bf-resmode .bf-list{gap:10px}.bf-resmode .bf-shell{padding:10px 14px 16px}.bf-resmode .bf-info h3{font-size:.88rem}}
+/* ট্যাবলেট / মোবাইল: ৫টি কমপ্যাক্ট সারি — একসাথে দেখা যায় */
+@media(max-width:980px){
+  .bf-resmode .bf-shell{padding:8px 12px 14px}
+  .bf-resmode .bf-top{margin-bottom:4px}
+  .bf-resmode .bf-q{font-size:1.1rem;margin-bottom:6px}
+  .bf-resmode .bf-sum{margin-bottom:8px;gap:6px}.bf-resmode .bf-sum span{font-size:.72rem;padding:0 8px}
+  .bf-resmode .bf-note{display:none}
+  .bf-resmode .bf-list{grid-template-columns:1fr;gap:7px}
+  .bf-resmode .bf-res{grid-template-columns:52px minmax(0,1fr) auto;gap:10px;padding:7px 10px;align-items:center;border-radius:13px}
+  .bf-resmode .bf-res:hover{transform:none}
+  .bf-resmode .bf-cover{width:52px;min-width:0;max-width:none;border-radius:6px;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+  .bf-resmode .bf-info{text-align:left}
+  .bf-resmode .bf-badge{justify-content:flex-start;margin-bottom:1px}
+  .bf-resmode .bf-info h3{font-size:.84rem;line-height:1.35;min-height:0}
+  .bf-resmode .bf-auth,.bf-resmode .bf-why{display:none}
+  .bf-resmode .bf-price{justify-content:flex-start;margin:2px 0 0}.bf-resmode .bf-price b{font-size:1rem}.bf-resmode .bf-price s{font-size:.75rem}
+  .bf-resmode .bf-actions{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:5px;margin:0}
+  .bf-resmode .bf-buy{grid-column:1/-1;padding:6px 14px;font-size:.8rem}
+  .bf-resmode .bf-cart .bt{display:none}.bf-resmode .bf-cart,.bf-resmode .bf-skip{padding:6px 10px;justify-content:center;width:auto}
+  .bf-resmode .bf-foot{margin-top:10px}.bf-resmode .bf-btn2{padding:6px 12px;font-size:.8rem}
+}
 @media(prefers-reduced-motion:reduce){.bf-shine,.bf-strip-ic i,.bf-cta,.bf-fab,.bf-fab i,.bf-bg .k4,.bf-opt{animation:none!important}}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
@@ -18120,7 +18176,7 @@ function recommend(a,noMood){
   var picked=[],ids={};
   function take(fn,tier){
     pool.filter(function(r){return !ids[r.p.id]&&fn(r)}).sort(cmp).forEach(function(r){
-      if(picked.length<3){r.tier=tier;picked.push(r);ids[r.p.id]=1}
+      if(picked.length<5){r.tier=tier;picked.push(r);ids[r.p.id]=1}
     });
   }
   var mOk=function(r){return !mood||!!r.ev};
@@ -18141,7 +18197,7 @@ function setBar(i){
   });
   lines.forEach(function(l,k){l.classList.toggle('done',k<i)});
 }
-function stage(html){var st=$('bfStage');st.className='bf-stage '+(html.indexOf('class="bf-list"')>-1?'bf-wide':'bf-center');st.innerHTML=html;st.style.animation='none';void st.offsetWidth;st.style.animation='';$('bfOv').scrollTop=0}
+function stage(html){var st=$('bfStage');var isRes=html.indexOf('class="bf-list"')>-1;$('bfOv').classList.toggle('bf-resmode',isRes);st.className='bf-stage '+(isRes?'bf-wide':'bf-center');st.innerHTML=html;st.style.animation='none';void st.offsetWidth;st.style.animation='';$('bfOv').scrollTop=0}
 function renderStep(){
   setBar(S.step);
   if(!books().length){stage('<div class="bf-empty"><div class="big"><i class="fa-solid fa-book-open"></i></div><p class="bn">এই মুহূর্তে রেকমেন্ড করার মতো বই পাওয়া যায়নি। একটু পরে আবার চেষ্টা করুন।</p></div>');return}
@@ -18189,7 +18245,7 @@ function resultCard(r,i,res){
    '<h3 class="bn">'+esc(p.name)+'</h3>'+(auth?'<div class="bf-auth bn">'+ic('fa-pen-nib')+' '+esc(auth)+'</div>':'')+
    crit(r,res)+(extra.length?'<div class="bf-why bn">'+extra.join('')+'</div>':'')+
    '<div class="bf-price"><b>৳ '+fmtPrice(r.price)+'</b>'+(r.pe.originalPrice>r.price?'<s>৳ '+fmtPrice(r.pe.originalPrice)+'</s>':'')+'</div>'+
-   '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i> কার্টে যোগ করুন</button><button class="bf-skip bn" data-skip="'+esc(p.id)+'" title="এই বইটা আগে পড়ে ফেলেছি — অন্য বই দেখান"><i class="fa-solid fa-forward"></i> পড়া হয়েছে / স্কিপ</button></div></div></article>';
+   '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i><span class="bt"> কার্টে যোগ করুন</span></button><button class="bf-skip bn" data-skip="'+esc(p.id)+'" title="এই বইটা আগে পড়ে ফেলেছি — অন্য বই দেখান"><i class="fa-solid fa-forward"></i><span class="bt"> পড়া হয়েছে / স্কিপ</span></button></div></div></article>';
 }
 function renderResults(push){
   setBar(3);
