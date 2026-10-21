@@ -2541,7 +2541,7 @@ body {
               <span id="brandStatus" style="font-size:.75rem;color:var(--text3)"></span>
             </div>
             <div style="font-size:.7rem;color:var(--text3);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.8;font-family:var(--mono)">
-              ℹ️ Files upload to Supabase Storage <b style="color:var(--cyan)">branding</b> bucket.
+              <i class="fa-solid fa-circle-info"></i> Files upload to Supabase Storage <b style="color:var(--cyan)">branding</b> bucket.
               URLs saved in <b style="color:var(--purple)">site_settings</b> (id=1).
               Changes go live on store &amp; admin tab instantly.
             </div>
@@ -2586,7 +2586,7 @@ body {
               <span id="socialStatus" style="font-size:.75rem;color:var(--text3)"></span>
             </div>
             <div style="font-size:.7rem;color:var(--text3);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.8;font-family:var(--mono)">
-              ℹ️ Leave any field empty to hide that icon on the main site (Header &amp; Footer).
+              <i class="fa-solid fa-circle-info"></i> Leave any field empty to hide that icon on the main site (Header &amp; Footer).
               Saved in <b style="color:var(--purple)">site_settings</b> (id=1). Changes go live instantly — no code changes needed.
             </div>
           </div>
@@ -2602,10 +2602,10 @@ body {
               <i class="fa-solid fa-floppy-disk"></i> Save & Reconnect
             </button>
             <div style="font-size:0.72rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.7">
-              ⚠ Settings are saved in localStorage. After rotating Supabase keys, paste the new key here and save.
+              <i class="fa-solid fa-triangle-exclamation"></i> Settings are saved in localStorage. After rotating Supabase keys, paste the new key here and save.
             </div>
             <div style="font-size:0.7rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.9;margin-top:6px">
-              📋 <b style="color:var(--cyan)">visitor_logs</b> table SQL — Supabase SQL Editor-এ একবার রান করো (বারবার রান করলেও সমস্যা নেই):<pre style="white-space:pre-wrap;margin:10px 0 0;font-family:var(--mono);font-size:0.7rem;line-height:1.7;user-select:all">-- ============================================================
+              <i class="fa-solid fa-clipboard-list"></i> <b style="color:var(--cyan)">visitor_logs</b> table SQL — Supabase SQL Editor-এ একবার রান করো (বারবার রান করলেও সমস্যা নেই):<pre style="white-space:pre-wrap;margin:10px 0 0;font-family:var(--mono);font-size:0.7rem;line-height:1.7;user-select:all">-- ============================================================
 -- visitor_logs: pura setup (safe — bar bar run korleo error dibe na)
 -- Supabase → SQL Editor → paste → Run
 -- ============================================================
@@ -2679,6 +2679,7 @@ end $$;
                 <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-layer-group"></i></div>
                 <span style="font-family:var(--font-bn)">ওয়েবসাইট ক্যাটাগরি</span>
               </div>
+              <button class="btn btn-secondary btn-xs" id="catAutoFixBtn" onclick="autoFixCategoryStyles()" title="ডিফল্ট বই-আইকন/লাল রঙের ক্যাটাগরিগুলো নাম অনুযায়ী ঠিক করুন" style="margin-left:auto;margin-right:8px"><i class="fa-solid fa-wand-magic-sparkles"></i> <span style="font-family:var(--font-bn)">আইকন ও রং অটো-ঠিক</span></button>
               <span id="catCountBadge" style="font-size:0.68rem;font-family:var(--mono);color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:100px">— টি ক্যাটাগরি</span>
             </div>
             <div id="categorySetupNotice"></div>
@@ -3947,7 +3948,7 @@ end $$;
               <i class="fa-solid fa-panorama uz-icon"></i>
               <div class="uz-title">Banner ছবি ড্র্যাগ করুন বা ক্লিক করুন</div>
               <div class="uz-sub">Recommended: 1200×400px · PNG, JPG, WEBP · Max 5MB</div>
-              <div class="uz-drag-hint">✦ Drop to upload!</div>
+              <div class="uz-drag-hint"><i class="fa-solid fa-cloud-arrow-up"></i> Drop to upload!</div>
             </div>
           </div>
           <div class="form-group">
@@ -3974,9 +3975,9 @@ end $$;
             <div class="form-group">
               <label class="form-label">ট্যাগের আইকন</label>
               <select class="form-inp" id="bnBadgeIcon">
-                <option value="fa-star">⭐ স্টার</option><option value="fa-tag">🏷 ট্যাগ</option><option value="fa-book-open">📖 বই</option>
-                <option value="fa-truck-fast">🚚 ডেলিভারি</option><option value="fa-gift">🎁 গিফট</option><option value="fa-fire">🔥 ফায়ার</option>
-                <option value="fa-bolt">⚡ বিদ্যুৎ</option><option value="fa-heart">❤ হার্ট</option>
+                <option value="fa-star">স্টার</option><option value="fa-tag">ট্যাগ</option><option value="fa-book-open">বই</option>
+                <option value="fa-truck-fast">ডেলিভারি</option><option value="fa-gift">গিফট</option><option value="fa-fire">ফায়ার</option>
+                <option value="fa-bolt">বিদ্যুৎ</option><option value="fa-heart">হার্ট</option>
               </select>
             </div>
           </div>
@@ -4627,7 +4628,7 @@ async function verifyAndEnter(user) {
 
 function showError(msg, showRetry = false) {
   const el = document.getElementById('loginError');
-  el.innerHTML = '⚠ ' + msg + (showRetry
+  el.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + msg + (showRetry
     ? ' &nbsp;<button onclick="location.reload()" style="margin-left:6px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,59,48,.35);background:rgba(255,59,48,.08);color:var(--red);cursor:pointer;font-size:0.76rem;font-family:var(--font);font-weight:600"><i class="fa-solid fa-rotate-right" style="font-size:0.65rem;margin-right:4px"></i>পুনরায় চেষ্টা</button>'
     : '');
   el.style.display = 'block';
@@ -4682,7 +4683,7 @@ async function loadProducts() {
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
-    toast('⏳ সংযোগ ধীর', 'Products লোড হচ্ছে না — স্বয়ংক্রিয় পুনরায় চেষ্টা চলছে…', 'warning');
+    toast('সংযোগ ধীর', 'Products লোড হচ্ছে না — স্বয়ংক্রিয় পুনরায় চেষ্টা চলছে…', 'warning');
     // Auto-retry once after 3s
     setTimeout(() => { if (timedOut) loadProducts(); }, 3000);
   }, 25000);
@@ -4760,7 +4761,7 @@ ALTER TABLE orders ADD CONSTRAINT orders_status_check
       <button onclick="document.getElementById('dbSetupBanner').remove()" style="background:none;border:none;color:#64748B;cursor:pointer;font-size:.9rem;padding:2px;margin-left:auto;flex-shrink:0">✕</button>
     </div>
     <textarea id="dbSetupSql" readonly style="width:100%;height:140px;background:#0F172A;color:#7DD3FC;border:1px solid #334155;border-radius:7px;padding:9px;font-size:.68rem;resize:none;line-height:1.6">${sql}</textarea>
-    <button onclick="navigator.clipboard.writeText(document.getElementById('dbSetupSql').value).then(()=>this.textContent='✓ Copied!')" style="margin-top:8px;background:#3B82F6;color:white;border:none;border-radius:7px;padding:7px 14px;font-size:.75rem;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;width:100%">📋 SQL Copy করুন</button>`;
+    <button onclick="navigator.clipboard.writeText(document.getElementById('dbSetupSql').value).then(()=>this.textContent='✓ Copied!')" style="margin-top:8px;background:#3B82F6;color:white;border:none;border-radius:7px;padding:7px 14px;font-size:.75rem;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;width:100%"><i class="fa-solid fa-clipboard-list"></i> SQL Copy করুন</button>`;
   document.body.appendChild(banner);
 }
 
@@ -4774,7 +4775,7 @@ async function loadOrders() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--amber)"><i class="fa-solid fa-rotate" style="animation:spin .8s linear infinite"></i>&nbsp; সংযোগ ধীর — পুনরায় চেষ্টা হচ্ছে… &nbsp;<button class="btn btn-ghost btn-sm" onclick="loadOrders()" style="margin-left:8px"><i class="fa-solid fa-rotate-right"></i> Manual Retry</button></td></tr>';
-    toast('⏳ সংযোগ ধীর', 'Orders লোড হচ্ছে না — স্বয়ংক্রিয় পুনরায় চেষ্টা চলছে…', 'warning');
+    toast('সংযোগ ধীর', 'Orders লোড হচ্ছে না — স্বয়ংক্রিয় পুনরায় চেষ্টা চলছে…', 'warning');
     // Auto-retry once after 4s
     setTimeout(() => { if (timedOut) loadOrders(); }, 4000);
   }, 25000);
@@ -5348,7 +5349,7 @@ function setupRealtimeSubscription() {
         allOrders.unshift(payload.new);
         // Notify admin of new order
         const o = payload.new;
-        toast('🔔 নতুন অর্ডার!', `${o.order_number} — ${o.customer_name||'অজ্ঞাত'} (৳${Number(o.total||0).toLocaleString()})`, 'success');
+        toast('নতুন অর্ডার!', `${o.order_number} — ${o.customer_name||'অজ্ঞাত'} (৳${Number(o.total||0).toLocaleString()})`, 'success');
         // Update KPIs instantly
         loadDashboardKPIs && loadDashboardKPIs();
       } else if (payload.eventType === 'UPDATE') {
@@ -5368,7 +5369,7 @@ function setupRealtimeSubscription() {
       // নতুন ইউজার অ্যাকাউন্ট খুললেই অ্যাডমিনে লাইভ আপডেট
       if (payload.eventType === 'INSERT') {
         const n = payload.new || {};
-        toast('👤 নতুন ইউজার!', `${n.full_name || n.email || 'নতুন অ্যাকাউন্ট'} রেজিস্টার করেছেন`, 'success');
+        toast('নতুন ইউজার!', `${n.full_name || n.email || 'নতুন অ্যাকাউন্ট'} রেজিস্টার করেছেন`, 'success');
       }
       loadUsers(0, true);
     })
@@ -5530,7 +5531,7 @@ function renderOrderManager() {
   [...omSelected].forEach(id => { if (!visIds.has(id)) omSelected.delete(id); });
 
   if (!rows.length) {
-    listEl.innerHTML = `<div class="om-empty"><i class="fa-solid fa-inbox"></i>${omSearchQ ? 'কোনো অর্ডার পাওয়া যায়নি' : (cur.k === 'pending' ? 'সব পরিষ্কার — কোনো পেন্ডিং অর্ডার নেই 🎉' : 'এই স্ট্যাটাসে কোনো অর্ডার নেই')}</div>`;
+    listEl.innerHTML = `<div class="om-empty"><i class="fa-solid fa-inbox"></i>${omSearchQ ? 'কোনো অর্ডার পাওয়া যায়নি' : (cur.k === 'pending' ? 'সব পরিষ্কার — কোনো পেন্ডিং অর্ডার নেই ' : 'এই স্ট্যাটাসে কোনো অর্ডার নেই')}</div>`;
   } else {
     listEl.innerHTML = rows.map(o => {
       const id = String(o.id);
@@ -6009,12 +6010,12 @@ function populateBdCategoryDropdown() {
    ALTER TABLE products
      ADD COLUMN IF NOT EXISTS bulk_discount_percentage numeric DEFAULT 0;
 
-   ✅ নিয়ম:
+   নিয়ম:
    • original_price (old_price) — কখনোই স্পর্শ করা যাবে না
    • price (নরমাল সেল প্রাইস) — কখনোই স্পর্শ করা যাবে না
    • bulk_discount_percentage — শুধু এই ফিল্ডটিই পরিবর্তন হবে
 
-   📐 Effective Sale Price হিসেব:
+   Effective Sale Price হিসেব:
        original_price  = old_price  (মূল দাম, যেমন: ৳৫০০)
        normalSalePrice = price      (নরমাল সেল প্রাইস, যেমন: ৳২৫০)
        baseDiscPct     = (1 - normalSalePrice / original_price) × 100
@@ -6024,8 +6025,8 @@ function populateBdCategoryDropdown() {
        effectiveSalePrice = round(original_price × (1 - totalDiscPct/100))
                           = round(500 × 0.45) = ৳২২৫
 
-   🔄 Apply  → শুধু bulk_discount_percentage = pct (old_price/price অস্পর্শিত)
-   🔄 Reset  → শুধু bulk_discount_percentage = 0  (old_price/price অস্পর্শিত)
+   Apply  → শুধু bulk_discount_percentage = pct (old_price/price অস্পর্শিত)
+   Reset  → শুধু bulk_discount_percentage = 0  (old_price/price অস্পর্শিত)
               → effective price স্বয়ংক্রিয়ভাবে আগের (৳২৫০) এ ফিরে যাবে
 ══════════════════════════════════════════════════════════ */
 
@@ -6151,19 +6152,19 @@ async function applyBulkDiscount() {
   const sNewEffective = Math.round(sOrig * (1 - sNewTotal / 100));
 
   const confirmed = confirm(
-    `⚠️ Bulk Discount Confirmation\n\n` +
+    `Bulk Discount Confirmation\n\n` +
     `ক্যাটাগরি      : ${cat}\n` +
     `নতুন বাল্ক ছাড় : ${pct}%\n` +
     `আক্রান্ত পণ্য  : ${targets.length}টি\n\n` +
-    `📐 উদাহরণ (${sampleP.name?.slice(0,20) || 'পণ্য'}):\n` +
+    `উদাহরণ (${sampleP.name?.slice(0,20) || 'পণ্য'}):\n` +
     `  মূল দাম (old_price)    : ৳${sOrig.toLocaleString()}  ← অপরিবর্তিত থাকবে\n` +
     `  নরমাল সেল প্রাইস (price): ৳${sNormal.toLocaleString()}  ← অপরিবর্তিত থাকবে\n` +
     `  বিদ্যমান ছাড় (base)     : ${sBase.toFixed(0)}%\n` +
     `  নতুন বাল্ক ছাড়          : +${pct}%\n` +
     `  মোট ছাড়                : ${sNewTotal.toFixed(0)}% (মূল দামের উপর)\n` +
     `  নতুন effective মূল্য    : ৳${sNewEffective.toLocaleString()}\n\n` +
-    `✅ শুধু bulk_discount_percentage আপডেট হবে।\n` +
-    `✅ old_price ও price — সম্পূর্ণ অস্পর্শিত থাকবে।\n` +
+    `শুধু bulk_discount_percentage আপডেট হবে।\n` +
+    `old_price ও price — সম্পূর্ণ অস্পর্শিত থাকবে।\n` +
     `নিশ্চিত করতে OK চাপুন।`
   );
   if (!confirmed) return;
@@ -6196,7 +6197,7 @@ async function applyBulkDiscount() {
 
   if (successCount > 0) {
     toast(
-      `✅ Bulk Discount সম্পন্ন`,
+      `Bulk Discount সম্পন্ন`,
       `${cat} — ${successCount}টি পণ্যে ${pct}% বাল্ক ছাড় যোগ হয়েছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
       failCount ? 'warning' : 'success'
     );
@@ -6204,7 +6205,7 @@ async function applyBulkDiscount() {
     updateBulkPreview();
     updateRemoveBtn();
   } else {
-    toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য আপডেট হয়নি (${failCount}টি error)`, 'error');
+    toast('সম্পূর্ণ ব্যর্থ', `কোনো পণ্য আপডেট হয়নি (${failCount}টি error)`, 'error');
   }
 }
 
@@ -6226,14 +6227,14 @@ async function removeBulkDiscount() {
   }
 
   const confirmed = confirm(
-    `⚠️ Bulk Discount Reset\n\n` +
+    `Bulk Discount Reset\n\n` +
     `ক্যাটাগরি    : ${cat}\n` +
     `আক্রান্ত পণ্য: ${targets.length}টি\n\n` +
-    `🔄 রিসেট হলে:\n` +
+    `রিসেট হলে:\n` +
     `  • bulk_discount_percentage → 0\n` +
     `  • old_price (মূল দাম) — অপরিবর্তিত থাকবে\n` +
     `  • price (নরমাল সেল প্রাইস) — অপরিবর্তিত থাকবে\n\n` +
-    `✅ প্রতিটি পণ্য স্বয়ংক্রিয়ভাবে তার আগের\n` +
+    `প্রতিটি পণ্য স্বয়ংক্রিয়ভাবে তার আগের\n` +
     `   নরমাল সেল প্রাইসে ফিরে যাবে।\n\n` +
     `নিশ্চিত করতে OK চাপুন।`
   );
@@ -6269,7 +6270,7 @@ async function removeBulkDiscount() {
 
   if (successCount > 0) {
     toast(
-      `✅ বাল্ক ডিসকাউন্ট রিসেট সম্পন্ন`,
+      `বাল্ক ডিসকাউন্ট রিসেট সম্পন্ন`,
       `${cat} — ${successCount}টি পণ্য আগের দামে ফিরে এসেছে${failCount ? ` · ${failCount}টি ব্যর্থ` : ''}`,
       failCount ? 'warning' : 'success'
     );
@@ -6277,7 +6278,7 @@ async function removeBulkDiscount() {
     updateBulkPreview();
     updateRemoveBtn();
   } else {
-    toast('❌ সম্পূর্ণ ব্যর্থ', `কোনো পণ্য রিসেট হয়নি (${failCount}টি error)`, 'error');
+    toast('সম্পূর্ণ ব্যর্থ', `কোনো পণ্য রিসেট হয়নি (${failCount}টি error)`, 'error');
   }
 }
 
@@ -6343,13 +6344,13 @@ async function quickUpdate(productId, field) {
     setTimeout(() => input.classList.remove('success-flash'), 1200);
 
     const label = field === 'price' ? `দাম → ৳${rawVal.toLocaleString()}` : `স্টক → ${rawVal}`;
-    toast('✅ আপডেট হয়েছে', `${prod?.name ? prod.name.slice(0,24) + (prod.name.length>24?'…':'') : ''} — ${label}`, 'success');
+    toast('আপডেট হয়েছে', `${prod?.name ? prod.name.slice(0,24) + (prod.name.length>24?'…':'') : ''} — ${label}`, 'success');
 
   } catch (err) {
     input.classList.remove('saving');
     input.classList.add('error-flash');
     setTimeout(() => input.classList.remove('error-flash'), 1200);
-    toast('❌ ব্যর্থ', err.message || 'আপডেট হয়নি', 'error');
+    toast('ব্যর্থ', err.message || 'আপডেট হয়নি', 'error');
   } finally {
     if (btn) {
       btn.classList.remove('spinning');
@@ -6502,7 +6503,7 @@ async function updateOrderStatus(id, status, customNote) {
   const o = allOrders.find(x => x.id === id);
   if (o) o.status = status;  // keep UI showing real status
   renderOrders(); renderDashboard();
-  toast('✅ Success', `Status → ${cap(status)} — User tracking synced`, 'success');
+  toast('Success', `Status → ${cap(status)} — User tracking synced`, 'success');
   if (currentOrderId === id) refreshOrderModal(id);
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
@@ -6589,13 +6590,13 @@ async function updateItemStatus(orderId, itemIdx, newStatus, selectEl) {
       selectEl.value = prevStatus;
       selectEl.style.borderColor = ITEM_STATUS_COLORS[prevStatus] || 'var(--border2)';
     }
-    toast('❌ Save Failed', `ডেটাবেসে সেভ হয়নি: ${saveError.message}`, 'error');
+    toast('Save Failed', `ডেটাবেসে সেভ হয়নি: ${saveError.message}`, 'error');
     return;
   }
 
   // ── Success: confirmation + UI sync ──
   const ITEM_STATUS_LABELS = { pending:'Pending', in_stock:'স্টকে আছে', sourcing:'সংগ্রহ করা হচ্ছে', collected:'সংগ্রহ করা হয়েছে', dispatched:'পাঠানো হয়েছে' };
-  toast('✅ সেভ হয়েছে', `"${o.items[itemIdx].name}" → ${ITEM_STATUS_LABELS[newStatus] || newStatus} — ডেটাবেসে সংরক্ষিত`, 'success');
+  toast('সেভ হয়েছে', `"${o.items[itemIdx].name}" → ${ITEM_STATUS_LABELS[newStatus] || newStatus} — ডেটাবেসে সংরক্ষিত`, 'success');
 
   // Re-render the items block in the modal so item status is immediately reflected
   if (currentOrderId === orderId) refreshOrderModal(orderId);
@@ -7138,7 +7139,7 @@ async function applyDiscount() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     console.error('[applyDiscount] ✗ TIMEOUT — 10 seconds exceeded');
-    toast('⏳ সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
+    toast('সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
   }, 25000);
 
   try {
@@ -7189,7 +7190,7 @@ async function saveCourierInfo() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     console.error('[saveCourierInfo] ✗ TIMEOUT — 10 seconds exceeded');
-    toast('⏳ সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
+    toast('সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
   }, 25000);
 
   try {
@@ -7313,7 +7314,7 @@ async function saveOrderEdits() {
     timedOut = true;
     console.error('[saveOrderEdits] ✗ TIMEOUT — operation exceeded 10 seconds');
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes'; }
-    toast('⏳ সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
+    toast('সংযোগ বিলম্ব', 'সার্ভার ধীর গতিতে সাড়া দিচ্ছে। আবার চেষ্টা করুন।', 'error');
   }, 25000);
 
   // --- Step 7: Execute Supabase update ---
@@ -7941,7 +7942,7 @@ async function uploadImageToSupabase() {
   const timeoutId = setTimeout(() => {
     timedOut = true;
     document.getElementById('uploadProgress').style.display = 'none';
-    toast('⏳ আপলোড বিলম্ব', 'ছবি আপলোড ধীর — আবার চেষ্টা করুন।', 'error');
+    toast('আপলোড বিলম্ব', 'ছবি আপলোড ধীর — আবার চেষ্টা করুন।', 'error');
     console.error('[uploadImageToSupabase] Timeout. Bucket:', bucket, 'File:', fileName);
   }, 25000);
 
@@ -8232,9 +8233,9 @@ async function loadCurrentBranding() {
     const nm = document.getElementById('brandSiteName');
     if (nm && data.site_name) nm.value = data.site_name;
     const cl = document.getElementById('brandCurrentLogo');
-    if (cl && data.logo_url) cl.textContent = '✅ ' + data.logo_url;
+    if (cl && data.logo_url) cl.textContent = '' + data.logo_url;
     const cf = document.getElementById('brandCurrentFavicon');
-    if (cf && data.favicon_url) cf.textContent = '✅ ' + data.favicon_url;
+    if (cf && data.favicon_url) cf.textContent = '' + data.favicon_url;
   } catch(e) { console.warn('[Branding] load failed', e); }
 }
 
@@ -8260,13 +8261,13 @@ async function saveBrandingSettings() {
     if (favFile)  updates.favicon_url = await uploadBrandFile(favFile,  'favicon.png');
     const { error } = await sb.from('site_settings').update(updates).eq('id', 1);
     if (error) throw error;
-    toast('✅ Branding Saved', 'লোগো ও ফেভিকন লাইভ!', 'success');
-    status.textContent = '✅ ' + new Date().toLocaleTimeString();
+    toast('Branding Saved', 'লোগো ও ফেভিকন লাইভ!', 'success');
+    status.textContent = '' + new Date().toLocaleTimeString();
     await loadCurrentBranding();
     await applyAdminBranding(); // update admin tab favicon immediately
   } catch(e) {
-    toast('❌ Error', e.message || 'Upload failed', 'error');
-    status.textContent = '❌ ' + (e.message || 'Failed');
+    toast('Error', e.message || 'Upload failed', 'error');
+    status.textContent = '' + (e.message || 'Failed');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Branding';
@@ -8309,12 +8310,12 @@ async function saveSocialLinks() {
     };
     const { error } = await sb.from('site_settings').update(updates).eq('id', 1);
     if (error) throw error;
-    toast('✅ Social Links Saved', 'হেডার ও ফুটারে লাইভ!', 'success');
-    status.textContent = '✅ ' + new Date().toLocaleTimeString();
+    toast('Social Links Saved', 'হেডার ও ফুটারে লাইভ!', 'success');
+    status.textContent = '' + new Date().toLocaleTimeString();
     await loadCurrentSocialLinks();
   } catch(e) {
-    toast('❌ Error', e.message || 'Save failed', 'error');
-    status.textContent = '❌ ' + (e.message || 'Failed');
+    toast('Error', e.message || 'Save failed', 'error');
+    status.textContent = '' + (e.message || 'Failed');
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Social Links';
@@ -9984,7 +9985,8 @@ async function addBookMainCategoryInline() {
   const btn = document.getElementById('addSubCatBtn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
 
-  let newCat = { name, slug, icon: 'fa-book', color: '#AA2C2D', is_active: true };
+  const _sty = smartCatStyle(name);
+  let newCat = { name, slug, icon: _sty.icon, color: _sty.color, is_active: true };
   try {
     if (sb) {
       const { data, error } = await sb.from('categories').insert(newCat).select('id, name, slug, icon, color, is_active').single();
@@ -10035,7 +10037,7 @@ function renderCategoryList() {
   if (notice) {
     notice.innerHTML = categoriesTableMissing ? `
       <div style="background:#FFF7E6;border:1px solid #FFD98A;border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:.75rem;color:#8A5A00;line-height:1.6">
-        <b>⚠ Supabase-এ <code>categories</code> টেবিল পাওয়া যায়নি।</b> আপাতত পরিবর্তনগুলো শুধু এই ব্রাউজারে (localStorage) সেভ হচ্ছে, স্থায়ীভাবে ডেটাবেসে নয়।
+        <b><i class="fa-solid fa-triangle-exclamation"></i> Supabase-এ <code>categories</code> টেবিল পাওয়া যায়নি।</b> আপাতত পরিবর্তনগুলো শুধু এই ব্রাউজারে (localStorage) সেভ হচ্ছে, স্থায়ীভাবে ডেটাবেসে নয়।
         নিচের SQL Supabase → SQL Editor-এ একবার রান করে পেজ রিফ্রেশ করুন — এরপর থেকে সব ক্যাটাগরি Supabase-এ সেভ হবে।
         <details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">SQL দেখুন</summary>
         <pre style="white-space:pre-wrap;background:#111;color:#7CFC7C;padding:10px;border-radius:6px;margin-top:8px;font-size:.66rem;overflow-x:auto">${CATEGORIES_TABLE_SQL.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}</pre>
@@ -10122,7 +10124,7 @@ function renderNavManager() {
   const p = navDraft.pinned, u = navDraft.unpinned;
   const sqlBox = navColsMissing ? `
     <div style="background:#FFF7E6;border:1px solid #FFD98A;border-radius:9px;padding:10px 12px;margin-bottom:12px;font-size:.72rem;color:#8A5A00;line-height:1.6">
-      <b>⚠ প্রথমে একবার SQL চালাতে হবে।</b> Supabase → SQL Editor-এ নিচের SQL রান করে এই পেজ রিফ্রেশ করুন।
+      <b><i class="fa-solid fa-triangle-exclamation"></i> প্রথমে একবার SQL চালাতে হবে।</b> Supabase → SQL Editor-এ নিচের SQL রান করে এই পেজ রিফ্রেশ করুন।
       <pre style="white-space:pre-wrap;background:#111;color:#7CFC7C;padding:8px;border-radius:6px;margin-top:6px;font-size:.64rem">${escHtml(NAV_COLS_SQL)}</pre>
     </div>` : '';
   body.innerHTML = sqlBox + `
@@ -10207,10 +10209,72 @@ async function toggleCategoryActive(idx) {
 }
 
 /* ── Add new category — saves to Supabase when available, else localStorage ── */
+/* ── ক্যাটাগরির নাম দেখে মানানসই আইকন ও রং বেছে নেয় (ডিফল্ট fa-book + লাল এর বদলে) ── */
+const CAT_STYLE_RULES = [
+  [['ইসলাম','কুরআন','কোরআন','হাদিস','নামাজ','সিরাত'],            'fa-mosque',          '#16A34A'],
+  [['হরর','ভূত','গথিক','অলৌকিক'],                                   'fa-ghost',           '#7C3AED'],
+  [['রোমান্টিক','রোমান্স','প্রেম','ভালোবাসা'],                       'fa-heart',           '#E11D74'],
+  [['থ্রিলার','অ্যাকশন','ক্রাইম','অপরাধ'],                          'fa-bolt',            '#EA580C'],
+  [['রহস্য','গোয়েন্দা','মিস্ট্রি','ডিটেক্টিভ'],                      'fa-user-secret',     '#475569'],
+  [['ছাত্র','শিক্ষা','পড়াশোনা','একাডেমিক','ভর্তি','পরীক্ষা'],        'fa-graduation-cap',  '#2563EB'],
+  [['ব্যবসা','অর্থ','বিনিয়োগ','ফাইন্যান্স','উদ্যোক্তা'],            'fa-sack-dollar',     '#15803D'],
+  [['মোটিভেশন','ক্যারিয়ার','উন্নয়ন','আত্ম','সফলতা'],               'fa-arrow-trend-up',  '#9333EA'],
+  [['সায়েন্স','বিজ্ঞান','সাই-ফাই','সাইফাই'],                        'fa-rocket',          '#0EA5E9'],
+  [['ফ্যান্টাসি','রূপকথা'],                                          'fa-dragon',          '#C026D3'],
+  [['ইতিহাস','মুক্তিযুদ্ধ','ঐতিহ্য'],                                'fa-landmark',        '#B45309'],
+  [['রাজনীতি','রাষ্ট্র'],                                            'fa-landmark-flag',   '#B91C1C'],
+  [['জীবনী','আত্মজীবনী','স্মৃতিকথা'],                                'fa-user-pen',        '#0D9488'],
+  [['দর্শন','মনোবিজ্ঞান','মনস্তত্ত্ব'],                              'fa-brain',           '#DB2777'],
+  [['ধর্ম'],                                                          'fa-star-and-crescent','#059669'],
+  [['স্বাস্থ্য','চিকিৎসা','ডায়েট'],                                  'fa-heart-pulse',     '#DC2626'],
+  [['প্রযুক্তি','কম্পিউটার','প্রোগ্রামিং','আইটি'],                    'fa-laptop-code',     '#0284C7'],
+  [['রান্না','খাবার'],                                                'fa-utensils',        '#F59E0B'],
+  [['ভ্রমণ','ট্রাভেল'],                                               'fa-plane',           '#0891B2'],
+  [['আইন'],                                                           'fa-scale-balanced',  '#4B5563'],
+  [['শিশু','কিশোর','ছোটদের'],                                         'fa-child-reaching',  '#06B6D4'],
+  [['কমিক','হাস্য','রম্য','ব্যঙ্গ'],                                  'fa-face-laugh-beam', '#F59E0B'],
+  [['অনুবাদ'],                                                        'fa-language',        '#FF375F'],
+  [['কবিতা','ছড়া'],                                                  'fa-feather-pointed', '#CA8A04'],
+  [['গল্প'],                                                          'fa-feather',         '#F97316'],
+  [['ম্যাগাজিন','পত্রিকা'],                                           'fa-newspaper',       '#64748B'],
+  [['উপন্যাস'],                                                       'fa-book-open',       '#AA2C2D'],
+];
+const CAT_FALLBACK_COLORS = ['#AA2C2D','#2563EB','#16A34A','#9333EA','#EA580C','#0891B2','#DB2777','#CA8A04'];
+function smartCatStyle(name) {
+  const n = String(name || '').toLowerCase();
+  for (const [keys, icon, color] of CAT_STYLE_RULES) if (keys.some(k => n.includes(k))) return { icon, color };
+  let h = 0; for (const ch of n) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  return { icon: 'fa-book-open', color: CAT_FALLBACK_COLORS[h % CAT_FALLBACK_COLORS.length] };
+}
+function _catIsDefaultStyle(c) {
+  const ic = (c.icon || '').trim(), col = (c.color || '').trim().toUpperCase();
+  return (!ic || ic === 'fa-book' || ic === 'fa-box' || ic === 'fa-tag') && (!col || col === '#AA2C2D');
+}
+async function autoFixCategoryStyles() {
+  const targets = allCategories.filter(_catIsDefaultStyle);
+  if (!targets.length) { toast('সব ঠিক আছে', 'ডিফল্ট আইকন/রঙের কোনো ক্যাটাগরি নেই', 'info'); return; }
+  const btn = document.getElementById('catAutoFixBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+  let fail = 0;
+  await Promise.all(targets.map(async c => {
+    const s = smartCatStyle(c.name);
+    if (sb && c._fromSupabase) {
+      const { error } = await sb.from('categories').update({ icon: s.icon, color: s.color }).eq('id', c.id);
+      if (error) { fail++; return; }
+    }
+    c.icon = s.icon; c.color = s.color;
+  }));
+  saveLocalCategories(allCategories.filter(c => !c._fromSupabase));
+  renderCategoryList();
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span style="font-family:var(--font-bn)">আইকন ও রং অটো-ঠিক</span>'; }
+  toast(fail ? 'আংশিক সম্পন্ন' : 'ঠিক হয়েছে', `${targets.length - fail}টি ক্যাটাগরির আইকন ও রং আপডেট হয়েছে` + (fail ? `, ${fail}টি ব্যর্থ` : ''), fail ? 'warning' : 'success');
+}
+
 async function addCategory() {
   const name  = document.getElementById('newCatName').value.trim();
-  const icon  = document.getElementById('newCatIcon').value.trim() || 'fa-box';
-  const color = document.getElementById('newCatColor').value.trim() || '#AA2C2D';
+  const _auto = smartCatStyle(name);
+  const icon  = document.getElementById('newCatIcon').value.trim() || _auto.icon;
+  const color = document.getElementById('newCatColor').value.trim() || _auto.color;
   if (!name) { toast('Validation', 'ক্যাটাগরির নাম দিন', 'error'); return; }
   if (allCategories.find(c => c.name === name)) { toast('Duplicate', 'এই নামে ক্যাটাগরি আছে', 'error'); return; }
   const slug = slugifyCategoryName(name);
@@ -10266,8 +10330,9 @@ async function quickAddCategoryInline() {
   const nameEl  = document.getElementById('quickCatName');
   const colorEl = document.getElementById('quickCatColor');
   const name  = nameEl?.value.trim() || '';
-  const color = colorEl?.value || '#AA2C2D';
-  const icon  = 'fa-tag';
+  const _qs = smartCatStyle(name);
+  const color = (colorEl && colorEl.value && colorEl.value.toUpperCase() !== '#AA2C2D') ? colorEl.value : _qs.color;
+  const icon  = _qs.icon;
 
   if (!name) { toast('Validation', 'ক্যাটাগরির নাম দিন', 'error'); return; }
   if (allCategories.find(c => c.name === name)) { toast('Duplicate', 'এই নামে ক্যাটাগরি আগে থেকেই আছে', 'error'); return; }
@@ -10453,7 +10518,7 @@ async function loadUsers(retryCount = 0, silent = false) {
       <div style="font-family:var(--font-bn);margin-bottom:8px">সংযোগ বিলম্ব — ডাটা লোড হয়নি।</div>
       <button class="btn btn-ghost btn-sm" onclick="loadUsers()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
     </td></tr>`;
-    toast('⏳ সংযোগ বিলম্ব', 'Users লোড হচ্ছে না। Retry করুন।', 'warning');
+    toast('সংযোগ বিলম্ব', 'Users লোড হচ্ছে না। Retry করুন।', 'warning');
   }, 12000); // 12s timeout (down from 25s)
 
   try {
@@ -10484,7 +10549,7 @@ async function loadUsers(retryCount = 0, silent = false) {
         <button class="btn btn-ghost btn-sm" onclick="loadUsers()" style="margin-top:10px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
         </div>
       </td></tr>`;
-      toast('⚠️ টেবিল নেই', error.message, 'error');
+      toast('টেবিল নেই', error.message, 'error');
       return;
     }
 
@@ -10540,7 +10605,7 @@ async function loadUsers(retryCount = 0, silent = false) {
       <div style="font-family:var(--font-bn);margin-bottom:8px">ডাটা লোড ব্যর্থ হয়েছে।</div>
       <button class="btn btn-ghost btn-sm" onclick="loadUsers()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
     </td></tr>`;
-    toast('❌ লোড ব্যর্থ', 'ইউজার ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
+    toast('লোড ব্যর্থ', 'ইউজার ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
   }
 }
 
@@ -10967,7 +11032,7 @@ function orFiles(r) {
 function orFilesHtml(r) {
   const f = orFiles(r); if (!f.length) return '';
   return `<div style="margin-top:8px"><b>সংযুক্ত ফাইল (${f.length}):</b><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${f.map(x => x.type === 'pdf'
-    ? `<a href="${escHtml(x.url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:.75rem;text-decoration:none;color:inherit">📄 ${escHtml(x.name || 'PDF')}</a>`
+    ? `<a href="${escHtml(x.url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:.75rem;text-decoration:none;color:inherit"><i class="fa-solid fa-file-pdf"></i> ${escHtml(x.name || 'PDF')}</a>`
     : `<a href="${escHtml(x.url)}" target="_blank" rel="noopener"><img src="${escHtml(x.url)}" alt="" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></a>`).join('')}</div></div>`;
 }
 function orBadge() {
@@ -10991,7 +11056,7 @@ function renderOrderRequests() {
   tb.innerHTML = list.map(r => `<tr>
     <td><b>${escHtml(r.order_number || '—')}</b><div style="font-size:.7rem;color:var(--text3)">${escHtml(r.customer_name || '')} ${escHtml(r.customer_phone || '')}</div></td>
     <td>${OR_KIND[r.kind] || r.kind}${r.report_type ? `<div style="font-size:.7rem;color:var(--text3)">${OR_RTYPE[r.report_type] || ''}</div>` : ''}</td>
-    <td style="max-width:300px;font-family:var(--font-bn);font-size:.8rem"><b>${escHtml(r.reason || '')}</b>${r.product_name ? `<div style="color:var(--text3)">পণ্য: ${escHtml(r.product_name)}</div>` : ''}${r.details ? `<div style="color:var(--text2)">${escHtml(r.details)}</div>` : ''}${orFiles(r).length ? `<div style="color:var(--text3);font-size:.72rem">📎 ${orFiles(r).length}টি ফাইল</div>` : ''}</td>
+    <td style="max-width:300px;font-family:var(--font-bn);font-size:.8rem"><b>${escHtml(r.reason || '')}</b>${r.product_name ? `<div style="color:var(--text3)">পণ্য: ${escHtml(r.product_name)}</div>` : ''}${r.details ? `<div style="color:var(--text2)">${escHtml(r.details)}</div>` : ''}${orFiles(r).length ? `<div style="color:var(--text3);font-size:.72rem"><i class="fa-solid fa-paperclip"></i> ${orFiles(r).length}টি ফাইল</div>` : ''}</td>
     <td><span class="pill ${OR_PILL[r.status] || ''}">${OR_STATUS[r.status] || r.status}</span></td>
     <td style="font-size:.72rem;color:var(--text3)">${fmtDate(r.created_at)}</td>
     <td><button class="btn btn-ghost btn-sm" onclick="orOpen('${r.id}')">Manage</button></td></tr>`).join('');
@@ -11313,7 +11378,7 @@ async function loadProductQuestionsAdmin(retryCount = 0) {
       <div style="font-family:var(--font-bn);margin-bottom:8px">সংযোগ বিলম্ব — ডাটা লোড হয়নি।</div>
       <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
     </td></tr>`;
-    toast('⏳ সংযোগ বিলম্ব', 'প্রশ্ন লোড হচ্ছে না। Retry করুন।', 'warning');
+    toast('সংযোগ বিলম্ব', 'প্রশ্ন লোড হচ্ছে না। Retry করুন।', 'warning');
   }, 12000);
 
   try {
@@ -11333,7 +11398,7 @@ async function loadProductQuestionsAdmin(retryCount = 0) {
         <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()" style="margin-top:10px"><i class="fa-solid fa-rotate-right"></i> Retry</button>
         </div>
       </td></tr>`;
-      toast('⚠️ টেবিল নেই', error.message, 'error');
+      toast('টেবিল নেই', error.message, 'error');
       return;
     }
 
@@ -11363,7 +11428,7 @@ async function loadProductQuestionsAdmin(retryCount = 0) {
       <div style="font-family:var(--font-bn);margin-bottom:8px">ডাটা লোড ব্যর্থ হয়েছে।</div>
       <button class="btn btn-ghost btn-sm" onclick="loadProductQuestionsAdmin()"><i class="fa-solid fa-rotate-right"></i> আবার চেষ্টা করুন</button>
     </td></tr>`;
-    toast('❌ লোড ব্যর্থ', 'প্রশ্ন ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
+    toast('লোড ব্যর্থ', 'প্রশ্ন ডাটা আনা যায়নি — নেটওয়ার্ক চেক করুন।', 'error');
   }
 }
 
@@ -12134,7 +12199,7 @@ function slugify(s){return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').repl
 async function load(){
  const {data,error}=await sb.from('blog_posts').select('id,title,slug,short_code,category,status,views,updated_at').order('created_at',{ascending:false});
  if(error){$('blBody').innerHTML=`<tr><td colspan="6" style="padding:30px;text-align:center">${E(error.message)} — blog_setup.sql run korun</td></tr>`;return}
- $('blBody').innerHTML=(data||[]).map(p=>`<tr><td style="font-family:var(--font-bn)">${E(p.title)}</td><td>${E(p.category)}</td><td>${p.status==='published'?'✅ Published':'📝 Draft'}</td><td>${p.views}</td>
+ $('blBody').innerHTML=(data||[]).map(p=>`<tr><td style="font-family:var(--font-bn)">${E(p.title)}</td><td>${E(p.category)}</td><td>${p.status==='published'?'<i class="fa-solid fa-circle-check"></i> Published':'<i class="fa-solid fa-pen-to-square"></i> Draft'}</td><td>${p.views}</td>
  <td><a href="/blog/${p.slug}" target="_blank">/blog/${p.slug}</a></td>
  <td><button class="btn btn-sm" onclick="BL.edit('${p.id}')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm" onclick="BL.del('${p.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')||'<tr><td colspan="6" style="padding:30px;text-align:center">কোনো ব্লগ নেই</td></tr>'}
 async function edit(id){
@@ -12171,7 +12236,7 @@ async function save(status){
  else{row.short_code=code();r=await sb.from('blog_posts').insert(row).select('id').single();
   if(r.error&&/slug/.test(r.error.message)){row.slug=slug+'-'+code();r=await sb.from('blog_posts').insert(row).select('id').single()}}
  if(r.error){toast('Save failed',r.error.message,'error');return}
- $('blId').value=r.data.id;toast(status==='published'?'Published ✅':'Draft saved')}
+ $('blId').value=r.data.id;toast(status==='published'?'Published ':'Draft saved')}
 async function del(id){if(!confirm('এই ব্লগ ডিলিট করবেন?'))return;await sb.from('blog_posts').delete().eq('id',id);load()}
 window.BL={cmd,img,cover,edit,back,save,del,load,cms,cmEdit,cmDel};
 })();
@@ -12348,7 +12413,7 @@ function migOpen(){
   const todo = migScan(), n = new Set(todo.flatMap(x => x.ext)).size;
   document.getElementById('migInfo').innerHTML = todo.length
     ? `<b>${todo.length.toLocaleString()}টি বই</b>-এর <b>${n.toLocaleString()}টি ছবি</b> বাইরের লিংক থেকে আসছে। শুরু করলে ছবিগুলো ডাউনলোড হয়ে আপনার Storage-এ যাবে এবং বইয়ের লিংক বদলে যাবে। ব্যর্থ ছবির পুরনো লিংক অপরিবর্তিত থাকবে।`
-    : '✅ সব বইয়ের ছবিই ইতিমধ্যে আপনার নিজের সার্ভারে আছে।';
+    : '<i class="fa-solid fa-circle-check"></i> সব বইয়ের ছবিই ইতিমধ্যে আপনার নিজের সার্ভারে আছে।';
   document.getElementById('migStartBtn').disabled = !todo.length;
   document.getElementById('migBar').style.width = '0'; document.getElementById('migStatus').textContent = ''; document.getElementById('migLog').value = '';
   openModal('migImgModal');
@@ -12378,8 +12443,8 @@ async function migStart(){
     if (error) log('✗ বই আপডেট ব্যর্থ ' + x.p.name + ': ' + error.message);
     else { x.p.image_url = list[0]; x.p.images = list; upd++; }
   }
-  log(`\n✅ সম্পন্ন — ${upd}টি বই আপডেট, ${fail}টি ছবি ব্যর্থ`);
-  if (fail) log('ℹ ব্যর্থের কারণ উপরে দেখুন। "প্রক্সি: HTTP 404" মানে /api/fetch-image ডেপ্লয় হয়নি; "HTTP 401" মানে Vercel-এ SUPABASE_URL / SUPABASE_ANON_KEY নেই বা ভুল।');
+  log(`\nসম্পন্ন — ${upd}টি বই আপডেট, ${fail}টি ছবি ব্যর্থ`);
+  if (fail) log('ব্যর্থের কারণ উপরে দেখুন। "প্রক্সি: HTTP 404" মানে /api/fetch-image ডেপ্লয় হয়নি; "HTTP 401" মানে Vercel-এ SUPABASE_URL / SUPABASE_ANON_KEY নেই বা ভুল।');
   _migRunning = false; document.getElementById('migStopBtn').style.display = 'none'; document.getElementById('migStartBtn').disabled = false;
   toast('ছবি স্থানান্তর শেষ', `${upd}টি বই আপডেট হয়েছে${fail ? ', ' + fail + 'টি ছবি ব্যর্থ' : ''}`, fail ? 'info' : 'success');
   try { await loadProducts(); } catch {}
@@ -12605,7 +12670,7 @@ function bulkLoadCsvFile(f){
         badge:g('badge'), description:g('description'), image:g('image') };
     });
     _bulkSlots = new Map(); _bulkActiveKey = null; _bulkActiveRow = null;
-    if (dt){ dt.innerHTML = '✅ <b></b>'; dt.querySelector('b').textContent = f.name + ' (' + _bulkRows.length + ' সারি)'; dz.classList.add('done'); }
+    if (dt){ dt.innerHTML = '<i class="fa-solid fa-circle-check"></i> <b></b>'; dt.querySelector('b').textContent = f.name + ' (' + _bulkRows.length + ' সারি)'; dz.classList.add('done'); }
     _bulkSel.clear(); _bulkShown = BULK_PAGE; _bulkQuery = ''; _bulkRowFilter = '';
     bulkRender();
   };
@@ -12753,7 +12818,7 @@ function bulkOpts(list, current, blank, newLabel, pend){
   return `<option value="">${blank}</option>` +
     list.map(n => `<option value="${_bEsc(n)}"${n === hit ? ' selected' : ''}>${_bEsc(n)}${pk.has(bulkKey(n)) ? ' (নতুন)' : ''}</option>`).join('') +
     (current && !hit ? `<option value="${_bEsc(current)}" selected>${_bEsc(current)} (তালিকায় নেই)</option>` : '') +
-    (newLabel ? `<option value="__new__">➕ ${newLabel}</option>` : '');
+    (newLabel ? `<option value="__new__">${newLabel}</option>` : '');
 }
 function bulkAskName(msg){
   const v = prompt(msg);
@@ -12813,7 +12878,7 @@ function bulkRender(){
       <select class="form-inp" id="bulkBarSub" onchange="bulkBarSubChange()" disabled style="font-size:0.76rem;padding:6px 9px;min-width:150px;font-family:var(--font-bn)"><option value="">— আগে মেইন ক্যাটাগরি —</option></select>
       <button class="btn btn-primary btn-sm" type="button" onclick="bulkApplySelected()"><i class="fa-solid fa-check-double"></i> সিলেক্টেডগুলোতে প্রয়োগ করুন</button>
     </div>
-    <div style="font-size:0.72rem;color:var(--text2);margin:0 0 6px">🖼 প্রতিটি বইয়ের <b>ছবি</b> ঘরে — <b>ক্যামেরা বাটনে</b> ছবি বাছুন, ছবি <b>ড্র্যাগ করে ফেলুন</b>, অথবা ঘরে ক্লিক করে কপি করা ছবি <b>Ctrl+V</b> দিয়ে পেস্ট করুন। (ছবি থাকলে বদলে যাবে, না থাকলে যোগ হবে)</div>
+    <div style="font-size:0.72rem;color:var(--text2);margin:0 0 6px"><i class="fa-solid fa-image"></i> প্রতিটি বইয়ের <b>ছবি</b> ঘরে — <b>ক্যামেরা বাটনে</b> ছবি বাছুন, ছবি <b>ড্র্যাগ করে ফেলুন</b>, অথবা ঘরে ক্লিক করে কপি করা ছবি <b>Ctrl+V</b> দিয়ে পেস্ট করুন। (ছবি থাকলে বদলে যাবে, না থাকলে যোগ হবে)</div>
     <div style="max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:8px">
       <table style="width:100%;font-size:0.72rem;border-collapse:collapse">
         <thead><tr style="background:var(--bg3);text-align:left;position:sticky;top:0;z-index:1">
@@ -12846,8 +12911,8 @@ function bulkRefresh(){
       ${a.bad.length ? pill('ভুল সারি ' + a.bad.length, '#DC2626') : ''}
       ${a.missingImg ? pill('ছবি পাওয়া যায়নি ' + a.missingImg, '#D97706') : ''}
     </div>
-    ${a.newCats.size ? `<div style="font-size:0.74rem;margin-bottom:6px;color:${blockCats?'var(--red)':'var(--text2)'}">${autoCat ? 'নতুন ক্যাটাগরি তৈরি হবে' : '⚠ এই ক্যাটাগরিগুলো নেই (অটো-তৈরি বন্ধ)'}: <b>${[...a.newCats].map(_bEsc).join(', ')}</b> <span style="color:var(--text3)">— নিচের তালিকা থেকে বদলে নিতে পারেন</span></div>` : ''}
-    ${(a.userNew.size || Object.values(_bulkPendSubs).some(x => x.length)) ? `<div style="font-size:0.74rem;margin-bottom:6px;color:var(--green)">➕ Import-এর সময় তৈরি হবে — ${a.userNew.size ? 'ক্যাটাগরি: <b>' + [...a.userNew].map(_bEsc).join(', ') + '</b> ' : ''}${Object.entries(_bulkPendSubs).filter(([c, l]) => l.length).map(([c, l]) => 'সাব-ক্যাটাগরি (' + _bEsc(c) + '): <b>' + l.map(_bEsc).join(', ') + '</b>').join(' • ')}</div>` : ''}
+    ${a.newCats.size ? `<div style="font-size:0.74rem;margin-bottom:6px;color:${blockCats?'var(--red)':'var(--text2)'}">${autoCat ? 'নতুন ক্যাটাগরি তৈরি হবে' : '<i class="fa-solid fa-triangle-exclamation"></i> এই ক্যাটাগরিগুলো নেই (অটো-তৈরি বন্ধ)'}: <b>${[...a.newCats].map(_bEsc).join(', ')}</b> <span style="color:var(--text3)">— নিচের তালিকা থেকে বদলে নিতে পারেন</span></div>` : ''}
+    ${(a.userNew.size || Object.values(_bulkPendSubs).some(x => x.length)) ? `<div style="font-size:0.74rem;margin-bottom:6px;color:var(--green)"><i class="fa-solid fa-plus"></i> Import-এর সময় তৈরি হবে — ${a.userNew.size ? 'ক্যাটাগরি: <b>' + [...a.userNew].map(_bEsc).join(', ') + '</b> ' : ''}${Object.entries(_bulkPendSubs).filter(([c, l]) => l.length).map(([c, l]) => 'সাব-ক্যাটাগরি (' + _bEsc(c) + '): <b>' + l.map(_bEsc).join(', ') + '</b>').join(' • ')}</div>` : ''}
     ${a.bad.length ? `<div style="font-size:0.72rem;color:var(--red);margin-bottom:6px">ভুল সারি (লাইন): ${a.bad.slice(0,8).map(b => b.r.line + ' — ' + b.err).join(' • ')}${a.bad.length>8?' …':''}</div>` : ''}`;
 
   const mains = bulkMainList();
@@ -12929,7 +12994,7 @@ function bulkBarSync(cat, sub){
   subEl.disabled = false;
   subEl.innerHTML = '<option value="">— সাব-ক্যাটাগরি (অপরিবর্তিত) —</option><option value="__none__">— সাব-ক্যাটাগরি মুছে দিন —</option>' +
     bulkSubList(cat).map(n => `<option value="${_bEsc(n)}"${n === sub ? ' selected' : ''}>${_bEsc(n)}${pk.has(bulkKey(n)) ? ' (নতুন)' : ''}</option>`).join('') +
-    '<option value="__new__">➕ নতুন সাব-ক্যাটাগরি তৈরি করুন…</option>';
+    '<option value="__new__">নতুন সাব-ক্যাটাগরি তৈরি করুন…</option>';
   if (sub === '__none__') subEl.value = '__none__';
 }
 function bulkBarCatChange(){
@@ -12997,7 +13062,7 @@ function bulkRowImgCell(o){
   const changed = r._origImage !== undefined && r.image !== r._origImage;
   return `<td style="padding:3px"><div class="bulk-rowimg${_bulkActiveRow === line ? ' active' : ''}" data-line="${line}" title="ক্লিক করে Ctrl+V দিয়ে ছবি পেস্ট করুন, অথবা ছবি এখানে ড্র্যাগ করুন">
     <div class="bulk-rowimg-th">${icon}${img}</div>
-    <span class="bulk-rowimg-n" style="color:${missing ? 'var(--amber)' : 'var(--text2)'}">${toks.length.toLocaleString('bn-BD')}টি${missing ? ' ⚠' : ''}</span>
+    <span class="bulk-rowimg-n" style="color:${missing ? 'var(--amber)' : 'var(--text2)'}">${toks.length.toLocaleString('bn-BD')}টি${missing ? ' <i class="fa-solid fa-triangle-exclamation"></i>' : ''}</span>
     <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="ছবি বাছুন (বদলান / যোগ করুন)"><i class="fa-solid fa-camera"></i>
       <input type="file" accept="image/*" multiple style="display:none" onchange="bulkRowImgPick(${line}, this)"></label>
     ${toks.length ? `<button type="button" class="btn btn-ghost btn-sm" onclick="bulkRowImgClear(${line})" title="এই বইয়ের ছবি মুছুন"><i class="fa-solid fa-xmark"></i></button>` : ''}
@@ -13056,7 +13121,7 @@ function bulkSlotsHtml(esc){
     </div>`;
   }).join('');
   return `<div class="bulk-miss-wrap">
-    <div class="bulk-miss-head">${left ? '⚠ ' + left.toLocaleString() + 'টি ছবি পাওয়া যায়নি' : '✅ সব ছবি যোগ হয়েছে'} — ঘরে <b>ড্র্যাগ করুন</b>, <b>ছবি বাছুন</b>, অথবা ঘরে ক্লিক করে কপি করা ছবি <b>Ctrl+V</b> দিয়ে পেস্ট করুন</div>
+    <div class="bulk-miss-head">${left ? '<i class="fa-solid fa-triangle-exclamation"></i> ' + left.toLocaleString() + 'টি ছবি পাওয়া যায়নি' : '<i class="fa-solid fa-circle-check"></i> সব ছবি যোগ হয়েছে'} — ঘরে <b>ড্র্যাগ করুন</b>, <b>ছবি বাছুন</b>, অথবা ঘরে ক্লিক করে কপি করা ছবি <b>Ctrl+V</b> দিয়ে পেস্ট করুন</div>
     <div class="bulk-miss-list">${rows}</div></div>`;
 }
 function bulkAssign(key, file){
@@ -13217,10 +13282,10 @@ async function bulkStartImport(){
       const baseSlug = ((typeof slugifyCategoryName === 'function') ? slugifyCategoryName(name) : makeSlug(name)) || 'category';
       const takenSlugs = new Set((typeof allCategories !== 'undefined' ? allCategories : []).map(c => c.slug));
       let slug = baseSlug, sn = 2; while (takenSlugs.has(slug)) slug = baseSlug + '-' + (sn++);
-      let { data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single();
+      let { data, error } = await sb.from('categories').insert({ name, slug, icon:smartCatStyle(name).icon, color:smartCatStyle(name).color, is_active:true }).select().single();
       for (let tries = 0; error && /slug/i.test(error.message || '') && tries < 3; tries++){   // slug আগে থেকে থাকলে -2, -3… দিয়ে আবার চেষ্টা
         slug = baseSlug + '-' + (sn++);
-        ({ data, error } = await sb.from('categories').insert({ name, slug, icon:'fa-book', color:'#AA2C2D', is_active:true }).select().single());
+        ({ data, error } = await sb.from('categories').insert({ name, slug, icon:smartCatStyle(name).icon, color:smartCatStyle(name).color, is_active:true }).select().single());
       }
       if (error) bulkLog(`✗ ক্যাটাগরি "${name}" তৈরি হয়নি: ${error.message}`);
       else {
@@ -13279,7 +13344,7 @@ async function bulkStartImport(){
           bulkProgress(++dn, urls.length, 'বাইরের ছবি ডাউনলোড');
         });
         bulkLog(`বাইরের ছবি: ${okN}টি নিজের সার্ভারে যোগ, ${failN}টি ব্যর্থ`);
-        if (failN && !okN) bulkLog('ℹ সম্ভবত ওই সাইট CORS বন্ধ রেখেছে — /api/fetch-image প্রক্সি ডেপ্লয় করলে এগুলোও ডাউনলোড হবে');
+        if (failN && !okN) bulkLog('সম্ভবত ওই সাইট CORS বন্ধ রেখেছে — /api/fetch-image প্রক্সি ডেপ্লয় করলে এগুলোও ডাউনলোড হবে');
       }
       if (_bulkCancel) throw new Error('ব্যবহারকারী বন্ধ করেছেন');
     }
@@ -13319,7 +13384,7 @@ async function bulkStartImport(){
       const chunk = payloads.slice(i, i + B);
       let { error } = await sb.from('products').insert(chunk.map(c => noSlug ? strip(c.p) : c.p));
       if (error && /slug/i.test(error.message || '')){
-        noSlug = true; bulkLog('ℹ products টেবিলে slug কলাম নেই — slug ছাড়া সেভ হচ্ছে');
+        noSlug = true; bulkLog('products টেবিলে slug কলাম নেই — slug ছাড়া সেভ হচ্ছে');
         ({ error } = await sb.from('products').insert(chunk.map(c => strip(c.p))));
       }
       if (!error){ created += chunk.length; }
@@ -13340,7 +13405,7 @@ async function bulkStartImport(){
   _bulkRunning = false;
   document.getElementById('bulkCancelBtn').style.display = 'none';
   const nBad = _bulkFailed.length;
-  bulkLog(`\n✅ সম্পন্ন — সফল: ${created}, ব্যর্থ/ভুল: ${nBad}`);
+  bulkLog(`\nসম্পন্ন — সফল: ${created}, ব্যর্থ/ভুল: ${nBad}`);
   document.getElementById('bulkStatus').textContent = `সফল ${created.toLocaleString()} • ব্যর্থ/ভুল ${nBad.toLocaleString()}`;
   if (nBad) document.getElementById('bulkErrBtn').style.display = '';
   toast('Bulk Import শেষ', `${created} টি বই যোগ হয়েছে${nBad ? `, ${nBad} টি ব্যর্থ` : ''}`, nBad ? 'info' : 'success');
