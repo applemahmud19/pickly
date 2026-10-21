@@ -19387,8 +19387,8 @@ async function oaSubmit(){
 
 <style id="gm-account-panes-css">
 .gm-pane[hidden]{display:none!important}
-.gm-back{display:none}
-@media (max-width:1099px){.gm-back{display:inline-flex}}
+.gm-link-btn.gm-back{display:none}
+@media (max-width:1099px){.gm-link-btn.gm-back{display:inline-flex}}
 .gm-count{margin-left:auto;font:700 .72rem 'Hind Siliguri',sans-serif;color:var(--blue);background:var(--blue-light);padding:3px 10px;border-radius:100px}
 .gm-link-btn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:600 .76rem 'Hind Siliguri',sans-serif;color:var(--blue);padding:4px 8px;border-radius:6px}
 .gm-count + .gm-link-btn{margin-left:8px}
@@ -19408,6 +19408,15 @@ async function oaSubmit(){
 .gm-cp-btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
 .gm-cp-btn:hover{border-color:var(--blue)}
 .gm-cp-pill{position:absolute;top:8px;right:10px;font:700 .68rem 'Hind Siliguri',sans-serif;padding:2px 9px;border-radius:100px;background:#fee2e2;color:#b91c1c}
+.gm-cp-cd{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px 18px;margin-left:auto;border-left:1.5px dashed var(--blue-mid,#e3b3b3)}
+.gm-cd-lbl{font:600 .72rem 'Hind Siliguri',sans-serif;color:var(--text-light)}
+.gm-cd-row{display:flex;gap:6px}
+.gm-cd-box{min-width:52px;padding:7px 4px;border-radius:10px;background:var(--blue-light);text-align:center}
+.gm-cd-box b{display:block;font:800 1.15rem 'Sora','Hind Siliguri',sans-serif;color:var(--blue-dark,#8a1f20);line-height:1.2}
+.gm-cd-box span{display:block;font:600 .64rem 'Hind Siliguri',sans-serif;color:var(--text-mid)}
+.gm-cp-cd.urgent .gm-cd-box{background:#fee2e2}
+.gm-cp-cd.urgent .gm-cd-box b,.gm-cp-cd.urgent .gm-cd-lbl{color:#b91c1c}
+@media (max-width:760px){.gm-cp{flex-wrap:wrap}.gm-cp-r{flex-basis:calc(100% - 104px)}.gm-cp-cd{flex-basis:100%;border-left:0;border-top:1.5px dashed var(--blue-mid,#e3b3b3);padding:10px}.gm-cd-box{min-width:56px}}
 .gm-cp.off{opacity:.62}
 .gm-cp.off .gm-cp-l{filter:grayscale(.8)}
 @media (max-width:520px){.gm-cp-l{flex-basis:84px}.gm-cp-val{font-size:1.05rem}}
@@ -19501,8 +19510,36 @@ async function oaSubmit(){
         + (c.description ? '<div class="gm-cp-desc">' + safeEsc(c.description) + '</div>' : '')
         + (meta.length ? '<div class="gm-cp-meta">' + meta.join(' · ') + '</div>' : '')
         + (off ? '' : '<div class="gm-cp-act"><button type="button" class="gm-cp-btn pri" onclick="gmUseCoupon(\'' + code + '\')"><i class="fa-solid fa-bag-shopping"></i> ব্যবহার করুন</button><button type="button" class="gm-cp-btn" onclick="gmCopyCoupon(\'' + code + '\')"><i class="fa-regular fa-copy"></i> কপি</button></div>')
-        + '</div></div>';
+        + '</div>'
+        + ((!off && c.expiry) ? '<div class="gm-cp-cd" data-end="' + safeEsc(String(c.expiry).slice(0,10)) + '"><div class="gm-cd-lbl">মেয়াদ শেষ হতে বাকি</div><div class="gm-cd-row">'
+            + '<div class="gm-cd-box"><b data-u="d">০০</b><span>দিন</span></div><div class="gm-cd-box"><b data-u="h">০০</b><span>ঘণ্টা</span></div><div class="gm-cd-box"><b data-u="m">০০</b><span>মিনিট</span></div><div class="gm-cd-box"><b data-u="s">০০</b><span>সেকেন্ড</span></div>'
+            + '</div></div>' : '')
+        + '</div>';
     }).join('');
+    startCountdown();
+  }
+  var cdTimer = null;
+  function bn2(n){ var s = String(n < 10 ? '0' + n : n); return s.replace(/[0-9]/g, function(d){ return '০১২৩৪৫৬৭৮৯'[d]; }); }
+  function tickCountdown(){
+    var els = document.querySelectorAll('#gmCouponList .gm-cp-cd[data-end]');
+    if(cur !== 'coupons' || !els.length){ clearInterval(cdTimer); cdTimer = null; return; }
+    var expired = false, now = Date.now();
+    els.forEach(function(el){
+      var end = new Date(el.getAttribute('data-end') + 'T23:59:59+06:00').getTime();
+      var left = Math.max(0, Math.floor((end - now) / 1000));
+      if(left === 0) expired = true;
+      var d = Math.floor(left / 86400), h = Math.floor(left % 86400 / 3600), m = Math.floor(left % 3600 / 60), s = left % 60;
+      var v = { d: d, h: h, m: m, s: s };
+      el.querySelectorAll('b[data-u]').forEach(function(b){ b.textContent = bn2(v[b.getAttribute('data-u')]); });
+      el.classList.toggle('urgent', left < 86400);
+    });
+    if(expired){ clearInterval(cdTimer); cdTimer = null; loadCouponPane(); }
+  }
+  function startCountdown(){
+    clearInterval(cdTimer); cdTimer = null;
+    if(!document.querySelector('#gmCouponList .gm-cp-cd[data-end]')) return;
+    tickCountdown();
+    cdTimer = setInterval(tickCountdown, 1000);
   }
   function emptyCoupons(){
     return '<div style="text-align:center;padding:36px 10px"><i class="fa-solid fa-ticket" style="font-size:3rem;color:var(--text-light);opacity:.25;display:block;margin-bottom:12px"></i>'
