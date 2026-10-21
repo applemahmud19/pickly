@@ -1797,18 +1797,22 @@ body {
 
         <!-- ═══ ORDER MANAGEMENT (Dashboard) ═══ -->
         <style>
-        .om-tabs{display:flex;gap:8px;padding:12px 18px;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none}
-        .om-tabs::-webkit-scrollbar{display:none}
-        .om-tab{display:inline-flex;align-items:center;gap:8px;padding:7px 8px 7px 14px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:.8rem;font-weight:600;font-family:var(--font-bn);color:var(--text2);white-space:nowrap;transition:all var(--t);flex-shrink:0}
-        .om-tab .dot{width:8px;height:8px;border-radius:50%;background:var(--omc)}
-        .om-tab .cnt{min-width:24px;height:22px;padding:0 7px;border-radius:99px;background:var(--bg3);font-family:var(--mono);font-size:.72rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;color:var(--text2)}
-        .om-tab:hover{border-color:var(--omc);color:var(--text)}
-        .om-tab.active{background:var(--omc);border-color:var(--omc);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--omc) 35%,transparent)}
-        .om-tab.active .dot{background:#fff}
-        .om-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
-        .om-tab.zero:not(.active){opacity:.6}
-        .om-tab.alert:not(.active) .cnt{background:var(--omc);color:#fff}
-        .om-tab.alert .dot{animation:livePulse 1.4s ease-in-out infinite}
+        .om-tabs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
+        .om-tab{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--t);min-width:0;overflow:hidden}
+        .om-tab::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--omc);opacity:.35;transition:all var(--t)}
+        .om-tab .ic{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc);position:relative}
+        .om-tab .tx{min-width:0;display:flex;flex-direction:column;line-height:1.15}
+        .om-tab .cnt{font-size:1.25rem;font-weight:800;color:var(--text);font-family:var(--mono)}
+        .om-tab .lb{font-size:.72rem;font-weight:600;color:var(--text2);font-family:var(--font-bn);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-tab:hover{transform:translateY(-2px);border-color:var(--omc);box-shadow:var(--shadow-md)}
+        .om-tab:hover::after{opacity:1}
+        .om-tab.active{border-color:var(--omc);background:color-mix(in srgb,var(--omc) 9%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 15%,transparent)}
+        .om-tab.active::after{opacity:1}
+        .om-tab.active .ic{background:var(--omc);color:#fff}
+        .om-tab.zero:not(.active) .cnt{color:var(--text3)}
+        .om-tab.alert .cnt{color:var(--omc)}
+        .om-tab.alert .ic::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--omc);border:2px solid var(--surface);animation:livePulse 1.4s ease-in-out infinite}
+        @media(max-width:1180px){.om-tabs{display:flex;overflow-x:auto;scrollbar-width:none}.om-tabs::-webkit-scrollbar{display:none}.om-tab{flex:0 0 138px}}
         .om-bulk{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:rgba(170,44,45,.06);border-bottom:1px solid var(--border);font-size:.78rem;font-family:var(--font-bn)}
         .om-bulk.show{display:flex}
         .om-list{display:flex;flex-direction:column}
@@ -5404,7 +5408,8 @@ function renderOrderManager() {
     const n = counts[d.k] || 0;
     const alert = d.k === 'pending' && n > 0;
     return `<div class="om-tab ${omFilter === d.k ? 'active' : ''} ${alert ? 'alert' : ''} ${n === 0 && d.k !== 'all' ? 'zero' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
-      <span class="dot"></span><span>${d.k === 'all' ? 'সব' : d.bn}</span><span class="cnt">${n}</span>
+      <span class="ic"><i class="fa-solid ${d.ic}"></i></span>
+      <span class="tx"><span class="cnt">${n}</span><span class="lb">${d.k === 'all' ? 'সব অর্ডার' : d.bn}</span></span>
     </div>`;
   }).join('');
 
