@@ -17960,60 +17960,61 @@ window.addEventListener('popstate', function(e) {
 }
 @media(max-width:380px){.bf-opt{padding:12px 10px 10px}.bf-opt b{font-size:.86rem}.bf-opt small{font-size:.72rem}}
 
-/* ── Finder v3: টপ ৫ বই এক স্ক্রিনে (স্ক্রল ছাড়া) ── */
+/* ── Finder v3.1: টপ ৫ বই, কমপ্যাক্ট — এক স্ক্রিনে ── */
 .bf-res:nth-child(4){animation-delay:.3s}.bf-res:nth-child(5){animation-delay:.4s}
-.bf-resmode .bf-shell{max-width:1360px;padding:10px 24px 18px}
-.bf-resmode .bf-stage{justify-content:flex-start;padding:0 0 6px}
-.bf-resmode .bf-wide{max-width:none}
-.bf-resmode .bf-q{font-size:clamp(1.25rem,2.4vw,1.75rem);margin:0 0 8px;line-height:1.3}
-.bf-resmode .bf-qs{display:none}
-.bf-resmode .bf-sum{margin:0 0 12px}
-.bf-resmode .bf-note{margin:0 auto 10px;max-width:760px;padding:6px 12px;font-size:.8rem;text-align:center}
-.bf-resmode .bf-skipnote{display:none}
-.bf-resmode .bf-foot{margin-top:14px}
-.bf-resmode .bf-btn2{padding:7px 16px;font-size:.88rem}
-.bf-resmode .bf-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;align-items:stretch}
-.bf-resmode .bf-res{grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 12px 14px;border-radius:16px;align-content:start;transition:transform .25s,box-shadow .25s}
-.bf-resmode .bf-res:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(170,44,45,.18)}
-.bf-resmode .bf-res--top{box-shadow:0 10px 28px rgba(245,166,35,.28)}
-.bf-resmode .bf-cover{width:min(100%,calc(25vh*.75));max-width:170px;min-width:96px;margin:0 auto;border-radius:9px}
-.bf-resmode .bf-info{display:flex;flex-direction:column;min-width:0;text-align:center}
-.bf-resmode .bf-badge{justify-content:center;gap:6px;margin-bottom:6px}
-.bf-resmode .bf-rank{font-size:.74rem;padding:0 10px}
-.bf-resmode .bf-pct{font-size:.76rem}
-.bf-resmode .bf-info h3{font-size:.95rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em}
-.bf-resmode .bf-auth{font-size:.8rem;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bf-resmode .bf-crit{display:none}
-.bf-resmode .bf-why{justify-content:center;margin:6px 0 2px;gap:4px;min-height:1.7em}
-.bf-resmode .bf-why span{font-size:.7rem;padding:0 8px}
-.bf-resmode .bf-price{justify-content:center;margin:6px 0 10px;gap:8px}
-.bf-resmode .bf-price b{font-size:1.25rem}
-.bf-resmode .bf-actions{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:auto}
-.bf-resmode .bf-buy{grid-column:1/-1;justify-content:center;padding:8px 10px;font-size:.88rem}
-.bf-resmode .bf-cart{justify-content:center;padding:7px 8px;font-size:.74rem;gap:5px;white-space:nowrap}
-.bf-resmode .bf-skip{width:auto;padding:7px 11px;font-size:.78rem;border-radius:99px}
-.bf-resmode .bf-skip .bt{display:none}
-@media(max-width:1180px){.bf-resmode .bf-list{gap:10px}.bf-resmode .bf-shell{padding:10px 14px 16px}.bf-resmode .bf-info h3{font-size:.88rem}}
-/* ট্যাবলেট / মোবাইল: ৫টি কমপ্যাক্ট সারি — একসাথে দেখা যায় */
+.bf-resmode .bf-shell{max-width:1400px;padding:8px 22px 12px}
+.bf-resmode .bf-top{margin-bottom:2px}
+.bf-resmode .bf-stage{justify-content:flex-start;padding:0 0 4px}
+.bf-resmode .bf-wide{max-width:none;padding-top:0}
+.bf-resmode .bf-q{font-size:clamp(1.15rem,2vw,1.55rem);margin:0 0 6px;line-height:1.3}
+.bf-resmode .bf-qs,.bf-resmode .bf-skipnote{display:none}
+.bf-resmode .bf-sum{margin:0 0 8px;gap:6px}.bf-resmode .bf-sum span{font-size:.78rem;padding:0 11px}
+.bf-resmode .bf-note{margin:0 auto 8px;max-width:none;width:fit-content;padding:3px 12px;font-size:.74rem;text-align:center;border-radius:99px}
+.bf-resmode .bf-foot{margin-top:10px;gap:8px}
+.bf-resmode .bf-btn2{padding:6px 15px;font-size:.84rem}
+.bf-resmode .bf-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:stretch}
+.bf-resmode .bf-res{grid-template-columns:minmax(0,1fr);gap:8px;padding:12px 11px 12px;border-radius:16px;align-content:start;text-align:center;transition:transform .25s,box-shadow .25s,border-color .25s}
+.bf-resmode .bf-res:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(170,44,45,.16);border-color:var(--blue,#AA2C2D)}
+.bf-resmode .bf-res--top{box-shadow:0 8px 24px rgba(245,166,35,.26)}
+.bf-resmode .bf-res--top:hover{border-color:var(--gold,#F5A623)}
+.bf-resmode .bf-cover{height:clamp(105px,22vh,200px);width:auto;aspect-ratio:3/4;max-width:100%;margin:0 auto;border-radius:8px}
+.bf-resmode .bf-info{display:flex;flex-direction:column;min-width:0;height:100%}
+.bf-resmode .bf-badge{justify-content:center;gap:6px;margin:0 0 5px;flex-wrap:nowrap}
+.bf-resmode .bf-rank{font-size:.7rem;padding:0 9px;white-space:nowrap}
+.bf-resmode .bf-pct{font-size:.72rem;white-space:nowrap}
+.bf-resmode .bf-tier{color:#D97706;margin-left:2px;cursor:help}
+.bf-resmode .bf-info h3{font-size:.92rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
+.bf-resmode .bf-auth{font-size:.76rem;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bf-resmode .bf-auth i{display:none}
+.bf-resmode .bf-crit,.bf-resmode .bf-why{display:none}
+.bf-resmode .bf-price{justify-content:center;align-items:center;margin:6px 0 9px;gap:6px;flex-wrap:nowrap}
+.bf-resmode .bf-price b{font-size:1.2rem;white-space:nowrap}.bf-resmode .bf-price s{font-size:.78rem;white-space:nowrap}
+.bf-off{font-family:'Inter',sans-serif;font-size:.66rem;font-weight:700;color:#fff;background:#10B981;border-radius:99px;padding:1px 7px;white-space:nowrap}
+.bf-resmode .bf-actions{display:grid;grid-template-columns:1fr 38px 38px;gap:6px;margin-top:auto}
+.bf-resmode .bf-buy{justify-content:center;padding:8px 6px;font-size:.86rem;gap:6px}
+.bf-resmode .bf-cart,.bf-resmode .bf-skip{width:auto;padding:0;height:36px;justify-content:center;border-radius:50%}
+.bf-resmode .bf-skip{border-radius:50%}
+.bf-resmode .bf-cart .bt,.bf-resmode .bf-skip .bt{display:none}
+@media(max-width:1180px){.bf-resmode .bf-list{gap:8px}.bf-resmode .bf-shell{padding:8px 12px 12px}.bf-resmode .bf-info h3{font-size:.84rem}.bf-resmode .bf-actions{grid-template-columns:1fr 34px 34px}.bf-resmode .bf-cart,.bf-resmode .bf-skip{height:34px}}
+/* ট্যাবলেট / মোবাইল: ৫টি কমপ্যাক্ট সারি */
 @media(max-width:980px){
-  .bf-resmode .bf-shell{padding:8px 12px 14px}
-  .bf-resmode .bf-top{margin-bottom:4px}
-  .bf-resmode .bf-q{font-size:1.1rem;margin-bottom:6px}
-  .bf-resmode .bf-sum{margin-bottom:8px;gap:6px}.bf-resmode .bf-sum span{font-size:.72rem;padding:0 8px}
+  .bf-resmode .bf-shell{padding:6px 10px 12px}
+  .bf-resmode .bf-q{font-size:1.05rem;margin-bottom:5px}
+  .bf-resmode .bf-sum{margin-bottom:6px}.bf-resmode .bf-sum span{font-size:.7rem;padding:0 8px}
   .bf-resmode .bf-note{display:none}
-  .bf-resmode .bf-list{grid-template-columns:1fr;gap:7px}
-  .bf-resmode .bf-res{grid-template-columns:52px minmax(0,1fr) auto;gap:10px;padding:7px 10px;align-items:center;border-radius:13px}
+  .bf-resmode .bf-list{grid-template-columns:1fr;gap:6px}
+  .bf-resmode .bf-res{grid-template-columns:46px minmax(0,1fr) auto;gap:10px;padding:6px 9px;align-items:center;border-radius:12px;text-align:left}
   .bf-resmode .bf-res:hover{transform:none}
-  .bf-resmode .bf-cover{width:52px;min-width:0;max-width:none;border-radius:6px;box-shadow:0 3px 8px rgba(0,0,0,.18)}
-  .bf-resmode .bf-info{text-align:left}
-  .bf-resmode .bf-badge{justify-content:flex-start;margin-bottom:1px}
-  .bf-resmode .bf-info h3{font-size:.84rem;line-height:1.35;min-height:0}
-  .bf-resmode .bf-auth,.bf-resmode .bf-why{display:none}
-  .bf-resmode .bf-price{justify-content:flex-start;margin:2px 0 0}.bf-resmode .bf-price b{font-size:1rem}.bf-resmode .bf-price s{font-size:.75rem}
-  .bf-resmode .bf-actions{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;gap:5px;margin:0}
-  .bf-resmode .bf-buy{grid-column:1/-1;padding:6px 14px;font-size:.8rem}
-  .bf-resmode .bf-cart .bt{display:none}.bf-resmode .bf-cart,.bf-resmode .bf-skip{padding:6px 10px;justify-content:center;width:auto}
-  .bf-resmode .bf-foot{margin-top:10px}.bf-resmode .bf-btn2{padding:6px 12px;font-size:.8rem}
+  .bf-resmode .bf-cover{height:auto;width:46px;border-radius:5px;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+  .bf-resmode .bf-info{height:auto}
+  .bf-resmode .bf-badge{justify-content:flex-start;margin:0 0 1px}
+  .bf-resmode .bf-info h3{font-size:.82rem;line-height:1.3;min-height:0}
+  .bf-resmode .bf-auth{display:none}
+  .bf-resmode .bf-price{justify-content:flex-start;margin:2px 0 0}.bf-resmode .bf-price b{font-size:.98rem}
+  .bf-resmode .bf-actions{display:grid;grid-template-columns:34px 34px;grid-template-rows:auto auto;gap:5px;margin:0}
+  .bf-resmode .bf-buy{grid-column:1/-1;padding:6px 12px;font-size:.78rem}
+  .bf-resmode .bf-cart,.bf-resmode .bf-skip{height:32px;width:34px}
+  .bf-resmode .bf-foot{margin-top:8px}.bf-resmode .bf-btn2{padding:6px 12px;font-size:.78rem}
 }
 @media(prefers-reduced-motion:reduce){.bf-shine,.bf-strip-ic i,.bf-cta,.bf-fab,.bf-fab i,.bf-bg .k4,.bf-opt{animation:none!important}}
 </style>
@@ -18241,11 +18242,11 @@ function resultCard(r,i,res){
   if(r.rating>0)extra.push('<span>'+ic('fa-star')+' '+r.rating.toFixed(1)+'</span>');
   if(r.tier)extra.push('<span class="warn">'+ic('fa-circle-info')+' '+TIER_LABEL[r.tier]+'</span>');
   return '<article class="bf-res'+(i===0&&!r.tier?' bf-res--top':'')+'"><a class="bf-cover" href="'+url+'" data-go="'+esc(p.id)+'">'+(img?'<img src="'+esc(img)+'" alt="'+esc(p.name)+'" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=ph><i class=\\\'fa-solid fa-book\\\'></i></div>\'">':'<div class="ph"><i class="fa-solid fa-book"></i></div>')+'</a>'+
-   '<div class="bf-info"><div class="bf-badge"><span class="bf-rank bn'+(i===0&&!r.tier?'':' alt')+'">'+(i===0&&!r.tier?ic('fa-trophy')+' সেরা মিল':ic('fa-wand-magic-sparkles')+' পছন্দ #'+(i+1))+'</span><span class="bf-pct">'+r.pct+'% match</span></div>'+
+   '<div class="bf-info"><div class="bf-badge"><span class="bf-rank bn'+(i===0&&!r.tier?'':' alt')+'">'+(i===0&&!r.tier?ic('fa-trophy')+' সেরা মিল':ic('fa-wand-magic-sparkles')+' পছন্দ #'+(i+1))+'</span><span class="bf-pct"'+(r.tier?' title="'+esc(TIER_LABEL[r.tier])+'"':'')+'>'+r.pct+'% match'+(r.tier?' <i class="fa-solid fa-circle-info bf-tier"></i>':'')+'</span></div>'+
    '<h3 class="bn">'+esc(p.name)+'</h3>'+(auth?'<div class="bf-auth bn">'+ic('fa-pen-nib')+' '+esc(auth)+'</div>':'')+
    crit(r,res)+(extra.length?'<div class="bf-why bn">'+extra.join('')+'</div>':'')+
-   '<div class="bf-price"><b>৳ '+fmtPrice(r.price)+'</b>'+(r.pe.originalPrice>r.price?'<s>৳ '+fmtPrice(r.pe.originalPrice)+'</s>':'')+'</div>'+
-   '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i><span class="bt"> কার্টে যোগ করুন</span></button><button class="bf-skip bn" data-skip="'+esc(p.id)+'" title="এই বইটা আগে পড়ে ফেলেছি — অন্য বই দেখান"><i class="fa-solid fa-forward"></i><span class="bt"> পড়া হয়েছে / স্কিপ</span></button></div></div></article>';
+   '<div class="bf-price"><b>৳ '+fmtPrice(r.price)+'</b>'+(r.pe.originalPrice>r.price?'<s>৳ '+fmtPrice(r.pe.originalPrice)+'</s>':'')+(r.disc>0?'<span class="bf-off">-'+r.disc+'%</span>':'')+'</div>'+
+   '<div class="bf-actions"><a class="bf-buy bn" href="'+url+'" data-go="'+esc(p.id)+'"><i class="fa-solid fa-bag-shopping"></i> কিনুন</a><button class="bf-cart bn" title="কার্টে যোগ করুন" data-cart="'+esc(p.id)+'"><i class="fa-solid fa-cart-plus"></i><span class="bt"> কার্টে যোগ করুন</span></button><button class="bf-skip bn" data-skip="'+esc(p.id)+'" title="এই বইটা আগে পড়ে ফেলেছি — অন্য বই দেখান"><i class="fa-solid fa-forward"></i><span class="bt"> পড়া হয়েছে / স্কিপ</span></button></div></div></article>';
 }
 function renderResults(push){
   setBar(3);
@@ -18332,7 +18333,7 @@ document.addEventListener('click',function(e){
   var cart=t.closest('#bfStage [data-cart]');
   if(cart){
     var q=products.find(function(x){return String(x.id)===cart.getAttribute('data-cart')});
-    if(q){addToCart(q,1);cart.innerHTML='<i class="fa-solid fa-check"></i> যোগ হয়েছে'}return;
+    if(q){addToCart(q,1);cart.innerHTML='<i class="fa-solid fa-check"></i><span class="bt"> যোগ হয়েছে</span>'}return;
   }
   var act=t.closest('#bfStage [data-act]');
   if(act){
