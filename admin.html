@@ -9593,7 +9593,9 @@ async function loadCategoriesFromSupabase() {
       navColsMissing = !('show_in_nav' in data[0]);
       allCategories = data.map(c => ({
         id: c.id, name: c.name, slug: c.slug || slugifyCategoryName(c.name),
-        icon: c.icon || 'fa-box', color: c.color || '#AA2C2D',
+        icon: _catIsDefaultStyle(c) ? smartCatStyle(c.name).icon : (c.icon || 'fa-box'),
+        color: _catIsDefaultStyle(c) ? smartCatStyle(c.name).color : (c.color || '#AA2C2D'),
+        _autoStyled: _catIsDefaultStyle(c),
         is_active: c.is_active !== false, show_in_nav: c.show_in_nav !== false, nav_order: c.nav_order, _fromSupabase: true
       }));
     }
@@ -9603,6 +9605,14 @@ async function loadCategoriesFromSupabase() {
     allCategories = getLocalCategories();
   }
   renderCategoryList();
+  // ডিফল্ট আইকন/রঙের ক্যাটাগরিগুলো একবার নিঃশব্দে ডেটাবেসেও আপডেট করে দেয় (স্টোরফ্রন্টেও যেন ঠিক দেখায়)
+  const _pend = allCategories.filter(c => c._autoStyled && c._fromSupabase);
+  if (sb && _pend.length && !window._catStylePersisted) {
+    window._catStylePersisted = true;
+    Promise.all(_pend.map(c => sb.from('categories').update({ icon: c.icon, color: c.color }).eq('id', c.id)))
+      .then(() => _pend.forEach(c => { c._autoStyled = false; }))
+      .catch(() => {});
+  }
 }
 
 async function seedDefaultCategoriesToSupabase() {
