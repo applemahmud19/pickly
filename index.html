@@ -6065,19 +6065,19 @@ html.gm-boot #gmSplash{display:flex}
                 <div class="adrop-email" id="dropEmail">user@email.com</div>
               </div>
             </div>
-            <a class="adrop-item" onclick="openTrack();closeDropdown()">
-              <i class="fa-solid fa-box"></i> আমার অর্ডার
-            </a>
-            <a class="adrop-item" onclick="openWishlistPage();closeDropdown()">
-              <i class="fa-regular fa-heart"></i> উইশলিস্ট
-            </a>
             <a class="adrop-item" onclick="openProfilePage();closeDropdown()">
               <i class="fa-solid fa-user-pen"></i> আমার প্রোফাইল
             </a>
-            <a class="adrop-item" onclick="toast('কুপন ও অফার','শীঘ্রই আসছে','i');closeDropdown()">
+            <a class="adrop-item" onclick="gmOpenAccount('orders');closeDropdown()">
+              <i class="fa-solid fa-box"></i> আমার অর্ডার
+            </a>
+            <a class="adrop-item" onclick="gmOpenAccount('wishlist');closeDropdown()">
+              <i class="fa-regular fa-heart"></i> উইশলিস্ট
+            </a>
+            <a class="adrop-item" onclick="gmOpenAccount('coupons');closeDropdown()">
               <i class="fa-solid fa-ticket"></i> কুপন ও অফার
             </a>
-            <a class="adrop-item" onclick="openSettings();closeDropdown()">
+            <a class="adrop-item" onclick="gmOpenAccount('settings');closeDropdown()">
               <i class="fa-solid fa-gear"></i> সেটিংস
             </a>
             <div class="adrop-divider"></div>
@@ -6877,15 +6877,15 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   </div>
   <!-- ডেস্কটপ: বাম পাশে অ্যাকাউন্ট মেনু -->
   <aside class="profile-side" aria-label="অ্যাকাউন্ট মেনু">
-    <button type="button" class="ps-item active" onclick="openProfilePage()"><i class="fa-solid fa-user-pen"></i><span>আমার প্রোফাইল</span></button>
-    <button type="button" class="ps-item" onclick="openTrack()"><i class="fa-solid fa-box"></i><span>আমার অর্ডার</span></button>
-    <button type="button" class="ps-item" onclick="openWishlistPage()"><i class="fa-regular fa-heart"></i><span>উইশলিস্ট</span></button>
-    <button type="button" class="ps-item" onclick="toast('কুপন ও অফার','শীঘ্রই আসছে','i')"><i class="fa-solid fa-ticket"></i><span>কুপন ও অফার</span></button>
-    <button type="button" class="ps-item" onclick="openSettings()"><i class="fa-solid fa-gear"></i><span>সেটিংস</span></button>
+    <button type="button" class="ps-item active" data-pane="profile" onclick="gmSwitchPane('profile')"><i class="fa-solid fa-user-pen"></i><span>আমার প্রোফাইল</span></button>
+    <button type="button" class="ps-item" data-pane="orders" onclick="gmSwitchPane('orders')"><i class="fa-solid fa-box"></i><span>আমার অর্ডার</span></button>
+    <button type="button" class="ps-item" data-pane="wishlist" onclick="gmSwitchPane('wishlist')"><i class="fa-regular fa-heart"></i><span>উইশলিস্ট</span></button>
+    <button type="button" class="ps-item" data-pane="coupons" onclick="gmSwitchPane('coupons')"><i class="fa-solid fa-ticket"></i><span>কুপন ও অফার</span></button>
+    <button type="button" class="ps-item" data-pane="settings" onclick="gmSwitchPane('settings')"><i class="fa-solid fa-gear"></i><span>সেটিংস</span></button>
     <div class="ps-div"></div>
     <button type="button" class="ps-item danger" onclick="signOut();closePage('profile')"><i class="fa-solid fa-right-from-bracket"></i><span>লগআউট</span></button>
   </aside>
-  <div class="profile-wrap">
+  <div class="profile-wrap gm-pane" id="gmPane-profile">
 
     <!-- Avatar + stats card -->
     <div class="profile-card">
@@ -6952,6 +6952,57 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
       </div>
     </div>
 
+  </div>
+
+  <!-- ── অ্যাকাউন্ট প্যানেল: একই পেজে (নতুন পেজ না খুলে) দেখানো হয় ── -->
+  <div class="profile-wrap gm-pane" id="gmPane-orders" hidden>
+    <div id="gmOrdersHost"></div>
+  </div>
+
+  <div class="profile-wrap gm-pane" id="gmPane-wishlist" hidden>
+    <div class="profile-card">
+      <div class="profile-card-hd">
+        <i class="fa-regular fa-heart"></i>
+        <h3>আমার উইশলিস্ট</h3>
+        <span id="gmWishCount" class="gm-count"></span>
+        <button type="button" class="gm-link-btn" id="gmWishClear" onclick="gmClearWishlist()"><i class="fa-solid fa-trash-can"></i> সব মুছুন</button>
+      </div>
+      <div class="profile-card-body">
+        <div class="pgrid" id="gmWishGrid"></div>
+        <div id="gmWishEmpty" style="display:none;text-align:center;padding:36px 10px">
+          <i class="fa-regular fa-heart" style="font-size:3rem;color:var(--text-light);opacity:.25;display:block;margin-bottom:12px"></i>
+          <div class="bn" style="font-size:1rem;font-weight:700;color:var(--text-mid);margin-bottom:6px">উইশলিস্ট খালি আছে</div>
+          <div class="bn" style="font-size:.82rem;color:var(--text-light)">পণ্যের পেজে হার্ট আইকনে ক্লিক করে উইশলিস্টে যোগ করুন।</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-wrap gm-pane" id="gmPane-coupons" hidden>
+    <div class="profile-card">
+      <div class="profile-card-hd">
+        <i class="fa-solid fa-ticket"></i>
+        <h3>কুপন ও অফার</h3>
+        <button type="button" class="gm-link-btn gm-back" onclick="gmSwitchPane('profile')"><i class="fa-solid fa-arrow-left"></i> প্রোফাইল</button>
+      </div>
+      <div class="profile-card-body">
+        <div class="gm-sub bn">আমাদের পক্ষ থেকে শুধু আপনার জন্য দেওয়া কুপনগুলো এখানে দেখাবে।</div>
+        <div id="gmCouponList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-wrap gm-pane" id="gmPane-settings" hidden>
+    <div class="profile-card">
+      <div class="profile-card-hd">
+        <i class="fa-solid fa-gear"></i>
+        <h3>সেটিংস</h3>
+      </div>
+      <div class="profile-card-body">
+        <div class="gm-sub bn">সাইট কেমন দেখাবে ও কোন ভাষায় চলবে তা বেছে নিন</div>
+        <div id="profileSettingsBody"></div>
+      </div>
+    </div>
   </div>
 </div><!-- /#page-profile -->
 
@@ -8638,11 +8689,11 @@ function openAccountSheet() {
       <div class="acct-who"><div class="acct-nm">${esc(name)}</div><div class="acct-em">${esc(email)}</div></div>
       <button class="st-x" type="button" onclick="closeAccountSheet()" aria-label="বন্ধ করুন">✕</button>
     </div>
-    ${item('fa-solid fa-box', 'আমার অর্ডার', 'openTrack()')}
-    ${item('fa-regular fa-heart', 'উইশলিস্ট', 'openWishlistPage()')}
     ${item('fa-solid fa-user-pen', 'আমার প্রোফাইল', 'openProfilePage()')}
-    ${item('fa-solid fa-ticket', 'কুপন ও অফার', "toast('কুপন ও অফার','শীঘ্রই আসছে','i')")}
-    ${item('fa-solid fa-gear', 'সেটিংস', 'openSettings()')}
+    ${item('fa-solid fa-box', 'আমার অর্ডার', "gmOpenAccount('orders')")}
+    ${item('fa-regular fa-heart', 'উইশলিস্ট', "gmOpenAccount('wishlist')")}
+    ${item('fa-solid fa-ticket', 'কুপন ও অফার', "gmOpenAccount('coupons')")}
+    ${item('fa-solid fa-gear', 'সেটিংস', "gmOpenAccount('settings')")}
     <div class="acct-div"></div>
     ${item('fa-solid fa-right-from-bracket', 'লগআউট', "signOut();closePage('profile')", true)}
   </div>`;
@@ -10886,6 +10937,12 @@ async function lookupCoupon(code) {
   const { data, error } = await sbQuery(() => sb.from('coupons').select('*').eq('code', code).maybeSingle(), 'কুপন যাচাই');
   if (error) return { ok: false, silent: !!error.isTimeout, msg: 'কুপন যাচাই করা যায়নি — আবার চেষ্টা করুন', type: 'e' };
   if (!data) return { ok: false, msg: 'এই কুপন কোড বিদ্যমান নেই — বানানটি পরীক্ষা করুন', type: 'e' };
+  // কাস্টমার-নির্দিষ্ট কুপন: শুধু যাকে দেওয়া হয়েছে সেই ব্যবহার করতে পারবে
+  if (data.assigned_user_id || data.assigned_email) {
+    const _uid = currentUser && currentUser.id, _em = ((currentUser && currentUser.email) || '').toLowerCase();
+    const _mine = (_uid && data.assigned_user_id && String(data.assigned_user_id) === String(_uid)) || (_em && data.assigned_email && String(data.assigned_email).toLowerCase() === _em);
+    if (!_mine) return { ok: false, msg: currentUser ? `"${code}" কুপনটি আপনার অ্যাকাউন্টের জন্য নয়` : 'এই কুপনটি ব্যবহার করতে আগে লগইন করুন', type: 'w' };
+  }
   if (!data.is_active) return { ok: false, msg: `"${code}" কুপনটি বর্তমানে নিষ্ক্রিয়`, type: 'w' };
   if (data.expiry && new Date(String(data.expiry).slice(0, 10) + 'T23:59:59+06:00') < new Date()) return { ok: false, msg: `"${code}" কুপনের মেয়াদ শেষ হয়ে গেছে`, type: 'w' };
   if ((Number(data.max_uses) || 0) > 0 && (Number(data.used_count) || 0) >= Number(data.max_uses)) return { ok: false, msg: `"${code}" কুপনটি ইতিমধ্যে ব্যবহার হয়ে গেছে — আর ব্যবহার করা যাবে না`, type: 'w' };
@@ -19327,5 +19384,190 @@ async function oaSubmit(){
   .ps-div{height:1px;background:var(--border);margin:6px 4px}
 }
 </style>
+
+<style id="gm-account-panes-css">
+.gm-pane[hidden]{display:none!important}
+.gm-back{display:none}
+@media (max-width:1099px){.gm-back{display:inline-flex}}
+.gm-count{margin-left:auto;font:700 .72rem 'Hind Siliguri',sans-serif;color:var(--blue);background:var(--blue-light);padding:3px 10px;border-radius:100px}
+.gm-link-btn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:600 .76rem 'Hind Siliguri',sans-serif;color:var(--blue);padding:4px 8px;border-radius:6px}
+.gm-count + .gm-link-btn{margin-left:8px}
+.gm-link-btn:hover{background:var(--blue-light)}
+.gm-sub{font-size:.8rem;color:var(--text-light);margin-bottom:14px;line-height:1.6}
+#gmWishGrid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.gm-cp{display:flex;border:1.5px dashed var(--blue-mid,#e3b3b3);border-radius:14px;background:var(--dbgffffff,#fff);overflow:hidden;margin-bottom:12px;position:relative}
+.gm-cp-l{flex:0 0 104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px 8px;background:linear-gradient(135deg,var(--blue-light),var(--dbge8f3ff,#fbeeee));border-right:1.5px dashed var(--blue-mid,#e3b3b3);text-align:center}
+.gm-cp-val{font:800 1.25rem 'Sora','Hind Siliguri',sans-serif;color:var(--blue-dark,#8a1f20);line-height:1.15}
+.gm-cp-t{font:600 .72rem 'Hind Siliguri',sans-serif;color:var(--text-mid)}
+.gm-cp-r{flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.gm-cp-code{display:inline-flex;align-self:flex-start;align-items:center;gap:8px;font:700 .95rem 'Sora',monospace;letter-spacing:.06em;color:var(--text);background:var(--dbgf3f4f6,#f6f1f1);padding:4px 10px;border-radius:8px}
+.gm-cp-desc{font:500 .82rem 'Hind Siliguri',sans-serif;color:var(--text)}
+.gm-cp-meta{font:.74rem 'Hind Siliguri',sans-serif;color:var(--text-light);line-height:1.6}
+.gm-cp-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.gm-cp-btn{padding:7px 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--white);color:var(--text);font:600 .78rem 'Hind Siliguri',sans-serif;cursor:pointer}
+.gm-cp-btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.gm-cp-btn:hover{border-color:var(--blue)}
+.gm-cp-pill{position:absolute;top:8px;right:10px;font:700 .68rem 'Hind Siliguri',sans-serif;padding:2px 9px;border-radius:100px;background:#fee2e2;color:#b91c1c}
+.gm-cp.off{opacity:.62}
+.gm-cp.off .gm-cp-l{filter:grayscale(.8)}
+@media (max-width:520px){.gm-cp-l{flex-basis:84px}.gm-cp-val{font-size:1.05rem}}
+</style>
+<script>
+/* ═══ অ্যাকাউন্ট প্যানেল: প্রোফাইল / অর্ডার / উইশলিস্ট / কুপন / সেটিংস — সব একই পেজে ═══ */
+(function(){
+  var PANES = ['profile','orders','wishlist','coupons','settings'];
+  var cur = 'profile', ordersNode = null, ordersMarker = null;
+
+  function $(id){ return document.getElementById(id); }
+  function safeEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  /* ── অর্ডার: ট্র্যাক পেজের "আমার অর্ডার" বক্সটাই এখানে বসানো হয় (একই লজিক, একই আইডি) ── */
+  function adoptOrders(){
+    var host = $('gmOrdersHost'); if(!host) return false;
+    if(!ordersNode){
+      ordersNode = document.querySelector('#page-track .tp-grid > .tp-panel:not(.tp-search-panel)');
+      if(!ordersNode) return false;
+      ordersMarker = document.createComment('gm-orders-origin');
+      ordersNode.parentNode.insertBefore(ordersMarker, ordersNode);
+    }
+    host.appendChild(ordersNode);
+    return true;
+  }
+  function restoreOrders(){
+    if(ordersNode && ordersMarker && ordersMarker.parentNode && ordersNode.parentNode && ordersNode.parentNode.id === 'gmOrdersHost'){
+      ordersMarker.parentNode.insertBefore(ordersNode, ordersMarker.nextSibling);
+    }
+  }
+
+  /* ── উইশলিস্ট ── */
+  function renderWish(){
+    var grid = $('gmWishGrid'); if(!grid) return;
+    var ids = getWishlistIds();
+    var list = products.filter(function(p){ return ids.indexOf(String(p.id)) !== -1; });
+    var cnt = $('gmWishCount'), empty = $('gmWishEmpty'), clr = $('gmWishClear');
+    if(cnt) cnt.textContent = list.length + ' টি পণ্য';
+    if(clr) clr.style.display = list.length ? '' : 'none';
+    if(!list.length){ grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = list.map(function(p){ return buildProductCard(p); }).join('');
+  }
+  window.gmClearWishlist = function(){
+    if(!confirm('উইশলিস্ট থেকে সব পণ্য মুছে ফেলবেন?')) return;
+    saveWishlistIds([]); renderWish();
+    toast('মুছে ফেলা হয়েছে','উইশলিস্ট খালি করা হয়েছে','i');
+  };
+  (function(){ var _s = window.saveWishlistIds; if(typeof _s !== 'function') return;
+    window.saveWishlistIds = function(){ var r = _s.apply(this, arguments); if(cur === 'wishlist') setTimeout(renderWish, 0); return r; }; })();
+
+  /* ── কুপন ও অফার (অ্যাডমিন যে কুপন এই কাস্টমারকে দিয়েছে) ── */
+  function fmtDate(d){ try { return new Date(String(d).slice(0,10)+'T00:00:00+06:00').toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'}); } catch(e){ return String(d).slice(0,10); } }
+  function bnNum(n){ try { return Number(n).toLocaleString('bn-BD'); } catch(e){ return n; } }
+  function cpState(c){
+    if(c.is_active === false) return 'নিষ্ক্রিয়';
+    if(c.expiry && new Date(String(c.expiry).slice(0,10)+'T23:59:59+06:00') < new Date()) return 'মেয়াদ শেষ';
+    if((Number(c.max_uses)||0) > 0 && (Number(c.used_count)||0) >= Number(c.max_uses)) return 'ব্যবহার হয়েছে';
+    return '';
+  }
+  async function loadCouponPane(){
+    var box = $('gmCouponList'); if(!box) return;
+    if(!currentUser){ box.innerHTML = '<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)">লগইন করুন</div>'; return; }
+    box.innerHTML = '<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>কুপন লোড হচ্ছে...</div>';
+    var uid = currentUser.id, em = (currentUser.email||'').toLowerCase();
+    var filter = 'assigned_user_id.eq.' + uid + (em ? ',assigned_email.eq.' + em : '');
+    var res;
+    try { res = await sb.from('coupons').select('*').or(filter).order('created_at',{ascending:false}); }
+    catch(e){ res = { error: e }; }
+    if(cur !== 'coupons') return;
+    if(res.error){
+      var missing = /assigned_|column|does not exist/i.test(res.error.message || '');
+      box.innerHTML = missing ? emptyCoupons() : '<div class="bn" style="text-align:center;padding:24px;color:var(--text-light)">কুপন লোড করা যায়নি — একটু পরে আবার চেষ্টা করুন</div>';
+      return;
+    }
+    var list = res.data || [];
+    if(!list.length){ box.innerHTML = emptyCoupons(); return; }
+    list.sort(function(a,b){ return (cpState(a)?1:0) - (cpState(b)?1:0); });
+    box.innerHTML = list.map(function(c){
+      var off = cpState(c);
+      var val = c.discount_type === 'percent' ? bnNum(c.discount_value) + '%' : '৳' + bnNum(c.discount_value);
+      var meta = [];
+      if(Number(c.min_order) > 0) meta.push('ন্যূনতম অর্ডার ৳' + bnNum(c.min_order));
+      if(c.expiry) meta.push('মেয়াদ: ' + fmtDate(c.expiry) + ' পর্যন্ত');
+      var code = safeEsc(c.code);
+      return '<div class="gm-cp' + (off ? ' off' : '') + '">'
+        + (off ? '<span class="gm-cp-pill">' + off + '</span>' : '')
+        + '<div class="gm-cp-l"><div class="gm-cp-val">' + val + '</div><div class="gm-cp-t">ছাড়</div></div>'
+        + '<div class="gm-cp-r">'
+        + '<div class="gm-cp-code">' + code + '</div>'
+        + (c.description ? '<div class="gm-cp-desc">' + safeEsc(c.description) + '</div>' : '')
+        + (meta.length ? '<div class="gm-cp-meta">' + meta.join(' · ') + '</div>' : '')
+        + (off ? '' : '<div class="gm-cp-act"><button type="button" class="gm-cp-btn pri" onclick="gmUseCoupon(\'' + code + '\')"><i class="fa-solid fa-bag-shopping"></i> ব্যবহার করুন</button><button type="button" class="gm-cp-btn" onclick="gmCopyCoupon(\'' + code + '\')"><i class="fa-regular fa-copy"></i> কপি</button></div>')
+        + '</div></div>';
+    }).join('');
+  }
+  function emptyCoupons(){
+    return '<div style="text-align:center;padding:36px 10px"><i class="fa-solid fa-ticket" style="font-size:3rem;color:var(--text-light);opacity:.25;display:block;margin-bottom:12px"></i>'
+      + '<div class="bn" style="font-size:1rem;font-weight:700;color:var(--text-mid);margin-bottom:6px">এখনো কোনো কুপন নেই</div>'
+      + '<div class="bn" style="font-size:.82rem;color:var(--text-light)">আমরা আপনাকে কুপন দিলে এখানে দেখতে পাবেন।</div></div>';
+  }
+  window.gmCopyCoupon = function(code){
+    try { navigator.clipboard.writeText(code).then(function(){ toast('কপি হয়েছে', code, 's'); }, function(){ toast('কোড', code, 'i'); }); }
+    catch(e){ toast('কোড', code, 'i'); }
+  };
+  window.gmUseCoupon = function(code){
+    var i1 = $('couponInput'), i2 = $('checkoutCouponInput');
+    if(i1 && !i1.disabled) i1.value = code;
+    if(i2 && !i2.disabled) i2.value = code;
+    if(typeof cart !== 'undefined' && cart.length){
+      if(typeof appliedCoupon !== 'undefined' && appliedCoupon){ toast('কুপন আগেই প্রয়োগ করা আছে','আগেরটি বাতিল করে নতুন কোড দিন','w'); openCart(); return; }
+      openCart();
+      setTimeout(function(){ try { applyCoupon(); } catch(e){} }, 80);
+    } else {
+      gmCopyCoupon(code);
+      toast('কার্টে বই যোগ করুন','কোডটি কপি হয়েছে — কার্ট/চেকআউটে কুপন ঘরে দিলেই ছাড় পাবেন','i');
+    }
+  };
+
+  /* ── প্যানেল বদল ── */
+  window.gmSwitchPane = function(name){
+    if(PANES.indexOf(name) < 0) name = 'profile';
+    if(cur === 'orders' && name !== 'orders') restoreOrders();
+    cur = name;
+    PANES.forEach(function(n){ var el = $('gmPane-' + n); if(el) el.hidden = (n !== name); });
+    document.querySelectorAll('.profile-side .ps-item[data-pane]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-pane') === name); });
+    if(name === 'orders'){ if(adoptOrders() && typeof tpLoadMyOrders === 'function') tpLoadMyOrders(); }
+    else if(name === 'wishlist') renderWish();
+    else if(name === 'coupons') loadCouponPane();
+    else if(name === 'settings' && typeof gmMountSettings === 'function') gmMountSettings();
+    var pg = $('page-profile'); if(pg) pg.scrollTop = 0;
+  };
+
+  /* হেডার ড্রপডাউন / মোবাইল শিট থেকে: বড় স্ক্রিনে প্রোফাইল পেজেই প্যানেল খুলবে */
+  window.gmOpenAccount = function(pane){
+    if(window.innerWidth < 1100 && pane !== 'coupons'){
+      if(pane === 'orders') return openTrack();
+      if(pane === 'wishlist') return openWishlistPage();
+      if(pane === 'settings') return openSettings();
+    }
+    window._gmWantPane = pane;
+    openProfilePage();
+  };
+
+  (function(){ var _opp = window.openProfilePage; if(typeof _opp !== 'function') return;
+    window.openProfilePage = function(){
+      var want = window._gmWantPane || 'profile'; window._gmWantPane = null;
+      var r = _opp.apply(this, arguments);
+      try { if(currentUser) gmSwitchPane(want); } catch(e){}
+      return r;
+    };
+  })();
+  /* ট্র্যাক পেজ খোলার আগে অর্ডার বক্স তার আসল জায়গায় ফিরিয়ে দেওয়া */
+  (function(){ var _op = window.openPage; if(typeof _op !== 'function') return;
+    window.openPage = function(name){ if(name === 'track') restoreOrders(); return _op.apply(this, arguments); };
+  })();
+  (function(){ var _cp = window.closePage; if(typeof _cp !== 'function') return;
+    window.closePage = function(name){ if(name === 'profile'){ restoreOrders(); } return _cp.apply(this, arguments); };
+  })();
+})();
+</script>
 </body>
 </html>
