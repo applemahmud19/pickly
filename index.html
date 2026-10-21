@@ -3355,6 +3355,10 @@ footer, footer *:not(i):not([class*="fa-"]) {
 }
 .profile-inp::placeholder { color: var(--text-light); }
 .profile-inp:focus { border-color: var(--blue); background: var(--white); box-shadow: var(--glow); }
+/* মোবাইলে প্রোফাইল পেজ হেডারের নিচ থেকে শুরু হোক (আগে top:0 হওয়ায় "হোম" বার ও কার্ডের উপরের অংশ হেডারের নিচে চাপা পড়ত) */
+@media (max-width: 768px) {
+  #page-profile.full-page { top: var(--header-h, 62px) !important; }
+}
 .acct-head{display:flex;align-items:center;gap:12px;padding:6px 2px 14px;margin-bottom:6px;border-bottom:1px solid var(--border)}
 .acct-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15rem;flex-shrink:0;overflow:hidden}
 .acct-av img{width:100%;height:100%;object-fit:cover}
@@ -6871,6 +6875,16 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
       <span class="bc-current">আমার প্রোফাইল</span>
     </nav>
   </div>
+  <!-- ডেস্কটপ: বাম পাশে অ্যাকাউন্ট মেনু -->
+  <aside class="profile-side" aria-label="অ্যাকাউন্ট মেনু">
+    <button type="button" class="ps-item active" onclick="openProfilePage()"><i class="fa-solid fa-user-pen"></i><span>আমার প্রোফাইল</span></button>
+    <button type="button" class="ps-item" onclick="openTrack()"><i class="fa-solid fa-box"></i><span>আমার অর্ডার</span></button>
+    <button type="button" class="ps-item" onclick="openWishlistPage()"><i class="fa-regular fa-heart"></i><span>উইশলিস্ট</span></button>
+    <button type="button" class="ps-item" onclick="toast('কুপন ও অফার','শীঘ্রই আসছে','i')"><i class="fa-solid fa-ticket"></i><span>কুপন ও অফার</span></button>
+    <button type="button" class="ps-item" onclick="openSettings()"><i class="fa-solid fa-gear"></i><span>সেটিংস</span></button>
+    <div class="ps-div"></div>
+    <button type="button" class="ps-item danger" onclick="signOut();closePage('profile')"><i class="fa-solid fa-right-from-bracket"></i><span>লগআউট</span></button>
+  </aside>
   <div class="profile-wrap">
 
     <!-- Avatar + stats card -->
@@ -6935,28 +6949,6 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         </button>
         <button type="button" class="profile-cancel-btn" id="profileCancelBtn" onclick="setProfileMode(false)" style="display:none">বাতিল</button>
         </div>
-      </div>
-    </div>
-
-    <!-- Settings: থিম ও ভাষা -->
-    <div class="profile-card">
-      <div class="profile-card-hd">
-        <i class="fa-solid fa-gear"></i>
-        <h3>সেটিংস</h3>
-      </div>
-      <div class="profile-card-body" id="profileSettingsBody"></div>
-    </div>
-
-    <!-- Danger zone -->
-    <div class="profile-card">
-      <div class="profile-card-hd" style="background:linear-gradient(135deg,var(--dbgfef2f2,#FEF2F2),var(--dbgfff5f5,#FFF5F5))">
-        <i class="fa-solid fa-right-from-bracket" style="color:var(--red)"></i>
-        <h3 style="color:var(--red)">অ্যাকাউন্ট</h3>
-      </div>
-      <div class="profile-card-body">
-        <button onclick="signOut();closePage('profile')" style="display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius-sm);border:1.5px solid var(--red);background:transparent;color:var(--red);font-family:'Hind Siliguri',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all var(--t)" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
-          <i class="fa-solid fa-right-from-bracket"></i> লগআউট করুন
-        </button>
       </div>
     </div>
 
@@ -8652,7 +8644,7 @@ function openAccountSheet() {
     ${item('fa-solid fa-ticket', 'কুপন ও অফার', "toast('কুপন ও অফার','শীঘ্রই আসছে','i')")}
     ${item('fa-solid fa-gear', 'সেটিংস', 'openSettings()')}
     <div class="acct-div"></div>
-    ${item('fa-solid fa-right-from-bracket', 'লগআউট', 'signOut()', true)}
+    ${item('fa-solid fa-right-from-bracket', 'লগআউট', "signOut();closePage('profile')", true)}
   </div>`;
   m.classList.add('open');
 }
@@ -16714,6 +16706,8 @@ async function openProfilePage() {
   _navTo({ page: 'profile' }, 'আমার প্রোফাইল — বুক গ্যালাক্সি', '/profile');
   document.title = 'আমার প্রোফাইল — বুক গ্যালাক্সি';
   openPage('profile');
+  // হেডারের উচ্চতা (সোশ্যাল বার/সার্চ বার লুকানোর পর) নতুন করে মেপে নাও, যেন পেজ ঠিক হেডারের নিচে শুরু হয়
+  if (typeof updateHeaderHeight === 'function') { updateHeaderHeight(); setTimeout(updateHeaderHeight, 120); setTimeout(updateHeaderHeight, 450); }
   if (typeof gmMountSettings === 'function') gmMountSettings();
 
   // Fill static info
@@ -19276,5 +19270,62 @@ async function oaSubmit(){
   if (LANG==='en') { if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',startEnglish); else startEnglish(); }
 })();
 </script>
+
+<!-- ═══ FIX: মোবাইলে প্রোফাইল পেজের উপরের অংশ (হোম বার + প্রথম কার্ড) হেডারের নিচে চাপা পড়া ═══
+     --header-h এর উপর নির্ভর না করে, হেডারের আসল নিচের কিনারা মেপে পেজ ঠিক সেখান থেকে শুরু করা হয় -->
+<script>
+(function(){
+  function fixProfileTop(){
+    var el = document.getElementById('page-profile');
+    var h  = document.getElementById('mainHeader');
+    if(!el || !h) return;
+    if(window.innerWidth > 768){ el.style.removeProperty('top'); return; }
+    var b = Math.max(0, Math.round(h.getBoundingClientRect().bottom));
+    el.style.setProperty('top', b + 'px', 'important');
+    el.scrollTop = el.scrollTop; /* layout re-sync */
+  }
+  function schedule(){
+    fixProfileTop();
+    requestAnimationFrame(fixProfileTop);
+    setTimeout(fixProfileTop, 120);
+    setTimeout(fixProfileTop, 450);
+    setTimeout(fixProfileTop, 900);
+  }
+  var _open = window.openPage;
+  if(typeof _open === 'function'){
+    window.openPage = function(name){
+      var r = _open.apply(this, arguments);
+      if(name === 'profile') schedule();
+      return r;
+    };
+  }
+  window.addEventListener('resize', fixProfileTop);
+  window.addEventListener('orientationchange', function(){ setTimeout(fixProfileTop, 200); });
+})();
+</script>
+<style id="profile-side-css">
+.profile-side{display:none}
+@media (min-width:1100px){
+  #page-profile .profile-side{
+    display:flex;flex-direction:column;gap:4px;
+    position:absolute;top:88px;
+    left:max(16px, calc(50% - 340px - 252px - 20px));
+    width:232px;padding:10px;
+    background:var(--dbgffffff,#fff);border:1px solid var(--border);
+    border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.05);z-index:5;
+  }
+  .ps-item{
+    display:flex;align-items:center;gap:12px;width:100%;
+    padding:12px 14px;border:none;background:transparent;border-radius:10px;
+    font-family:'Hind Siliguri',sans-serif;font-size:.95rem;font-weight:600;
+    color:var(--text);cursor:pointer;text-align:left;transition:background .15s,color .15s;
+  }
+  .ps-item i{width:20px;text-align:center;color:var(--blue);font-size:.95rem}
+  .ps-item:hover{background:var(--blue-light,#fbeeee)}
+  .ps-item.active{background:var(--blue-light,#fbeeee);color:var(--blue-dark,#8a1f20)}
+  .ps-item.danger,.ps-item.danger i{color:#b91c1c}
+  .ps-div{height:1px;background:var(--border);margin:6px 4px}
+}
+</style>
 </body>
 </html>
