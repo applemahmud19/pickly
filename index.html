@@ -3355,6 +3355,17 @@ footer, footer *:not(i):not([class*="fa-"]) {
 }
 .profile-inp::placeholder { color: var(--text-light); }
 .profile-inp:focus { border-color: var(--blue); background: var(--white); box-shadow: var(--glow); }
+.acct-head{display:flex;align-items:center;gap:12px;padding:6px 2px 14px;margin-bottom:6px;border-bottom:1px solid var(--border)}
+.acct-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15rem;flex-shrink:0;overflow:hidden}
+.acct-av img{width:100%;height:100%;object-fit:cover}
+.acct-who{flex:1;min-width:0}
+.acct-nm{font-weight:700;font-size:.98rem;color:var(--text)}
+.acct-em{font-size:.74rem;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-item{display:flex;align-items:center;gap:14px;width:100%;padding:13px 6px;border:0;background:transparent;color:var(--text);font:600 .92rem 'Hind Siliguri',sans-serif;text-align:left;cursor:pointer;border-radius:10px}
+.acct-item i{width:20px;text-align:center;color:var(--text-light);font-size:.95rem}
+.acct-item:active{background:var(--blue-light)}
+.acct-item.danger,.acct-item.danger i{color:#e0393e}
+.acct-div{height:1px;background:var(--border);margin:6px 0}
 .profile-edit-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--blue); background: transparent; color: var(--blue); font-family: 'Hind Siliguri', sans-serif; font-size: .78rem; font-weight: 700; cursor: pointer; transition: all var(--t); }
 .profile-edit-btn:hover { background: var(--blue); color: #fff; }
 .profile-cancel-btn { width: 100%; margin-top: 8px; padding: 10px; border-radius: var(--radius); border: 1.5px solid var(--border); background: transparent; color: var(--text-mid); font-family: 'Hind Siliguri', sans-serif; font-size: .85rem; font-weight: 700; cursor: pointer; }
@@ -6059,7 +6070,7 @@ html.gm-boot #gmSplash{display:flex}
             <a class="adrop-item" onclick="openProfilePage();closeDropdown()">
               <i class="fa-solid fa-user-pen"></i> আমার প্রোফাইল
             </a>
-            <a class="adrop-item" href="#">
+            <a class="adrop-item" onclick="toast('কুপন ও অফার','শীঘ্রই আসছে','i');closeDropdown()">
               <i class="fa-solid fa-ticket"></i> কুপন ও অফার
             </a>
             <a class="adrop-item" onclick="openSettings();closeDropdown()">
@@ -8535,6 +8546,12 @@ async function gmSaveProfileRow(row) {
   let r = await sb.from('profiles').upsert(row, { onConflict: 'id' });
   if (!r.error) return r;
   console.warn('[profile_save] full save failed, retrying minimal:', r.error.message);
+  // মাঝামাঝি চেষ্টা: অন্য কোনো কলাম না থাকলেও ঠিকানা যেন হারিয়ে না যায়
+  if (row.address) {
+    const mid = { id: row.id, full_name: row.full_name || null, phone: row.phone || null, email: row.email || null, address: row.address, updated_at: row.updated_at };
+    const rm = await sb.from('profiles').upsert(mid, { onConflict: 'id' });
+    if (!rm.error) return rm;
+  }
   const min = { id: row.id, full_name: row.full_name || null, phone: row.phone || null, email: row.email || null, updated_at: row.updated_at };
   const r2 = await sb.from('profiles').upsert(min, { onConflict: 'id' });
   if (r2.error) console.warn('[profile_save] minimal save failed:', r2.error.message);
@@ -8596,9 +8613,9 @@ function handleAuthClick() {
     openAuth();
     return;
   }
-  // Mobile → সরাসরি profile page খোলো
+  // Mobile → ওয়েবের ড্রপডাউনের মতো অপশন-শিট (অর্ডার, উইশলিস্ট, প্রোফাইল, কুপন, সেটিংস, লগআউট)
   if (window.innerWidth <= 768) {
-    if (typeof openProfilePage === 'function') openProfilePage();
+    openAccountSheet();
     return;
   }
   // Desktop → dropdown টগল
@@ -8606,6 +8623,38 @@ function handleAuthClick() {
   if (!dd) return;
   const isOpen = dd.style.display === 'block';
   dd.style.display = isOpen ? 'none' : 'block';
+}
+
+function closeAccountSheet() { const m = document.getElementById('acctSheet'); if (m) m.classList.remove('open'); }
+function openAccountSheet() {
+  if (!currentUser) { openAuth(); return; }
+  const name  = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
+  const email = currentUser.email || '';
+  const av    = currentUser.user_metadata?.avatar_url;
+  const esc   = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let m = document.getElementById('acctSheet');
+  if (!m) {
+    m = document.createElement('div'); m.id = 'acctSheet'; m.className = 'st-ov';
+    m.onclick = e => { if (e.target === m) closeAccountSheet(); };
+    document.body.appendChild(m);
+  }
+  const item = (icon, label, act, danger) =>
+    `<button type="button" class="acct-item${danger ? ' danger' : ''}" onclick="closeAccountSheet();${act}"><i class="${icon}"></i><span>${label}</span></button>`;
+  m.innerHTML = `<div class="st-md">
+    <div class="acct-head">
+      <div class="acct-av">${av ? `<img src="${esc(av)}" alt="">` : esc(name.charAt(0).toUpperCase())}</div>
+      <div class="acct-who"><div class="acct-nm">${esc(name)}</div><div class="acct-em">${esc(email)}</div></div>
+      <button class="st-x" type="button" onclick="closeAccountSheet()" aria-label="বন্ধ করুন">✕</button>
+    </div>
+    ${item('fa-solid fa-box', 'আমার অর্ডার', 'openTrack()')}
+    ${item('fa-regular fa-heart', 'উইশলিস্ট', 'openWishlistPage()')}
+    ${item('fa-solid fa-user-pen', 'আমার প্রোফাইল', 'openProfilePage()')}
+    ${item('fa-solid fa-ticket', 'কুপন ও অফার', "toast('কুপন ও অফার','শীঘ্রই আসছে','i')")}
+    ${item('fa-solid fa-gear', 'সেটিংস', 'openSettings()')}
+    <div class="acct-div"></div>
+    ${item('fa-solid fa-right-from-bracket', 'লগআউট', 'signOut()', true)}
+  </div>`;
+  m.classList.add('open');
 }
 
 function closeDropdown() {
@@ -11448,6 +11497,7 @@ async function placeOrder() {
       email: email || currentUser.email || null,
       district, upazila, union_area: thana,
       full_address: address,
+      address: [address, thana, upazila, district].filter(Boolean).join(', '),
       updated_at: new Date().toISOString()
     }).then(({error:pe}) => {
       if (pe) console.warn('[profile_autosave] failed (non-critical):', pe.message);
@@ -16681,11 +16731,11 @@ async function openProfilePage() {
 
   // Load profile from Supabase (profiles table)
   const { data: prof } = await sb.from('profiles')
-    .select('full_name,phone,address').eq('id', currentUser.id).single();
+    .select('*').eq('id', currentUser.id).maybeSingle();
   if (prof) {
     document.getElementById('profileName').value    = prof.full_name || name;
     document.getElementById('profilePhone').value   = prof.phone    || '';
-    document.getElementById('profileAddress').value = prof.address  || '';
+    document.getElementById('profileAddress').value = prof.address  || prof.full_address || '';
   } else {
     document.getElementById('profileName').value = name;
   }
