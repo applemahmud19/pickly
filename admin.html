@@ -4088,6 +4088,12 @@ end $$;
           <label class="form-label">Description (Optional)</label>
           <input class="form-inp" type="text" id="promoDesc" placeholder="e.g. New Year Special Offer">
         </div>
+        <div class="form-group">
+          <label class="form-label">কাস্টমারকে দিন (ঐচ্ছিক)</label>
+          <input class="form-inp" type="text" id="promoCustomer" list="promoCustomerList" placeholder="নাম / ইমেইল / ফোন লিখে বেছে নিন — ফাঁকা = সবার জন্য" autocomplete="off">
+          <datalist id="promoCustomerList"></datalist>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:5px;font-family:var(--font-bn);line-height:1.5">কাস্টমার বেছে নিলে শুধু সেই কাস্টমারই কুপনটি ব্যবহার করতে পারবে এবং নিজের প্রোফাইলের "কুপন ও অফার"-এ দেখতে পাবে।</div>
+        </div>
         <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
           <button class="btn btn-ghost" onclick="closeModal('promoModal')">Cancel</button>
           <button class="btn btn-primary" onclick="savePromo()" id="savePromoBtn">
@@ -8809,12 +8815,49 @@ async function loadPromosFromSupabase() {
     usedCount: Number(r.used_count) || 0,
     expiry: r.expiry ? String(r.expiry).slice(0, 10) : null,
     desc: r.description || '',
+    assignedUserId: r.assigned_user_id || null,
+    assignedEmail: r.assigned_email || '',
+    assignedName: r.assigned_name || '',
     isActive: r.is_active !== false,
     createdAt: r.created_at || null
   }));
   localStorage.setItem('gm_promos', JSON.stringify(allPromos));
   renderPromos();
 }
+
+// ── কুপন → কাস্টমার বেছে নেওয়ার তালিকা ──
+const _UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+let _promoCustMap = {};
+function _promoCustLabel(u) { return (u.name || 'Unknown') + (u.email ? ' · ' + u.email : '') + (u.phone ? ' · ' + u.phone : ''); }
+function fillPromoCustomerList() {
+  const dl = document.getElementById('promoCustomerList'); if (!dl) return;
+  _promoCustMap = {};
+  const list = (typeof allUsers !== 'undefined' && allUsers) ? allUsers : [];
+  dl.innerHTML = list.filter(u => u.email || _UUID_RE.test(String(u.id))).map(u => {
+    const label = _promoCustLabel(u);
+    _promoCustMap[label] = u;
+    return '<option value="' + label.replace(/"/g, '&quot;') + '"></option>';
+  }).join('');
+  if (!list.length && typeof loadUsers === 'function' && !window._promoUsersLoading) {
+    window._promoUsersLoading = true;
+    Promise.resolve(loadUsers(0, true)).catch(() => {}).then(() => { window._promoUsersLoading = false; fillPromoCustomerList(); });
+  }
+}
+function resolvePromoCustomer(text) {
+  const t = String(text || '').trim().toLowerCase();
+  let u = _promoCustMap[text.trim()];
+  if (!u) {
+    const list = (typeof allUsers !== 'undefined' && allUsers) ? allUsers : [];
+    u = list.find(x => (x.email || '').toLowerCase() === t || (x.phone || '') === text.trim() || (x.name || '').toLowerCase() === t);
+  }
+  if (!u) return null;
+  return { uuid: _UUID_RE.test(String(u.id)) ? String(u.id) : null, email: (u.email || '').toLowerCase(), name: u.name || '' };
+}
+// "নতুন প্রমো" খুললে কাস্টমার তালিকা ভরে দেয়
+(function () {
+  const _om = window.openModal;
+  window.openModal = function (id) { if (id === 'promoModal') fillPromoCustomerList(); return _om.apply(this, arguments); };
+})();
 
 function generatePromoCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -8847,7 +8890,21 @@ async function savePromo() {
     toast('Duplicate Code', `"${code}" কোড ইতিমধ্যে আছে`, 'error'); return;
   }
 
-  const promo = { id: id || code, code, type, value, minOrder, maxUses, usedCount: 0, expiry: expiry || null, desc, isActive: true, createdAt: new Date().toISOString() };
+  // ── কাস্টমার নির্ধারণ (ফাঁকা = সবার জন্য) ──
+  const custText = (document.getElementById('promoCustomer').value || '').trim();
+  let cust = null;
+  if (custText) {
+    cust = resolvePromoCustomer(custText);
+    if (!cust) { toast('কাস্টমার পাওয়া যায়নি', 'তালিকা থেকে একজন কাস্টমার বেছে নিন, অথবা ঘরটি ফাঁকা রাখুন', 'error'); return; }
+  }
+  const prevPromo = id ? allPromos.find(x => x.id == id) : null;
+  const hadAssign = !!(prevPromo && (prevPromo.assignedUserId || prevPromo.assignedEmail));
+  let maxUsesFinal = maxUses;
+  if (cust && maxUsesFinal === 0) { maxUsesFinal = 1; document.getElementById('promoMaxUses').value = 1; toast('Max Uses = 1', 'কাস্টমার-কুপন ডিফল্টভাবে একবার ব্যবহারযোগ্য রাখা হয়েছে', 'info'); }
+
+  const promo = { id: id || code, code, type, value, minOrder, maxUses: maxUsesFinal, usedCount: 0, expiry: expiry || null, desc,
+    assignedUserId: cust ? cust.uuid : null, assignedEmail: cust ? cust.email : '', assignedName: cust ? cust.name : '',
+    isActive: true, createdAt: new Date().toISOString() };
 
   // ── 10-second timeout guard ──
   const timeoutId = setTimeout(() => {
@@ -8862,10 +8919,16 @@ async function savePromo() {
         discount_type: type === 'percent' ? 'percent' : 'fixed',
         discount_value: value,
         min_order: minOrder,
-        max_uses: maxUses,
+        max_uses: maxUsesFinal,
         expiry: expiry || null,
         description: desc || null,
       };
+      // কাস্টমার-কুপন হলে (বা আগে কাস্টমারের ছিল, এখন সবার জন্য করা হলে) এই কলামগুলো পাঠানো হয়
+      if (cust || hadAssign) {
+        couponPayload.assigned_user_id = cust ? cust.uuid : null;
+        couponPayload.assigned_email   = cust ? cust.email : null;
+        couponPayload.assigned_name    = cust ? cust.name : null;
+      }
       if (!id) couponPayload.is_active = true;
       if (id) {
         const { error } = await sb.from('coupons').update(couponPayload).eq('code', code);
@@ -8919,6 +8982,7 @@ function clearPromoForm() {
   document.getElementById('promoMaxUses').value = '0';
   document.getElementById('promoExpiry').value = '';
   document.getElementById('promoDesc').value = '';
+  document.getElementById('promoCustomer').value = '';
   document.getElementById('promoModalTitle').textContent = 'নতুন প্রমো কোড তৈরি করুন';
   updatePromoValueLabel();
 }
@@ -8934,6 +8998,8 @@ function editPromo(id) {
   document.getElementById('promoMaxUses').value = p.maxUses;
   document.getElementById('promoExpiry').value = p.expiry || '';
   document.getElementById('promoDesc').value = p.desc || '';
+  fillPromoCustomerList();
+  document.getElementById('promoCustomer').value = (p.assignedUserId || p.assignedEmail) ? ((p.assignedName || 'Customer') + (p.assignedEmail ? ' · ' + p.assignedEmail : '')) : '';
   document.getElementById('promoModalTitle').textContent = 'প্রমো কোড এডিট করুন';
   updatePromoValueLabel();
   openModal('promoModal');
@@ -8987,7 +9053,7 @@ function renderPromos() {
     const statusClass = (!p.isActive || expired || maxed) ? 'pill-inactive' : 'pill-active';
     const statusText = expired ? 'Expired' : maxed ? 'Maxed' : p.isActive ? 'Active' : 'Inactive';
     return `<tr>
-      <td><span class="promo-code-chip" onclick="copyPromoCode('${p.code}')" title="Click to copy"><i class="fa-solid fa-copy" style="font-size:0.65rem;color:var(--text3)"></i>${p.code}</span></td>
+      <td><span class="promo-code-chip" onclick="copyPromoCode('${p.code}')" title="Click to copy"><i class="fa-solid fa-copy" style="font-size:0.65rem;color:var(--text3)"></i>${p.code}</span>${(p.assignedUserId || p.assignedEmail) ? `<div style="font-size:0.68rem;color:var(--text2);margin-top:5px;font-family:var(--font-bn)"><i class="fa-solid fa-user" style="font-size:0.6rem;color:var(--text3)"></i> ${(p.assignedName || p.assignedEmail || 'Customer').replace(/</g,'&lt;')}</div>` : ''}</td>
       <td><span style="font-size:0.72rem;font-family:var(--mono);background:var(--bg3);padding:2px 8px;border-radius:5px;color:var(--text2)">${p.type === 'percent' ? 'PERCENT' : 'FLAT'}</span></td>
       <td style="font-weight:700;color:var(--green)">${p.type === 'percent' ? p.value + '%' : '৳' + p.value.toLocaleString()}</td>
       <td style="font-family:var(--mono);font-size:0.78rem">${p.minOrder > 0 ? '৳' + p.minOrder.toLocaleString() : '—'}</td>
