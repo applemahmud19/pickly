@@ -18377,10 +18377,23 @@ function isSkipped(p){return S.skipped.indexOf(String(p.id))>-1}
 function bnNum(n){return String(n).replace(/\d/g,function(d){return '০১২৩৪৫৬৭৮৯'[d]})}
 function subSlug(p){return p.sub_category?(makeSlug(p.sub_category)||lc(p.sub_category)):''}
 /* ধরন মেলানো: 'any' | মূল ক্যাটাগরি slug | 'sub:<সাব-ক্যাটাগরি slug>' */
+function nameKey(s){return lc(s).replace(/\s+/g,' ').trim()}
+var _gtCache={};
+function genreTarget(cat){
+  if(_gtCache[cat]!==undefined)return _gtCache[cat];
+  var isSub=cat.indexOf('sub:')===0,key=isSub?cat.slice(4):cat,t='';
+  var all=books();
+  for(var i=0;i<all.length;i++){
+    var p=all[i];
+    if(isSub?subSlug(p)===key:bookCatSlug(p)===key){t=nameKey(isSub?p.sub_category:p.category);break}
+  }
+  return (_gtCache[cat]=t);
+}
 function genreMatch(p,cat){
   if(!cat||cat==='any')return null;
-  if(cat.indexOf('sub:')===0)return subSlug(p)===cat.slice(4);
-  return bookCatSlug(p)===cat;
+  var t=genreTarget(cat);
+  if(!t)return false;
+  return nameKey(p.category)===t||nameKey(p.sub_category)===t;
 }
 /* ধাপ ২-এর অপশন: নির্বাচিত মুডের বইগুলো যে যে মূল ও সাব-ক্যাটাগরিতে আছে, শুধু সেগুলো */
 function genreOptions(){
@@ -18388,16 +18401,19 @@ function genreOptions(){
   var pool=books().filter(inStock).filter(function(p){return !isSkipped(p)});
   var fromMood=false;
   if(mood){var mp=pool.filter(function(p){return moodEvidence(p,mood)});if(mp.length){pool=mp;fromMood=true}}
+  _gtCache={};
   var map={};
-  function add(key,name,icon,p){
-    if(!map[key])map[key]={slug:key,name:name,icon:icon,n:0};
-    map[key].n++;
+  function add(slug,name,icon,p){
+    var key=nameKey(name);if(!key)return;
+    if(!map[key])map[key]={slug:slug,name:String(name).trim(),icon:icon,n:0,ids:{}};
+    if(map[key].ids[p.id])return;           // একই বই একই অপশনে দুবার নয়
+    map[key].ids[p.id]=1;map[key].n++;
   }
   pool.forEach(function(p){
     var ck=bookCatSlug(p),c=(allCategories||[]).find(function(x){return x.name===p.category});
     if(p.category)add(ck,p.category,(c&&c.icon)||'fa-book',p);
     var ss=subSlug(p);
-    if(ss&&ss!==ck&&lc(p.sub_category)!==lc(p.category))add('sub:'+ss,p.sub_category,'fa-bookmark',p);
+    if(ss)add('sub:'+ss,p.sub_category,'fa-bookmark',p);
   });
   var opts=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return b.n-a.n}).slice(0,11);
   return {opts:opts,mood:mood,fromMood:fromMood};
@@ -18413,14 +18429,21 @@ function kwHit(hay,k){
   if(/^[a-z0-9 ]+$/.test(k))return new RegExp('(^|[^a-z0-9])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z0-9]|$)').test(hay);
   return hay.indexOf(k)>-1;
 }
+function moodHasTags(mood){
+  var k='_ht'+S.loadedAt;
+  if(mood[k]===undefined){mood[k]=Object.keys(S.tags).some(function(id){return S.tags[id][mood.slug]})}
+  return mood[k];
+}
 function moodEvidence(p,mood){
   var tg=S.tags[String(p.id)];
   if(tg&&tg[mood.slug])return {type:'tag',w:1};
+  /* অ্যাডমিন এই মুডে বই ট্যাগ করে থাকলে শুধু ট্যাগ করা বই-ই দেখানো হবে — অনুমানে কোনো বই নয় */
+  if(moodHasTags(mood))return null;
   if(!mood.kw.length)return null;
   var head=lc(p.name)+' '+lc(p.category)+' '+lc(p.sub_category);
   if(mood.kw.some(function(k){return kwHit(head,k)}))return {type:'kw',w:.6};
   var d=lc(String(p.description||'').replace(/<[^>]*>/g,' '));
-  if(mood.kw.filter(function(k){return kwHit(d,k)}).length>=2)return {type:'kw',w:.4};
+  if(mood.kw.filter(function(k){return kwHit(d,k)}).length>=3)return {type:'kw',w:.4};
   return null;
 }
 function evaluate(p,a,mood,bud){
@@ -18446,6 +18469,7 @@ function evaluate(p,a,mood,bud){
 /* সাজানোর নিয়ম: আগে ক্যাটাগরি+মুড+বাজেট ফিল্টার, তারপর রেটিং (বেশি → কম), সমান হলে ম্যাচ% ও ছাড় */
 function cmp(x,y){return (y.rating-x.rating)||(y.pct-x.pct)||(y.quality-x.quality)}
 function recommend(a,noMood){
+  _gtCache={};
   var mood=(a.mood&&a.mood!=='any'&&!noMood)?moodBy(a.mood):null,bud=budgetBy(a.budget);
   var all=books().filter(inStock).map(function(p){return evaluate(p,a,mood,bud)});
   var pool=all.filter(function(r){return !isSkipped(r.p)});   // আগেই পড়া/স্কিপ করা বই বাদ
