@@ -5708,6 +5708,13 @@ html, body {
 .bud-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border,var(--dbde5e7eb,#e5e7eb));background:var(--dbgffffff,#fff);color:var(--text-mid,var(--dfg555555,#555));font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s}
 .bud-chip:hover{border-color:var(--blue,#AA2C2D);color:var(--blue,var(--dfgaa2c2d,#AA2C2D))}
 .bud-chip.on{background:var(--blue,#AA2C2D);border-color:var(--blue,#AA2C2D);color:#fff}
+/* ক্যাটাগরি হিরোর ভেতরের সাব-ক্যাটাগরি চিপ */
+#catPageSubs{flex:1 1 320px;min-width:0;display:none;flex-wrap:wrap;gap:7px;justify-content:flex-end;align-content:center;max-height:92px;overflow-y:auto;scrollbar-width:thin}
+.cps-chip{padding:6px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.16);color:#fff;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.cps-chip:hover{background:rgba(255,255,255,.3)}
+.cps-chip.on{background:#fff;color:#711D1E;border-color:#fff;font-weight:800}
+.cps-chip small{opacity:.8;font-weight:500;margin-left:3px}
+@media(max-width:700px){#catPageSubs{flex-basis:100%;justify-content:flex-start;max-height:none}}
 @media (max-width:880px){ #budgetBars{padding:0 12px !important} }
 #homeReviewsSec{container-type:inline-size}
 .rv-row{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
@@ -6484,12 +6491,13 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   </div>
   <!-- Category hero strip -->
   <div id="catPageHero" style="background:linear-gradient(120deg,var(--blue),var(--blue-dark));padding:24px 28px 20px;color:white">
-    <div style="display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:14px;max-width:1100px;margin:0 auto">
       <div id="catPageIcon" style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0"></div>
       <div>
         <div id="catPageTitle" style="font-family:'Hind Siliguri',sans-serif;font-size:1.4rem;font-weight:900;line-height:1.2;letter-spacing:-.01em"></div>
         <div id="catPageSubtitle" style="font-family:'Hind Siliguri',sans-serif;font-size:.8rem;opacity:.85;margin-top:3px"></div>
       </div>
+      <div id="catPageSubs"></div>
     </div>
   </div>
   <!-- বাজেট ফিল্টার (শুধু /budget/<টাকা> পেজে দেখায়) -->
@@ -16599,6 +16607,46 @@ function getCatMeta(cat) {
 // CATEGORY FULL PAGE
 // ══════════════════════════════════════════════════
 let currentCatPage = 'সব';
+let currentCatSub = '';            // বাছাই করা সাব-ক্যাটাগরি ('' = সব)
+
+/* ── সাব-ক্যাটাগরি চিপ (ক্যাটাগরি পেজের হিরো স্ট্রিপে) ──
+   উৎস: Supabase `sub_categories` (এডমিনে বানানো) + পণ্যের নিজের sub_category। ক্লিকে ওই সাব-ক্যাটাগরির পণ্য ফিল্টার হয়। */
+let _catSubRows = null, _catSubLoading = null;
+function _cpsEsc(v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function _subKey(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+function _loadCatSubRows() {
+  if (_catSubRows) return Promise.resolve(_catSubRows);
+  if (_catSubLoading) return _catSubLoading;
+  _catSubLoading = (async () => {
+    let rows = [];
+    try { const { data } = await sb.from('sub_categories').select('*'); if (Array.isArray(data)) rows = data; }
+    catch (e) { try { rows = JSON.parse(localStorage.getItem('gm_subcats') || '[]') || []; } catch (e2) {} }
+    _catSubRows = rows; _catSubLoading = null;
+    return rows;
+  })();
+  return _catSubLoading;
+}
+function renderCatSubChips() {
+  const box = document.getElementById('catPageSubs'); if (!box) return;
+  const cat = currentCatPage;
+  if (cat === 'সব' || currentBudget || currentSearchMode || currentAllMode) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const inCat = products.filter(p => p.category === cat);
+  const map = new Map();                                    // key → { name, n }
+  const add = (name) => { const k = _subKey(name); if (k && !map.has(k)) map.set(k, { name: String(name).trim(), n: 0 }); return map.get(k); };
+  (_catSubRows || []).forEach(r => { if (r.category_name === cat) add(r.name || r.sub_name); });
+  inCat.forEach(p => { const e = add(p.sub_category); if (e) e.n++; });
+  const items = [...map.values()].sort((a, b) => (b.n - a.n) || a.name.localeCompare(b.name, 'bn'));
+  if (!items.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  if (currentCatSub && !map.has(_subKey(currentCatSub))) currentCatSub = '';
+  box.innerHTML = `<button type="button" class="cps-chip${currentCatSub ? '' : ' on'}" data-csub="">সব<small>${_bnDigits(inCat.length)}</small></button>` +
+    items.map(it => `<button type="button" class="cps-chip${_subKey(currentCatSub) === _subKey(it.name) ? ' on' : ''}" data-csub="${_cpsEsc(it.name)}">${_cpsEsc(it.name)}<small>${_bnDigits(it.n)}</small></button>`).join('');
+  box.style.display = 'flex';
+}
+document.addEventListener('click', e => {
+  const c = e.target.closest && e.target.closest('.cps-chip[data-csub]'); if (!c) return;
+  currentCatSub = c.dataset.csub || '';
+  renderCatPageProducts();
+});
 
 function openCatPage(cat, el, pushUrl = true) {
   resetBudgetMode();
@@ -16614,6 +16662,7 @@ function openCatPage(cat, el, pushUrl = true) {
   }
 
   currentCatPage = cat;
+  currentCatSub = '';
   const meta = getCatMeta(cat);
 
   // Hero strip
@@ -16625,6 +16674,7 @@ function openCatPage(cat, el, pushUrl = true) {
   document.getElementById('catPageSort').value = 'popular';
 
   renderCatPageProducts();
+  _loadCatSubRows().then(() => { if (currentCatPage === cat && !currentBudget && !currentSearchMode && !currentAllMode) renderCatSubChips(); });
   const _co = allCategories.find(c => c.name === cat);
   const _cu = '/category/' + (_co ? catSlug(_co) : slugify(cat));
   _navTo({ page: 'category', cat }, `${cat} — বুক গ্যালাক্সি`, _cu, pushUrl);
@@ -16639,17 +16689,19 @@ function closeCatPage() {
 function renderCatPageProducts() {
   const _pgr = document.getElementById('catPagePager'); if (_pgr) _pgr.innerHTML = '';
   const _afb = document.getElementById('allFilterBar'); if (_afb) _afb.style.display = 'none';
-  if (currentBudget) return renderBudgetPageProducts();
-  if (currentSearchMode) return renderSearchPageProducts();
-  if (currentAllMode) return renderAllPageProducts();
+  if (currentBudget) { renderCatSubChips(); return renderBudgetPageProducts(); }
+  if (currentSearchMode) { renderCatSubChips(); return renderSearchPageProducts(); }
+  if (currentAllMode) { renderCatSubChips(); return renderAllPageProducts(); }
+  renderCatSubChips();
   const grid  = document.getElementById('catPageGrid');
   const empty = document.getElementById('catPageEmpty');
-  if (empty && empty.lastElementChild) empty.lastElementChild.textContent = 'এই ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি';
+  if (empty && empty.lastElementChild) empty.lastElementChild.textContent = currentCatSub ? 'এই সাব-ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি' : 'এই ক্যাটাগরিতে এখনো পণ্য যোগ হয়নি';
   const sort  = document.getElementById('catPageSort')?.value || 'popular';
 
   let list = currentCatPage === 'সব'
     ? [...products]
     : products.filter(p => p.category === currentCatPage);
+  if (currentCatSub) list = list.filter(p => _subKey(p.sub_category) === _subKey(currentCatSub));
 
   if (sort === 'low')      list.sort((a,b) => getEffectiveSalePrice(a).displayPrice - getEffectiveSalePrice(b).displayPrice);
   else if (sort === 'high') list.sort((a,b) => getEffectiveSalePrice(b).displayPrice - getEffectiveSalePrice(a).displayPrice);
