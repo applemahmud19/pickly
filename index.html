@@ -19416,10 +19416,24 @@ async function oaSubmit(){
 .gm-cd-box span{display:block;font:600 .64rem 'Hind Siliguri',sans-serif;color:var(--text-mid)}
 .gm-cp-cd.urgent .gm-cd-box{background:#fee2e2}
 .gm-cp-cd.urgent .gm-cd-box b,.gm-cp-cd.urgent .gm-cd-lbl{color:#b91c1c}
-@media (max-width:760px){.gm-cp{flex-wrap:wrap}.gm-cp-r{flex-basis:calc(100% - 104px)}.gm-cp-cd{flex-basis:100%;border-left:0;border-top:1.5px dashed var(--blue-mid,#e3b3b3);padding:10px}.gm-cd-box{min-width:56px}}
+@media (max-width:760px){
+  .gm-cp{display:grid;grid-template-columns:92px 1fr;border-radius:16px;box-shadow:0 2px 10px rgba(170,44,45,.07)}
+  .gm-cp-l{flex:none;padding:12px 6px}
+  .gm-cp-val{font-size:1.4rem}
+  .gm-cp-t{font-size:.75rem}
+  .gm-cp-r{padding:14px 12px;gap:7px;min-width:0}
+  .gm-cp-code{font-size:.9rem;letter-spacing:.05em;padding:5px 10px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .gm-cp-act{flex-wrap:nowrap;gap:8px}
+  .gm-cp-btn{flex:1 1 0;padding:9px 6px;white-space:nowrap;text-align:center;font-size:.76rem}
+  .gm-cp-btn.pri{flex:1.5 1 0}
+  .gm-cp-cd{grid-column:1 / -1;margin:0;border-left:0;border-top:1.5px dashed var(--blue-mid,#e3b3b3);padding:11px 12px 13px;gap:8px;align-items:stretch;background:linear-gradient(180deg,rgba(170,44,45,.03),transparent)}
+  .gm-cd-lbl{text-align:center}
+  .gm-cd-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+  .gm-cd-box{min-width:0;padding:8px 2px;border-radius:11px}
+  .gm-cd-box b{font-size:1.2rem}
+}
 .gm-cp.off{opacity:.62}
 .gm-cp.off .gm-cp-l{filter:grayscale(.8)}
-@media (max-width:520px){.gm-cp-l{flex-basis:84px}.gm-cp-val{font-size:1.05rem}}
 </style>
 <script>
 /* ═══ অ্যাকাউন্ট প্যানেল: প্রোফাইল / অর্ডার / উইশলিস্ট / কুপন / সেটিংস — সব একই পেজে ═══ */
