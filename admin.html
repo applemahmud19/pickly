@@ -8307,7 +8307,7 @@ function navTo(sec) {
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
-  if (sec === 'promos')     renderPromos();
+  if (sec === 'promos')     loadPromosFromSupabase();
   if (sec === 'admins')     renderAdminList();
   if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
@@ -8748,6 +8748,33 @@ function renderBanners() {
 
 let allPromos = JSON.parse(localStorage.getItem('gm_promos') || '[]');
 
+// ── প্রমো কোডের আসল তথ্য Supabase `coupons` টেবিল থেকে আসে (localStorage শুধু অফলাইন ব্যাকআপ) ──
+async function loadPromosFromSupabase() {
+  if (!sb) { renderPromos(); return; }
+  const { data, error } = await sb.from('coupons').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('[loadPromos]', error.message);
+    toast('কুপন লোড হয়নি', error.message, 'error');
+    renderPromos();
+    return;
+  }
+  allPromos = (data || []).map(r => ({
+    id: String(r.code),
+    code: String(r.code).toUpperCase(),
+    type: r.discount_type === 'percent' ? 'percent' : 'flat',
+    value: Number(r.discount_value) || 0,
+    minOrder: Number(r.min_order) || 0,
+    maxUses: Number(r.max_uses) || 0,
+    usedCount: Number(r.used_count) || 0,
+    expiry: r.expiry ? String(r.expiry).slice(0, 10) : null,
+    desc: r.description || '',
+    isActive: r.is_active !== false,
+    createdAt: r.created_at || null
+  }));
+  localStorage.setItem('gm_promos', JSON.stringify(allPromos));
+  renderPromos();
+}
+
 function generatePromoCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const code = Array.from({length: 8}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
@@ -8779,7 +8806,7 @@ async function savePromo() {
     toast('Duplicate Code', `"${code}" কোড ইতিমধ্যে আছে`, 'error'); return;
   }
 
-  const promo = { id: id || Date.now(), code, type, value, minOrder, maxUses, usedCount: 0, expiry: expiry || null, desc, isActive: true, createdAt: new Date().toISOString() };
+  const promo = { id: id || code, code, type, value, minOrder, maxUses, usedCount: 0, expiry: expiry || null, desc, isActive: true, createdAt: new Date().toISOString() };
 
   // ── 10-second timeout guard ──
   const timeoutId = setTimeout(() => {
@@ -8794,19 +8821,26 @@ async function savePromo() {
         discount_type: type === 'percent' ? 'percent' : 'fixed',
         discount_value: value,
         min_order: minOrder,
-        is_active: true,
+        max_uses: maxUses,
+        expiry: expiry || null,
+        description: desc || null,
       };
+      if (!id) couponPayload.is_active = true;
       if (id) {
         const { error } = await sb.from('coupons').update(couponPayload).eq('code', code);
         if (error) {
           console.error('[savePromo] Supabase update failed for coupon:', code, error.message, error);
-          toast('Supabase Sync Warning', 'localStorage updated but DB sync failed: ' + error.message, 'warning');
+          clearTimeout(timeoutId);
+          toast('সেভ হয়নি', 'ডাটাবেজে সেভ করা যায়নি: ' + error.message + ' (SQL রান করেছেন?)', 'error');
+          return;
         }
       } else {
         const { error } = await sb.from('coupons').insert(couponPayload);
         if (error) {
           console.error('[savePromo] Supabase insert failed for coupon:', code, error.message, error);
-          toast('Supabase Sync Warning', 'localStorage updated but DB sync failed: ' + error.message, 'warning');
+          clearTimeout(timeoutId);
+          toast('সেভ হয়নি', 'ডাটাবেজে সেভ করা যায়নি: ' + error.message + ' (SQL রান করেছেন?)', 'error');
+          return;
         }
       }
     }
@@ -8816,6 +8850,7 @@ async function savePromo() {
     if (id) {
       const idx = allPromos.findIndex(p => p.id == id);
       promo.usedCount = allPromos[idx]?.usedCount || 0;
+      promo.isActive = allPromos[idx]?.isActive !== false;
       allPromos[idx] = promo;
       toast('Updated!', `"${code}" আপডেট হয়েছে`, 'success');
     } else {
@@ -8920,11 +8955,11 @@ function renderPromos() {
       <td><span class="pill ${statusClass}">${statusText}</span></td>
       <td>
         <div style="display:flex;gap:5px">
-          <button class="btn btn-ghost btn-xs" onclick="editPromo(${p.id})"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-ghost btn-xs" onclick="togglePromo(${p.id})" title="${p.isActive ? 'Deactivate' : 'Activate'}">
+          <button class="btn btn-ghost btn-xs" onclick="editPromo('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-ghost btn-xs" onclick="togglePromo('${p.id}')" title="${p.isActive ? 'Deactivate' : 'Activate'}">
             <i class="fa-solid ${p.isActive ? 'fa-toggle-on' : 'fa-toggle-off'}" style="color:${p.isActive ? 'var(--green)' : 'var(--text3)'}"></i>
           </button>
-          <button class="btn btn-danger btn-xs" onclick="deletePromo(${p.id})"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-danger btn-xs" onclick="deletePromo('${p.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </td>
     </tr>`;
