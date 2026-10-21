@@ -3350,11 +3350,19 @@ footer, footer *:not(i):not([class*="fa-"]) {
   width: 100%; padding: 10px 13px;
   border: 1.5px solid var(--border); border-radius: var(--radius-sm);
   font-family: 'Hind Siliguri', sans-serif; font-size: .88rem;
-  color: var(--text); background: var(--blue-light);
+  color: var(--text); background: var(--white);
   outline: none; transition: border-color var(--t), background var(--t);
 }
-.profile-inp:focus { border-color: var(--blue); background: var(--dbgffffff,white); box-shadow: var(--glow); }
-.profile-inp:disabled { opacity: .6; cursor: not-allowed; }
+.profile-inp::placeholder { color: var(--text-light); }
+.profile-inp:focus { border-color: var(--blue); background: var(--white); box-shadow: var(--glow); }
+.profile-edit-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--blue); background: transparent; color: var(--blue); font-family: 'Hind Siliguri', sans-serif; font-size: .78rem; font-weight: 700; cursor: pointer; transition: all var(--t); }
+.profile-edit-btn:hover { background: var(--blue); color: #fff; }
+.profile-cancel-btn { width: 100%; margin-top: 8px; padding: 10px; border-radius: var(--radius); border: 1.5px solid var(--border); background: transparent; color: var(--text-mid); font-family: 'Hind Siliguri', sans-serif; font-size: .85rem; font-weight: 700; cursor: pointer; }
+.profile-view-row { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px dashed var(--border); align-items: flex-start; }
+.profile-view-row:last-child { border-bottom: none; }
+.profile-view-row .pv-l { flex: 0 0 82px; font-family: 'Hind Siliguri', sans-serif; font-size: .76rem; font-weight: 700; color: var(--text-light); padding-top: 1px; }
+.profile-view-row .pv-v { flex: 1; min-width: 0; font-family: 'Hind Siliguri', sans-serif; font-size: .88rem; color: var(--text); word-break: break-word; white-space: pre-line; }
+.profile-inp:disabled { opacity: 1; cursor: not-allowed; background: rgba(148,163,184,.14); color: var(--text-mid); }
 .profile-save-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 12px; border-radius: var(--radius);
@@ -6890,8 +6898,11 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
       <div class="profile-card-hd">
         <i class="fa-solid fa-user-pen"></i>
         <h3>ব্যক্তিগত তথ্য সম্পাদনা</h3>
+        <button type="button" class="profile-edit-btn" id="profileEditBtn" onclick="setProfileMode(true)" style="display:none"><i class="fa-solid fa-pen"></i> এডিট</button>
       </div>
       <div class="profile-card-body">
+        <div id="profileView" style="display:none"></div>
+        <div id="profileFormWrap">
         <div class="profile-field">
           <label>পুরো নাম</label>
           <input class="profile-inp bn" type="text" id="profileName" placeholder="আপনার পুরো নাম">
@@ -6911,6 +6922,8 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         <button class="profile-save-btn" id="profileSaveBtn" onclick="saveProfile()">
           <i class="fa-solid fa-floppy-disk"></i> তথ্য সেভ করুন
         </button>
+        <button type="button" class="profile-cancel-btn" id="profileCancelBtn" onclick="setProfileMode(false)" style="display:none">বাতিল</button>
+        </div>
       </div>
     </div>
 
@@ -10833,7 +10846,8 @@ async function lookupCoupon(code) {
   if (error) return { ok: false, silent: !!error.isTimeout, msg: 'কুপন যাচাই করা যায়নি — আবার চেষ্টা করুন', type: 'e' };
   if (!data) return { ok: false, msg: 'এই কুপন কোড বিদ্যমান নেই — বানানটি পরীক্ষা করুন', type: 'e' };
   if (!data.is_active) return { ok: false, msg: `"${code}" কুপনটি বর্তমানে নিষ্ক্রিয়`, type: 'w' };
-  if (data.expiry && new Date(data.expiry) < new Date()) return { ok: false, msg: `"${code}" কুপনের মেয়াদ শেষ হয়ে গেছে`, type: 'w' };
+  if (data.expiry && new Date(String(data.expiry).slice(0, 10) + 'T23:59:59+06:00') < new Date()) return { ok: false, msg: `"${code}" কুপনের মেয়াদ শেষ হয়ে গেছে`, type: 'w' };
+  if ((Number(data.max_uses) || 0) > 0 && (Number(data.used_count) || 0) >= Number(data.max_uses)) return { ok: false, msg: `"${code}" কুপনটি ইতিমধ্যে ব্যবহার হয়ে গেছে — আর ব্যবহার করা যাবে না`, type: 'w' };
   if (cartSubtotal() < (data.min_order || 0)) return { ok: false, msg: `ন্যূনতম ৳${Number(data.min_order).toLocaleString('en-US')} অর্ডার করলে এই কুপন প্রযোজ্য হবে`, type: 'w' };
   return { ok: true, coupon: { code: String(data.code || code).toUpperCase(), discount_type: data.discount_type, discount_value: data.discount_value, min_order: data.min_order || 0 } };
 }
@@ -11386,17 +11400,27 @@ async function placeOrder() {
     bulk_discount_percentage: i.bulk_discount_percentage || 0,  // ট্র্যাসেবিলিটির জন্য
   }));
   const fullDistrict = `${district} > ${upazila} > ${thana}`;
-  const { data, error } = await sbQuery(
-    () => sb.from('orders').insert({
+  const orderRow = {
       order_number: orderNum,
       user_id: currentUser?.id || null,
       customer_name: name, customer_phone: phone,
       customer_address: address, customer_district: fullDistrict, customer_email: email,
-      items, subtotal: sub, delivery_fee: delivery, discount, total, status: 'pending'
-    }).select().single(),
-    'অর্ডার সেভ'
-  );
+      items, subtotal: sub, delivery_fee: delivery, discount, total, status: 'pending',
+    coupon_code: (appliedCoupon && discount > 0) ? appliedCoupon.code : null
+  };
+  let { data, error } = await sbQuery(() => sb.from('orders').insert(orderRow).select().single(), 'অর্ডার সেভ');
+  // `coupon_code` কলাম না থাকলে (SQL রান করা হয়নি) কুপন ছাড়াই অর্ডার যাক
+  if (error && /coupon_code/i.test(error.message || '') && !/COUPON_UNAVAILABLE/.test(error.message || '')) {
+    delete orderRow.coupon_code;
+    ({ data, error } = await sbQuery(() => sb.from('orders').insert(orderRow).select().single(), 'অর্ডার সেভ'));
+  }
   btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
+  if(error && /COUPON_UNAVAILABLE/.test(error.message || '')){
+    const usedCode = appliedCoupon ? appliedCoupon.code : '';
+    clearAppliedCoupon(); renderCartItems(); syncCheckoutCouponUI(true);
+    toast('কুপন প্রযোজ্য নয়', `"${usedCode}" কুপনটি ইতিমধ্যে ব্যবহার হয়ে গেছে বা মেয়াদ শেষ। কুপন ছাড়া আবার অর্ডার করুন।`, 'e');
+    return;
+  }
   if(error){ if (!error.isTimeout) toast('ত্রুটি!','অর্ডার দেওয়া যায়নি, আবার চেষ্টা করুন','e'); return; }
   // ── Telegram নোটিফিকেশন (best-effort — অর্ডার সফলতায় কোনো প্রভাব ফেলে না) ──
   try {
@@ -16608,6 +16632,33 @@ function copyOrderIdToast(id, btn) {
 // ══════════════════════════════════════════════════
 // MY PROFILE
 // ══════════════════════════════════════════════════
+// ── প্রোফাইল তথ্য: সেভ থাকলে ছোট সারাংশ + "এডিট" বাটন, নইলে ফর্ম ──
+window._profSaved = null;
+function _profEsc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderProfileView() {
+  const d = window._profSaved || {};
+  const email = (currentUser && currentUser.email) || '';
+  document.getElementById('profileView').innerHTML =
+    `<div class="profile-view-row"><span class="pv-l">পুরো নাম</span><span class="pv-v">${_profEsc(d.name)}</span></div>` +
+    `<div class="profile-view-row"><span class="pv-l">ফোন</span><span class="pv-v">${_profEsc(d.phone)}</span></div>` +
+    `<div class="profile-view-row"><span class="pv-l">ঠিকানা</span><span class="pv-v">${_profEsc(d.addr)}</span></div>` +
+    `<div class="profile-view-row"><span class="pv-l">ইমেইল</span><span class="pv-v">${_profEsc(email)}</span></div>`;
+}
+function setProfileMode(editing) {
+  const has = !!(window._profSaved && window._profSaved.name && window._profSaved.phone && window._profSaved.addr);
+  if (editing === false && !has) editing = true;     // সেভ করা তথ্য না থাকলে ফর্মই দেখাবে
+  const d = window._profSaved;
+  if (editing && d && has) {                         // বাতিল/এডিট খুললে সেভ করা তথ্য ফর্মে বসাও
+    document.getElementById('profileName').value = d.name;
+    document.getElementById('profilePhone').value = d.phone;
+    document.getElementById('profileAddress').value = d.addr;
+  }
+  if (!editing) renderProfileView();
+  document.getElementById('profileView').style.display     = editing ? 'none' : 'block';
+  document.getElementById('profileFormWrap').style.display = editing ? '' : 'none';
+  document.getElementById('profileEditBtn').style.display   = editing ? 'none' : 'inline-flex';
+  document.getElementById('profileCancelBtn').style.display = (editing && has) ? 'block' : 'none';
+}
 async function openProfilePage() {
   if (!currentUser) { openAuth(); return; }
   _navTo({ page: 'profile' }, 'আমার প্রোফাইল — বুক গ্যালাক্সি', '/profile');
@@ -16638,6 +16689,12 @@ async function openProfilePage() {
   } else {
     document.getElementById('profileName').value = name;
   }
+  window._profSaved = {
+    name:  document.getElementById('profileName').value.trim(),
+    phone: document.getElementById('profilePhone').value.trim(),
+    addr:  document.getElementById('profileAddress').value.trim()
+  };
+  setProfileMode(false);   // তথ্য সেভ করা থাকলে সারাংশ, না থাকলে ফর্ম
 
   // Load stats
   const { data: orders } = await sb.from('orders').select('total,status').eq('user_id', currentUser.id);
@@ -16675,6 +16732,8 @@ async function saveProfile() {
   if (error) { toast('ত্রুটি!', error.message || 'সেভ হয়নি', 'e'); return; }
   toast('সেভ হয়েছে!', 'আপনার প্রোফাইল আপডেট হয়েছে', 's');
   document.getElementById('profileDisplayName').textContent = name;
+  window._profSaved = { name, phone, addr };
+  setProfileMode(false);   // সেভের পর ফর্ম গুটিয়ে সারাংশ দেখাও
 }
 
 // ══════════════════════════════════════════════════
