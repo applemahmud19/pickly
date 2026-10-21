@@ -1797,7 +1797,7 @@ body {
 
         <!-- ═══ ORDER MANAGEMENT (Dashboard) ═══ -->
         <style>
-        .om-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+        .om-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:18px}
         .om-card{position:relative;overflow:hidden;padding:16px 18px 14px;border-radius:16px;border:1.5px solid color-mix(in srgb,var(--omc) 24%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--omc) 13%,var(--surface)) 0%,var(--surface) 72%);cursor:pointer;transition:all var(--t);min-width:0}
         .om-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--omc)}
         .om-card.active{border-color:var(--omc);box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 18%,transparent),var(--shadow-md)}
@@ -1812,7 +1812,22 @@ body {
         .om-card .bar{height:4px;border-radius:4px;background:color-mix(in srgb,var(--omc) 15%,transparent);margin-top:12px;overflow:hidden}
         .om-card .bar i{display:block;height:100%;background:var(--omc);border-radius:4px;transition:width .5s}
         .om-card.alert .ic::after{content:"";position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:#FF3B30;border:2px solid var(--surface);animation:livePulse 1.4s ease-in-out infinite}
-        @media(max-width:700px){.om-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.om-card{padding:13px 14px 12px}.om-card .cnt{font-size:1.7rem;margin-top:10px}.om-card .ic{width:36px;height:36px;font-size:.92rem}}
+        @media(max-width:1100px){.om-cards{gap:10px}.om-card{padding:14px 14px 12px}.om-card .cnt{font-size:1.9rem}}
+        @media(max-width:760px){.om-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.om-card:last-child:nth-child(odd){grid-column:1/-1}.om-card{padding:13px 14px 12px}.om-card .cnt{font-size:1.7rem;margin-top:10px}.om-card .ic{width:36px;height:36px;font-size:.92rem}}
+        .om-tabs{display:flex;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+        .om-tabs::-webkit-scrollbar{display:none}
+        .om-tab{position:relative;display:flex;align-items:center;gap:10px;padding:9px 16px 9px 10px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--t);flex:0 0 auto;min-width:150px;overflow:hidden}
+        .om-tab::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--omc);opacity:.35;transition:all var(--t)}
+        .om-tab .ic{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
+        .om-tab .tx{display:flex;flex-direction:column;line-height:1.15}
+        .om-tab .cnt{font-size:1.2rem;font-weight:800;color:var(--text);font-family:var(--mono)}
+        .om-tab .lb{font-size:.72rem;font-weight:600;color:var(--text2);font-family:var(--font-bn);margin-top:3px;white-space:nowrap}
+        .om-tab:hover{transform:translateY(-2px);border-color:var(--omc);box-shadow:var(--shadow-md)}
+        .om-tab:hover::after{opacity:1}
+        .om-tab.active{border-color:var(--omc);background:color-mix(in srgb,var(--omc) 9%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 15%,transparent)}
+        .om-tab.active::after{opacity:1}
+        .om-tab.active .ic{background:var(--omc);color:#fff}
+        .om-tab.zero:not(.active) .cnt{color:var(--text3)}
         .om-bulk{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:rgba(170,44,45,.06);border-bottom:1px solid var(--border);font-size:.78rem;font-family:var(--font-bn)}
         .om-bulk.show{display:flex}
         .om-list{display:flex;flex-direction:column}
@@ -1867,6 +1882,7 @@ body {
               <button class="btn btn-ghost btn-sm" onclick="navTo('orders')" style="font-family:var(--font-bn)">সব অর্ডার <i class="fa-solid fa-arrow-right"></i></button>
             </div>
           </div>
+          <div class="om-tabs" id="omTabs"></div>
           <div class="om-bulk" id="omBulk">
             <b id="omBulkCount">0</b> <span>টি সিলেক্টেড</span>
             <button class="om-btn primary" style="--omc:var(--blue)" onclick="omBulkNext()"><i class="fa-solid fa-forward-step"></i> পরের ধাপে পাঠান</button>
@@ -5405,16 +5421,25 @@ function renderOrderManager() {
   if (omFilter === null) omFilter = counts.pending > 0 ? 'pending' : 'all';
   const cur = OM_DEF.find(d => d.k === omFilter) || OM_DEF[0];
 
-  statsEl.innerHTML = OM_DEF.map(d => {
+  const BIG = ['pending','confirmed','processing','shipped','delivered'];
+  statsEl.innerHTML = OM_DEF.filter(d => BIG.includes(d.k)).map(d => {
     const n = counts[d.k] || 0;
     const alert = d.k === 'pending' && n > 0;
-    const share = d.k === 'all' ? 100 : (counts.all ? Math.round(n / counts.all * 100) : 0);
-    return `<div class="om-card ${omFilter === d.k ? 'active' : ''} ${alert ? 'alert' : ''} ${n === 0 && d.k !== 'all' ? 'zero' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
+    const share = counts.all ? Math.round(n / counts.all * 100) : 0;
+    return `<div class="om-card ${omFilter === d.k ? 'active' : ''} ${alert ? 'alert' : ''} ${n === 0 ? 'zero' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
       <i class="fa-solid ${d.ic} wm"></i>
-      <div class="om-card-top"><span class="ic"><i class="fa-solid ${d.ic}"></i></span><span class="pc">${d.k === 'all' ? 'মোট' : share + '%'}</span></div>
+      <div class="om-card-top"><span class="ic"><i class="fa-solid ${d.ic}"></i></span><span class="pc">${share}%</span></div>
       <div class="cnt">${n}</div>
-      <div class="lb">${d.k === 'all' ? 'সব অর্ডার' : d.bn}</div>
+      <div class="lb">${d.bn}</div>
       <div class="bar"><i style="width:${share}%"></i></div>
+    </div>`;
+  }).join('');
+  const tabsEl = document.getElementById('omTabs');
+  if (tabsEl) tabsEl.innerHTML = OM_DEF.filter(d => !BIG.includes(d.k)).map(d => {
+    const n = counts[d.k] || 0;
+    return `<div class="om-tab ${omFilter === d.k ? 'active' : ''} ${n === 0 && d.k !== 'all' ? 'zero' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
+      <span class="ic"><i class="fa-solid ${d.ic}"></i></span>
+      <span class="tx"><span class="cnt">${n}</span><span class="lb">${d.k === 'all' ? 'সব অর্ডার' : d.bn}</span></span>
     </div>`;
   }).join('');
 
