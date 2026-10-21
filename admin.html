@@ -1802,32 +1802,32 @@ body {
         #lowStockAlert .ls-head .panel-title-icon{width:22px!important;height:22px!important;font-size:.68rem!important}
         #lowStockAlert .ls-head-text{flex-direction:row!important;align-items:baseline;gap:10px!important}
         #lowStockAlert .ls-count{padding:2px 9px!important}
-        .om-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:16px}
-        .om-card{position:relative;overflow:hidden;padding:15px 18px 14px;border-radius:16px;border:1.5px solid color-mix(in srgb,var(--omc) 24%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--omc) 13%,var(--surface)) 0%,var(--surface) 72%);cursor:pointer;transition:all var(--t);min-width:0}
-        .om-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--omc)}
-        .om-card.active{border-color:var(--omc);box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 18%,transparent),var(--shadow-md)}
-        .om-card .wm{position:absolute;right:-6px;bottom:-14px;font-size:5rem;color:var(--omc);opacity:.09;transform:rotate(-12deg);pointer-events:none}
-        .om-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-        .om-card .ic{position:relative;width:38px;height:38px;border-radius:12px;background:var(--omc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.98rem;box-shadow:0 6px 14px color-mix(in srgb,var(--omc) 38%,transparent)}
-        .om-card .pc{font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--omc);background:color-mix(in srgb,var(--omc) 13%,transparent);padding:3px 10px;border-radius:99px}
-        .om-card .cnt{font-size:2rem;font-weight:800;line-height:1;margin-top:11px;color:var(--text)}
+        .om-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+        .om-card{position:relative;overflow:hidden;display:flex;align-items:center;gap:11px;padding:11px 14px 15px;border-radius:14px;border:1.5px solid color-mix(in srgb,var(--omc) 24%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--omc) 13%,var(--surface)) 0%,var(--surface) 75%);cursor:pointer;transition:all var(--t);min-width:0}
+        .om-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--omc)}
+        .om-card.active{border-color:var(--omc);box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 18%,transparent)}
+        .om-card .wm{position:absolute;right:-4px;bottom:-10px;font-size:3.6rem;color:var(--omc);opacity:.09;transform:rotate(-12deg);pointer-events:none}
+        .om-card .ic{position:relative;width:40px;height:40px;border-radius:12px;flex-shrink:0;background:var(--omc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 5px 12px color-mix(in srgb,var(--omc) 36%,transparent)}
+        .om-card .tx{min-width:0;flex:1}
+        .om-card .cnt{font-size:1.65rem;font-weight:800;line-height:1;color:var(--text)}
         .om-card.zero .cnt{color:var(--text3)}
         .om-card.alert .cnt{color:var(--omc)}
-        .om-card .lb{font-size:.86rem;font-weight:700;margin-top:5px;font-family:var(--font-bn);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .om-card .bar{height:4px;border-radius:4px;background:color-mix(in srgb,var(--omc) 15%,transparent);margin-top:10px;overflow:hidden}
-        .om-card .bar i{display:block;height:100%;background:var(--omc);border-radius:4px;transition:width .5s}
+        .om-card .lb{font-size:.78rem;font-weight:700;margin-top:4px;font-family:var(--font-bn);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-card .pc{position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--omc);background:color-mix(in srgb,var(--omc) 13%,transparent);padding:1px 7px;border-radius:99px}
+        .om-card .bar{position:absolute;left:14px;right:14px;bottom:7px;height:3px;border-radius:3px;background:color-mix(in srgb,var(--omc) 15%,transparent);overflow:hidden}
+        .om-card .bar i{display:block;height:100%;background:var(--omc);border-radius:3px;transition:width .5s}
         .om-card.alert .ic::after{content:"";position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:#FF3B30;border:2px solid var(--surface);animation:livePulse 1.4s ease-in-out infinite}
-        @media(max-width:1100px){.om-cards{gap:10px}.om-card{padding:13px 13px 12px}.om-card .cnt{font-size:1.75rem}.om-card .ic{width:34px;height:34px;font-size:.9rem}}
-        @media(max-width:760px){.om-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.om-card:last-child:nth-child(odd){grid-column:1/-1}.om-card .cnt{font-size:1.6rem;margin-top:9px}}
-        .om-tabs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:8px 14px;border-bottom:1px solid var(--border)}
+        @media(max-width:1100px){.om-card{padding:10px 10px 14px;gap:8px}.om-card .ic{width:34px;height:34px;font-size:.88rem}.om-card .cnt{font-size:1.4rem}.om-card .pc{display:none}}
+        @media(max-width:760px){.om-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.om-card:last-child:nth-child(odd){grid-column:1/-1}}
+        .om-tabs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
         @media(max-width:1180px){.om-tabs{display:flex;overflow-x:auto;scrollbar-width:none}.om-tab{flex:0 0 138px!important}}
         .om-tabs::-webkit-scrollbar{display:none}
-        .om-tab{position:relative;display:flex;align-items:center;gap:7px;padding:5px 9px 6px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--t);min-width:0;overflow:hidden}
-        .om-tab::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2px;border-radius:2px 2px 0 0;background:var(--omc);opacity:.4;transition:all var(--t)}
-        .om-tab .ic{width:24px;height:24px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
-        .om-tab .tx{display:flex;flex-direction:row;align-items:center;gap:6px;line-height:1.1;min-width:0}
-        .om-tab .cnt{font-size:.95rem;font-weight:800;color:var(--text);font-family:var(--mono)}
-        .om-tab .lb{font-size:.72rem;font-weight:600;color:var(--text2);font-family:var(--font-bn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .om-tab{position:relative;display:flex;align-items:center;gap:8px;padding:6px 8px 8px 7px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--t);min-width:0;overflow:hidden}
+        .om-tab::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--omc);opacity:.35;transition:all var(--t)}
+        .om-tab .ic{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
+        .om-tab .tx{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+        .om-tab .cnt{font-size:1.05rem;font-weight:800;color:var(--text);font-family:var(--mono)}
+        .om-tab .lb{font-size:.72rem;font-weight:600;color:var(--text2);font-family:var(--font-bn);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .om-tab:hover{transform:translateY(-2px);border-color:var(--omc);box-shadow:var(--shadow-md)}
         .om-tab:hover::after{opacity:1}
         .om-tab.active{border-color:var(--omc);background:color-mix(in srgb,var(--omc) 9%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--omc) 15%,transparent)}
@@ -5434,9 +5434,9 @@ function renderOrderManager() {
     const share = counts.all ? Math.round(n / counts.all * 100) : 0;
     return `<div class="om-card ${omFilter === d.k ? 'active' : ''} ${alert ? 'alert' : ''} ${n === 0 ? 'zero' : ''}" style="--omc:${d.c}" onclick="omSetFilter('${d.k}')" title="${d.en}">
       <i class="fa-solid ${d.ic} wm"></i>
-      <div class="om-card-top"><span class="ic"><i class="fa-solid ${d.ic}"></i></span><span class="pc">${share}%</span></div>
-      <div class="cnt">${n}</div>
-      <div class="lb">${d.bn}</div>
+      <span class="ic"><i class="fa-solid ${d.ic}"></i></span>
+      <div class="tx"><div class="cnt">${n}</div><div class="lb">${d.bn}</div></div>
+      <span class="pc">${share}%</span>
       <div class="bar"><i style="width:${share}%"></i></div>
     </div>`;
   }).join('');
