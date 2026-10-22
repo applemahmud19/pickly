@@ -8,7 +8,8 @@ const webpush = require('web-push');
 
 const SUPA = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const H = (extra) => Object.assign({ apikey: KEY, Authorization: 'Bearer ' + KEY }, extra || {});
+// নতুন sb_secret_... কী JWT নয় — Authorization হেডারে পাঠাতে হয় না; পুরনো service_role (eyJ...) হলে পাঠানো হয়
+const H = (extra) => Object.assign({ apikey: KEY }, KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + KEY } : {}, extra || {});
 
 async function rest(path, opts) {
   const r = await fetch(SUPA + '/rest/v1/' + path, Object.assign({ headers: H() }, opts || {}));
