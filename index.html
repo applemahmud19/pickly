@@ -18324,15 +18324,93 @@ var BUDGETS=[
  {key:'any',label:'বাজেট নিয়ে চিন্তা নেই',sub:'সেরা বইটাই চাই',icon:'fa-infinity',min:0,max:Infinity}
 ];
 var DEFAULT_MOODS=[
- {slug:'romantic',name:'রোমান্টিক',icon:'fa-heart',tagline:'ভালোবাসার গল্পে ডুব দিন',keywords:'প্রেম,ভালোবাসা,রোমান্স,love,romance'},
- {slug:'thriller',name:'রহস্য-রোমাঞ্চ',icon:'fa-user-secret',tagline:'টানটান উত্তেজনা চাই',keywords:'রহস্য,গোয়েন্দা,থ্রিলার,খুন,thriller,mystery'},
- {slug:'motivation',name:'অনুপ্রেরণা',icon:'fa-fire',tagline:'নিজেকে বদলাতে চাই',keywords:'অনুপ্রেরণা,সফল,ক্যারিয়ার,অভ্যাস,motivation,habit'},
- {slug:'fun',name:'হাসি-মজা',icon:'fa-face-laugh-beam',tagline:'মন হালকা করতে চাই',keywords:'হাসি,মজা,কৌতুক,রম্য,humor'},
- {slug:'knowledge',name:'জ্ঞান ও ইতিহাস',icon:'fa-brain',tagline:'নতুন কিছু জানতে চাই',keywords:'ইতিহাস,বিজ্ঞান,জ্ঞান,history,science'},
- {slug:'peace',name:'আধ্যাত্মিক শান্তি',icon:'fa-mosque',tagline:'মনের প্রশান্তি খুঁজছি',keywords:'ইসলাম,ইসলামী,আত্মা,শান্তি,নবী,কুরআন'},
- {slug:'fantasy',name:'কল্পনা ও সায়েন্স ফিকশন',icon:'fa-rocket',tagline:'অন্য জগতে হারাতে চাই',keywords:'সায়েন্স ফিকশন,কল্পবিজ্ঞান,ফ্যান্টাসি,মহাকাশ,fantasy'},
- {slug:'nostalgia',name:'নস্টালজিয়া',icon:'fa-cloud-rain',tagline:'পুরনো দিনের স্মৃতিতে',keywords:'স্মৃতি,শৈশব,কবিতা,গ্রাম,nostalgia'}
+ {slug:'love',name:'ভালোবাসায় ডুব দিতে চাই',icon:'fa-heart',tagline:'রোমান্টিক উপন্যাস ও প্রেমের গল্প',keywords:'রোমান্টিক,প্রেম,ভালোবাসা,ভালবাসা,রোমান্স,বিরহ,প্রণয়,love,romance'},
+ {slug:'mystery',name:'রহস্য ও আতঙ্কে শিহরিত হতে চাই',icon:'fa-user-secret',tagline:'গোয়েন্দা, ক্রাইম থ্রিলার ও ভৌতিক',keywords:'রহস্য,গোয়েন্দা,থ্রিলার,ক্রাইম,খুনি,হত্যা,প্রতিশোধ,ভৌতিক,ভুতুড়ে,ভূতুড়ে,অতিপ্রাকৃত,অলৌকিক,হরর,সাইকোলজিক্যাল,মাসুদ রানা,ফেলুদা,ব্যোমকেশ,মিসির আলী,শার্লক,thriller,mystery,detective,horror,crime'},
+ {slug:'inspire',name:'নিজেকে বদলে অনুপ্রাণিত হতে চাই',icon:'fa-fire',tagline:'সেলফ-হেল্প, ক্যারিয়ার ও মোটিভেশন',keywords:'অনুপ্রেরণা,সফল,সফলতা,ক্যারিয়ার,অভ্যাস,মোটিভেশন,আত্মউন্নয়ন,মাইন্ডসেট,সেলফ হেল্প,সেলফ-হেল্প,আত্মবিশ্বাস,motivation,habit,self-help,career'},
+ {slug:'relax',name:'হেসে মনের চাপ কমাতে চাই',icon:'fa-face-laugh-beam',tagline:'হাসি-রম্য ও সহজ-সরল জীবনের গল্প',keywords:'হাসির,হাস্যরস,মজা,মজার,কৌতুক,রম্য,ব্যঙ্গ,হালকা,ফিলগুড,ফিল গুড,গ্রামীণ,পারিবারিক,স্লাইস অফ লাইফ,humor,comedy'},
+ {slug:'learn',name:'নতুন জ্ঞান অর্জন করতে চাই',icon:'fa-brain',tagline:'ইতিহাস, রাজনীতি, বিজ্ঞান ও জীবনী',keywords:'ইতিহাস,ঐতিহাসিক,রাজনীতি,রাজনৈতিক,বিজ্ঞান,জ্ঞান,মুক্তিযুদ্ধ,একাত্তর,জীবনী,আত্মজীবনী,সমাজ,দর্শন,history,science,politics,biography'},
+ {slug:'escape',name:'অজানা জগতের রোমাঞ্চে হারাতে চাই',icon:'fa-rocket',tagline:'কল্পবিজ্ঞান, ফ্যান্টাসি ও অ্যাডভেঞ্চার',keywords:'কল্পবিজ্ঞান,সায়েন্স ফিকশন,ফ্যান্টাসি,মহাকাশ,অ্যাডভেঞ্চার,এডভেঞ্চার,অভিযান,ভ্রমণ,ট্রাভেলগ,জাদু,যাদু,রূপকথা,sci-fi,fantasy,adventure,travel'},
+ {slug:'peace',name:'মনের গভীর প্রশান্তি চাই',icon:'fa-mosque',tagline:'ইসলামিক ও আধ্যাত্মিক বই',keywords:'ইসলাম,আত্মশুদ্ধি,কুরআন,কোরআন,হাদিস,হাদীস,সীরাত,সিরাত,সাহাবি,সাহাবী,রাসূল,রাসুল,নবীজি,দোয়া,ঈমান,তাফসির,islamic'},
+ {slug:'feel',name:'স্মৃতি আর আবেগে ভিজে বুক হালকা করতে চাই',icon:'fa-cloud-rain',tagline:'নস্টালজিয়া, স্মৃতিকথা ও আবেগঘন গল্প',keywords:'নস্টালজিয়া,স্মৃতিকথা,স্মৃতিচারণ,স্মৃতির,শৈশব,ট্র্যাজেডি,বিষাদ,আবেগ,কান্না,কবিতা,nostalgia'}
 ];
+/* আগের ডিফল্ট নাম — ডাটাবেসে এই নাম থাকলে নতুন লেখায় বদলে দেওয়া হয় */
+var PREV_NAMES={escape:['কল্পবিজ্ঞানের জগতে হারাতে চাই'],feel:['অতীতের স্মৃতি আর আবেগে বুক হালকা করতে চাই']};
+var NEW_SLUGS={love:1,mystery:1,inspire:1,relax:1,learn:1,escape:1,peace:1,feel:1};
+var OLD_ALIAS={romantic:'love',thriller:'mystery',motivation:'inspire',fun:'relax',knowledge:'learn',fantasy:'escape',nostalgia:'feel'};
+/* পুরোনো (ডাটাবেসে থাকা) মুডের নাম দেখে নতুন ৮টির কোনটার সমান তা বের করে — পুরোনো ট্যাগ যেন হারিয়ে না যায় */
+function legacySlug(name){
+  name=String(name||'');
+  if(/রোমান্টিক|প্রেম|ভালোবাসা/.test(name))return 'love';
+  if(/রহস্য|থ্রিলার|গোয়েন্দা|অতিপ্রাকৃত|ভৌতিক|ভুতুড়ে|হরর/.test(name))return 'mystery';
+  if(/অনুপ্রেরণা|মোটিভেশন/.test(name))return 'inspire';
+  if(/হাসি|মজা|রম্য/.test(name))return 'relax';
+  if(/সায়েন্স|কল্প|ফ্যান্টাসি|অ্যাডভেঞ্চার/.test(name))return 'escape';
+  if(/জ্ঞান|ইতিহাস|বিজ্ঞান/.test(name))return 'learn';
+  if(/আধ্যাত্মিক|ইসলাম|শান্তি|প্রশান্তি/.test(name))return 'peace';
+  if(/নস্টালজি|স্মৃতি|কবিতা|আবেগ/.test(name))return 'feel';
+  return '';
+}
+/* ───── প্রশ্ন ২: মুড অনুযায়ী আলাদা প্রশ্ন + উত্তর (label = উত্তর বাক্য, tag = সংক্ষেপে ধরন)।
+   kw-তে '&' দিয়ে শুরু হলে সবগুলো শব্দ একসাথে থাকতে হবে। শুধু যেগুলোতে সত্যিই বই আছে সেগুলোই দেখানো হয় ───── */
+var FLAVORS={
+ 'love-sweet':{label:'মিষ্টি প্রেমে মন ভালো করতে চাই',tag:'রোমান্টিক ও ফিলগুড প্রেম',icon:'fa-heart',kw:['রোমান্টিক','রোমান্স','প্রেম','ভালোবাসা','ভালবাসা','প্রণয়','romance','love']},
+ 'love-sad':{label:'বিরহে ভিজে বুক ভারী করতে চাই',tag:'বিরহ ও ট্র্যাজিক প্রেম',icon:'fa-heart-crack',kw:['বিরহ','ট্র্যাজেডি','বিষাদ','কান্না','বেদনা','শোক']},
+ 'love-modern':{label:'আজকের দিনের সম্পর্কের গল্প পড়তে চাই',tag:'সমকালীন ও পারিবারিক সম্পর্ক',icon:'fa-people-roof',kw:['সমকালীন','পারিবারিক','সম্পর্ক','দাম্পত্য']},
+ 'love-classic':{label:'কালজয়ী ক্লাসিক প্রেমে হারাতে চাই',tag:'ক্লাসিক সাহিত্য',icon:'fa-book-open',kw:['ক্লাসিক','কালজয়ী','রবীন্দ্র','শরৎচন্দ্র','শরৎ চন্দ্র','বঙ্কিম','বিভূতিভূষণ','classic']},
+ 'my-detective':{label:'মস্তিষ্কের বুদ্ধিদীপ্ত ব্যায়াম বা ধাঁধার সমাধান করতে চাই',tag:'ডিটেকটিভ ও সাইকোলজিক্যাল পাজল',icon:'fa-magnifying-glass',kw:['গোয়েন্দা','রহস্য','ডিটেকটিভ','সাইকোলজিক্যাল','মনস্তাত্ত্বিক','ধাঁধা','মিসির আলী','ফেলুদা','ব্যোমকেশ','শার্লক','পোয়ারো','কিরীটী','কাকাবাবু','তিন গোয়েন্দা','detective','mystery','psychological','sherlock']},
+ 'my-crime':{label:'অন্যায়কারীর পতন ও তীব্র প্রতিশোধ দেখতে চাই',tag:'ক্রাইম ও রিভেঞ্জ থ্রিলার',icon:'fa-gavel',kw:['ক্রাইম','অপরাধ','প্রতিশোধ','খুনি','হত্যা','থ্রিলার','মাসুদ রানা','অ্যাকশন','রিভেঞ্জ','thriller','crime','revenge']},
+ 'my-ghost':{label:'ভুতুড়ে ও অলৌকিক ঘটনার স্বাদ নিতে চাই',tag:'হরর ও অতিপ্রাকৃত',icon:'fa-ghost',kw:['ভৌতিক','ভুতুড়ে','ভূতুড়ে','অতিপ্রাকৃত','অলৌকিক','ভূতের','হরর','তান্ত্রিক','পিশাচ','horror','ghost']},
+ 'in-self':{label:'অভ্যাস আর জীবনযাপন গুছিয়ে নিতে চাই',tag:'আত্মউন্নয়ন ও অভ্যাস',icon:'fa-seedling',kw:['আত্মউন্নয়ন','আত্ম-উন্নয়ন','অভ্যাস','সেলফ হেল্প','সেলফ-হেল্প','সেলফহেল্প','self-help','habit','productivity']},
+ 'in-career':{label:'ক্যারিয়ার আর আয়ে এগিয়ে যেতে চাই',tag:'ক্যারিয়ার, ব্যবসা ও সফলতা',icon:'fa-chart-line',kw:['ক্যারিয়ার','সফল','ব্যবসা','আর্থিক','ধনী','ফ্রিল্যান্স','উদ্যোক্তা','নেতৃত্ব','business','career','money']},
+ 'in-mind':{label:'মনের জোর আর আত্মবিশ্বাস বাড়াতে চাই',tag:'মাইন্ডসেট ও মনোবল',icon:'fa-dumbbell',kw:['মাইন্ডসেট','মনোবল','মানসিক','আত্মবিশ্বাস','মোটিভেশন','অনুপ্রেরণা','প্রেরণা','mindset','confidence']},
+ 'in-bio':{label:'সফল মানুষের জীবন থেকে প্রেরণা পেতে চাই',tag:'অনুপ্রেরণামূলক জীবনী',icon:'fa-user-graduate',kw:['জীবনী','আত্মজীবনী','জীবনকথা','biography']},
+ 're-fun':{label:'হো হো করে হাসতে চাই',tag:'হাসির গল্প ও রম্য',icon:'fa-face-laugh-beam',kw:['হাসির','হাস্যরস','হাস্যকর','রম্য','কৌতুক','ব্যঙ্গ','মজার','humor','comedy','funny']},
+ 're-slice':{label:'সহজ-সরল ও গোছানো গল্পে মন শান্ত করতে চাই',tag:'স্লাইস অফ লাইফ',icon:'fa-mug-hot',kw:['স্লাইস অফ লাইফ','গ্রামীণ','দৈনন্দিন','পারিবারিক','ফিলগুড','ফিল গুড','হৃদয়স্পর্শী','slice of life','feel good']},
+ 're-short':{label:'অল্প সময়ে ছোট ছোট গল্প পড়তে চাই',tag:'ছোটগল্প ও হালকা পাঠ',icon:'fa-bookmark',kw:['ছোটগল্প','ছোট গল্প','গল্পসংকলন','গল্প সংকলন','গল্পগ্রন্থ','গল্পসমগ্র','অণুগল্প','short stor']},
+ 'le-history':{label:'দেশপ্রেম ও ইতিহাসের গৌরবময় পাতায় হারাতে চাই',tag:'ইতিহাস, মুক্তিযুদ্ধ ও ঐতিহাসিক উপন্যাস',icon:'fa-landmark',kw:['ইতিহাস','ঐতিহাসিক','ঐতিহ্য','মুক্তিযুদ্ধ','একাত্তর','দেশপ্রেম','স্বাধীনতা','history']},
+ 'le-politics':{label:'সমাজ ও রাজনীতির ভেতরের কালো সত্য জানতে চাই',tag:'রাজনৈতিক ও সামাজিক বই',icon:'fa-scale-balanced',kw:['রাজনীতি','রাজনৈতিক','সমাজ','সামাজিক','political']},
+ 'le-science':{label:'বিজ্ঞান ও প্রযুক্তির জগৎ বুঝতে চাই',tag:'বিজ্ঞান ও প্রযুক্তি',icon:'fa-atom',kw:['বিজ্ঞান','প্রযুক্তি','science','technology']},
+ 'le-bio':{label:'বিখ্যাত মানুষের জীবন ও কীর্তি জানতে চাই',tag:'জীবনী ও আত্মজীবনী',icon:'fa-user-tie',kw:['জীবনী','আত্মজীবনী','জীবনকথা','biography']},
+ 'es-scifi':{label:'ভবিষ্যৎ আর মহাকাশের কল্পবিজ্ঞানে হারাতে চাই',tag:'কল্পবিজ্ঞান',icon:'fa-rocket',kw:['কল্পবিজ্ঞান','সায়েন্স ফিকশন','সায়েন্স-ফিকশন','মহাকাশ','রোবট','সাইফাই','sci-fi','science fiction']},
+ 'es-fantasy':{label:'জাদু আর ফ্যান্টাসির দুনিয়ায় ডুবতে চাই',tag:'ফ্যান্টাসি ও রূপকথা',icon:'fa-hat-wizard',kw:['ফ্যান্টাসি','জাদু','যাদু','রূপকথা','fantasy','magic']},
+ 'es-adv':{label:'অজানাকে জয় করার রোমাঞ্চকর অভিযান চাই',tag:'অ্যাডভেঞ্চার ও ট্রাভেলগ',icon:'fa-compass',kw:['অ্যাডভেঞ্চার','এডভেঞ্চার','অভিযান','ভ্রমণ','ট্রাভেলগ','দুঃসাহসিক','adventure','travel']},
+ 'pe-quran':{label:'কুরআন-হাদিসের আলোয় ঈমান মজবুত করতে চাই',tag:'কুরআন, হাদিস ও দ্বীনি জ্ঞান',icon:'fa-book-quran',kw:['কুরআন','কোরআন','হাদিস','হাদীস','তাফসির','তাফসীর','দ্বীন','ঈমান','আকিদা','ফিকহ']},
+ 'pe-seerah':{label:'নবী-সাহাবিদের জীবন থেকে শিখতে চাই',tag:'সীরাত ও সাহাবিদের জীবনী',icon:'fa-mosque',kw:['সীরাত','সিরাত','নবীজি','নবীদের','নবীর','সাহাবি','সাহাবী','সাহাবা','রাসূল','রাসুল']},
+ 'pe-soul':{label:'আত্মশুদ্ধি ও ইবাদতে মন নরম করতে চাই',tag:'আত্মশুদ্ধি, ইবাদত ও দোয়া',icon:'fa-hand-holding-heart',kw:['আত্মশুদ্ধি','তাযকিয়া','তাজকিয়া','তাওবা','তওবা','ইবাদত','দোয়া','জিকির','যিকির','নামাজ','নামায','তাকওয়া']},
+ 'pe-novel':{label:'গল্পের ছলে ঈমানি শিক্ষা পেতে চাই',tag:'ইসলামিক উপন্যাস ও গল্প',icon:'fa-book-open',kw:['&ইসলাম&উপন্যাস','&ইসলাম&গল্প','&ঈমান&উপন্যাস','&ঈমান&গল্প']},
+ 'fe-nostal':{label:'অতীতের সোনালী দিনগুলোতে ফিরে যেতে চাই',tag:'নস্টালজিয়া ও স্মৃতিকথা',icon:'fa-clock-rotate-left',kw:['নস্টালজিয়া','নস্টালজিক','স্মৃতিকথা','স্মৃতিচারণ','স্মৃতির','শৈশব','কৈশোর','ফেলে আসা','অতীত','nostalgia','memoir']},
+ 'fe-tragedy':{label:'কান্না করে মনের ভেতরের বুকটা হালকা করতে চাই',tag:'আবেগঘন ও ট্র্যাজেডি',icon:'fa-cloud-rain',kw:['ট্র্যাজেডি','বিষাদ','কান্না','বিরহ','আবেগ','বেদনা','শোক','tragedy']},
+ 'fe-poem':{label:'কবিতার ভাষায় মনের কথা শুনতে চাই',tag:'কবিতা ও কাব্য',icon:'fa-feather-pointed',kw:['কবিতা','কাব্য','ছড়া','poem','poetry']},
+ 'u-novel':{label:'পুরো উপন্যাসে ডুবে থাকতে চাই',tag:'কাহিনি-নির্ভর উপন্যাস',icon:'fa-book',kw:['উপন্যাস','novel']},
+ 'u-story':{label:'ছোট ছোট গল্প, যখন খুশি পড়তে চাই',tag:'ছোটগল্প ও গল্পসংকলন',icon:'fa-bookmark',kw:['ছোটগল্প','ছোট গল্প','গল্পসংকলন','গল্পগ্রন্থ','গল্প সংকলন','গল্পসমগ্র']},
+ 'u-trans':{label:'বিশ্বসাহিত্যের অনুবাদ পড়তে চাই',tag:'বিদেশি বইয়ের অনুবাদ',icon:'fa-language',kw:['অনুবাদ','translat']},
+ 'u-poem':{label:'অল্প কথায় গভীর ভাবনা পড়তে চাই',tag:'কবিতা ও প্রবন্ধ',icon:'fa-feather-pointed',kw:['কবিতা','কাব্য','ছড়া','প্রবন্ধ','poem','essay']},
+ 'u-real':{label:'বাস্তব মানুষের জীবনের কথা জানতে চাই',tag:'জীবনী, স্মৃতিকথা ও ভ্রমণ',icon:'fa-user',kw:['জীবনী','আত্মজীবনী','স্মৃতিকথা','স্মৃতিচারণ','memoir','biography']}
+};
+/* পুরোনো শেয়ার-লিংকের কী যেন ভেঙে না যায় */
+var FL_ALIAS={'my-psych':'my-detective','le-war':'le-history','u-islam':'pe-quran'};
+var FL_BY_MOOD={
+ love:['love-sweet','love-sad','love-modern','love-classic'],
+ mystery:['my-detective','my-crime','my-ghost'],
+ inspire:['in-self','in-career','in-mind','in-bio'],
+ relax:['re-fun','re-slice','re-short'],
+ learn:['le-history','le-politics','le-science','le-bio'],
+ escape:['es-scifi','es-fantasy','es-adv'],
+ peace:['pe-quran','pe-seerah','pe-soul','pe-novel'],
+ feel:['fe-nostal','fe-tragedy','fe-poem']
+};
+/* মুড অনুযায়ী ২য় প্রশ্ন — প্রশ্ন আর উত্তরের ভাষা যেন মিলে যায় */
+var Q2_TXT={
+ love:{q:'ভালোবাসার কোন রূপটা পড়তে চান?',s:'যেটা আপনার মনের সবচেয়ে কাছের, সেটায় ক্লিক করুন'},
+ mystery:{q:'কোন ধরনের রোমাঞ্চ আপনার ভালো লাগে?',s:'রহস্যের কোন স্বাদটা আজ বেশি টানছে?'},
+ inspire:{q:'নিজের কোন দিকটা বদলাতে চান?',s:'যেখানে সবচেয়ে বেশি পরিবর্তন দরকার মনে হয়, সেটা বেছে নিন'},
+ relax:{q:'কেমন গল্পে মন হালকা হবে?',s:'আপনার মনের চাপ কমাতে যেটা কাজে লাগবে'},
+ learn:{q:'কোন বিষয়ের গভীরে যেতে চান?',s:'যে বিষয়ে জানার কৌতূহল সবচেয়ে বেশি, সেটা বেছে নিন'},
+ escape:{q:'কোন জগতে হারিয়ে যেতে চান?',s:'কল্পনার কোন দরজাটা আজ খুলতে চান?'},
+ peace:{q:'কেমন বই আপনার মনে প্রশান্তি আনবে?',s:'যে ধরনের পাঠে মন সবচেয়ে বেশি শান্ত হয়'},
+ feel:{q:'কেমন আবেগে ভাসতে চান?',s:'মনের ভেতরের যে অনুভূতিটা আজ ছুঁতে চান'}
+};
+var FL_UNI=['u-novel','u-story','u-trans','u-poem','u-real'];
 var TIER_LABEL={'budget-near':'বাজেটের সামান্য বেশি','cat':'ধরন আলাদা, কিন্তু মুড মিলেছে','budget-out':'বাজেটের বাইরে'};
 var S={open:false,step:0,moods:[],tags:{},loadedAt:0,a:{mood:null,cat:'any',budget:'any'},noMood:false,cats:[],skipped:[]};
 function $(id){return document.getElementById(id)}
@@ -18359,7 +18437,19 @@ async function loadMoods(){
       (t.data||[]).forEach(function(x){(tags[String(x.product_id)]=tags[String(x.product_id)]||{})[x.mood_slug]=1});
     }
   }catch(e){console.warn('[BookFinder] moods load failed',e)}
+  if(moods.length&&!moods.some(function(m){return NEW_SLUGS[m.slug]})){   // ডাটাবেসে এখনো পুরোনো মুড — নতুন ৮টি দিয়ে বদলে দিই, পুরোনো ট্যাগ নতুন মুডে নিয়ে আসি
+    var rt={};
+    Object.keys(tags).forEach(function(pid){Object.keys(tags[pid]).forEach(function(os){
+      var om=moods.find(function(x){return x.slug===os}),ns=om?legacySlug(om.name):'';
+      if(ns)(rt[pid]=rt[pid]||{})[ns]=1;
+    })});
+    tags=rt;moods=[];
+  }
   if(!moods.length)moods=DEFAULT_MOODS.map(function(m){return Object.assign({},m)});
+  moods.forEach(function(m){      // ডাটাবেসে আগের ডিফল্ট নাম থাকলে নতুন প্রশ্নের সাথে মানানসই লেখায় বদলে দিই
+    var pn=PREV_NAMES[m.slug],dm=DEFAULT_MOODS.find(function(x){return x.slug===m.slug});
+    if(pn&&dm&&pn.indexOf(m.name)>-1){m.name=dm.name;m.tagline=dm.tagline;m.icon=dm.icon}
+  });
   moods.forEach(function(m){m.kw=String(m.keywords||'').split(/[,،]/).map(function(k){return k.trim().toLowerCase()}).filter(function(k){return k.length>=2})});
   S.moods=moods;S.tags=tags;S.loadedAt=Date.now();
 }
@@ -18368,7 +18458,8 @@ function buildCats(){
   books().forEach(function(p){var k=bookCatSlug(p);if(!map[k]){var c=(allCategories||[]).find(function(x){return x.name===p.category});map[k]={slug:k,name:p.category||'অন্যান্য',icon:(c&&c.icon)||'fa-book',n:0}}map[k].n++});
   S.cats=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return b.n-a.n}).slice(0,11);
 }
-function moodBy(slug){return S.moods.find(function(m){return m.slug===slug})}
+function moodBy(slug){return S.moods.find(function(m){return m.slug===slug})||S.moods.find(function(m){return m.slug===OLD_ALIAS[slug]})}
+function moodShort(m){return (m.name.length<=24?m.name:(m.tagline||m.name))}
 function budgetBy(k){return BUDGETS.find(function(b){return b.key===k})||BUDGETS[4]}
 var SKIP_KEY='bf_skipped_v1';
 function loadSkipped(){try{return (JSON.parse(localStorage.getItem(SKIP_KEY)||'[]')||[]).map(String)}catch(e){return []}}
@@ -18389,8 +18480,38 @@ function genreTarget(cat){
   }
   return (_gtCache[cat]=t);
 }
+function flKey(k){return FL_ALIAS[k]||k}
+/* মিল কতটা: ০ = নেই, ১ = নাম/ক্যাটাগরি/লেখকে শব্দ মিলেছে, ০.৬ = বিবরণে ২টি আলাদা শব্দ */
+function flScore(p,key){
+  var f=FLAVORS[flKey(key)];if(!f)return 0;
+  var head=lc(p.name)+' '+lc(p.category)+' '+lc(p.sub_category)+' '+lc(p.author);
+  if(f.kw.some(function(k){return kwHit(head,lc(k))}))return 1;
+  var d=lc(String(p.description||'').replace(/<[^>]*>/g,' '));
+  return f.kw.filter(function(k){return kwHit(d,lc(k))}).length>=2?.6:0;
+}
+function flHit(p,key){return flScore(p,key)>0}
+function flavorOptions(){
+  var mood=(S.a.mood&&S.a.mood!=='any')?moodBy(S.a.mood):null;
+  var pool=books().filter(inStock).filter(function(p){return !isSkipped(p)});
+  var fromMood=false;
+  if(mood){var mp=pool.filter(function(p){return moodEvidence(p,mood)});if(mp.length){pool=mp;fromMood=true}}
+  if(mood&&!fromMood)return null;
+  function mk(k){var n=pool.filter(function(p){return flHit(p,k)}).length;return n?{slug:'f:'+k,name:FLAVORS[k].label,hint:FLAVORS[k].tag,icon:FLAVORS[k].icon,n:n}:null}
+  function byN(a,b){return b.n-a.n}
+  var own=((mood&&FL_BY_MOOD[mood.slug])||[]).map(mk).filter(Boolean);
+  var uni=FL_UNI.map(mk).filter(Boolean).sort(byN);
+  var opts,q=null;
+  if(mood){
+    opts=own.length>=2?own:own.concat(uni).slice(0,6);
+    q=Q2_TXT[mood.slug]||null;
+  }else{
+    opts=Object.keys(FLAVORS).map(mk).filter(Boolean).sort(byN).slice(0,7);
+  }
+  return opts.length>=2?{opts:opts,mood:mood,fromMood:fromMood,flavor:true,q:q}:null;
+}
 function genreMatch(p,cat){
   if(!cat||cat==='any')return null;
+  if(cat.indexOf('f:')===0)return flHit(p,cat.slice(2));
   var t=genreTarget(cat);
   if(!t)return false;
   return nameKey(p.category)===t||nameKey(p.sub_category)===t;
@@ -18426,6 +18547,8 @@ function genreOptions(){
    3) বিবরণে কমপক্ষে ২টি আলাদা কীওয়ার্ড   → ৪০%
    এর কোনোটাই না থাকলে বইটি ওই মুডে কখনোই রেকমেন্ড হয় না। */
 function kwHit(hay,k){
+  if(k.charAt(0)==='&')return k.slice(1).split('&').every(function(x){return x&&kwHit(hay,x)});
+  if(k==='বিজ্ঞান'||k==='জ্ঞান')hay=hay.split('কল্পবিজ্ঞান').join(' ');   // কল্পবিজ্ঞান যেন 'বিজ্ঞান'-এর বই না হয়
   if(/^[a-z0-9 ]+$/.test(k))return new RegExp('(^|[^a-z0-9])'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'([^a-z0-9]|$)').test(hay);
   return hay.indexOf(k)>-1;
 }
@@ -18450,6 +18573,7 @@ function evaluate(p,a,mood,bud){
   var pe=getEffectiveSalePrice(p),price=pe.displayPrice;
   var ev=mood?moodEvidence(p,mood):null;
   var catOk=genreMatch(p,a.cat);
+  var catW=(a.cat&&a.cat.indexOf('f:')===0)?flScore(p,a.cat.slice(2)):(catOk?1:0);
   var b=null;
   if(bud.key!=='any'){
     if(price>=bud.min&&price<=bud.max)b='in';
@@ -18459,7 +18583,7 @@ function evaluate(p,a,mood,bud){
   }
   var max=0,s=0;
   if(mood){max+=50;if(ev)s+=50*ev.w}
-  if(catOk!==null){max+=25;if(catOk)s+=25}
+  if(catOk!==null){max+=25;if(catOk)s+=25*catW}
   if(b!==null){max+=25;s+={in:25,under:18,near:10,out:0}[b]}
   var pct=max?Math.min(99,Math.round(100*s/max)):90;
   var disc=Math.round(pe.totalDiscPct||0),rating=Number(p.rating)||0;
@@ -18467,16 +18591,24 @@ function evaluate(p,a,mood,bud){
   return {p:p,pe:pe,price:price,ev:ev,catOk:catOk,b:b,pct:pct,disc:disc,rating:rating,quality:quality,tier:''};
 }
 /* সাজানোর নিয়ম: আগে ক্যাটাগরি+মুড+বাজেট ফিল্টার, তারপর রেটিং (বেশি → কম), সমান হলে ম্যাচ% ও ছাড় */
-function cmp(x,y){return (y.rating-x.rating)||(y.pct-x.pct)||(y.quality-x.quality)}
+function cmp(x,y){return (Math.floor(y.pct/10)-Math.floor(x.pct/10))||(y.rating-x.rating)||(y.quality-x.quality)||(y.pct-x.pct)}
+var MAX_PICKS=3;
 function recommend(a,noMood){
   _gtCache={};
   var mood=(a.mood&&a.mood!=='any'&&!noMood)?moodBy(a.mood):null,bud=budgetBy(a.budget);
   var all=books().filter(inStock).map(function(p){return evaluate(p,a,mood,bud)});
   var pool=all.filter(function(r){return !isSkipped(r.p)});   // আগেই পড়া/স্কিপ করা বই বাদ
   var picked=[],ids={};
+  var authors={};
+  function au(r){return lc(r.p.author||r.p.brand||'').trim()}
   function take(fn,tier){
-    pool.filter(function(r){return !ids[r.p.id]&&fn(r)}).sort(cmp).forEach(function(r){
-      if(picked.length<5){r.tier=tier;picked.push(r);ids[r.p.id]=1}
+    var c=pool.filter(function(r){return !ids[r.p.id]&&fn(r)}).sort(cmp);
+    c.forEach(function(r){            // প্রথমে আলাদা আলাদা লেখকের বই — যেন ৩টি একই লেখকের না হয়
+      var a=au(r);
+      if(picked.length<MAX_PICKS&&(!a||!authors[a])){r.tier=tier;picked.push(r);ids[r.p.id]=1;if(a)authors[a]=1}
+    });
+    c.forEach(function(r){
+      if(picked.length<MAX_PICKS&&!ids[r.p.id]){r.tier=tier;picked.push(r);ids[r.p.id]=1}
     });
   }
   var mOk=function(r){return !mood||!!r.ev};
@@ -18503,30 +18635,35 @@ function renderStep(){
   if(!books().length){stage('<div class="bf-empty"><div class="big"><i class="fa-solid fa-book-open"></i></div><p class="bn">এই মুহূর্তে রেকমেন্ড করার মতো বই পাওয়া যায়নি। একটু পরে আবার চেষ্টা করুন।</p></div>');return}
   var back=S.step>0?'<div class="bf-nav"><button class="bf-link bn" data-act="back"><i class="fa-solid fa-arrow-left"></i> আগের প্রশ্ন</button></div>':'';
   if(S.step===0){
-    stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ আপনার মনের অবস্থা কেমন?</h2><p class="bf-qs bn">যে মুডটা সবচেয়ে কাছের মনে হয়, সেটায় ক্লিক করুন</p><div class="bf-grid">'+
+    stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ বইয়ের কাছে আপনার চাওয়া কী?</h2><p class="bf-qs bn">নিচের যে লাইনটা আপনার মনের কথা বলে, সেটায় ক্লিক করুন</p><div class="bf-grid">'+
       S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>'+
       '<div class="bf-litewrap"><button type="button" class="bf-lite bn'+(S.a.mood==='any'?' sel':'')+'" data-k="mood" data-v="any"><i class="fa-solid fa-shuffle"></i> আমি নিশ্চিত নই / সবগুলো দেখান</button></div>'+
       '<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>');
   }else if(S.step===1){
-    var go=genreOptions();
-    var sub=go.mood
-      ?(go.fromMood?'“'+esc(go.mood.name)+'” মুডের বইগুলো যে যে ধরনে আছে, শুধু সেগুলোই দেখানো হচ্ছে':'“'+esc(go.mood.name)+'” মুডে এখনো আলাদা করে বই বাছাই করা নেই, তাই সব ধরন দেখানো হচ্ছে')
-      :'নির্দিষ্ট কিছু মাথায় না থাকলে “যেকোনো ধরন” বেছে নিন';
-    stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">কোন ধরনের বই পড়তে ইচ্ছে করছে?</h2><p class="bf-qs bn">'+sub+'</p><div class="bf-grid">'+
-      '<button class="bf-opt'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><span class="e">'+ic('fa-compass')+'</span><b class="bn">যেকোনো ধরন</b><small class="bn">'+(go.fromMood?'এই মুডের সব বই':'সব ক্যাটাগরি থেকে খুঁজুন')+'</small></button>'+
-      go.opts.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b><span class="n bn">'+bnNum(c.n)+'টি বই</span></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
+    var go=flavorOptions()||genreOptions();
+    var q2=(go.flavor&&go.q)?go.q.q:'কেমন ধরনের লেখা পড়তে ভালো লাগবে?';
+    var sub=(go.flavor&&go.q)?go.q.s
+      :(go.flavor?'আমাদের কাছে সবচেয়ে বেশি যে ধরনের বই আছে, সেখান থেকে বেছে নিন'
+      :(go.mood
+        ?(go.fromMood?'“'+esc(moodShort(go.mood))+'” ঘরানার যে যে ধরনের বই আমাদের কাছে আছে, শুধু সেগুলোই দেখানো হচ্ছে — যেটা বেশি টানে সেটা বেছে নিন':'“'+esc(moodShort(go.mood))+'” ঘরানায় এখনো আলাদা করে বই বাছাই করা নেই, তাই সব ধরন দেখানো হচ্ছে')
+        :'যে ধরনের লেখা পড়তে ভালো লাগে সেটা বেছে নিন, নির্দিষ্ট কিছু না থাকলে “যেকোনো ধরন”'));
+    var anyTxt=go.fromMood?'যেকোনোটাই চলবে — এই মুডের সব বই দেখান':'যেকোনো ধরনই চলবে';
+    stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">'+q2+'</h2><p class="bf-qs bn">'+sub+'</p><div class="bf-grid">'+
+      go.opts.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b>'+(c.hint?'<small class="bn">'+esc(c.hint)+'</small>':'')+'<span class="n bn">'+bnNum(c.n)+'টি বই</span></button>'}).join('')+'</div>'+
+      '<div class="bf-litewrap"><button type="button" class="bf-lite bn'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><i class="fa-solid fa-compass"></i> '+anyTxt+'</button></div>'+
+      '<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }else{
     stage('<span class="bf-step-tag bn">প্রশ্ন ৩ / ৩</span><h2 class="bf-q bn" id="bfTitle">আপনার বাজেট কত?</h2><p class="bf-qs bn">একটা বইয়ের জন্য কতটা খরচ করতে চান?</p><div class="bf-grid">'+
       BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+ic(b.icon)+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }
 }
-function catName(slug){if(slug==='any')return 'যেকোনো ধরন';if(slug.indexOf('sub:')===0){var sb0=books().find(function(p){return subSlug(p)===slug.slice(4)});return sb0?sb0.sub_category:slug.slice(4)}var c=S.cats.find(function(x){return x.slug===slug});if(c)return c.name;var cc=(allCategories||[]).find(function(x){return catSlug(x)===slug});return cc?cc.name:slug}
+function catName(slug){if(slug==='any')return 'যেকোনো ধরন';if(slug.indexOf('f:')===0){var ff=FLAVORS[flKey(slug.slice(2))];return ff?(ff.tag||ff.label):slug}if(slug.indexOf('sub:')===0){var sb0=books().find(function(p){return subSlug(p)===slug.slice(4)});return sb0?sb0.sub_category:slug.slice(4)}var c=S.cats.find(function(x){return x.slug===slug});if(c)return c.name;var cc=(allCategories||[]).find(function(x){return catSlug(x)===slug});return cc?cc.name:slug}
 function crit(r,res){
   var li=[];
   if(res.mood){
-    li.push(r.ev?'<li class="ok">'+ic('fa-circle-check')+' মুড: '+esc(res.mood.name)+' <small>('+(r.ev.type==='tag'?'বিশেষভাবে বাছাই করা':'বিষয়বস্তু মিলেছে')+')</small></li>':'<li class="no">'+ic('fa-circle-xmark')+' মুড মেলেনি</li>');
+    li.push(r.ev?'<li class="ok">'+ic('fa-circle-check')+' মুড: '+esc(moodShort(res.mood))+' <small>('+(r.ev.type==='tag'?'বিশেষভাবে বাছাই করা':'বিষয়বস্তু মিলেছে')+')</small></li>':'<li class="no">'+ic('fa-circle-xmark')+' মুড মেলেনি</li>');
   }
-  if(r.catOk!==null)li.push(r.catOk?'<li class="ok">'+ic('fa-circle-check')+' ধরন: '+esc(S.a.cat.indexOf('sub:')===0?(r.p.sub_category||r.p.category):r.p.category)+'</li>':'<li class="part">'+ic('fa-circle-half-stroke')+' ধরন: '+esc(r.p.category)+'</li>');
+  if(r.catOk!==null)li.push(r.catOk?'<li class="ok">'+ic('fa-circle-check')+' ধরন: '+esc(S.a.cat.indexOf('f:')===0?catName(S.a.cat):(S.a.cat.indexOf('sub:')===0?(r.p.sub_category||r.p.category):r.p.category))+'</li>':'<li class="part">'+ic('fa-circle-half-stroke')+' ধরন: '+esc(r.p.category)+'</li>');
   if(r.b!==null){
     var m={in:['ok','fa-circle-check','বাজেটের মধ্যে'],under:['ok','fa-circle-check','বাজেটের চেয়েও সাশ্রয়ী'],near:['part','fa-circle-half-stroke','বাজেটের সামান্য বেশি'],out:['no','fa-circle-xmark','বাজেটের বাইরে']}[r.b];
     li.push('<li class="'+m[0]+'">'+ic(m[1])+' '+m[2]+'</li>');
@@ -18550,18 +18687,18 @@ function resultCard(r,i,res){
 function renderResults(push){
   setBar(3);
   var res=recommend(S.a,S.noMood);
-  var sum='<div class="bf-sum bn">'+(res.mood?'<span>'+ic(res.mood.icon)+' '+esc(res.mood.name)+'</span>':'')+'<span>'+ic('fa-layer-group')+' '+esc(catName(S.a.cat))+'</span><span>'+ic('fa-wallet')+' '+res.bud.label+'</span></div>';
+  var sum='<div class="bf-sum bn">'+(res.mood?'<span>'+ic(res.mood.icon)+' '+esc(moodShort(res.mood))+'</span>':'')+'<span>'+ic('fa-layer-group')+' '+esc(catName(S.a.cat))+'</span><span>'+ic('fa-wallet')+' '+res.bud.label+'</span></div>';
   var foot='<div class="bf-foot"><button class="bf-btn2 bn" data-act="restart"><i class="fa-solid fa-rotate-right"></i> আবার খুঁজুন</button><button class="bf-btn2 bn" data-act="share"><i class="fa-solid fa-link"></i> লিংক কপি করুন</button></div>';
   if(S.skipped.length){foot=foot.slice(0,-6)+'<button class="bf-btn2 bn" data-act="resetskip"><i class="fa-solid fa-eye"></i> স্কিপ করা '+bnNum(S.skipped.length)+'টি বই আবার দেখান</button></div>'}
   if(!res.list.length){
     var msg,btn='';
     if(!res.moodHasBooks){
-      msg='“'+esc(res.mood.name)+'” মুডে এখনো কোনো বই ট্যাগ করা নেই, তাই ভুল বই দেখানোর বদলে সত্যিটাই জানাচ্ছি।';
+      msg='“'+esc(moodShort(res.mood))+'” ঘরানায় এখনো কোনো বই ট্যাগ করা নেই, তাই ভুল বই দেখানোর বদলে সত্যিটাই জানাচ্ছি।';
       btn='<button class="bf-btn2 bn" data-act="nomood"><i class="fa-solid fa-filter"></i> মুড বাদ দিয়ে ধরন ও বাজেট অনুযায়ী দেখুন</button> ';
     }else msg=S.skipped.length?'এই পছন্দে আর কোনো নতুন বই নেই — বাকিগুলো আপনি স্কিপ করেছেন। ধরন/বাজেট বদলান অথবা স্কিপ করা বই আবার দেখুন।':'এই কম্বিনেশনে কোনো বই নেই। ধরন বা বাজেট একটু বদলে আবার চেষ্টা করুন।';
     stage('<h2 class="bf-q bn" id="bfTitle">মিলিয়ে দিতে পারলাম না</h2>'+sum+'<div class="bf-empty"><div class="big"><i class="fa-solid fa-magnifying-glass"></i></div><p class="bn">'+msg+'</p><div style="margin-top:14px">'+btn+'</div></div>'+foot);
   }else{
-    stage('<h2 class="bf-q bn" id="bfTitle"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold,#F5A623)"></i> আপনার জন্য বাছাই করা বই</h2><p class="bf-qs bn">আপনার উত্তরের সাথে সবচেয়ে মিলে যাওয়া বইগুলো</p>'+sum+
+    stage('<h2 class="bf-q bn" id="bfTitle"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold,#F5A623)"></i> আপনার জন্য বাছাই করা '+bnNum(res.list.length)+'টি বই</h2><p class="bf-qs bn">আপনার তিনটি উত্তরের সাথে সবচেয়ে ভালো মিলে যাওয়া বই</p>'+sum+
       (S.noMood?'<div class="bf-note bn">মুড বাদ দিয়ে শুধু ধরন ও বাজেট অনুযায়ী দেখানো হচ্ছে।</div>':'')+
       (res.relaxed?'<div class="bf-note bn">সব শর্ত হুবহু মেলে এমন বই কম, তাই কিছু বই সামান্য আলাদা শর্তে দেখানো হয়েছে। কোনটা কেন আলাদা, প্রতিটি কার্ডে লেখা আছে।</div>':'')+
       '<div class="bf-list">'+res.list.map(function(r,i){return resultCard(r,i,res)}).join('')+'</div><p class="bf-skipnote bn"><i class="fa-solid fa-circle-info"></i> যে বই আগেই পড়া হয়ে গেছে সেটায় “স্কিপ” চাপুন — আপনার পছন্দ অনুযায়ী আরেকটি বই দেখানো হবে।</p>'+foot);
