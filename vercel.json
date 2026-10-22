@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/product/:slug", "destination": "/api/page?kind=product&slug=:slug" },
+    { "source": "/blog/:slug", "destination": "/api/page?kind=blog&slug=:slug" },
+    { "source": "/b/:slug", "destination": "/api/page?kind=blog&slug=:slug" },
     { "source": "/category/:slug", "destination": "/api/page?kind=category&slug=:slug" },
     { "source": "/author/:slug", "destination": "/api/page?kind=author&slug=:slug" },
     { "source": "/publisher/:slug", "destination": "/api/page?kind=publisher&slug=:slug" },
