@@ -11938,14 +11938,14 @@ create policy "finder_tags_admin" on finder_book_tags for all to authenticated
   using (exists (select 1 from admin_users a where a.id = auth.uid()))
   with check (exists (select 1 from admin_users a where a.id = auth.uid()));`;
 const F_DEFAULTS = [
-  ['রোমান্টিক','fa-heart','ভালোবাসার গল্পে ডুব দিন','প্রেম, ভালোবাসা, রোমান্স, love, romance'],
-  ['রহস্য-রোমাঞ্চ','fa-user-secret','টানটান উত্তেজনা চাই','রহস্য, গোয়েন্দা, থ্রিলার, খুন, thriller'],
-  ['অনুপ্রেরণা','fa-fire','নিজেকে বদলাতে চাই','অনুপ্রেরণা, সফল, ক্যারিয়ার, অভ্যাস, motivation'],
-  ['হাসি-মজা','fa-face-laugh-beam','মন হালকা করতে চাই','হাসি, মজা, কৌতুক, রম্য, humor'],
-  ['জ্ঞান ও ইতিহাস','fa-brain','নতুন কিছু জানতে চাই','ইতিহাস, বিজ্ঞান, জ্ঞান, history, science'],
-  ['আধ্যাত্মিক শান্তি','fa-mosque','মনের প্রশান্তি খুঁজছি','ইসলাম, ইসলামী, আত্মা, শান্তি, নবী'],
-  ['কল্পনা ও সায়েন্স ফিকশন','fa-rocket','অন্য জগতে হারাতে চাই','সায়েন্স ফিকশন, কল্পবিজ্ঞান, ফ্যান্টাসি, মহাকাশ'],
-  ['নস্টালজিয়া','fa-cloud-rain','পুরনো দিনের স্মৃতিতে','স্মৃতি, শৈশব, কবিতা, গ্রাম']
+  ['ভালোবাসায় ডুব দিতে চাই','fa-heart','রোমান্টিক উপন্যাস ও প্রেমের গল্প','রোমান্টিক, প্রেম, ভালোবাসা, ভালবাসা, রোমান্স, বিরহ, প্রণয়, love, romance','love'],
+  ['রহস্য ও আতঙ্কে শিহরিত হতে চাই','fa-user-secret','গোয়েন্দা, ক্রাইম থ্রিলার ও ভৌতিক','রহস্য, গোয়েন্দা, থ্রিলার, ক্রাইম, খুনি, হত্যা, প্রতিশোধ, ভৌতিক, ভুতুড়ে, অতিপ্রাকৃত, অলৌকিক, হরর, সাইকোলজিক্যাল, মাসুদ রানা, ফেলুদা, ব্যোমকেশ, মিসির আলী, শার্লক, thriller, mystery, detective, horror, crime','mystery'],
+  ['নিজেকে বদলে অনুপ্রাণিত হতে চাই','fa-fire','সেলফ-হেল্প, ক্যারিয়ার ও মোটিভেশন','অনুপ্রেরণা, সফল, সফলতা, ক্যারিয়ার, অভ্যাস, মোটিভেশন, আত্মউন্নয়ন, মাইন্ডসেট, সেলফ হেল্প, সেলফ-হেল্প, আত্মবিশ্বাস, motivation, habit, self-help, career','inspire'],
+  ['হেসে মনের চাপ কমাতে চাই','fa-face-laugh-beam','হাসি-রম্য ও সহজ-সরল জীবনের গল্প','হাসির, হাস্যরস, মজা, মজার, কৌতুক, রম্য, ব্যঙ্গ, হালকা, ফিলগুড, ফিল গুড, গ্রামীণ, পারিবারিক, স্লাইস অফ লাইফ, humor, comedy','relax'],
+  ['নতুন জ্ঞান অর্জন করতে চাই','fa-brain','ইতিহাস, রাজনীতি, বিজ্ঞান ও জীবনী','ইতিহাস, ঐতিহাসিক, রাজনীতি, রাজনৈতিক, বিজ্ঞান, জ্ঞান, মুক্তিযুদ্ধ, একাত্তর, জীবনী, আত্মজীবনী, সমাজ, দর্শন, history, science, politics, biography','learn'],
+  ['অজানা জগতের রোমাঞ্চে হারাতে চাই','fa-rocket','কল্পবিজ্ঞান, ফ্যান্টাসি ও অ্যাডভেঞ্চার','কল্পবিজ্ঞান, সায়েন্স ফিকশন, ফ্যান্টাসি, মহাকাশ, অ্যাডভেঞ্চার, এডভেঞ্চার, অভিযান, ভ্রমণ, ট্রাভেলগ, জাদু, যাদু, রূপকথা, sci-fi, fantasy, adventure, travel','escape'],
+  ['মনের গভীর প্রশান্তি চাই','fa-mosque','ইসলামিক ও আধ্যাত্মিক বই','ইসলাম, আত্মশুদ্ধি, কুরআন, কোরআন, হাদিস, হাদীস, সীরাত, সিরাত, সাহাবি, সাহাবী, রাসূল, রাসুল, নবীজি, দোয়া, ঈমান, তাফসির, islamic','peace'],
+  ['স্মৃতি আর আবেগে ভিজে বুক হালকা করতে চাই','fa-cloud-rain','নস্টালজিয়া, স্মৃতিকথা ও আবেগঘন গল্প','নস্টালজিয়া, স্মৃতিকথা, স্মৃতিচারণ, স্মৃতির, শৈশব, ট্র্যাজেডি, বিষাদ, আবেগ, কান্না, কবিতা, nostalgia','feel']
 ];
 const F_ICONS = ['fa-heart','fa-user-secret','fa-fire','fa-face-laugh-beam','fa-brain','fa-mosque','fa-rocket','fa-cloud-rain','fa-book-open','fa-ghost','fa-skull','fa-graduation-cap','fa-lightbulb','fa-feather-pointed','fa-moon','fa-sun','fa-leaf','fa-dragon','fa-hat-wizard','fa-handshake','fa-seedling','fa-bolt','fa-star','fa-music'];
 function fIcon(c){ return /^fa-[a-z0-9-]+$/.test(c || '') ? c : 'fa-wand-magic-sparkles'; }
@@ -12121,7 +12121,7 @@ async function fMove(id, dir) {
   await Promise.all(fMoods.map((m, k) => sb.from('finder_moods').update({ sort_order: k + 1 }).eq('id', m.id)));
 }
 async function fSeedDefaults() {
-  const rows = F_DEFAULTS.map((d, i) => ({ name: d[0], slug: makeSlug(d[0]), icon: d[1], tagline: d[2], keywords: d[3], sort_order: i + 1 }));
+  const rows = F_DEFAULTS.map((d, i) => ({ name: d[0], slug: d[4] || makeSlug(d[0]), icon: d[1], tagline: d[2], keywords: d[3], sort_order: i + 1 }));
   const { error } = await sb.from('finder_moods').insert(rows);
   if (error) toast('ত্রুটি', error.message, 'error'); else { toast('যোগ হয়েছে ✓', '৮টি ডিফল্ট মুড তৈরি হয়েছে'); loadFinder(); }
 }
@@ -12131,7 +12131,7 @@ async function fAutoTag(id) {
   const m = fMoods.find(x => x.id === id); if (!m) return;
   const kws = String(m.keywords || '').split(/[,،]/).map(k => k.trim().toLowerCase()).filter(k => k.length >= 2);
   if (!kws.length) { toast('শব্দ নেই', 'আগে এই মুডে “অটো-ম্যাচ শব্দ” দিন (এডিট করে)', 'error'); return; }
-  const hit = (hay, k) => /^[a-z0-9 ]+$/.test(k)
+  const hit = (hay, k) => ((k === 'বিজ্ঞান' || k === 'জ্ঞান') && (hay = hay.split('কল্পবিজ্ঞান').join(' ')), /^[a-z0-9 ]+$/.test(k))
     ? new RegExp('(^|[^a-z0-9])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)').test(hay)
     : hay.includes(k);
   const matches = allProducts.filter(fIsBook).filter(p => {
