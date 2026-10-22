@@ -5712,6 +5712,23 @@ html, body {
   }
 }
 
+/* ── ক্যাটাগরি আইকন: FontAwesome লোড হলে আসল আইকন, না হলে SVG ── */
+.ncat-fb { display: inline-flex; }
+.ncat-more-item .ico > i, .ncat-more-x > i { display: none; }
+html.fa-ok .ncat-more-item .ico > i, html.fa-ok .ncat-more-x > i { display: inline-block; }
+html.fa-ok .ncat-fb { display: none; }
+@media(max-width:768px){
+  /* বারে অ্যাডমিনের বেছে নেওয়া আসল আইকন (FA লোড না হলে SVG ফলব্যাক) */
+  html.fa-ok .nav-cats .ncat:not(.ncat-more-btn) > i { display: inline-block !important; }
+  html.fa-ok .nav-cats .ncat:not(.ncat-more-btn) .mob-icon { display: none !important; }
+  /* "আরও" বাটন ডান পাশে সবসময় দেখা যাবে */
+  .nav-cats .ncat-more-btn {
+    position: sticky; right: 0; z-index: 3; margin-left: auto;
+    background: var(--dbgffffff,#fff) !important;
+    box-shadow: -10px 0 8px -4px rgba(0,0,0,.10);
+    touch-action: manipulation;
+  }
+}
 /* ── মোবাইলে নোটিফিকেশন বেল (হেডারে) ── */
 @media(max-width:768px){
   .header-top .notif-wrap { display: block !important; position: static; }
@@ -5731,6 +5748,19 @@ html, body {
   .notif-wrap .notif-list { overflow-y: auto; max-height: calc(70vh - 52px); }
 }
 </style>
+<script>
+(function(){
+  var done=false, F='900 1em "Font Awesome 6 Free"';
+  function mark(){ if(done) return; done=true; document.documentElement.classList.add('fa-ok'); }
+  function probe(){
+    if(done || !document.fonts || !document.fonts.load) return;
+    try { document.fonts.load(F, '\uf015').then(function(l){ if(l && l.length) mark(); }).catch(function(){}); } catch(e){}
+  }
+  probe();
+  window.addEventListener('load', function(){ probe(); setTimeout(probe,1500); setTimeout(probe,4000); });
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', probe);
+})();
+</script>
 <style id="homeGridStyles">
 .grid-more-wrap{display:flex;justify-content:center;margin:22px 0 4px}
 .grid-more-wrap:empty{display:none}
@@ -17279,10 +17309,10 @@ function layoutNavCats() {
     return;
   }
   more.style.display = '';
-  p.innerHTML = '<div class="ncat-more-top"><b>আরও ক্যাটাগরি</b><button type="button" class="ncat-more-x" aria-label="বন্ধ করুন"><i class="fa-solid fa-xmark"></i></button></div><div class="ncat-more-grid">' + hidden.map(c => {
+  p.innerHTML = '<div class="ncat-more-top"><b>আরও ক্যাটাগরি</b><button type="button" class="ncat-more-x" aria-label="বন্ধ করুন"><i class="fa-solid fa-xmark"></i><svg class="svg-icon ncat-fb" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="ncat-more-grid">' + hidden.map(c => {
     const col = _ncatColor(c.color);
     return `<button type="button" class="ncat-more-item" role="menuitem" data-cat="${_ncatEsc(c.name)}">
-      <span class="ico" style="background:${col}1a;color:${col}"><i class="fa-solid ${_ncatEsc(c.icon || 'fa-box')}"></i></span>
+      <span class="ico" style="background:${col}1a;color:${col}"><i class="fa-solid ${_ncatEsc(c.icon || 'fa-box')}"></i><svg class="svg-icon ncat-fb" width="15" height="15" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">${catIconSvg(c.icon)}</svg></span>
       <span class="bn" style="min-width:0;white-space:normal;overflow-wrap:anywhere">${_ncatEsc(c.name)}</span></button>`;
   }).join('') + '</div>';
 }
