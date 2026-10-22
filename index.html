@@ -4764,8 +4764,7 @@ html, body {
   }
 
   /* Actions group — hide track order & notification on mobile (moved to bottom nav) */
-  .hactions > button[onclick*="openTrack"],
-  .notif-wrap {
+  .hactions > button[onclick*="openTrack"] {
     display: none !important;
   }
 
@@ -5279,8 +5278,7 @@ html, body {
   /* Hide all hbtn labels on mobile */
   .hbtn span { display: none !important; }
 
-  /* Notification wrap hidden (in bottom nav) */
-  .notif-wrap { display: none !important; }
+  /* Notification bell: now visible on mobile header */
 
   /* Track order button hidden (in bottom nav) */
   .hactions > button[onclick*="openTrack"] { display: none !important; }
@@ -5713,6 +5711,25 @@ html, body {
     gap: 3px !important;
   }
 }
+
+/* ── মোবাইলে নোটিফিকেশন বেল (হেডারে) ── */
+@media(max-width:768px){
+  .header-top .notif-wrap { display: block !important; position: static; }
+  .header-top .notif-btn {
+    display: flex !important; flex-direction: row !important; align-items: center !important;
+    padding: 7px 8px !important; gap: 0 !important; position: relative !important;
+    background: transparent; border: none; color: var(--text-mid);
+  }
+  .header-top .notif-btn > span:not(.notif-badge) { display: none !important; }
+  .header-top .notif-btn .svg-icon { color: var(--text-mid); }
+  .header-top .notif-badge { top: 3px; right: 3px; }
+  .notif-wrap .notif-panel {
+    position: absolute !important; top: calc(100% + 6px) !important; left: 10px !important; right: 10px !important;
+    width: auto !important; max-height: 70vh; display: none; z-index: 100001;
+  }
+  .notif-wrap.open .notif-panel { display: flex !important; flex-direction: column; }
+  .notif-wrap .notif-list { overflow-y: auto; max-height: calc(70vh - 52px); }
+}
 </style>
 <style id="homeGridStyles">
 .grid-more-wrap{display:flex;justify-content:center;margin:22px 0 4px}
@@ -6059,9 +6076,9 @@ html.gm-boot #gmSplash{display:flex}
     <div class="hactions">
 
       <!-- Blog Corner -->
-      <button class="hbtn" onclick="openBlogList()" style="padding:7px 11px">
-        <i class="fa-solid fa-pen-nib"></i>
-        <svg class="svg-icon mob-icon" width="18" height="18" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <button class="hbtn" onclick="openBlogList()" aria-label="ব্লগ কর্নার" style="padding:7px 11px">
+        <i class="fa-solid fa-newspaper"></i>
+        <svg class="svg-icon mob-icon" width="18" height="18" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
         <span style="font-size:.58rem;white-space:nowrap">ব্লগ কর্নার</span>
       </button>
 
