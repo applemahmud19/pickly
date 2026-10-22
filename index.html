@@ -5987,24 +5987,24 @@ html.gm-boot #gmSplash{display:flex}
   GALAXY MART BD — DATA INTEGRITY AUDIT v5.1
   Audit performed & fixed:
 
-  ✅ FIX 1:  p.color/icon null safety → fallback #AA2C2D
-  ✅ FIX 2:  Phone validation (BD format: 01XXXXXXXXX)
+  FIX 1:  p.color/icon null safety → fallback #AA2C2D
+  FIX 2:  Phone validation (BD format: 01XXXXXXXXX)
              Name length check (≥3 chars)
              Cart empty check before order
-  ✅ FIX 3:  Cart persists in localStorage (survives refresh)
+  FIX 3:  Cart persists in localStorage (survives refresh)
              Mobile bottom nav badge synced with cart count
-  ✅ FIX 4:  fmtPrice() helper → NaN/undefined → "—"
+  FIX 4:  fmtPrice() helper → NaN/undefined → "—"
              safeStr() helper for safe string display
-  ✅ FIX 5:  Supabase Realtime subscription for products
+  FIX 5:  Supabase Realtime subscription for products
              & orders (INSERT/UPDATE/DELETE → instant UI)
-  ✅ FIX 6:  order_status_history insert non-blocking
+  FIX 6:  order_status_history insert non-blocking
              (fire-and-forget, no UX delay)
-  ✅ FIX 7:  Empty product state with proper message
-  ✅ FIX 8:  Admin panel re-verifies against DB on every open
+  FIX 7:  Empty product state with proper message
+  FIX 8:  Admin panel re-verifies against DB on every open
              (prevents stale isAdmin state)
-  ✅ FIX 9:  badge 'null' string guard (DB string "null" fix)
-  ✅ FIX 10: Admin product table empty state
-  ✅ FIX 11: Browser back/forward popstate handler (present)
+  FIX 9:  badge 'null' string guard (DB string "null" fix)
+  FIX 10: Admin product table empty state
+  FIX 11: Browser back/forward popstate handler (present)
 =================================================================
 -->
 
@@ -10962,7 +10962,7 @@ function openProduct(id, pushUrl = true) {
   if (badge) badge.textContent = '';
 
   loadProductReviews(p.id);   // গড় রেটিং + রিভিউ সংখ্যা হেডারে দেখাতে
-  pushProductUrl(p, pushUrl);   // ✅ URL: /product/<slug>
+  pushProductUrl(p, pushUrl);   // URL: /product/<slug>
   openPage('product');
 }
 
@@ -12173,7 +12173,7 @@ function showBlockedCustomerDialog() {
   d.id = 'gmBlockedDlg';
   d.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
   d.innerHTML = `<div style="background:#fff;color:#222;max-width:380px;width:100%;border-radius:16px;padding:24px 22px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25)">
-    <div style="font-size:2rem;margin-bottom:8px">🙏</div>
+    <div style="font-size:2rem;margin-bottom:8px;color:#AA2C2D"><i class="fa-solid fa-hands-praying"></i></div>
     <div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">দুঃখিত, সরাসরি অর্ডার নেওয়া যাচ্ছে না</div>
     <div style="font-size:.9rem;line-height:1.6;color:#555;margin-bottom:16px">নিরাপত্তার কারণে এই মুহূর্তে ক্যাশ অন ডেলিভারিতে অর্ডার নেওয়া সম্ভব হচ্ছে না। অনুগ্রহ করে <strong>অগ্রিম পেমেন্ট</strong> (bKash / Nagad / Rocket) করে অর্ডার করুন। আমাদের সাথে যোগাযোগ করলে আমরা সাহায্য করব। ধন্যবাদ!</div>
     <button onclick="document.getElementById('gmBlockedDlg').remove()" style="background:#AA2C2D;color:#fff;border:0;border-radius:10px;padding:10px 26px;font-size:.9rem;cursor:pointer">ঠিক আছে</button></div>`;
@@ -12638,7 +12638,7 @@ function openAdmin() {
   if(!isAdmin){ toast('অ্যাক্সেস নেই','আপনি এই সাইটের অ্যাডমিন নন','e'); return; }
   // মূল অ্যাডমিন ড্যাশবোর্ড (admin.html) নতুন ট্যাবে খোলে — এটাই আসল প্যানেল।
   // admin.html নিজেও লগইন ও admin_users দিয়ে যাচাই করে।
-  // ⚠ 'noopener' দিলে window.open সবসময় null ফেরত দেয় — তাই আগে "পপআপ ব্লক" ভেবে একই ট্যাবও admin-এ চলে যেত।
+  // 'noopener' দিলে window.open সবসময় null ফেরত দেয় — তাই আগে "পপআপ ব্লক" ভেবে একই ট্যাবও admin-এ চলে যেত।
   // এখন noopener ছাড়া খুলে opener হাতে null করা হচ্ছে।
   const w = window.open('/admin.html', '_blank');
   if (w) { try { w.opener = null; } catch (e) {} }
@@ -20770,7 +20770,7 @@ async function oaSubmit(){
   window.addEventListener('appinstalled', () => { hideBar(); deferred = null; LS.set('gm_installed', '1'); });
   // iOS Safari-তে স্বয়ংক্রিয় প্রম্পট নেই — কীভাবে যোগ করবেন তা বলে দিই
   if (isIOS && !standalone() && !snoozed('gm_install_snooze') && /safari/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent)) {
-    setTimeout(() => showBar('', 'অ্যাপ হিসেবে যোগ করুন', 'নিচের Share (⬆︎) বাটনে ট্যাপ করে "Add to Home Screen" বেছে নিন।', '', null, 'gm_install_snooze'), 10000);
+    setTimeout(() => showBar('', 'অ্যাপ হিসেবে যোগ করুন', 'নিচের Share (<i class="fa-solid fa-arrow-up-from-bracket"></i>) বাটনে ট্যাপ করে "Add to Home Screen" বেছে নিন।', '', null, 'gm_install_snooze'), 10000);
   }
 
   // ── পুশ ──
