@@ -1,5 +1,5 @@
 // Serves index.html with page-specific <title>, description, canonical, Open Graph and JSON-LD
-// for /product/*, /category/*, /author/*, /publisher/*, /subcategory/* so Google sees them without running JS.
+// for /product/*, /blog/*, /category/*, /author/*, /publisher/*, /subcategory/* so Google sees them without running JS.
 const { SITE, fetchAll, productSlugs, catSlug, buildIndex, esc, norm, loadProducts } = require('./_lib');
 
 const clip = (s, n) => { s = norm(String(s || '').replace(/<[^>]*>/g, ' ')); return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; };
@@ -16,6 +16,13 @@ const absImg = v => {
 };
 
 async function meta(kind, slug) {
+  if (kind === 'blog') {
+    const k = dec(slug).replace(/[(),"]/g, '');
+    const q = encodeURIComponent(k);
+    const [b] = await fetchAll('blog_posts', `select=title,slug,excerpt,cover_image&status=eq.published&or=(slug.eq.${q},short_code.eq.${q})&limit=1`);
+    if (!b) return null;
+    return { title: `${b.title} | বুক গ্যালাক্সি`, desc: clip(b.excerpt, 155) || b.title, url: `${SITE}/blog/${encodeURIComponent(b.slug)}`, img: absImg(b.cover_image), type: 'article' };
+  }
   const products = await loadProducts();
   const s = dec(slug).toLowerCase();
   if (kind === 'product') {
@@ -52,7 +59,10 @@ async function meta(kind, slug) {
 module.exports = async (req, res) => {
   const base = await (await fetch(`${SITE}/index.html`)).text();
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  const stripped = base.replace(/<!--HOME-SEO-->[\s\S]*?<!--\/HOME-SEO-->/, '');
+  // index.html-এর ডিফল্ট description/canonical/og/twitter ট্যাগ সরানো হচ্ছে, নইলে ডুপ্লিকেট হয়ে Messenger ভুল ছবি/টাইটেল নিতে পারে
+  const stripped = base.replace(/<!--HOME-SEO-->[\s\S]*?<!--\/HOME-SEO-->/, '')
+    .replace(/<meta\s+(?:name="(?:description|twitter:[^"]*)"|property="og:[^"]*")[^>]*>\s*/g, '')
+    .replace(/<link\s+rel="canonical"[^>]*>\s*/g, '');
   try {
     const m = await meta(req.query.kind, req.query.slug);
     if (!m) { res.setHeader('Cache-Control', 'public, s-maxage=300'); return res.status(200).send(base); }
