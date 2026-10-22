@@ -8221,6 +8221,52 @@ async function applyDynamicSocialLinks() {
 }
 applyDynamicSocialLinks();
 
+// ══════════════════════════════════════════════════════════════════
+// TRACKING SCRIPTS (Meta Pixel / Google Analytics / Ads) — admin → site_settings.tracking_scripts
+// অ্যাডমিনে পেস্ট করা কোড <head>-এ ইনজেক্ট হয়; <script> নতুন করে বানানো হয় যাতে রান করে।
+// ══════════════════════════════════════════════════════════════════
+function injectTrackingScripts(code) {
+  if (!code || window.__gmTrackingDone) return;
+  window.__gmTrackingDone = true;
+  try {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = code;
+    const nodes = Array.from(tpl.content.childNodes);
+    nodes.forEach(node => {
+      if (node.nodeType !== 1) return;                       // comment/text বাদ
+      if (node.tagName === 'NOSCRIPT') return;               // JS চালু থাকলে লাগে না
+      if (node.tagName === 'SCRIPT') {
+        const s = document.createElement('script');
+        Array.from(node.attributes).forEach(at => s.setAttribute(at.name, at.value));
+        s.text = node.textContent;
+        document.head.appendChild(s);
+      } else {
+        document.head.appendChild(node.cloneNode(true));
+      }
+    });
+  } catch(e) { console.warn('[Tracking] inject failed', e); }
+}
+async function applyTrackingScripts() {
+  try {
+    const cached = localStorage.getItem('gm_tracking');
+    if (cached) injectTrackingScripts(cached);               // দ্রুত লোডের জন্য আগের কপি
+  } catch(e) {}
+  try {
+    const { data, error } = await sb.from('site_settings').select('tracking_scripts').eq('id', 1).single();
+    if (error || !data) return;
+    const code = (data.tracking_scripts || '').trim();
+    try { code ? localStorage.setItem('gm_tracking', code) : localStorage.removeItem('gm_tracking'); } catch(e) {}
+    injectTrackingScripts(code);                             // ক্যাশ না থাকলে এখানে
+  } catch(e) { console.warn('[Tracking] fetch failed', e); }
+}
+applyTrackingScripts();
+// SPA পেজ বদলালে Meta Pixel-এ PageView পাঠাও (Google Analytics নিজে history change ধরে)
+(function(){
+  let first = true, last = location.pathname;
+  const fire = () => { if (location.pathname !== last) { last = location.pathname; try { window.fbq && fbq('track', 'PageView'); } catch(e) {} } };
+  ['pushState','replaceState'].forEach(m => { const o = history[m]; history[m] = function(){ const r = o.apply(this, arguments); setTimeout(fire, 0); return r; }; });
+  window.addEventListener('popstate', () => setTimeout(fire, 0));
+})();
 
 
 // ══════════════════════════════════════════════════
