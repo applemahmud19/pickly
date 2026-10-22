@@ -2624,6 +2624,48 @@ body {
           </div>
         </div>
 
+        <!-- ══ TRACKING & PIXEL SCRIPTS ══ -->
+        <div class="panel" style="max-width:600px;margin-bottom:20px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)">
+                <i class="fa-solid fa-code"></i>
+              </div>
+              Tracking &amp; Pixel Scripts
+            </div>
+            <span style="font-size:0.68rem;font-family:var(--mono);color:var(--text3);
+                         background:var(--bg3);padding:3px 10px;border-radius:100px">
+              site_settings টেবিল
+            </span>
+          </div>
+          <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+            <div class="form-group">
+              <label class="form-label"><i class="fa-brands fa-facebook" style="color:#1877F2;margin-right:6px"></i>Meta Pixel / Google Analytics / Google Ads / অন্য যেকোনো স্ক্রিপ্ট</label>
+              <textarea class="form-inp" id="trackingScripts" rows="12" spellcheck="false"
+                style="font-family:var(--mono);font-size:.74rem;line-height:1.6;resize:vertical;white-space:pre;overflow:auto"
+                placeholder="<!-- Meta Pixel Code -->&#10;<script>&#10;  !function(f,b,e,v,n,t,s){...}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');&#10;  fbq('init', 'YOUR_PIXEL_ID');&#10;  fbq('track', 'PageView');&#10;</script>"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="saveTrackingScripts()" id="trackSaveBtn">
+                <i class="fa-solid fa-floppy-disk"></i> Save Scripts
+              </button>
+              <button class="btn" onclick="clearTrackingScripts()" id="trackClearBtn" style="background:var(--bg3);color:var(--text2)">
+                <i class="fa-solid fa-trash"></i> Clear
+              </button>
+              <span id="trackStatus" style="font-size:.75rem;color:var(--text3)"></span>
+            </div>
+            <div style="font-size:.7rem;color:var(--text3);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.8;font-family:var(--mono)">
+              <i class="fa-solid fa-circle-info"></i> Meta ও Google-এর দেওয়া পুরো কোড (<b style="color:var(--cyan)">&lt;script&gt;</b> সহ) পেস্ট করো, একসাথে একাধিক স্ক্রিপ্টও দেওয়া যাবে।
+              সেভ করলে স্টোরের সব পেজে (হোম, প্রোডাক্ট, ক্যাটাগরি, ব্লগ) লাইভ হবে — কোড এডিট করা লাগবে না।
+              Saved in <b style="color:var(--purple)">site_settings.tracking_scripts</b>. শুধু বিশ্বস্ত সোর্সের কোড দিও।
+            </div>
+            <div style="font-size:.7rem;color:var(--text3);font-family:var(--mono);background:var(--bg3);border-radius:9px;padding:12px 14px;line-height:1.8">
+              <i class="fa-solid fa-database"></i> প্রথমবার Supabase → SQL Editor-এ একবার রান করো:
+              <pre style="white-space:pre-wrap;margin:8px 0 0;font-family:var(--mono);font-size:.7rem;user-select:all">alter table public.site_settings add column if not exists tracking_scripts text;</pre>
+            </div>
+          </div>
+        </div>
+
         <div class="panel" style="max-width:560px">
           <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:var(--bg3);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>Supabase Configuration</div></div>
           <div style="padding:22px;display:flex;flex-direction:column;gap:14px">
@@ -9191,6 +9233,51 @@ async function saveSocialLinks() {
   }
 }
 
+// ── Tracking & Pixel Scripts CRUD ─────────────────────────────────
+async function loadTrackingScripts() {
+  const el = document.getElementById('trackingScripts');
+  if (!el) return;
+  try {
+    const { data, error } = await sb.from('site_settings').select('tracking_scripts').eq('id', 1).single();
+    if (error) throw error;
+    el.value = (data && data.tracking_scripts) || '';
+  } catch(e) {
+    console.warn('[Tracking] load failed', e);
+    const st = document.getElementById('trackStatus');
+    if (st && /tracking_scripts/.test(e.message || '')) st.textContent = 'আগে নিচের SQL একবার রান করো';
+  }
+}
+
+async function saveTrackingScripts(clear) {
+  const btn = document.getElementById('trackSaveBtn');
+  const status = document.getElementById('trackStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+  status.textContent = '';
+  try {
+    const val = clear === true ? '' : document.getElementById('trackingScripts').value.trim();
+    const { error } = await sb.from('site_settings')
+      .update({ tracking_scripts: val || null, updated_at: new Date().toISOString() }).eq('id', 1);
+    if (error) throw error;
+    toast('Scripts Saved', val ? 'স্টোরে লাইভ!' : 'সব স্ক্রিপ্ট মুছে ফেলা হয়েছে', 'success');
+    status.textContent = '' + new Date().toLocaleTimeString();
+  } catch(e) {
+    const msg = /tracking_scripts/.test(e.message || '')
+      ? 'tracking_scripts কলাম নেই — নিচের SQL একবার রান করো' : (e.message || 'Save failed');
+    toast('Error', msg, 'error');
+    status.textContent = '' + msg;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Scripts';
+  }
+}
+
+async function clearTrackingScripts() {
+  if (!confirm('সব ট্র্যাকিং স্ক্রিপ্ট মুছে ফেলবে?')) return;
+  document.getElementById('trackingScripts').value = '';
+  await saveTrackingScripts(true);
+}
+
 function saveSettings() {
   const url    = document.getElementById('cfgUrl').value.trim();
   const key    = document.getElementById('cfgKey').value.trim();
@@ -9667,7 +9754,7 @@ function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
-  if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
+  if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); loadTrackingScripts(); }
   const titles = { seo:'সার্চ ও SEO', flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', blacklist:'ব্ল্যাকলিস্ট', push:'পুশ নোটিফিকেশন', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
