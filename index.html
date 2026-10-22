@@ -200,6 +200,47 @@ footer .logo .logo-text{font-size:1.1rem!important;font-weight:800!important}
   a.logo .logo-text{font-size:.85rem!important}
 }
 
+/* ── ফ্রি ডেলিভারি প্রগ্রেস বার ── */
+.fd-bar{margin:0 0 10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-soft,rgba(170,44,45,.06))}
+.fd-bar .fd-msg{font-size:.78rem;font-weight:600;margin-bottom:7px;color:var(--text)}
+.fd-bar .fd-track{height:7px;border-radius:99px;background:rgba(128,128,128,.22);overflow:hidden}
+.fd-bar .fd-fill{height:100%;width:0;border-radius:99px;background:var(--blue);transition:width .4s ease,background .3s}
+.fd-bar.fd-done{border-color:var(--green);background:rgba(52,199,89,.10)}
+.fd-bar.fd-done .fd-fill{background:var(--green)}
+.fd-bar.fd-done .fd-msg{color:var(--green)}
+
+/* ── কম্বো অফার ── */
+.combo-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.combo-card{border:1px solid var(--border);border-radius:14px;background:var(--bg-card,var(--bg,#fff));padding:12px;display:flex;flex-direction:column;gap:9px}
+.combo-imgs{display:flex;justify-content:center;gap:0;height:96px;align-items:center;background:rgba(128,128,128,.08);border-radius:10px;overflow:hidden}
+.combo-imgs img{height:92px;width:auto;max-width:48%;object-fit:contain;margin:0 -6px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.combo-imgs.combo-single img{max-width:100%;width:100%;object-fit:cover;height:96px;margin:0;filter:none}
+.combo-name{font-weight:700;font-size:.92rem}
+.combo-books{font-size:.74rem;color:var(--text-light,#777);line-height:1.5}
+.combo-price{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.combo-price b{font-size:1.05rem;color:var(--blue)}
+.combo-price s{font-size:.76rem;color:var(--text-light,#999)}
+.combo-save{font-size:.7rem;font-weight:700;color:#fff;background:var(--green);padding:2px 8px;border-radius:99px}
+.combo-btn{margin-top:auto;border:0;border-radius:9px;padding:9px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;font-family:inherit}
+.combo-btn:disabled{opacity:.5;cursor:not-allowed}
+.pd-combo-box{margin:0 0 28px}
+.pd-combo-box .combo-row{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+
+/* ── ফ্ল্যাশ সেল ── */
+.fs-badge{background:linear-gradient(135deg,#ff7a00,#ff2d55)!important;color:#fff!important}
+.fs-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,#ff7a00,#ff2d55);color:#fff}
+.fs-banner h2{margin:0;font-size:1.05rem;color:#fff}
+.fs-banner .fs-sub{font-size:.76rem;opacity:.95;margin-top:2px}
+.fs-timer{font-weight:800;font-size:1.15rem;letter-spacing:.5px;background:rgba(0,0,0,.25);padding:6px 14px;border-radius:10px;font-variant-numeric:tabular-nums}
+.fs-block{margin-bottom:22px}
+
+/* ── প্রি-অর্ডার ── */
+.po-badge{background:#6d28d9!important;color:#fff!important}
+.po-date{font-size:.7rem;font-weight:600;color:#6d28d9;margin:2px 0}
+.po-note{display:none;gap:10px;align-items:flex-start;margin:0 0 10px;padding:10px 12px;border-radius:10px;border:1px solid #c4b5fd;background:rgba(109,40,217,.08);font-size:.78rem;line-height:1.5}
+.po-note i{color:#6d28d9;margin-top:3px}
+.po-note.po-ok{border-color:var(--green);background:rgba(52,199,89,.10)}
+.po-note.po-ok i{color:var(--green)}
 </style>
 <style>
 :root{
@@ -6274,6 +6315,17 @@ html.gm-boot #gmSplash{display:flex}
     <div id="gridMoreWrap" class="grid-more-wrap"></div>
     <div class="pgn" id="pagination"></div>
 
+    <!-- ফ্ল্যাশ সেল -->
+    <section id="flashSec" class="nr-sec" style="display:none"><div id="flashWrap"></div></section>
+
+    <!-- কম্বো অফার -->
+    <section id="comboSec" class="nr-sec" style="display:none">
+      <div class="parea-header">
+        <h2 class="bn"><i class="fa-solid fa-layer-group" style="color:var(--blue);margin-right:6px"></i>কম্বো অফার</h2>
+      </div>
+      <div class="combo-row" id="comboGrid"></div>
+    </section>
+
     <!-- নতুন প্রকাশিত বই — shown under the popular grid on the default home view -->
     <section id="newReleaseSec" class="nr-sec" style="display:none">
       <div class="parea-header">
@@ -6840,6 +6892,8 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   <!-- ── RELATED & SUGGESTED ── -->
   <div class="fp-rec-wrap">
 
+    <div id="pdComboBox" class="pd-combo-box" style="display:none"></div>
+
     <div id="pdRelatedSection" style="display:none">
       <div class="rec-section-hd">
         <div class="rec-section-title bn">
@@ -7073,6 +7127,8 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
     <div class="cart-foot">
       <div class="promo-row"><input class="promo-inp bn" type="text" placeholder="কুপন কোড..." id="couponInput" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyCoupon()}"><button class="promo-btn bn" id="cartCouponBtn" onclick="applyCoupon()">প্রয়োগ</button></div>
       <div class="cart-promo-msg bn" id="cartPromoMsg" style="display:none"></div>
+      <div id="poCartNote" class="po-note bn"></div>
+      <div id="fdBar" class="fd-bar bn" style="display:none"></div>
       <div class="cod-note bn"><i class="fa-solid fa-truck-fast" style="color:var(--blue)"></i>ডেলিভারি চার্জ চেকআউটে নির্ধারিত হবে</div>
       <div class="cart-total-row"><span class="lbl bn">বই মোট</span><span class="amt bn" id="cartTotal">৳ ০</span></div>
       <div class="cart-total-row cart-disc-row" id="cartDiscountRow" style="display:none"><span class="lbl bn"><i class="fa-solid fa-tag"></i> কুপন ছাড় <b id="cartCouponCode"></b></span><span class="amt bn" id="cartDiscountAmt">-৳০</span></div>
@@ -7326,6 +7382,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
           </div>
 
           <!-- CTA -->
+          <div id="poCheckoutNote" class="po-note bn" style="margin-top:14px"></div>
           <button class="btn-primary bn" style="width:100%;justify-content:center;margin-top:16px;padding:15px;font-size:1rem;border-radius:var(--radius)" onclick="placeOrder()" id="placeOrderBtn">
             <i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন
           </button>
@@ -8788,22 +8845,35 @@ function isBookProduct(p) {
 ══════════════════════════════════════════════════════════ */
 function getEffectiveSalePrice(p) {
   const originalPrice     = Number(p.old_price || p.price);  // মূল দাম — স্ট্রাইকথ্রু দেখাবে
-  const normalSalePrice   = Number(p.price);                  // DB-তে যা আছে — অপরিবর্তিত
-  const baseDiscPct       = p.old_price
-    ? (1 - normalSalePrice / Number(p.old_price)) * 100
+  const _poOn             = !!p.is_preorder && Number(p.preorder_price) > 0;   // প্রি-অর্ডার দাম
+  const normalSalePrice   = _poOn ? Number(p.preorder_price) : Number(p.price);                  // DB-তে যা আছে — অপরিবর্তিত
+  const baseDiscPct       = (p.old_price || _poOn)
+    ? (1 - normalSalePrice / originalPrice) * 100
     : 0;
   const bulkPct           = Number(p.bulk_discount_percentage || 0);
-  const totalDiscPct      = Math.min(baseDiscPct + bulkPct, 99);
+  let totalDiscPct        = Math.min(baseDiscPct + bulkPct, 99);
   const effectiveSalePrice = Math.round(originalPrice * (1 - totalDiscPct / 100));
+  let displayPrice = bulkPct > 0 ? effectiveSalePrice : normalSalePrice;
+  // ── ফ্ল্যাশ সেল: চলমান সেলের দাম কম হলে সেটাই (সার্ভারের ঘড়ি ধরে) ──
+  let flashSale = null;
+  const _fs = (typeof flashFor === 'function') ? flashFor(p) : null;
+  if (_fs) {
+    const fp = Number(_fs.fixed_price) > 0 ? Math.round(Number(_fs.fixed_price))
+             : Math.round(normalSalePrice * (1 - Number(_fs.discount_percent || 0) / 100));
+    if (fp > 0 && fp < displayPrice) { displayPrice = fp; flashSale = _fs; totalDiscPct = Math.min(99, (1 - fp / originalPrice) * 100); }
+  }
   return {
     originalPrice,        // মূল দাম (old_price)
     normalSalePrice,      // নরমাল সেল প্রাইস (price) — bulk না থাকলে এটিই দেখাবে
     baseDiscPct,
     bulkPct,
     totalDiscPct,
-    salePrice: effectiveSalePrice,  // bulk থাকলে এটি দেখাবে, না থাকলে normalSalePrice
-    displayPrice: bulkPct > 0 ? effectiveSalePrice : normalSalePrice, // সবচেয়ে সহজ: সরাসরি UI-তে দেখাবার দাম
+    salePrice: flashSale ? displayPrice : effectiveSalePrice,  // bulk থাকলে এটি দেখাবে, না থাকলে normalSalePrice
+    displayPrice, // সবচেয়ে সহজ: সরাসরি UI-তে দেখাবার দাম
     hasBulk: bulkPct > 0,
+    isFlash: !!flashSale, flashSale,
+    isPreorder: !!p.is_preorder,
+    hasStrike: !!p.old_price || !!flashSale || (_poOn && originalPrice > displayPrice),
   };
 }
 
@@ -9144,7 +9214,7 @@ function updateCounts() {
 
 function buildProductCard(p) {
   // ── Bulk-aware effective price calculation ──
-  const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk } = getEffectiveSalePrice(p);
+  const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk, isFlash, isPreorder, hasStrike } = getEffectiveSalePrice(p);
   const disc   = Math.round(totalDiscPct);   // মোট discount % (base + bulk)
   const isBook = isBookProduct(p);
   const imgHtml = p.image_url
@@ -9160,7 +9230,11 @@ function buildProductCard(p) {
     : (p.brand ? p.brand : '');
 
   // ── Badge: discount badge হলে totalDisc দেখাও (bulk-aware) ──
-  const badgeHtml = p.badge==='hot'
+  const badgeHtml = isFlash
+    ? '<div class="disc-badge fs-badge"><i class="fa-solid fa-bolt"></i> ফ্ল্যাশ সেল</div>'
+    : isPreorder
+    ? '<div class="new-badge po-badge"><i class="fa-solid fa-hourglass-half"></i> প্রি-অর্ডার</div>'
+    : p.badge==='hot'
     ? '<div class="hot-badge"><i class="fa-solid fa-fire"></i> হট</div>'
     : p.badge==='new'
     ? '<div class="new-badge"><i class="fa-solid fa-star"></i> নতুন</div>'
@@ -9171,7 +9245,7 @@ function buildProductCard(p) {
   //    displayPrice = effective sale price (bulk থাকলে) বা normalSalePrice (bulk না থাকলে)
   const priceBlockHtml = `
     <div class="price-block">
-      ${p.old_price ? `<div class="old bn">৳${fmtPrice(originalPrice)}</div>` : ''}
+      ${hasStrike ? `<div class="old bn">৳${fmtPrice(originalPrice)}</div>` : ''}
       <div>
         <span class="new bn">৳${fmtPrice(displayPrice)}</span>
         ${disc ? `<span class="disc-pct">${disc}%</span>` : ''}
@@ -9188,6 +9262,7 @@ function buildProductCard(p) {
     <div class="pcard-body">
       <div class="pname bn">${p.name}</div>
       <div class="pauthor bn">${subLabel}</div>
+      ${isPreorder && p.preorder_release_date ? `<div class="po-date bn">প্রকাশের সম্ভাব্য তারিখ: ${poDateText(p)}</div>` : ''}
       <div class="prating"><span class="pstars">${'★'.repeat(Math.floor(p.rating||4))}${'☆'.repeat(5-Math.floor(p.rating||4))}</span><span>${(p.rating||4).toFixed(1)}</span></div>
       <div class="pfooter">
         ${priceBlockHtml}
@@ -9256,6 +9331,8 @@ function renderNewReleases() {
   // শুধু ডিফল্ট হোম ভিউতে (সব পণ্য, কোনো ফিল্টার/সার্চ নেই) দেখাবে
   const _onHome = !!(isHomeDefaultView() && _gridList && _gridList === _lastFiltered);
   renderTopPeople(_onHome);
+  renderComboSection(_onHome);
+  renderFlashSection(_onHome);
   renderBudgetButtons(_onHome);
   renderHomeReviews(_onHome);
   if (!_onHome) { sec.style.display = 'none'; renderMaxDiscount(false); return; }
@@ -10400,14 +10477,14 @@ function openProduct(id, pushUrl = true) {
   currentProduct = p; modalQty = 1;
 
   // ── Bulk-aware effective price calculation ──
-  const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk } = getEffectiveSalePrice(p);
+  const { originalPrice, normalSalePrice, totalDiscPct, displayPrice, bulkPct, hasBulk, isFlash, isPreorder, hasStrike } = getEffectiveSalePrice(p);
   const disc   = Math.round(totalDiscPct);
   const isBook = isBookProduct(p);
   updateHeaderHeight();
 
   // Base pricing snapshot, used by selectProductVariant() to recompute the
   // price row when the customer clicks a different color swatch.
-  fpBasePricing = { originalPrice, displayPrice, hasOldPrice: !!p.old_price };
+  fpBasePricing = { originalPrice, displayPrice, hasOldPrice: hasStrike };
 
   // ── Breadcrumb ──
   const bcCat  = document.getElementById('fpBreadCat');
@@ -10534,7 +10611,7 @@ function openProduct(id, pushUrl = true) {
   // displayPrice = effective sale price (bulk থাকলে) বা normalSalePrice (bulk না থাকলে)
   const oldEl = document.getElementById('fpOldPrice');
   if (oldEl) {
-    oldEl.innerHTML = p.old_price
+    oldEl.innerHTML = hasStrike
       ? `<span style="text-decoration:line-through;color:var(--text-light)">৳${fmtPrice(originalPrice)}</span> <span style="font-size:.72rem;background:var(--dbgfef2f2,#FEF2F2);color:var(--red);padding:1px 6px;border-radius:4px;font-weight:700">মূল দাম</span>`
       : '';
   }
@@ -10551,7 +10628,7 @@ function openProduct(id, pushUrl = true) {
     }
   }
   const savingsEl = document.getElementById('fpSavings');
-  if (savingsEl && p.old_price && originalPrice > displayPrice) {
+  if (savingsEl && hasStrike && originalPrice > displayPrice) {
     const saved = originalPrice - displayPrice;
     savingsEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:4px"></i>আপনি বাঁচাচ্ছেন ৳${saved.toLocaleString('en-US')} (${disc}% ছাড়)`;
   } else if (savingsEl) { savingsEl.textContent = ''; }
@@ -10563,7 +10640,11 @@ function openProduct(id, pushUrl = true) {
   // Only render the green in-stock badge when stock > 0. Never render a red out-of-stock badge.
   const stockEl = document.getElementById('fpStock');
   if (stockEl) {
-    if (p.stock > 0) {
+    if (p.is_preorder) {
+      const _d = poDateText(p);
+      stockEl.innerHTML = `<i class="fa-solid fa-hourglass-half"></i> প্রি-অর্ডার${_d ? ' — প্রকাশের সম্ভাব্য তারিখ: ' + _d : ''}`;
+      stockEl.style.display = '';
+    } else if (p.stock > 0) {
       stockEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> স্টকে আছে (${p.stock} টি)`;
       stockEl.style.display = '';
     } else {
@@ -10574,6 +10655,8 @@ function openProduct(id, pushUrl = true) {
   // Keep legacy stockTxt if needed elsewhere
   const legacyStock = document.getElementById('stockTxt');
   if (legacyStock) legacyStock.textContent = p.stock > 0 ? `স্টকে আছে (${p.stock} টি)` : '';
+
+  renderProductComboBox(p);
 
   // ── Qty reset ──
   const qtyEl = document.getElementById('modalQty');
@@ -10871,9 +10954,338 @@ function copyProductUrl() {
 }
 
 // ══════════════════════════════════════════════════
+// ফ্রি ডেলিভারি রুল ইঞ্জিন (admin → site_settings.free_delivery_rules)
+// রুল: { id, name, scope:'all'|'category'|'author'|'publisher', value, min, expires:'YYYY-MM-DD'|'', active }
+// ══════════════════════════════════════════════════
+let fdRules = null;
+function fdDefaultRules() {
+  let min = 999;
+  try { min = Number(localStorage.getItem('gm_cms_freedel')) || 999; } catch(e) {}
+  return [{ id:'default', name:'সব বই', scope:'all', value:'', min, expires:'', active:true }];
+}
+function fdEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function fdLoadRules() {
+  try { const c = JSON.parse(localStorage.getItem('gm_fd_rules')||'null'); if (Array.isArray(c)) fdRules = c; } catch(e) {}
+  try {
+    const { data, error } = await sb.from('site_settings').select('free_delivery_rules').eq('id',1).single();
+    if (!error && data && Array.isArray(data.free_delivery_rules)) {
+      fdRules = data.free_delivery_rules;
+      try { localStorage.setItem('gm_fd_rules', JSON.stringify(fdRules)); } catch(e) {}
+    }
+  } catch(e) { console.warn('[FreeDelivery] rules fetch failed', e); }
+  if (typeof renderCartItems === 'function') renderCartItems();
+  if (typeof refreshCheckoutTotals === 'function') { try { refreshCheckoutTotals(); } catch(e) {} }
+}
+function fdActiveRules() {
+  const rules = fdRules && fdRules.length ? fdRules : (fdRules ? [] : fdDefaultRules());
+  const today = new Date().toISOString().slice(0,10);
+  return rules.filter(r => r && r.active !== false && Number(r.min) > 0 && (!r.expires || r.expires >= today));
+}
+function fdItemMatches(item, r) {
+  if (r.scope === 'all') return true;
+  const v = String(r.value||'').trim().toLowerCase(); if (!v) return false;
+  if (r.scope === 'category')  return String(item.category||'').trim().toLowerCase() === v;
+  if (r.scope === 'publisher') return String(item.publisher||'').trim().toLowerCase() === v;
+  if (r.scope === 'author')    return String(item.author||'').split(/[,،;]|\sও\s|\s&\s/).some(a => a.trim().toLowerCase() === v);
+  return false;
+}
+// শুধু শর্তে পড়া বইয়ের যোগফল
+function fdRuleSum(r) {
+  return cart.reduce((s,x) => {
+    if (x.is_combo) {
+      if (r.scope === 'all') return s + x.price * x.qty;
+      const al = comboAllocate(x.price, x.books);
+      return s + x.books.reduce((u,b,k) => fdItemMatches(b,r) ? u + al[k] : u, 0) * x.qty;
+    }
+    return fdItemMatches(x,r) ? s + getEffectiveSalePrice(x).displayPrice * x.qty : s;
+  }, 0);
+}
+function fdStatus() {
+  const rules = fdActiveRules();
+  let best = null; // { rule, sum, remain, done }
+  for (const r of rules) {
+    const sum = fdRuleSum(r), min = Number(r.min), done = sum >= min;
+    const cand = { rule:r, sum, min, remain: Math.max(0, min-sum), done };
+    if (done) return cand;                                 // একটা রুল পূরণ হলেই ফ্রি
+    if (!best || cand.remain/min < best.remain/best.min) best = cand; // সবচেয়ে কাছের রুল
+  }
+  return best;
+}
+function fdIsFree() { const s = fdStatus(); return !!(s && s.done); }
+function fdLabel(r) {
+  if (r.scope === 'category') return `${fdEsc(r.value)} ক্যাটাগরির বই`;
+  if (r.scope === 'author' || r.scope === 'publisher') return `${fdEsc(r.value)}-এর বই`;
+  return 'বই';
+}
+function fdRenderBar() {
+  const el = document.getElementById('fdBar'); if (!el) return;
+  const s = (cart && cart.length) ? fdStatus() : null;
+  if (!s) { el.style.display = 'none'; return; }
+  const pct = Math.min(100, Math.round(s.sum / s.min * 100));
+  el.className = 'fd-bar bn' + (s.done ? ' fd-done' : '');
+  el.innerHTML = s.done
+    ? `<div class="fd-msg"><i class="fa-solid fa-circle-check"></i> অভিনন্দন! আপনার ডেলিভারি ফ্রি</div><div class="fd-track"><div class="fd-fill" style="width:100%"></div></div>`
+    : `<div class="fd-msg"><i class="fa-solid fa-truck-fast"></i> আর ৳${s.remain.toLocaleString('en-US')}-এর ${fdLabel(s.rule)} নিলে ডেলিভারি ফ্রি</div><div class="fd-track"><div class="fd-fill" style="width:${pct}%"></div></div>`;
+  el.style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', () => { fdLoadRules(); });
+
+// ══════════════════════════════════════════════════
+// প্রি-অর্ডার (products.is_preorder / preorder_release_date / preorder_price)
+// নিয়ম: কার্টে একসাথে একটাই প্রি-অর্ডার বই, স্টকের বই যত খুশি।
+// প্রকাশের পর পুরো অর্ডার একসাথে যায়। অর্ডারে preorder_book_id থাকে, অ্যাডমিন "প্রকাশিত" করলে preorder_released = true হয়।
+// ══════════════════════════════════════════════════
+function poDateText(x) {
+  const raw = (x && typeof x === 'object') ? x.preorder_release_date : x;
+  if (!raw) return '';
+  const d = new Date(String(raw).slice(0,10) + 'T00:00:00');
+  return isNaN(d) ? '' : d.toLocaleDateString('bn-BD', { day:'numeric', month:'long' });
+}
+function cartPreorderItem() { return cart.find(x => !x.is_combo && x.is_preorder) || null; }
+// কার্টের পুরনো কপিতে প্রি-অর্ডার/দামের তথ্য সতেজ রাখা (প্রকাশ হয়ে গেলে দাম নিজে স্বাভাবিক হয়ে যায়)
+function syncPreorderInCart() {
+  if (!cart.length || !products.length) return;
+  cart.forEach(x => {
+    if (x.is_combo) return;
+    const p = products.find(k => String(k.id) === String(x.id)); if (!p) return;
+    x.is_preorder = !!p.is_preorder; x.preorder_price = p.preorder_price; x.preorder_release_date = p.preorder_release_date;
+    x.price = p.price; x.old_price = p.old_price;
+  });
+}
+function renderPreorderNotes() {
+  const it = cartPreorderItem();
+  const cartEl = document.getElementById('poCartNote'), coEl = document.getElementById('poCheckoutNote');
+  const dt = it ? poDateText(it) : '';
+  const html = it ? `<i class="fa-solid fa-hourglass-half"></i><div><b>প্রি-অর্ডার বই আছে</b>${dt ? ' — প্রকাশের সম্ভাব্য তারিখ: ' + dt : ''}<br>প্রকাশের পর সব বই একসাথে পাবেন</div>` : '';
+  [cartEl, coEl].forEach(el => { if (!el) return; el.innerHTML = html; el.style.display = it ? 'flex' : 'none'; });
+}
+function preorderTrackBanner(d) {
+  if (!d || !d.preorder_book_id || ['cancelled','returned','delivered'].includes(d.status)) return '';
+  const pr = products.find(p => String(p.id) === String(d.preorder_book_id));
+  const dt = poDateText((pr && pr.preorder_release_date) || d.preorder_release_date);   // তারিখ পেছালে নতুন তারিখই দেখাবে
+  if (!d.preorder_released) {
+    return `<div class="po-note bn" style="display:flex"><i class="fa-solid fa-hourglass-half"></i><div><b>প্রকাশের অপেক্ষায়</b><br>${dt ? 'প্রকাশের সম্ভাব্য তারিখ: ' + dt : 'প্রকাশের তারিখ শিগগিরই জানানো হবে'}<br>বইটি প্রকাশিত হলে সব বই একসাথে পাঠানো হবে।</div></div>`;
+  }
+  return `<div class="po-note po-ok bn" style="display:flex"><i class="fa-solid fa-circle-check"></i><div><b>বইটি প্রকাশিত হয়েছে</b><br>আপনার অর্ডার পাঠানোর জন্য প্রস্তুত করা হচ্ছে।</div></div>`;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  ['buildOrderCard', 'buildTpOrderDetail', 'buildOrderDetailPanel'].forEach(n => {
+    const f = window[n]; if (typeof f !== 'function' || f._po) return;
+    const w = function(d) { const out = f.apply(this, arguments); return typeof out === 'string' ? preorderTrackBanner(d) + out : out; };
+    w._po = true; window[n] = w;
+  });
+});
+
+// ══════════════════════════════════════════════════
+// ফ্ল্যাশ সেল ও কাউন্টডাউন (admin → flash_sales টেবিল)
+// সময় ধরা হয় সার্ভারের ঘড়ি ধরে (RPC server_now) + ব্রাউজারের monotonic ঘড়ি,
+// তাই ফোনের তারিখ-সময় বদলে দিলেও দাম বা কাউন্টডাউন বদলায় না।
+// ══════════════════════════════════════════════════
+let _fsLoaded = false;
+let flashSales = [], _fsBase = null, _fsPerf = 0, _flashOnHome = false, _fsActiveKey = '';
+function flashNow() { return _fsBase == null ? Date.now() : _fsBase + (performance.now() - _fsPerf); }
+async function flashSyncClock() {
+  try {
+    const t0 = performance.now();
+    const { data, error } = await sb.rpc('server_now');
+    if (!error && data) { _fsBase = new Date(data).getTime() + (performance.now() - t0) / 2; _fsPerf = performance.now(); }
+  } catch(e) { console.warn('[Flash] server clock sync failed', e && e.message); }
+}
+async function loadFlashSales() {
+  if (_fsBase == null) await flashSyncClock();
+  try {
+    const { data, error } = await sb.from('flash_sales').select('*').eq('is_active', true);
+    if (error) throw error;
+    const sig = a => JSON.stringify((a||[]).map(s => [s.id, s.sold_qty, s.starts_at, s.ends_at, s.discount_percent, s.fixed_price, s.book_ids, s.target_value]));
+    const changed = sig(data) !== sig(flashSales) || !_fsLoaded;
+    flashSales = data || []; _fsLoaded = true;
+    if (!changed) return;   // কিছু না বদলালে গ্রিড নতুন করে আঁকার দরকার নেই
+  } catch(e) { flashSales = []; console.warn('[Flash] load failed (SQL চালানো হয়েছে?)', e && e.message); }
+  flashRefreshAll();
+}
+function flashActive(s) {
+  const n = flashNow();
+  return s.is_active !== false && new Date(s.starts_at).getTime() <= n && n < new Date(s.ends_at).getTime()
+    && !(s.limit_qty != null && Number(s.sold_qty) >= Number(s.limit_qty));
+}
+function flashMatches(s, p) {
+  if (s.scope === 'books') return (s.book_ids || []).some(id => String(id) === String(p.id));
+  const v = String(s.target_value || '').trim().toLowerCase(); if (!v) return false;
+  if (s.scope === 'category') return String(p.category || '').trim().toLowerCase() === v;
+  if (s.scope === 'author') return String(p.author || '').split(/[,،;]|\sও\s|\s&\s/).some(a => a.trim().toLowerCase() === v);
+  return false;
+}
+function flashSalePrice(s, p) {
+  const base = Number(p.price) || 0;
+  return Number(s.fixed_price) > 0 ? Math.round(Number(s.fixed_price)) : Math.round(base * (1 - Number(s.discount_percent || 0) / 100));
+}
+function flashFor(p) {
+  if (!p || p.is_combo || !flashSales.length) return null;
+  let best = null, bp = Infinity;
+  for (const s of flashSales) { if (!flashActive(s) || !flashMatches(s, p)) continue; const fp = flashSalePrice(s, p); if (fp > 0 && fp < bp) { bp = fp; best = s; } }
+  return best;
+}
+function flashFmt(ms) {
+  let s = Math.max(0, Math.floor(ms / 1000)); const d = Math.floor(s / 86400); s -= d * 86400;
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60, z = n => String(n).padStart(2, '0');
+  return (d > 0 ? d + ' দিন ' : '') + z(h) + ':' + z(m) + ':' + z(sec);
+}
+function renderFlashSection(onHome) {
+  _flashOnHome = !!onHome;
+  const sec = document.getElementById('flashSec'), wrap = document.getElementById('flashWrap'); if (!sec || !wrap) return;
+  const act = flashSales.filter(flashActive).sort((a, b) => new Date(a.ends_at) - new Date(b.ends_at));
+  const blocks = act.map(s => {
+    const list = products.filter(p => p.is_active !== false && flashMatches(s, p) && flashFor(p) === s).slice(0, 10);
+    if (!list.length) return '';
+    const left = s.limit_qty != null ? `<div class="fs-sub bn">মাত্র ${Number(s.limit_qty)}টির মধ্যে আর ${Math.max(0, Number(s.limit_qty) - Number(s.sold_qty))}টি বাকি</div>` : '';
+    return `<div class="fs-block"><div class="fs-banner"><div><h2 class="bn"><i class="fa-solid fa-bolt"></i> ${fdEsc(s.name)}</h2>${left}</div>
+      <div class="fs-timer" data-fs-end="${new Date(s.ends_at).getTime()}">${flashFmt(new Date(s.ends_at).getTime() - flashNow())}</div></div>
+      <div class="pgrid">${list.map(p => buildProductCard(p)).join('')}</div></div>`;
+  }).join('');
+  if (!onHome || !blocks) { sec.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.innerHTML = blocks; sec.style.display = '';
+}
+function flashRefreshAll() {
+  _fsActiveKey = flashSales.filter(flashActive).map(s => s.id).sort().join(',');
+  renderFlashSection(_flashOnHome);
+  try { if (typeof filterProducts === 'function') filterProducts(); } catch(e) {}
+  try { renderCartItems(); } catch(e) {}
+}
+setInterval(() => {
+  if (!flashSales.length) return;
+  const key = flashSales.filter(flashActive).map(s => s.id).sort().join(',');
+  if (key !== _fsActiveKey) { flashRefreshAll(); return; }   // সেল শুরু/শেষ হলে দাম নিজে থেকে বদলে যাবে
+  document.querySelectorAll('[data-fs-end]').forEach(el => { el.textContent = flashFmt(Number(el.dataset.fsEnd) - flashNow()); });
+}, 1000);
+setInterval(() => { if (document.visibilityState === 'visible') loadFlashSales(); }, 60000);  // বাকি সংখ্যা/নতুন সেল
+document.addEventListener('DOMContentLoaded', () => { loadFlashSales(); });
+// চেকআউটে সার্ভারে সেলের সীমা/মেয়াদ আটকে নেওয়া (একটা ব্যর্থ হলে আগেরগুলো ফেরত)
+async function flashClaimForCart() {
+  const per = {};
+  cart.forEach(i => { if (i.is_combo) return; const fs = getEffectiveSalePrice(i).flashSale; if (fs) per[fs.id] = (per[fs.id] || 0) + i.qty; });
+  const claimed = [];
+  for (const [id, qty] of Object.entries(per)) {
+    const { data, error } = await sb.rpc('claim_flash_sale', { p_id: id, p_qty: qty });
+    if (error || !data || !data.ok) {
+      await flashRelease(claimed); await loadFlashSales();
+      const msg = error ? 'সেল যাচাই করা যায়নি, আবার চেষ্টা করুন'
+        : data.reason === 'limit' ? `সেলে আর মাত্র ${data.remaining}টি আছে — কার্টে পরিমাণ কমান।`
+        : 'ফ্ল্যাশ সেলের সময় শেষ হয়ে গেছে, দাম নতুন করে দেখানো হচ্ছে।';
+      return { ok:false, msg };
+    }
+    claimed.push({ id, qty });
+  }
+  return { ok:true, claimed };
+}
+async function flashRelease(list) { for (const c of (list || [])) { try { await sb.rpc('release_flash_sale', { p_id: c.id, p_qty: c.qty }); } catch(e) {} } }
+
+// ══════════════════════════════════════════════════
+// কম্বো অফার (admin → combos টেবিল)
+// combo: { id, name, image_url, book_ids[], price | discount_percent, expires_at, is_active }
+// কার্টে কম্বো = ১টা আইটেম (is_combo). অর্ডারে বইগুলো আলাদা লাইনে ভেঙে যায়,
+// তাই প্রতিটা বইয়ের স্টক আগের নিয়মেই আলাদা কমে।
+// ══════════════════════════════════════════════════
+let combos = [], combosLoaded = false, _comboOnHome = false;
+async function loadCombos() {
+  try {
+    const { data, error } = await sb.from('combos').select('*').eq('is_active', true).order('created_at', { ascending:false });
+    if (error) throw error;
+    combos = data || []; combosLoaded = true;
+  } catch(e) { combos = []; console.warn('[Combo] load failed (SQL চালানো হয়েছে?)', e && e.message); }
+  syncCombosInCart();
+  renderComboSection(_comboOnHome);
+  if (typeof currentProduct !== 'undefined' && currentProduct) renderProductComboBox(currentProduct);
+}
+function comboBooks(c) {
+  const ids = Array.isArray(c.book_ids) ? c.book_ids : [];
+  return ids.map(id => products.find(p => String(p.id) === String(id))).filter(Boolean);
+}
+function comboRegular(books) { return books.reduce((s,b) => s + getEffectiveSalePrice(b).displayPrice, 0); }
+function comboPrice(c, books) {
+  const reg = comboRegular(books);
+  if (Number(c.price) > 0) return Math.round(Number(c.price));
+  if (Number(c.discount_percent) > 0) return Math.round(reg * (1 - Number(c.discount_percent) / 100));
+  return reg;
+}
+function comboStock(books) { return books.length ? Math.min(...books.map(b => Math.max(0, parseInt(b.stock) || 0))) : 0; } // সবচেয়ে কম স্টক
+function comboExpired(c) { return !!(c.expires_at && new Date(c.expires_at).getTime() <= Date.now()); }
+function comboInfo(c) {
+  const books = comboBooks(c), ids = Array.isArray(c.book_ids) ? c.book_ids : [];
+  const reg = comboRegular(books), price = comboPrice(c, books);
+  return { c, books, reg, price, save: Math.max(0, reg - price), stock: comboStock(books),
+           valid: ids.length >= 2 && books.length === ids.length && !books.some(b => b.is_preorder) && !comboExpired(c) && price > 0 };
+}
+// কম্বোর দাম বইগুলোর মধ্যে আনুপাতিক ভাগ (যোগফল হুবহু কম্বোর দামের সমান)
+function comboAllocate(price, books) {
+  const w = books.map(b => Number(b.price) || 0), tot = w.reduce((a,b)=>a+b,0) || 1;
+  const out = []; let used = 0;
+  books.forEach((b,i) => { const v = i === books.length-1 ? price - used : Math.round(price * w[i] / tot); out.push(v); used += v; });
+  return out;
+}
+function comboCartItem(inf) {
+  const first = inf.books[0] || {};
+  return { id:'combo:' + inf.c.id, is_combo:true, combo_id:inf.c.id, name:inf.c.name, price:inf.price,
+    image_url: inf.c.image_url || first.image_url || '', category:'কম্বো', brand: inf.books.length + 'টি বই একসাথে', stock: inf.stock, qty:1,
+    books: inf.books.map(b => ({ id:b.id, name:b.name, price:getEffectiveSalePrice(b).displayPrice, category:b.category, author:b.author, publisher:b.publisher })) };
+}
+function addComboToCart(id) {
+  const c = combos.find(x => String(x.id) === String(id)); if (!c) return;
+  const inf = comboInfo(c);
+  if (!inf.valid) { toast('কম্বোটি এখন পাওয়া যাচ্ছে না', 'মেয়াদ শেষ বা কোনো বই নেই', 'w'); return; }
+  if (inf.stock <= 0) { toast('স্টক শেষ', 'এই কম্বোর কোনো একটা বই স্টকে নেই', 'w'); return; }
+  const ex = cart.find(x => x.id === 'combo:' + c.id);
+  if (ex) { if (ex.qty + 1 > inf.stock) { toast('স্টক সীমা', `এই কম্বো সর্বোচ্চ ${inf.stock}টি নেওয়া যাবে`, 'w'); return; } ex.qty += 1; }
+  else cart.push(comboCartItem(inf));
+  updateCartBadge(); renderCartItems();
+  toast('কম্বো কার্টে যোগ হয়েছে!', fdEsc(c.name).slice(0,40), 's');
+}
+// পুরনো/সংরক্ষিত কার্টে কম্বোর দাম-স্টক নতুন করে মিলিয়ে নেওয়া
+function syncCombosInCart() {
+  if (!combosLoaded || !cart.some(x => x.is_combo)) return;
+  let removed = false;
+  cart = cart.filter(x => {
+    if (!x.is_combo) return true;
+    const c = combos.find(k => String(k.id) === String(x.combo_id)), inf = c && comboInfo(c);
+    if (!inf || !inf.valid || inf.stock <= 0) { removed = true; return false; }
+    const fresh = comboCartItem(inf); fresh.qty = Math.min(x.qty, inf.stock); Object.assign(x, fresh); return true;
+  });
+  if (removed) toast('কার্ট আপডেট', 'মেয়াদ শেষ হওয়া কম্বো কার্ট থেকে সরানো হয়েছে', 'w');
+  updateCartBadge(); renderCartItems();
+}
+function comboCardHtml(inf) {
+  const c = inf.c, imgs = c.image_url
+    ? `<div class="combo-imgs combo-single"><img src="${fdEsc(c.image_url)}" alt="${fdEsc(c.name)}" loading="lazy"></div>`
+    : `<div class="combo-imgs">${inf.books.slice(0,3).map(b => b.image_url ? `<img src="${fdEsc(b.image_url)}" alt="" loading="lazy">` : '').join('')}</div>`;
+  const out = inf.stock <= 0;
+  return `<div class="combo-card bn">${imgs}
+    <div class="combo-name">${fdEsc(c.name)}</div>
+    <div class="combo-books">${inf.books.map(b => fdEsc(b.name)).join(' + ')}</div>
+    <div class="combo-price"><b>৳${inf.price.toLocaleString('en-US')}</b>${inf.save>0?`<s>৳${inf.reg.toLocaleString('en-US')}</s><span class="combo-save">৳${inf.save.toLocaleString('en-US')} সাশ্রয়</span>`:''}</div>
+    <button class="combo-btn" ${out?'disabled':''} onclick="addComboToCart('${c.id}')">${out?'স্টক শেষ':'<i class="fa-solid fa-cart-plus"></i> কম্বো কার্টে নিন'}</button></div>`;
+}
+function renderComboSection(onHome) {
+  _comboOnHome = !!onHome;
+  const sec = document.getElementById('comboSec'), grid = document.getElementById('comboGrid'); if (!sec || !grid) return;
+  const list = combos.map(comboInfo).filter(i => i.valid && i.stock > 0);
+  if (!onHome || !list.length) { sec.style.display = 'none'; return; }
+  grid.innerHTML = list.map(comboCardHtml).join(''); sec.style.display = '';
+}
+function renderProductComboBox(p) {
+  const box = document.getElementById('pdComboBox'); if (!box) return;
+  const list = combos.map(comboInfo).filter(i => i.valid && i.stock > 0 && (i.c.book_ids||[]).some(id => String(id) === String(p.id)));
+  if (!list.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="rec-section-hd"><div class="rec-section-title bn"><span class="rec-title-bar"></span><i class="fa-solid fa-layer-group"></i> এই বইয়ের কম্বো</div></div><div class="combo-row">${list.map(comboCardHtml).join('')}</div>`;
+  box.style.display = '';
+}
+document.addEventListener('DOMContentLoaded', () => { loadCombos(); });
+
+// ══════════════════════════════════════════════════
 // CART
 // ══════════════════════════════════════════════════
 function addToCart(p, qty=1) {
+  if (p.is_preorder && cart.some(x => !x.is_combo && x.is_preorder && String(x.id) !== String(p.id))) {
+    toast('যোগ করা যায়নি', 'কার্টে ইতিমধ্যে একটি প্রি-অর্ডার বই আছে', 'w'); return;
+  }
   const ex = cart.find(x=>x.id===p.id);
   if(ex) ex.qty += qty; else cart.push({...p, qty});
   updateCartBadge(); renderCartItems();
@@ -10891,7 +11303,10 @@ function updateCartBadge() {
 }
 function renderCartItems() {
   const el = document.getElementById('cartItems');
+  syncPreorderInCart();   // প্রি-অর্ডার/দাম সতেজ রাখা
   syncCouponToCart();   // পরিমাণ বদলালে কুপনের ছাড় নতুন করে হিসাব
+  fdRenderBar();        // ফ্রি ডেলিভারি প্রগ্রেস বার
+  renderPreorderNotes();
   if(!cart.length){ el.innerHTML='<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p class="bn">কার্ট খালি আছে</p></div>'; document.getElementById('cartTotal').textContent='৳ ০'; renderCartCouponUI(); return; }
   el.innerHTML = cart.map(item=>{
     const thumbHtml = item.image_url
@@ -10919,7 +11334,7 @@ function renderCartItems() {
   document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString('en-US')}`;
   renderCartCouponUI();
 }
-function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); updateCartBadge();renderCartItems(); }
+function changeCartQty(id,d){ const item=cart.find(x=>x.id===id); if(!item)return; item.qty=Math.max(1,item.qty+d); if(item.is_combo && item.stock>0 && item.qty>item.stock){ item.qty=item.stock; toast('স্টক সীমা',`এই কম্বো সর্বোচ্চ ${item.stock}টি নেওয়া যাবে`,'w'); } updateCartBadge();renderCartItems(); }
 function removeCart(id){ cart=cart.filter(x=>x.id!==id); updateCartBadge();renderCartItems(); }
 
 /* ══════════════════════════════════════════════════
@@ -11259,6 +11674,7 @@ function removeCheckoutItem(id) {
 }
 
 function openCheckout() {
+  try { renderPreorderNotes(); } catch(e) {}
   if(!cart.length){ toast('কার্ট খালি','কার্টে পণ্য যোগ করুন','w'); return; }
   // ── AUTH GATE: লগইন ছাড়া চেকআউট নয় ──
   if (!currentUser) {
@@ -11507,13 +11923,22 @@ async function placeOrder() {
   const total = sub + delivery - discount;
   const orderNum = 'GM-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*99999)).padStart(5,'0');
   // items-এ effective price সেভ করো (DB-তে actual চার্জ হওয়া দাম)
-  const items = cart.map(i => ({
-    id: i.id,
-    name: i.name,
-    price: getEffectiveSalePrice(i).displayPrice,  // effective price সেভ
-    qty: i.qty,
-    bulk_discount_percentage: i.bulk_discount_percentage || 0,  // ট্র্যাসেবিলিটির জন্য
-  }));
+  const items = cart.flatMap(i => {
+    if (i.is_combo) {   // কম্বো → আলাদা আলাদা বই (স্টক প্রতিটা বইয়ের কমবে), দাম আনুপাতিক ভাগ
+      const al = comboAllocate(i.price, i.books);
+      return i.books.map((b,k) => ({ id: b.id, name: b.name, price: al[k], qty: i.qty,
+        bulk_discount_percentage: 0, combo_id: i.combo_id, combo_name: i.name }));
+    }
+    return [{
+      id: i.id,
+      name: i.name,
+      price: getEffectiveSalePrice(i).displayPrice,  // effective price সেভ
+      qty: i.qty,
+      bulk_discount_percentage: i.bulk_discount_percentage || 0,  // ট্র্যাসেবিলিটির জন্য
+      flash_sale_id: (getEffectiveSalePrice(i).flashSale || {}).id || null,
+      is_preorder: !!i.is_preorder,
+    }];
+  });
   const fullDistrict = `${district} > ${upazila} > ${thana}`;
   const orderRow = {
       order_number: orderNum,
@@ -11523,12 +11948,21 @@ async function placeOrder() {
       items, subtotal: sub, delivery_fee: delivery, discount, total, status: 'pending',
     coupon_code: (appliedCoupon && discount > 0) ? appliedCoupon.code : null
   };
+  { const _po = cartPreorderItem();   // প্রি-অর্ডার: প্রকাশের পর পুরো অর্ডার একসাথে যাবে
+    if (_po) Object.assign(orderRow, { has_preorder:true, preorder_book_id:String(_po.id), preorder_release_date:_po.preorder_release_date || null, preorder_released:false }); }
+  // ── ফ্ল্যাশ সেল: সার্ভারের ঘড়ি ও সীমা যাচাই করে সংখ্যা আটকে নাও ──
+  const _fc = await flashClaimForCart();
+  if (!_fc.ok) {
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
+    toast('ফ্ল্যাশ সেল', _fc.msg, 'w'); return;
+  }
   let { data, error } = await sbQuery(() => sb.from('orders').insert(orderRow).select().single(), 'অর্ডার সেভ');
   // `coupon_code` কলাম না থাকলে (SQL রান করা হয়নি) কুপন ছাড়াই অর্ডার যাক
   if (error && /coupon_code/i.test(error.message || '') && !/COUPON_UNAVAILABLE/.test(error.message || '')) {
     delete orderRow.coupon_code;
     ({ data, error } = await sbQuery(() => sb.from('orders').insert(orderRow).select().single(), 'অর্ডার সেভ'));
   }
+  if (error) await flashRelease(_fc.claimed);   // অর্ডার না হলে সেলের সংখ্যা ফেরত
   btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
   if(error && /COUPON_UNAVAILABLE/.test(error.message || '')){
     const usedCode = appliedCoupon ? appliedCoupon.code : '';
@@ -11536,7 +11970,7 @@ async function placeOrder() {
     toast('কুপন প্রযোজ্য নয়', `"${usedCode}" কুপনটি ইতিমধ্যে ব্যবহার হয়ে গেছে বা মেয়াদ শেষ। কুপন ছাড়া আবার অর্ডার করুন।`, 'e');
     return;
   }
-  if(error){ if (!error.isTimeout) toast('ত্রুটি!','অর্ডার দেওয়া যায়নি, আবার চেষ্টা করুন','e'); return; }
+  if(error){ if (!error.isTimeout) toast('ত্রুটি!', /preorder/i.test(error.message || '') ? 'প্রি-অর্ডার সেটআপ অসম্পূর্ণ (ডেটাবেস আপডেট বাকি) — সাইট অ্যাডমিনকে জানান' : 'অর্ডার দেওয়া যায়নি, আবার চেষ্টা করুন','e'); return; }
   // ── Telegram নোটিফিকেশন (best-effort — অর্ডার সফলতায় কোনো প্রভাব ফেলে না) ──
   try {
     fetch('/api/notify-order', {
@@ -15189,7 +15623,8 @@ function isDhaka(district) {
 function calcDeliveryCharge() {
   const district = document.getElementById('cDistrict')?.value || '';
   if (!district) return 0;
-  const totalQty = cart.reduce((s,x)=>s+x.qty, 0);
+  if (fdIsFree()) return 0;   // ফ্রি ডেলিভারি রুল পূরণ হলে চার্জ ০
+  const totalQty = cart.reduce((s,x)=>s+x.qty*(x.is_combo ? x.books.length : 1), 0);
   const insideDhaka = isDhaka(district);
   const baseCharge = insideDhaka ? 60 : 75;
   let charge = baseCharge;
@@ -15199,7 +15634,7 @@ function calcDeliveryCharge() {
     charge += extraBooks * (insideDhaka ? 7 : 8);
   }
   // High-value product: any single book > 700 TK → +15 TK
-  const hasHighValue = cart.some(item => item.price > 700);
+  const hasHighValue = cart.some(item => item.is_combo ? item.books.some(b => b.price > 700) : item.price > 700);
   if (hasHighValue) charge += 15;
   return charge;
 }
