@@ -5721,13 +5721,9 @@ html.fa-ok .ncat-fb { display: none; }
   /* বারে অ্যাডমিনের বেছে নেওয়া আসল আইকন (FA লোড না হলে SVG ফলব্যাক) */
   html.fa-ok .nav-cats .ncat:not(.ncat-more-btn) > i { display: inline-block !important; }
   html.fa-ok .nav-cats .ncat:not(.ncat-more-btn) .mob-icon { display: none !important; }
-  /* "আরও" বাটন ডান পাশে সবসময় দেখা যাবে */
-  .nav-cats .ncat-more-btn {
-    position: sticky; right: 0; z-index: 3; margin-left: auto;
-    background: var(--dbgffffff,#fff) !important;
-    box-shadow: -10px 0 8px -4px rgba(0,0,0,.10);
-    touch-action: manipulation;
-  }
+  /* মোবাইলে স্ক্রল নেই: ট্রেন্ডিং ক্যাটাগরি বারে, বাকি সব "আরও" পপআপে */
+  .nav-cats.nav-managed { overflow: hidden !important; justify-content: space-between; }
+  .nav-cats .ncat-more-btn { touch-action: manipulation; }
 }
 /* ── মোবাইলে নোটিফিকেশন বেল (হেডারে) ── */
 @media(max-width:768px){
@@ -5873,6 +5869,45 @@ html.fa-ok .ncat-fb { display: none; }
   font-family:'Hind Siliguri',sans-serif;font-size:.84rem;font-weight:500;color:var(--text-mid,var(--dfg444444,#444));text-align:left;min-width:0;transition:background .12s,color .12s}
 .ncat-more-item:hover{background:var(--dbgfbeded,#FBEDED);color:var(--blue,var(--dfgaa2c2d,#AA2C2D))}
 .ncat-more-item .ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:.78rem;flex-shrink:0}
+</style>
+<style id="navMoreStyles2">
+/* "আরও" পপআপ: সমান সাইজের কার্ড, স্ক্রলযোগ্য — ভবিষ্যতে যত ক্যাটাগরিই বাড়ুক জায়গা হবে */
+#ncatMorePanel { display: flex; flex-direction: column; padding: 0 !important; overflow: hidden !important; }
+#ncatMorePanel .ncat-more-top { padding: 14px 16px 12px !important; margin: 0 !important; flex-shrink: 0; background: inherit; }
+#ncatMorePanel .ncat-more-grid {
+  flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  padding: 14px 12px 20px; gap: 9px !important; align-content: start; grid-auto-rows: 56px;
+}
+#ncatMorePanel .ncat-more-item {
+  height: 56px; min-height: 56px !important; padding: 0 9px !important; gap: 8px !important;
+  align-items: center !important; justify-content: flex-start !important; text-align: left;
+  font-size: .8rem !important; white-space: normal !important; box-sizing: border-box;
+}
+@media (max-width: 480px) {
+  #ncatMorePanel .ncat-more-item { font-size: .76rem !important; padding: 0 7px !important; gap: 6px !important; }
+  #ncatMorePanel .ncat-more-item .ico { width: 28px !important; height: 28px !important; font-size: .82rem !important; border-radius: 8px !important; }
+}
+#ncatMorePanel .ncat-more-item .ico { width: 34px !important; height: 34px !important; border-radius: 10px !important; font-size: .95rem !important; }
+#ncatMorePanel .ncat-more-item > .bn {
+  flex: 1; min-width: 0; line-height: 1.3; overflow: hidden;
+  display: block; white-space: nowrap !important; overflow-wrap: normal !important;
+}
+#ncatMorePanel .ncat-more-grid { grid-auto-flow: row dense; }
+#ncatMorePanel .ncat-more-item.wide { grid-column: span 2; }
+/* খুব লম্বা নাম পুরো প্রস্থেও না ধরলে তবেই ২ লাইন */
+#ncatMorePanel .ncat-more-item.wrap2 > .bn {
+  white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+@media (max-width: 768px) {
+  /* মোবাইলে নিচ থেকে ওঠা শিট */
+  #ncatMorePanel {
+    left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
+    width: 100% !important; max-height: 78vh !important;
+    border-radius: 20px 20px 0 0 !important; border-bottom: none !important;
+    transform: translateY(100%) !important; padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+  #ncatMorePanel.open { transform: translateY(0) !important; }
+}
 </style>
 <!-- Early header-height fix: sets --header-h as soon as DOM is interactive,
      before main JS fires, to prevent white-space flash on mobile -->
@@ -17231,7 +17266,7 @@ function getNcatPanel() {
   p.id = 'ncatMorePanel';
   p.setAttribute('role', 'dialog');
   p.setAttribute('aria-modal', 'true');
-  p.setAttribute('aria-label', 'আরও ক্যাটাগরি');
+  p.setAttribute('aria-label', 'সব ক্যাটাগরি');
   p.addEventListener('click', e => {
     if (e.target.closest('.ncat-more-x')) { closeNcatMore(); return; }
     const b = e.target.closest('.ncat-more-item');
@@ -17243,13 +17278,26 @@ function getNcatPanel() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNcatMore(); });
   return p;
 }
+function fitNcatItems() {
+  const p = document.getElementById('ncatMorePanel'); if (!p) return;
+  p.querySelectorAll('.ncat-more-item').forEach(b => b.classList.remove('wide', 'wrap2'));
+  p.querySelectorAll('.ncat-more-item').forEach(b => {
+    const l = b.querySelector('.bn'); if (!l) return;
+    if (l.scrollWidth > l.clientWidth + 1) {
+      b.classList.add('wide');                               // পুরো প্রস্থ নিয়ে ১ লাইনে
+      if (l.scrollWidth > l.clientWidth + 1) b.classList.add('wrap2'); // তবুও না ধরলে ২ লাইন
+    }
+  });
+}
+window.addEventListener('resize', () => { if (document.getElementById('ncatMorePanel')?.classList.contains('open')) fitNcatItems(); });
 function openNcatMore() {
   const btn = document.getElementById('ncatMoreBtn');
   const p = getNcatPanel();
-  if (!btn || btn.style.display === 'none' || !p.querySelector('.ncat-more-item')) return;
+  if (!btn || btn.style.getPropertyValue('display') === 'none' || !p.querySelector('.ncat-more-item')) return;
   clearTimeout(_ncatMoreTimer);
   document.getElementById('ncatMoreOverlay').classList.add('open');
   p.classList.add('open');
+  fitNcatItems();
   btn.classList.add('open');
   btn.setAttribute('aria-expanded', 'true');
 }
@@ -17278,13 +17326,13 @@ function layoutNavCats() {
   const allBtn = bar.querySelector('.ncat:not([data-cat]):not(.ncat-more-btn)');
   const desktop = window.matchMedia('(min-width:881px)').matches;
 
-  items.forEach(b => { b.style.display = ''; });
-  more.style.display = '';
+  items.forEach(b => { b.style.removeProperty('display'); });
+  more.style.removeProperty('display');
 
   const w = el => el.offsetWidth + (parseFloat(getComputedStyle(el).marginLeft) || 0) + (parseFloat(getComputedStyle(el).marginRight) || 0);
   let cut = items.length; // how many pinned items stay visible in the bar
 
-  if (desktop) {
+  { // সব স্ক্রিনেই: যতগুলো এক লাইনে ধরে ততগুলো বারে, বাকি সব "আরও" পপআপে
     const cs = getComputedStyle(bar);
     const avail = bar.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
     const base = allBtn ? w(allBtn) : 0;
@@ -17298,18 +17346,20 @@ function layoutNavCats() {
       }
     }
   }
-  items.forEach((b, i) => { b.style.display = i < cut ? '' : 'none'; });
+  // মোবাইল CSS-এ .ncat { display:flex !important } আছে, তাই লুকাতে !important লাগে
+  items.forEach((b, i) => { if (i < cut) b.style.removeProperty('display'); else b.style.setProperty('display', 'none', 'important'); });
 
   const hidden = [...pinned.slice(cut), ...unpinned];
   const p = getNcatPanel();
   if (!hidden.length) {
-    more.style.display = 'none';
+    more.style.setProperty('display', 'none', 'important');
     p.innerHTML = '';
     closeNcatMore();
     return;
   }
-  more.style.display = '';
-  p.innerHTML = '<div class="ncat-more-top"><b>আরও ক্যাটাগরি</b><button type="button" class="ncat-more-x" aria-label="বন্ধ করুন"><i class="fa-solid fa-xmark"></i><svg class="svg-icon ncat-fb" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="ncat-more-grid">' + hidden.map(c => {
+  more.style.removeProperty('display');
+  const everything = [...pinned, ...unpinned]; // পপআপে সব ক্যাটাগরি (বারে যেগুলো আছে সেগুলোসহ)
+  p.innerHTML = '<div class="ncat-more-top"><b>সব ক্যাটাগরি</b><button type="button" class="ncat-more-x" aria-label="বন্ধ করুন"><i class="fa-solid fa-xmark"></i><svg class="svg-icon ncat-fb" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="ncat-more-grid">' + everything.map(c => {
     const col = _ncatColor(c.color);
     return `<button type="button" class="ncat-more-item" role="menuitem" data-cat="${_ncatEsc(c.name)}">
       <span class="ico" style="background:${col}1a;color:${col}"><i class="fa-solid ${_ncatEsc(c.icon || 'fa-box')}"></i><svg class="svg-icon ncat-fb" width="15" height="15" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">${catIconSvg(c.icon)}</svg></span>
@@ -17341,7 +17391,7 @@ function renderCategoryNav() {
   more.type = 'button';
   more.id = 'ncatMoreBtn';
   more.className = 'ncat ncat-more-btn';
-  more.style.display = 'none';
+  more.style.setProperty('display', 'none', 'important');
   more.setAttribute('aria-haspopup', 'true');
   more.setAttribute('aria-expanded', 'false');
   more.innerHTML = `<i class="fa-solid fa-ellipsis"></i>
