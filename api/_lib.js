@@ -3,7 +3,7 @@ const { makeSlug } = require('./_slug');
 
 const SUPABASE_URL  = 'https://srasvcuycvfspbwhnbpl.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYXN2Y3V5Y3Zmc3Bid2huYnBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzc4MjIsImV4cCI6MjA5MzcxMzgyMn0.FMU8DM-a0wg3Yxke1q-L79_kqYU3UkS4dibeH04AGJU';
-const SITE = 'https://bookgalaxybd.vercel.app';
+const SITE = 'https://www.bookgalaxybd.shop';
 
 // Fetch every row of a table/view (paged, 1000 per request).
 async function fetchAll(table, query) {
