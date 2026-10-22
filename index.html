@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://bookgalaxybd.vercel.app/favicon.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"বুক গ্যালাক্সি","alternateName":"Book Galaxy","url":"https://bookgalaxybd.vercel.app/","potentialAction":{"@type":"SearchAction","target":"https://bookgalaxybd.vercel.app/search?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"Organization","name":"বুক গ্যালাক্সি","url":"https://bookgalaxybd.vercel.app/","logo":"https://bookgalaxybd.vercel.app/favicon.png"}]}</script>
 <!--/HOME-SEO-->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@600;700&display=swap" rel="stylesheet">
 <!-- Primary Font Awesome CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <!-- Backup CDN — loads if primary fails -->
@@ -18292,6 +18292,67 @@ window.addEventListener('popstate', function(e) {
   .bf-resmode .bf-foot{margin-top:8px}.bf-resmode .bf-btn2{padding:6px 12px;font-size:.78rem}
 }
 @media(prefers-reduced-motion:reduce){.bf-shine,.bf-strip-ic i,.bf-cta,.bf-fab,.bf-fab i,.bf-bg .k4,.bf-opt{animation:none!important}}
+
+.bf-sn{display:inline-flex;align-items:center;justify-content:center;min-width:1.7em;height:1.7em;margin:0 3px;border-radius:50%;background:var(--blue,#AA2C2D);color:#fff;font-family:'Noto Sans Bengali','Hind Siliguri',sans-serif;font-size:1rem;font-weight:700;line-height:1}
+/* ═══ Finder v4: স্ক্রল ছাড়া এক স্ক্রিনে, কার্ড মাঝখানে, সুন্দর সাজানো ═══ */
+.bf-shell{box-sizing:border-box;height:100%;min-height:0;padding:10px 20px 12px}
+.bf-top{margin-bottom:0}
+.bf-stage{padding:0 0 6px;min-height:0}
+.bf-step-tag{font-size:.86rem;font-weight:700;padding:0 16px;margin-bottom:6px;line-height:1.8;letter-spacing:.2px}
+.bf-q{font-size:clamp(1.25rem,2.5vw,1.85rem);margin:0 0 4px;line-height:1.35}
+.bf-qs{margin:0 0 clamp(10px,2.6vh,22px);font-size:.95rem;line-height:1.6}
+.bf-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:1000px;width:100%}
+.bf-opt{flex:0 0 calc(25% - 9px);min-width:0;display:grid;grid-template-columns:46px minmax(0,1fr);column-gap:12px;align-items:center;align-content:center;padding:12px 14px;border-radius:16px;text-align:left}
+.bf-opt .e{grid-row:1/span 3;grid-column:1;width:46px;height:46px;margin:0;border-radius:14px}
+.bf-opt .e i{font-size:1.25rem}
+.bf-opt b{grid-column:2;font-size:.98rem;line-height:1.45}
+.bf-opt small{grid-column:2;font-size:.8rem;line-height:1.4;margin-top:1px;padding-right:0}
+.bf-opt .n{position:static;grid-column:2;justify-self:start;margin-top:5px;font-size:.7rem;line-height:1.7}
+.bf-opt::after{display:none}
+.bf-opt:hover,.bf-opt:focus-visible{transform:translateY(-3px)}
+.bf-n1 .bf-opt,.bf-n2 .bf-opt,.bf-n3 .bf-opt{flex-basis:calc(33.333% - 8px);max-width:320px;min-height:92px}
+.bf-n6 .bf-opt{flex-basis:calc(33.333% - 8px)}
+/* বাজেট: ৫টি এক সারিতে, মাঝখানে সাজানো */
+.bf-n5 .bf-opt{flex-basis:calc(20% - 10px);grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:6px;padding:14px 8px}
+.bf-n5 .bf-opt .e{grid-row:auto;grid-column:1;width:44px;height:44px}
+.bf-n5 .bf-opt b,.bf-n5 .bf-opt small{grid-column:1}
+.bf-hint{margin:12px 0 0;font-size:.82rem}
+.bf-nav{margin-top:8px}
+.bf-litewrap{margin-top:12px}
+.bf-lite{padding:7px 20px;font-size:.9rem}
+/* ফলাফল: ৩টি কার্ড মাঝখানে, একই উচ্চতায় */
+@media(min-width:981px){
+  .bf-resmode .bf-list{display:flex;justify-content:center;gap:18px;margin:0 auto;width:100%;max-width:1060px}
+  .bf-resmode .bf-res{flex:0 1 330px;min-width:0;padding:14px 14px 14px;gap:10px}
+  .bf-resmode .bf-cover{height:clamp(130px,30vh,270px)}
+  .bf-resmode .bf-info h3{font-size:1rem}
+  .bf-resmode .bf-auth{font-size:.8rem}
+  .bf-resmode .bf-q{font-size:clamp(1.2rem,2.2vw,1.7rem)}
+}
+@media(max-height:720px){
+  .bf-brand{padding:5px 14px}.bf-x{width:34px;height:34px}.bf-st span{width:30px;height:30px}
+  .bf-hint{display:none}.bf-qs{margin-bottom:10px}
+  .bf-opt{padding:9px 12px}.bf-n5 .bf-opt{padding:10px 8px}
+  .bf-opt .e,.bf-n5 .bf-opt .e{width:40px;height:40px}.bf-opt{grid-template-columns:40px minmax(0,1fr)}
+  .bf-grid{gap:10px}.bf-opt{flex-basis:calc(25% - 8px)}.bf-n1 .bf-opt,.bf-n2 .bf-opt,.bf-n3 .bf-opt,.bf-n6 .bf-opt{flex-basis:calc(33.333% - 7px)}.bf-n5 .bf-opt{flex-basis:calc(20% - 8px)}
+}
+@media(max-width:980px) and (min-width:701px){.bf-opt,.bf-n6 .bf-opt{flex-basis:calc(33.333% - 8px)}.bf-n5 .bf-opt{flex-basis:calc(33.333% - 8px)}}
+@media(max-width:700px){
+  .bf-shell{padding:8px 12px 10px}
+  .bf-stage{justify-content:center;padding-top:4px}
+  .bf-q{font-size:1.2rem}.bf-qs{font-size:.84rem;margin-bottom:10px}
+  .bf-grid{gap:8px}
+  .bf-opt,.bf-n1 .bf-opt,.bf-n2 .bf-opt,.bf-n3 .bf-opt,.bf-n5 .bf-opt,.bf-n6 .bf-opt{flex-basis:calc(50% - 4px);max-width:none;min-height:0;grid-template-columns:34px minmax(0,1fr);column-gap:8px;padding:9px 9px;text-align:left;justify-items:stretch}
+  .bf-opt .e,.bf-n5 .bf-opt .e{width:34px;height:34px;border-radius:10px;grid-row:1/span 3}
+  .bf-opt .e i{font-size:1rem}
+  .bf-opt b,.bf-n5 .bf-opt b{font-size:.84rem;line-height:1.35;overflow-wrap:anywhere}
+  .bf-opt small{display:none}
+  .bf-n5 .bf-opt small{display:block;font-size:.7rem}
+  .bf-n5 .bf-opt b,.bf-n5 .bf-opt small{grid-column:2}
+  .bf-opt .n{font-size:.62rem;margin-top:3px}
+  .bf-hint{display:none}
+  .bf-lite{width:100%;font-size:.82rem;padding:8px 10px}
+}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
 <button type="button" class="bf-fab" onclick="openBookFinder()" aria-label="Magical Book Finder খুলুন" title="কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">বই খুঁজুন</span></button>
@@ -18635,7 +18696,7 @@ function renderStep(){
   if(!books().length){stage('<div class="bf-empty"><div class="big"><i class="fa-solid fa-book-open"></i></div><p class="bn">এই মুহূর্তে রেকমেন্ড করার মতো বই পাওয়া যায়নি। একটু পরে আবার চেষ্টা করুন।</p></div>');return}
   var back=S.step>0?'<div class="bf-nav"><button class="bf-link bn" data-act="back"><i class="fa-solid fa-arrow-left"></i> আগের প্রশ্ন</button></div>':'';
   if(S.step===0){
-    stage('<span class="bf-step-tag bn">প্রশ্ন ১ / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ বইয়ের কাছে আপনার চাওয়া কী?</h2><p class="bf-qs bn">নিচের যে লাইনটা আপনার মনের কথা বলে, সেটায় ক্লিক করুন</p><div class="bf-grid">'+
+    stage('<span class="bf-step-tag bn">প্রশ্ন <b class="bf-sn">১</b> / ৩</span><h2 class="bf-q bn" id="bfTitle">আজ বইয়ের কাছে আপনার চাওয়া কী?</h2><p class="bf-qs bn">নিচের যে লাইনটা আপনার মনের কথা বলে, সেটায় ক্লিক করুন</p><div class="bf-grid bf-n'+S.moods.length+'">'+
       S.moods.map(function(m){return '<button class="bf-opt'+(S.a.mood===m.slug?' sel':'')+'" data-k="mood" data-v="'+esc(m.slug)+'"><span class="e">'+ic(m.icon)+'</span><b class="bn">'+esc(m.name)+'</b><small class="bn">'+esc(m.tagline)+'</small></button>'}).join('')+'</div>'+
       '<div class="bf-litewrap"><button type="button" class="bf-lite bn'+(S.a.mood==='any'?' sel':'')+'" data-k="mood" data-v="any"><i class="fa-solid fa-shuffle"></i> আমি নিশ্চিত নই / সবগুলো দেখান</button></div>'+
       '<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>');
@@ -18648,12 +18709,12 @@ function renderStep(){
         ?(go.fromMood?'“'+esc(moodShort(go.mood))+'” ঘরানার যে যে ধরনের বই আমাদের কাছে আছে, শুধু সেগুলোই দেখানো হচ্ছে — যেটা বেশি টানে সেটা বেছে নিন':'“'+esc(moodShort(go.mood))+'” ঘরানায় এখনো আলাদা করে বই বাছাই করা নেই, তাই সব ধরন দেখানো হচ্ছে')
         :'যে ধরনের লেখা পড়তে ভালো লাগে সেটা বেছে নিন, নির্দিষ্ট কিছু না থাকলে “যেকোনো ধরন”'));
     var anyTxt=go.fromMood?'যেকোনোটাই চলবে — এই মুডের সব বই দেখান':'যেকোনো ধরনই চলবে';
-    stage('<span class="bf-step-tag bn">প্রশ্ন ২ / ৩</span><h2 class="bf-q bn" id="bfTitle">'+q2+'</h2><p class="bf-qs bn">'+sub+'</p><div class="bf-grid">'+
+    stage('<span class="bf-step-tag bn">প্রশ্ন <b class="bf-sn">২</b> / ৩</span><h2 class="bf-q bn" id="bfTitle">'+q2+'</h2><p class="bf-qs bn">'+sub+'</p><div class="bf-grid bf-n'+go.opts.length+'">'+
       go.opts.map(function(c){return '<button class="bf-opt'+(S.a.cat===c.slug?' sel':'')+'" data-k="cat" data-v="'+esc(c.slug)+'"><span class="e">'+ic(c.icon,'fa-book')+'</span><b class="bn">'+esc(c.name)+'</b>'+(c.hint?'<small class="bn">'+esc(c.hint)+'</small>':'')+'<span class="n bn">'+bnNum(c.n)+'টি বই</span></button>'}).join('')+'</div>'+
       '<div class="bf-litewrap"><button type="button" class="bf-lite bn'+(S.a.cat==='any'?' sel':'')+'" data-k="cat" data-v="any"><i class="fa-solid fa-compass"></i> '+anyTxt+'</button></div>'+
       '<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }else{
-    stage('<span class="bf-step-tag bn">প্রশ্ন ৩ / ৩</span><h2 class="bf-q bn" id="bfTitle">আপনার বাজেট কত?</h2><p class="bf-qs bn">একটা বইয়ের জন্য কতটা খরচ করতে চান?</p><div class="bf-grid">'+
+    stage('<span class="bf-step-tag bn">প্রশ্ন <b class="bf-sn">৩</b> / ৩</span><h2 class="bf-q bn" id="bfTitle">আপনার বাজেট কত?</h2><p class="bf-qs bn">একটা বইয়ের জন্য কতটা খরচ করতে চান?</p><div class="bf-grid bf-n'+BUDGETS.length+'">'+
       BUDGETS.map(function(b){return '<button class="bf-opt'+(S.a.budget===b.key?' sel':'')+'" data-k="budget" data-v="'+b.key+'"><span class="e">'+ic(b.icon)+'</span><b class="bn">'+b.label+'</b><small class="bn">'+b.sub+'</small></button>'}).join('')+'</div>'+'<p class="bf-hint bn"><i class="fa-solid fa-hand-pointer"></i>একটিতে ক্লিক করলেই পরের প্রশ্নে চলে যাবে</p>'+back);
   }
 }
