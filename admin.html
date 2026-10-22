@@ -1725,6 +1725,15 @@ body {
       <div class="nav-item" data-sec="promos">
         <i class="fa-solid fa-ticket"></i> Promo Codes
       </div>
+      <div class="nav-item" data-sec="flash">
+        <i class="fa-solid fa-bolt"></i> <span style="font-family:var(--font-bn)">ফ্ল্যাশ সেল</span>
+      </div>
+      <div class="nav-item" data-sec="combos">
+        <i class="fa-solid fa-layer-group"></i> <span style="font-family:var(--font-bn)">কম্বো অফার</span>
+      </div>
+      <div class="nav-item" data-sec="freedel">
+        <i class="fa-solid fa-truck-fast"></i> <span style="font-family:var(--font-bn)">ফ্রি ডেলিভারি</span>
+      </div>
       <div class="nav-item" data-sec="blog">
         <i class="fa-solid fa-pen-nib"></i> <span style="font-family:var(--font-bn)">ব্লগ ম্যানেজার</span>
       </div>
@@ -2011,6 +2020,8 @@ body {
               </div>
               <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:120px" id="orderStatusFilter" onchange="renderOrders()">
                 <option value="">All Status</option>
+                <option value="po_waiting">⏳ প্রকাশের অপেক্ষায় (প্রি-অর্ডার)</option>
+                <option value="po_ready">✅ পাঠানোর জন্য প্রস্তুত (প্রি-অর্ডার)</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="in_stock">স্টক এ আছে</option>
@@ -2898,6 +2909,49 @@ end $$;
         </div>
       </div>
 
+      <div class="section" id="sec-flash">
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-icon" style="background:rgba(255,122,0,0.12);color:#ff7a00"><i class="fa-solid fa-bolt"></i></div>ফ্ল্যাশ সেল</div>
+            <button class="btn btn-primary btn-sm" onclick="FS.open()"><i class="fa-solid fa-plus"></i> নতুন সেল</button>
+          </div>
+          <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>নাম</th><th>কী কী</th><th>ছাড়/দাম</th><th>সময়</th><th>বিক্রি</th><th>অবস্থা</th><th>চালু</th><th>Actions</th></tr></thead>
+            <tbody id="fsBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="section" id="sec-combos">
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-layer-group"></i></div>কম্বো অফার</div>
+            <button class="btn btn-primary btn-sm" onclick="CMB.open()"><i class="fa-solid fa-plus"></i> নতুন কম্বো</button>
+          </div>
+          <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>নাম</th><th>বই</th><th>কম্বোর দাম</th><th>সাশ্রয়</th><th>মেয়াদ</th><th>চালু</th><th>Actions</th></tr></thead>
+            <tbody id="cmbBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="section" id="sec-freedel">
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-truck-fast"></i></div>
+              ফ্রি ডেলিভারি রুল
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="FD.open()"><i class="fa-solid fa-plus"></i> নতুন রুল</button>
+          </div>
+          <div style="padding:0 18px 12px;font-family:var(--font-bn);font-size:.82rem;color:var(--text2)">একসাথে কয়েকটা রুল চলবে। কার্টে যেকোনো একটা রুলের শর্ত পূরণ হলেই ডেলিভারি ফ্রি। হিসাবে শুধু শর্তে পড়া বইয়ের যোগফল ধরা হয়।</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>নাম</th><th>শর্তের ধরন</th><th>মান</th><th>ন্যূনতম ৳</th><th>মেয়াদ</th><th>চালু</th><th>Actions</th></tr></thead>
+              <tbody id="fdBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div class="section" id="sec-blog">
         <div id="blList" class="panel">
           <div class="panel-header">
@@ -3431,6 +3485,15 @@ end $$;
             <div class="form-group" id="colorField" style="gap:3px">
               <label class="form-label" style="font-size:0.6rem">Color Hex</label>
               <input class="form-inp" type="text" id="pColor" placeholder="#AA2C2D" style="padding:7px 10px;font-size:0.82rem">
+            </div>
+          </div>
+
+          <!-- Pre-order -->
+          <div class="form-group" style="gap:6px;border:1px dashed var(--border2);border-radius:10px;padding:10px">
+            <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-bn);font-size:0.82rem;font-weight:600"><input type="checkbox" id="pIsPreorder" onchange="poToggle()"> প্রি-অর্ডার বই (এখনো প্রকাশ হয়নি)</label>
+            <div id="poFields" style="display:none;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.6rem">সম্ভাব্য প্রকাশের তারিখ <span class="required">*</span></label><input class="form-inp" type="date" id="pPreorderDate" style="padding:7px 10px;font-size:0.82rem"></div>
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.6rem">প্রি-অর্ডার দাম (৳) — ফাঁকা হলে Sale Price</label><input class="form-inp" type="number" min="0" id="pPreorderPrice" style="padding:7px 10px;font-size:0.82rem"></div>
             </div>
           </div>
 
@@ -4040,6 +4103,104 @@ end $$;
 <!-- ══════════════════════════════════════
      PROMO CODE MODAL
 ══════════════════════════════════════ -->
+<div class="modal-overlay" id="fsModal" onclick="if(event.target===this)closeModal('fsModal')">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-header"><div class="modal-title" id="fsModalTitle">নতুন ফ্ল্যাশ সেল</div>
+      <button class="modal-close" onclick="closeModal('fsModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body"><input type="hidden" id="fsId">
+      <div style="display:grid;gap:14px">
+        <div class="form-group"><label class="form-label">সেলের নাম <span class="required">*</span></label><input class="form-inp" id="fsName" placeholder="যেমন: বইমেলা ফ্ল্যাশ সেল"></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">শুরু <span class="required">*</span></label><input class="form-inp" type="datetime-local" id="fsStart"></div>
+          <div class="form-group"><label class="form-label">শেষ <span class="required">*</span></label><input class="form-inp" type="datetime-local" id="fsEnd"></div>
+        </div>
+        <div class="form-group"><label class="form-label">কোন বইয়ে</label>
+          <select class="form-inp" id="fsScope" onchange="FS.scopeChange()"><option value="books">নির্দিষ্ট বই</option><option value="category">ক্যাটাগরি</option><option value="author">লেখক</option></select></div>
+        <div class="form-group" id="fsBooksWrap"><label class="form-label">বই বাছাই</label>
+          <input class="form-inp" id="fsSearch" placeholder="বইয়ের নাম লিখে খুঁজুন..." oninput="FS.search()">
+          <div id="fsResults" style="max-height:140px;overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:6px;display:none"></div>
+          <div id="fsPicked" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div></div>
+        <div class="form-group" id="fsTargetWrap" style="display:none"><label class="form-label">নাম (হুবহু যেভাবে বইয়ে আছে)</label><input class="form-inp" id="fsTarget"></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ছাড়ের ধরন</label>
+            <select class="form-inp" id="fsMode" onchange="FS.calc()"><option value="pct">ছাড় (%)</option><option value="fixed">নির্দিষ্ট দাম (৳, শুধু ১টা বইয়ে)</option></select></div>
+          <div class="form-group"><label class="form-label">মান <span class="required">*</span></label><input class="form-inp" type="number" min="1" id="fsValue" oninput="FS.calc()"></div>
+        </div>
+        <div id="fsPreview" style="font-family:var(--font-bn);font-size:.82rem;color:var(--green)"></div>
+        <div class="form-group"><label class="form-label">মোট সীমা — "মাত্র ৫০টি" (ঐচ্ছিক)</label><input class="form-inp" type="number" min="1" id="fsLimit" placeholder="ফাঁকা = সীমাহীন"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-bn);font-size:.85rem"><input type="checkbox" id="fsActive" checked> সেলটি চালু</label>
+      </div></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('fsModal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="FS.save()"><i class="fa-solid fa-floppy-disk"></i> সেভ</button></div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="cmbModal" onclick="if(event.target===this)closeModal('cmbModal')">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-header"><div class="modal-title" id="cmbModalTitle">নতুন কম্বো অফার</div>
+      <button class="modal-close" onclick="closeModal('cmbModal')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body"><input type="hidden" id="cmbId">
+      <div style="display:grid;gap:14px">
+        <div class="form-group"><label class="form-label">কম্বোর নাম <span class="required">*</span></label><input class="form-inp" id="cmbName" placeholder="যেমন: হুমায়ূন আহমেদ ক্লাসিক সেট"></div>
+        <div class="form-group"><label class="form-label">বই বাছাই (কমপক্ষে ২টা) <span class="required">*</span></label>
+          <input class="form-inp" id="cmbSearch" placeholder="বইয়ের নাম লিখে খুঁজুন..." oninput="CMB.search()">
+          <div id="cmbResults" style="max-height:150px;overflow:auto;border:1px solid var(--border);border-radius:8px;margin-top:6px;display:none"></div>
+          <div id="cmbPicked" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+          <div id="cmbRegular" style="font-family:var(--font-bn);font-size:.8rem;color:var(--text2);margin-top:6px"></div></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">দামের ধরন</label>
+            <select class="form-inp" id="cmbMode" onchange="CMB.calc()"><option value="price">কম্বোর দাম (৳)</option><option value="pct">ছাড় (%)</option></select></div>
+          <div class="form-group"><label class="form-label">মান <span class="required">*</span></label><input class="form-inp" type="number" min="1" id="cmbValue" oninput="CMB.calc()"></div>
+        </div>
+        <div id="cmbPreview" style="font-family:var(--font-bn);font-size:.85rem;font-weight:600;color:var(--green)"></div>
+        <div class="form-group"><label class="form-label">ছবি (ঐচ্ছিক — না দিলে বইয়ের কভার দেখাবে)</label>
+          <input class="form-inp" id="cmbImage" placeholder="ছবির লিংক অথবা নিচে আপলোড করুন">
+          <input type="file" accept="image/*" id="cmbFile" style="margin-top:6px" onchange="CMB.upload(this)"></div>
+        <div class="form-group"><label class="form-label">মেয়াদ (ঐচ্ছিক)</label><input class="form-inp" type="datetime-local" id="cmbExpires"></div>
+        <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-bn);font-size:.85rem"><input type="checkbox" id="cmbActive" checked> কম্বোটি চালু</label>
+      </div></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('cmbModal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="CMB.save()"><i class="fa-solid fa-floppy-disk"></i> সেভ</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="fdModal" onclick="if(event.target===this)closeModal('fdModal')">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="fdModalTitle">নতুন ফ্রি ডেলিভারি রুল</div>
+      <button class="modal-close" onclick="closeModal('fdModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="fdId">
+      <div style="display:grid;gap:14px">
+        <div class="form-group"><label class="form-label">রুলের নাম <span class="required">*</span></label>
+          <input class="form-inp" id="fdName" placeholder="যেমন: হুমায়ূন আহমেদ স্পেশাল"></div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">শর্তের ধরন</label>
+            <select class="form-inp" id="fdScope" onchange="FD.scopeChange()">
+              <option value="all">সব বই</option><option value="category">নির্দিষ্ট ক্যাটাগরি</option>
+              <option value="author">নির্দিষ্ট লেখক</option><option value="publisher">নির্দিষ্ট প্রকাশনী</option>
+            </select></div>
+          <div class="form-group" id="fdValueWrap"><label class="form-label">নাম (হুবহু যেভাবে বইয়ে আছে)</label>
+            <input class="form-inp" id="fdValue" placeholder="যেমন: হুমায়ূন আহমেদ"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">ন্যূনতম টাকা <span class="required">*</span></label>
+            <input class="form-inp" type="number" min="1" id="fdMin" placeholder="999"></div>
+          <div class="form-group"><label class="form-label">মেয়াদ (ঐচ্ছিক)</label>
+            <input class="form-inp" type="date" id="fdExpires"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-bn);font-size:.85rem"><input type="checkbox" id="fdActive" checked> রুলটি চালু</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('fdModal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="FD.save()"><i class="fa-solid fa-floppy-disk"></i> সেভ</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="promoModal" onclick="if(event.target===this)closeModal('promoModal')">
   <div class="modal-box" style="max-width:520px">
     <div class="modal-header">
@@ -5867,8 +6028,9 @@ function renderProducts() {
           </button>
         </div>
       </td>
-      <td>${p.is_active === false ? '<span class="pill pill-inactive">Inactive</span>' : '<span class="pill pill-active">Active</span>'}</td>
+      <td>${p.is_active === false ? '<span class="pill pill-inactive">Inactive</span>' : '<span class="pill pill-active">Active</span>'}${p.is_preorder ? ' <span class="pill" style="background:rgba(109,40,217,.12);color:#6d28d9">প্রি-অর্ডার</span>' : ''}</td>
       <td><div style="display:flex;gap:5px">
+        ${p.is_preorder ? `<button class="btn btn-primary btn-xs" onclick="publishPreorder('${p.id}')" title="বই প্রকাশিত — অর্ডারগুলো পাঠানোর জন্য প্রস্তুত করুন"><i class="fa-solid fa-book-open"></i> প্রকাশিত</button>` : ''}
         <button class="btn btn-secondary btn-xs" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
         <button class="btn btn-danger btn-xs" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
       </div></td>
@@ -6374,7 +6536,7 @@ function renderOrders() {
   const q = (document.getElementById('orderSearch')?.value || '').toLowerCase();
   const sf = document.getElementById('orderStatusFilter')?.value || '';
   const filtered = allOrders.filter(o =>
-    (!sf || o.status === sf) &&
+    (!sf || (sf === 'po_waiting' ? poIsWaiting(o) : sf === 'po_ready' ? poIsReady(o) : o.status === sf)) &&
     (!q || (o.order_number || '').toLowerCase().includes(q) || (o.customer_name || '').toLowerCase().includes(q) || (o.customer_phone || '').includes(q))
   );
   document.getElementById('orderFooter').textContent = `Showing ${filtered.length} of ${allOrders.length} orders`;
@@ -6393,7 +6555,7 @@ function renderOrders() {
   };
   tbody.innerHTML = filtered.map(o => {
     const items = Array.isArray(o.items) ? o.items : [];
-    const names = items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
+    const names = (o.preorder_book_id ? (o.preorder_released ? '✅ ' : '⏳ ') : '') + items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
     // Normalize legacy status values for the 6-status dropdown
     const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled','returned'].includes(o.status))
       ? o.status
@@ -7597,6 +7759,8 @@ async function openProductModal(product = null) {
   document.getElementById('pBadge').value       = product?.badge || '';
   document.getElementById('pPrice').value       = product?.price || '';
   document.getElementById('pOldPrice').value    = product?.old_price || '';
+  { const c = document.getElementById('pIsPreorder'); if (c) { c.checked = !!product?.is_preorder; c.dataset.was = product?.is_preorder ? '1' : '';
+    document.getElementById('pPreorderDate').value = product?.preorder_release_date || ''; document.getElementById('pPreorderPrice').value = product?.preorder_price || ''; poToggle(); } }
   document.getElementById('pStock').value       = product?.stock || '';
   document.getElementById('pColor').value       = product?.color || '#AA2C2D';
   document.getElementById('pDescription').value = product?.description || ''; if(window.PDE) PDE.load(product?.description || '');
@@ -8050,6 +8214,7 @@ async function saveProduct() {
   if (!sb) { toast('Not Connected', 'Configure Supabase in Settings', 'error'); return; }
 
   const id          = document.getElementById('editProductId').value;
+  if (document.getElementById('pIsPreorder')?.checked && !document.getElementById('pPreorderDate').value) { toast('প্রি-অর্ডারের সম্ভাব্য তারিখ দিন', '', 'warning'); return; }
   const productType = getSelectedProductType(); // 'book' | 'general' — mandatory top-level selector
   const isBook      = productType === 'book';
   const name        = document.getElementById('pName').value.trim();
@@ -8144,6 +8309,7 @@ async function saveProduct() {
       badge:       document.getElementById('pBadge').value || null,
       price,
       old_price:   parseFloat(document.getElementById('pOldPrice').value) || null,
+      ...poPayload(),
       stock,
       variants:    collectVariants(),
       specifications: collectSpecifications(),
@@ -8346,12 +8512,285 @@ document.querySelectorAll('.nav-item').forEach(el => {
   });
 });
 
+// ══════════════════════════════════════════════════
+// ফ্রি ডেলিভারি রুল ম্যানেজার (site_settings.free_delivery_rules)
+// ══════════════════════════════════════════════════
+const FD = {
+  rules: [],
+  scopeLabel: { all:'সব বই', category:'ক্যাটাগরি', author:'লেখক', publisher:'প্রকাশনী' },
+  esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  async load() {
+    try {
+      const { data, error } = await sb.from('site_settings').select('free_delivery_rules').eq('id',1).single();
+      if (error) throw error;
+      this.rules = Array.isArray(data.free_delivery_rules) ? data.free_delivery_rules : [];
+    } catch(e) {
+      this.rules = [];
+      toast('রুল লোড হয়নি', 'SQL মাইগ্রেশন চালানো হয়েছে কিনা দেখুন (free_delivery_rules কলাম)', 'warning');
+    }
+    this.render();
+  },
+  render() {
+    const tb = document.getElementById('fdBody');
+    if (!this.rules.length) {
+      tb.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:30px;text-align:center;font-family:var(--font-bn)">কোনো রুল নেই — সাইটে ডিফল্ট ৳৯৯৯+ রুল চলছে</td></tr>';
+      return;
+    }
+    tb.innerHTML = this.rules.map(r => `<tr>
+      <td>${this.esc(r.name)}</td><td>${this.scopeLabel[r.scope]||r.scope}</td><td>${this.esc(r.value)||'—'}</td>
+      <td>৳${Number(r.min).toLocaleString('en-US')}</td><td>${r.expires||'—'}</td>
+      <td><label style="cursor:pointer"><input type="checkbox" ${r.active!==false?'checked':''} onchange="FD.toggle('${r.id}',this.checked)"></label></td>
+      <td><button class="btn btn-sm" onclick="FD.open('${r.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm" style="color:var(--red)" onclick="FD.del('${r.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+  },
+  scopeChange() { document.getElementById('fdValueWrap').style.display = document.getElementById('fdScope').value==='all' ? 'none' : ''; },
+  open(id) {
+    const r = this.rules.find(x=>x.id===id) || { id:'', name:'', scope:'all', value:'', min:'', expires:'', active:true };
+    document.getElementById('fdModalTitle').textContent = id ? 'রুল এডিট করুন' : 'নতুন ফ্রি ডেলিভারি রুল';
+    fdId.value=r.id; fdName.value=r.name; fdScope.value=r.scope; fdValue.value=r.value||''; fdMin.value=r.min; fdExpires.value=r.expires||''; fdActive.checked=r.active!==false;
+    this.scopeChange(); openModal('fdModal');
+  },
+  async persist(msg) {
+    const { error } = await sb.from('site_settings').update({ free_delivery_rules: this.rules }).eq('id',1);
+    if (error) { toast('সেভ ব্যর্থ', error.message, 'error'); return false; }
+    try { new BroadcastChannel('gm_cms').postMessage({ key:'freedel_rules' }); } catch(e) {}
+    toast(msg || 'সেভ হয়েছে'); this.render(); return true;
+  },
+  async save() {
+    const scope = fdScope.value, rule = {
+      id: fdId.value || ('r' + Date.now()), name: fdName.value.trim(), scope,
+      value: scope==='all' ? '' : fdValue.value.trim(), min: Number(fdMin.value),
+      expires: fdExpires.value || '', active: fdActive.checked };
+    if (!rule.name || !(rule.min > 0)) return toast('নাম ও ন্যূনতম টাকা দিন', '', 'warning');
+    if (scope !== 'all' && !rule.value) return toast('শর্তের নাম লিখুন', '', 'warning');
+    const prev = this.rules.slice(), i = this.rules.findIndex(x=>x.id===rule.id);
+    if (i>=0) this.rules[i]=rule; else this.rules.push(rule);
+    if (await this.persist()) closeModal('fdModal'); else this.rules = prev;
+  },
+  async toggle(id, on) { const r=this.rules.find(x=>x.id===id); if(r){ r.active=on; await this.persist(on?'রুল চালু':'রুল বন্ধ'); } },
+  async del(id) {
+    if (!confirm('এই রুল মুছে ফেলবেন?')) return;
+    const prev = this.rules.slice(); this.rules = this.rules.filter(x=>x.id!==id);
+    if (!(await this.persist('রুল মুছে গেছে'))) { this.rules = prev; this.render(); }
+  }
+};
+
+// ══════════════════════════════════════════════════
+// কম্বো অফার ম্যানেজার (combos টেবিল)
+// ══════════════════════════════════════════════════
+const CMB = {
+  rows: [], prods: [], picked: [],   // picked: [{id,name,price,stock,image_url}]
+  g(id){ return document.getElementById(id); },
+  esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  async load() {
+    try {
+      const [c, p] = await Promise.all([
+        sb.from('combos').select('*').order('created_at',{ascending:false}),
+        sb.from('products').select('id,name,price,stock,image_url').eq('is_active',true).limit(5000)]);
+      if (c.error) throw c.error;
+      this.rows = c.data || []; this.prods = p.data || [];
+    } catch(e) { this.rows = []; toast('কম্বো লোড হয়নি', 'combos টেবিলের SQL চালানো হয়েছে কিনা দেখুন', 'warning'); }
+    this.render();
+  },
+  info(r) {
+    const books = (r.book_ids||[]).map(id => this.prods.find(p => String(p.id)===String(id))).filter(Boolean);
+    const reg = books.reduce((s,b)=>s+Number(b.price||0),0);
+    const price = Number(r.price)>0 ? Number(r.price) : Math.round(reg*(1-Number(r.discount_percent||0)/100));
+    return { books, reg, price, save: Math.max(0,reg-price) };
+  },
+  render() {
+    const tb = this.g('cmbBody');
+    if (!this.rows.length) { tb.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:30px;text-align:center;font-family:var(--font-bn)">কোনো কম্বো নেই</td></tr>'; return; }
+    tb.innerHTML = this.rows.map(r => { const i = this.info(r);
+      return `<tr><td>${this.esc(r.name)}</td><td style="max-width:260px">${i.books.map(b=>this.esc(b.name)).join(' + ')}</td>
+      <td>৳${i.price.toLocaleString('en-US')}</td><td>৳${i.save.toLocaleString('en-US')}</td>
+      <td>${r.expires_at ? new Date(r.expires_at).toLocaleString('bn-BD') : '—'}</td>
+      <td><input type="checkbox" ${r.is_active?'checked':''} onchange="CMB.toggle('${r.id}',this.checked)"></td>
+      <td><button class="btn btn-sm" onclick="CMB.open('${r.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm" style="color:var(--red)" onclick="CMB.del('${r.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`; }).join('');
+  },
+  open(id) {
+    const r = this.rows.find(x=>String(x.id)===String(id)) || { name:'', book_ids:[], price:'', discount_percent:'', image_url:'', expires_at:null, is_active:true };
+    this.g('cmbModalTitle').textContent = id ? 'কম্বো এডিট করুন' : 'নতুন কম্বো অফার';
+    this.g('cmbId').value = id || ''; this.g('cmbName').value = r.name; this.g('cmbImage').value = r.image_url || '';
+    this.g('cmbMode').value = Number(r.discount_percent)>0 && !(Number(r.price)>0) ? 'pct' : 'price';
+    this.g('cmbValue').value = this.g('cmbMode').value==='pct' ? (r.discount_percent||'') : (r.price||'');
+    this.g('cmbActive').checked = r.is_active !== false; this.g('cmbSearch').value = ''; this.g('cmbResults').style.display = 'none';
+    this.g('cmbExpires').value = r.expires_at ? new Date(new Date(r.expires_at).getTime() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16) : '';
+    this.picked = (r.book_ids||[]).map(id => this.prods.find(p=>String(p.id)===String(id))).filter(Boolean);
+    this.drawPicked(); openModal('cmbModal');
+  },
+  search() {
+    const q = this.g('cmbSearch').value.trim().toLowerCase(), box = this.g('cmbResults');
+    if (!q) { box.style.display = 'none'; return; }
+    const hits = this.prods.filter(p => String(p.name||'').toLowerCase().includes(q) && !this.picked.some(k=>String(k.id)===String(p.id))).slice(0,12);
+    box.innerHTML = hits.length ? hits.map(p => `<div style="padding:7px 10px;cursor:pointer;font-family:var(--font-bn);font-size:.83rem;border-bottom:1px solid var(--border)" onclick="CMB.add('${p.id}')">${this.esc(p.name)} <span style="color:var(--text3)">৳${p.price} · স্টক ${p.stock}</span></div>`).join('') : '<div style="padding:8px 10px;color:var(--text3)">কিছু পাওয়া যায়নি</div>';
+    box.style.display = '';
+  },
+  add(id) { const p = this.prods.find(x=>String(x.id)===String(id)); if (p) this.picked.push(p); this.g('cmbSearch').value=''; this.g('cmbResults').style.display='none'; this.drawPicked(); },
+  remove(id) { this.picked = this.picked.filter(p=>String(p.id)!==String(id)); this.drawPicked(); },
+  drawPicked() {
+    this.g('cmbPicked').innerHTML = this.picked.map(p => `<span style="display:inline-flex;gap:6px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:4px 10px;font-family:var(--font-bn);font-size:.78rem">${this.esc(p.name)} <a style="cursor:pointer;color:var(--red)" onclick="CMB.remove('${p.id}')">✕</a></span>`).join('');
+    const reg = this.picked.reduce((s,b)=>s+Number(b.price||0),0);
+    this.g('cmbRegular').textContent = this.picked.length ? `আলাদা কিনলে মোট: ৳${reg.toLocaleString('en-US')}` : '';
+    this.calc();
+  },
+  price() {
+    const reg = this.picked.reduce((s,b)=>s+Number(b.price||0),0), v = Number(this.g('cmbValue').value)||0;
+    return { reg, price: this.g('cmbMode').value==='pct' ? Math.round(reg*(1-v/100)) : v, v };
+  },
+  calc() {
+    const { reg, price, v } = this.price(), el = this.g('cmbPreview');
+    el.textContent = (reg && v) ? `কম্বোর দাম ৳${price.toLocaleString('en-US')} · সাশ্রয় ৳${Math.max(0,reg-price).toLocaleString('en-US')}` : '';
+  },
+  async upload(inp) {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    toast('আপলোড হচ্ছে...', '', 'info');
+    const url = await uploadOneImage(f);
+    if (url) { this.g('cmbImage').value = url; toast('ছবি আপলোড হয়েছে'); } else toast('আপলোড ব্যর্থ', '', 'error');
+  },
+  async save() {
+    const name = this.g('cmbName').value.trim(), { reg, price, v } = this.price(), mode = this.g('cmbMode').value;
+    if (!name) return toast('কম্বোর নাম দিন','', 'warning');
+    if (this.picked.length < 2) return toast('কমপক্ষে ২টা বই বাছাই করুন','', 'warning');
+    if (!(v > 0)) return toast('দাম বা ছাড় দিন','', 'warning');
+    if (mode==='pct' && v >= 100) return toast('ছাড় ১০০%-এর কম হতে হবে','', 'warning');
+    if (price >= reg) return toast('কম্বোর দাম আলাদা কেনার দামের চেয়ে কম হতে হবে', `আলাদা কিনলে ৳${reg}`, 'warning');
+    const row = { name, book_ids: this.picked.map(p=>p.id), image_url: this.g('cmbImage').value.trim() || null,
+      price: mode==='price' ? v : null, discount_percent: mode==='pct' ? v : null,
+      expires_at: this.g('cmbExpires').value ? new Date(this.g('cmbExpires').value).toISOString() : null,
+      is_active: this.g('cmbActive').checked };
+    const id = this.g('cmbId').value;
+    const { error } = id ? await sb.from('combos').update(row).eq('id', id) : await sb.from('combos').insert(row);
+    if (error) return toast('সেভ ব্যর্থ', error.message, 'error');
+    toast('কম্বো সেভ হয়েছে'); closeModal('cmbModal'); this.load();
+  },
+  async toggle(id, on) { const { error } = await sb.from('combos').update({ is_active:on }).eq('id', id); if (error) toast('ব্যর্থ', error.message, 'error'); else { const r=this.rows.find(x=>String(x.id)===String(id)); if(r) r.is_active=on; toast(on?'কম্বো চালু':'কম্বো বন্ধ'); } },
+  async del(id) { if (!confirm('এই কম্বো মুছে ফেলবেন?')) return; const { error } = await sb.from('combos').delete().eq('id', id); if (error) return toast('ব্যর্থ', error.message, 'error'); toast('কম্বো মুছে গেছে'); this.load(); }
+};
+
+// ══════════════════════════════════════════════════
+// ফ্ল্যাশ সেল ম্যানেজার (flash_sales টেবিল)
+// ══════════════════════════════════════════════════
+const FS = {
+  rows: [], prods: [], picked: [],
+  g(id){ return document.getElementById(id); },
+  esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  async load() {
+    try {
+      const [s, p] = await Promise.all([
+        sb.from('flash_sales').select('*').order('starts_at',{ascending:false}),
+        sb.from('products').select('id,name,price,stock').eq('is_active',true).limit(5000)]);
+      if (s.error) throw s.error;
+      this.rows = s.data || []; this.prods = p.data || [];
+    } catch(e) { this.rows = []; toast('সেল লোড হয়নি', 'flash_sales টেবিলের SQL চালানো হয়েছে কিনা দেখুন', 'warning'); }
+    this.render();
+  },
+  status(r) { const n = Date.now(), a = new Date(r.starts_at).getTime(), b = new Date(r.ends_at).getTime();
+    if (r.limit_qty != null && r.sold_qty >= r.limit_qty) return 'সীমা শেষ'; return n < a ? 'শুরু হবে' : n >= b ? 'শেষ' : 'চলছে'; },
+  what(r) {
+    if (r.scope === 'books') return (r.book_ids||[]).map(id => (this.prods.find(p=>String(p.id)===String(id))||{}).name).filter(Boolean).map(x=>this.esc(x)).join(', ') || '—';
+    return (r.scope === 'category' ? 'ক্যাটাগরি: ' : 'লেখক: ') + this.esc(r.target_value);
+  },
+  render() {
+    const tb = this.g('fsBody'), f = d => new Date(d).toLocaleString('bn-BD');
+    if (!this.rows.length) { tb.innerHTML = '<tr><td colspan="8" class="empty-state" style="padding:30px;text-align:center;font-family:var(--font-bn)">কোনো ফ্ল্যাশ সেল নেই</td></tr>'; return; }
+    tb.innerHTML = this.rows.map(r => `<tr><td>${this.esc(r.name)}</td><td style="max-width:240px">${this.what(r)}</td>
+      <td>${Number(r.fixed_price)>0 ? '৳'+r.fixed_price : r.discount_percent+'%'}</td>
+      <td style="font-size:.76rem">${f(r.starts_at)}<br>→ ${f(r.ends_at)}</td>
+      <td>${r.sold_qty||0}${r.limit_qty!=null?' / '+r.limit_qty:''}</td><td>${this.status(r)}</td>
+      <td><input type="checkbox" ${r.is_active?'checked':''} onchange="FS.toggle('${r.id}',this.checked)"></td>
+      <td><button class="btn btn-sm" onclick="FS.open('${r.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm" style="color:var(--red)" onclick="FS.del('${r.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+  },
+  loc(iso) { return iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16) : ''; },
+  open(id) {
+    const r = this.rows.find(x=>String(x.id)===String(id)) || { name:'', scope:'books', book_ids:[], target_value:'', discount_percent:'', fixed_price:null, limit_qty:'', is_active:true };
+    this.g('fsModalTitle').textContent = id ? 'সেল এডিট করুন' : 'নতুন ফ্ল্যাশ সেল';
+    this.g('fsId').value = id || ''; this.g('fsName').value = r.name; this.g('fsStart').value = this.loc(r.starts_at); this.g('fsEnd').value = this.loc(r.ends_at);
+    this.g('fsScope').value = r.scope; this.g('fsTarget').value = r.target_value || '';
+    this.g('fsMode').value = Number(r.fixed_price)>0 ? 'fixed' : 'pct'; this.g('fsValue').value = Number(r.fixed_price)>0 ? r.fixed_price : (r.discount_percent||'');
+    this.g('fsLimit').value = r.limit_qty == null ? '' : r.limit_qty; this.g('fsActive').checked = r.is_active !== false;
+    this.picked = (r.book_ids||[]).map(i => this.prods.find(p=>String(p.id)===String(i))).filter(Boolean);
+    this.g('fsSearch').value=''; this.g('fsResults').style.display='none'; this.scopeChange(); this.drawPicked(); openModal('fsModal');
+  },
+  scopeChange() { const s = this.g('fsScope').value; this.g('fsBooksWrap').style.display = s==='books' ? '' : 'none'; this.g('fsTargetWrap').style.display = s==='books' ? 'none' : ''; },
+  search() {
+    const q = this.g('fsSearch').value.trim().toLowerCase(), box = this.g('fsResults');
+    if (!q) { box.style.display='none'; return; }
+    const hits = this.prods.filter(p => String(p.name||'').toLowerCase().includes(q) && !this.picked.some(k=>String(k.id)===String(p.id))).slice(0,12);
+    box.innerHTML = hits.length ? hits.map(p => `<div style="padding:7px 10px;cursor:pointer;font-family:var(--font-bn);font-size:.83rem;border-bottom:1px solid var(--border)" onclick="FS.add('${p.id}')">${this.esc(p.name)} <span style="color:var(--text3)">৳${p.price}</span></div>`).join('') : '<div style="padding:8px 10px;color:var(--text3)">কিছু পাওয়া যায়নি</div>';
+    box.style.display='';
+  },
+  add(id) { const p = this.prods.find(x=>String(x.id)===String(id)); if (p) this.picked.push(p); this.g('fsSearch').value=''; this.g('fsResults').style.display='none'; this.drawPicked(); },
+  remove(id) { this.picked = this.picked.filter(p=>String(p.id)!==String(id)); this.drawPicked(); },
+  drawPicked() {
+    this.g('fsPicked').innerHTML = this.picked.map(p => `<span style="display:inline-flex;gap:6px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:4px 10px;font-family:var(--font-bn);font-size:.78rem">${this.esc(p.name)} <a style="cursor:pointer;color:var(--red)" onclick="FS.remove('${p.id}')">✕</a></span>`).join('');
+    this.calc();
+  },
+  calc() {
+    const v = Number(this.g('fsValue').value)||0, el = this.g('fsPreview'); let txt = '';
+    if (v && this.g('fsScope').value==='books' && this.picked.length) {
+      txt = this.g('fsMode').value==='fixed' ? (this.picked.length===1 ? `${this.picked[0].name}: ৳${this.picked[0].price} → ৳${v}` : '')
+        : this.picked.slice(0,3).map(p => `${p.name}: ৳${p.price} → ৳${Math.round(p.price*(1-v/100))}`).join(' · ');
+    }
+    el.textContent = txt;
+  },
+  async save() {
+    const scope = this.g('fsScope').value, mode = this.g('fsMode').value, v = Number(this.g('fsValue').value)||0, name = this.g('fsName').value.trim();
+    const st = this.g('fsStart').value, en = this.g('fsEnd').value, lim = this.g('fsLimit').value;
+    if (!name || !st || !en) return toast('নাম, শুরু ও শেষের সময় দিন','', 'warning');
+    if (new Date(en) <= new Date(st)) return toast('শেষের সময় শুরুর পরে হতে হবে','', 'warning');
+    if (scope==='books' && !this.picked.length) return toast('কমপক্ষে ১টা বই বাছাই করুন','', 'warning');
+    if (scope!=='books' && !this.g('fsTarget').value.trim()) return toast('ক্যাটাগরি/লেখকের নাম দিন','', 'warning');
+    if (!(v>0)) return toast('ছাড় বা দাম দিন','', 'warning');
+    if (mode==='pct' && v>=100) return toast('ছাড় ১০০%-এর কম হতে হবে','', 'warning');
+    if (mode==='fixed' && (scope!=='books' || this.picked.length!==1)) return toast('নির্দিষ্ট দাম শুধু ১টা বইয়ে দেওয়া যায়','', 'warning');
+    if (mode==='fixed' && v >= Number(this.picked[0].price)) return toast('সেলের দাম বর্তমান দামের চেয়ে কম হতে হবে','', 'warning');
+    const row = { name, starts_at: new Date(st).toISOString(), ends_at: new Date(en).toISOString(), scope,
+      book_ids: scope==='books' ? this.picked.map(p=>p.id) : [], target_value: scope==='books' ? null : this.g('fsTarget').value.trim(),
+      discount_percent: mode==='pct' ? v : null, fixed_price: mode==='fixed' ? v : null,
+      limit_qty: lim ? parseInt(lim) : null, is_active: this.g('fsActive').checked };
+    const id = this.g('fsId').value;
+    const { error } = id ? await sb.from('flash_sales').update(row).eq('id', id) : await sb.from('flash_sales').insert(row);
+    if (error) return toast('সেভ ব্যর্থ', error.message, 'error');
+    toast('ফ্ল্যাশ সেল সেভ হয়েছে'); closeModal('fsModal'); this.load();
+  },
+  async toggle(id, on) { const { error } = await sb.from('flash_sales').update({ is_active:on }).eq('id', id); if (error) toast('ব্যর্থ', error.message, 'error'); else toast(on?'সেল চালু':'সেল বন্ধ'); },
+  async del(id) { if (!confirm('এই সেল মুছে ফেলবেন?')) return; const { error } = await sb.from('flash_sales').delete().eq('id', id); if (error) return toast('ব্যর্থ', error.message, 'error'); toast('সেল মুছে গেছে'); this.load(); }
+};
+
+
+// ══════════════════════════════════════════════════
+// প্রি-অর্ডার (admin)
+// ══════════════════════════════════════════════════
+function poToggle() { const on = document.getElementById('pIsPreorder')?.checked; const f = document.getElementById('poFields'); if (f) f.style.display = on ? 'grid' : 'none'; }
+function poPayload() {
+  const c = document.getElementById('pIsPreorder'); if (!c) return {};
+  if (c.checked) return { is_preorder: true, preorder_release_date: document.getElementById('pPreorderDate').value || null, preorder_price: parseFloat(document.getElementById('pPreorderPrice').value) || null };
+  return c.dataset.was === '1' ? { is_preorder: false } : {};   // কলাম না থাকলে সাধারণ সেভ ভাঙবে না
+}
+const PO_OPEN = ['pending', 'confirmed', 'processing'];
+function poIsWaiting(o) { return !!o.preorder_book_id && !o.preorder_released && !['cancelled','returned','delivered'].includes(o.status); }
+function poIsReady(o)   { return !!o.preorder_book_id &&  o.preorder_released && PO_OPEN.includes(o.status); }
+async function publishPreorder(id) {
+  const p = allProducts.find(x => String(x.id) === String(id)); if (!p) return;
+  if (!confirm(`"${p.name}" প্রকাশিত হিসেবে চিহ্নিত করবেন?\nবইটি সাধারণ বই হয়ে যাবে (স্বাভাবিক দামে) আর এই বইয়ের সব অর্ডার "পাঠানোর জন্য প্রস্তুত" তালিকায় আসবে।`)) return;
+  const r1 = await sb.from('products').update({ is_preorder: false }).eq('id', id);
+  if (r1.error) return toast('ব্যর্থ', r1.error.message, 'error');
+  const r2 = await sb.from('orders').update({ preorder_released: true }).eq('preorder_book_id', String(id)).eq('preorder_released', false).select('id');
+  if (r2.error) return toast('বই প্রকাশিত হয়েছে, কিন্তু অর্ডার আপডেট ব্যর্থ', r2.error.message, 'error');
+  toast('বই প্রকাশিত!', `${(r2.data || []).length}টি অর্ডার পাঠানোর জন্য প্রস্তুত`);
+  try { await loadProducts(); } catch(e) {}
+  try { await loadOrders(); } catch(e) {}
+}
+
 function navTo(sec) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
+  const titles = { flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -8359,6 +8798,9 @@ function navTo(sec) {
   if (sec === 'admins')     renderAdminList();
   if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
+  if (sec === 'freedel')    FD.load();
+  if (sec === 'combos')     CMB.load();
+  if (sec === 'flash')      FS.load();
   if (sec === 'blog' && window.BL) BL.load();
   if (sec === 'users')      loadUsers();
   if (sec === 'analytics')  { loadVisitorStats(); setTimeout(() => { try { renderRevenueChart(currentTimeframe); } catch(e) {} }, 60); }
@@ -11939,7 +12381,8 @@ create policy "finder_tags_admin" on finder_book_tags for all to authenticated
   with check (exists (select 1 from admin_users a where a.id = auth.uid()));`;
 const F_DEFAULTS = [
   ['ভালোবাসায় ডুব দিতে চাই','fa-heart','রোমান্টিক উপন্যাস ও প্রেমের গল্প','রোমান্টিক, প্রেম, ভালোবাসা, ভালবাসা, রোমান্স, বিরহ, প্রণয়, love, romance','love'],
-  ['রহস্য ও আতঙ্কে শিহরিত হতে চাই','fa-user-secret','গোয়েন্দা, ক্রাইম থ্রিলার ও ভৌতিক','রহস্য, গোয়েন্দা, থ্রিলার, ক্রাইম, খুনি, হত্যা, প্রতিশোধ, ভৌতিক, ভুতুড়ে, অতিপ্রাকৃত, অলৌকিক, হরর, সাইকোলজিক্যাল, মাসুদ রানা, ফেলুদা, ব্যোমকেশ, মিসির আলী, শার্লক, thriller, mystery, detective, horror, crime','mystery'],
+  ['রহস্য ও রোমাঞ্চে শিহরিত হতে চাই','fa-user-secret','গোয়েন্দা, ক্রাইম ও সাইকোলজিক্যাল থ্রিলার','রহস্য, গোয়েন্দা, থ্রিলার, ক্রাইম, খুনি, হত্যা, প্রতিশোধ, সাইকোলজিক্যাল, মাসুদ রানা, ফেলুদা, ব্যোমকেশ, মিসির আলী, শার্লক, thriller, mystery, detective, crime','mystery'],
+  ['ভুতুড়ে ও অলৌকিক ঘটনার স্বাদ নিতে চাই','fa-ghost','হরর, ভৌতিক ও অতিপ্রাকৃত','ভৌতিক, ভুতুড়ে, ভূতুড়ে, অতিপ্রাকৃত, অলৌকিক, ভূতের, হরর, তান্ত্রিক, পিশাচ, horror, ghost','ghost'],
   ['নিজেকে বদলে অনুপ্রাণিত হতে চাই','fa-fire','সেলফ-হেল্প, ক্যারিয়ার ও মোটিভেশন','অনুপ্রেরণা, সফল, সফলতা, ক্যারিয়ার, অভ্যাস, মোটিভেশন, আত্মউন্নয়ন, মাইন্ডসেট, সেলফ হেল্প, সেলফ-হেল্প, আত্মবিশ্বাস, motivation, habit, self-help, career','inspire'],
   ['হেসে মনের চাপ কমাতে চাই','fa-face-laugh-beam','হাসি-রম্য ও সহজ-সরল জীবনের গল্প','হাসির, হাস্যরস, মজা, মজার, কৌতুক, রম্য, ব্যঙ্গ, হালকা, ফিলগুড, ফিল গুড, গ্রামীণ, পারিবারিক, স্লাইস অফ লাইফ, humor, comedy','relax'],
   ['নতুন জ্ঞান অর্জন করতে চাই','fa-brain','ইতিহাস, রাজনীতি, বিজ্ঞান ও জীবনী','ইতিহাস, ঐতিহাসিক, রাজনীতি, রাজনৈতিক, বিজ্ঞান, জ্ঞান, মুক্তিযুদ্ধ, একাত্তর, জীবনী, আত্মজীবনী, সমাজ, দর্শন, history, science, politics, biography','learn'],
@@ -12123,7 +12566,7 @@ async function fMove(id, dir) {
 async function fSeedDefaults() {
   const rows = F_DEFAULTS.map((d, i) => ({ name: d[0], slug: d[4] || makeSlug(d[0]), icon: d[1], tagline: d[2], keywords: d[3], sort_order: i + 1 }));
   const { error } = await sb.from('finder_moods').insert(rows);
-  if (error) toast('ত্রুটি', error.message, 'error'); else { toast('যোগ হয়েছে ✓', '৮টি ডিফল্ট মুড তৈরি হয়েছে'); loadFinder(); }
+  if (error) toast('ত্রুটি', error.message, 'error'); else { toast('যোগ হয়েছে ✓', '৯টি ডিফল্ট মুড তৈরি হয়েছে'); loadFinder(); }
 }
 
 /* ── অটো-ট্যাগ: নাম/ক্যাটাগরিতে মুডের শব্দ থাকলে বইটি ট্যাগ করে (নিশ্চিত করার পর) ── */
