@@ -1734,6 +1734,12 @@ body {
       <div class="nav-item" data-sec="freedel">
         <i class="fa-solid fa-truck-fast"></i> <span style="font-family:var(--font-bn)">ফ্রি ডেলিভারি</span>
       </div>
+      <div class="nav-item" data-sec="blacklist">
+        <i class="fa-solid fa-user-slash"></i> <span style="font-family:var(--font-bn)">ব্ল্যাকলিস্ট</span>
+      </div>
+      <div class="nav-item" data-sec="push">
+        <i class="fa-solid fa-bell"></i> <span style="font-family:var(--font-bn)">পুশ নোটিফিকেশন</span>
+      </div>
       <div class="nav-item" data-sec="seo">
         <i class="fa-solid fa-magnifying-glass-chart"></i> <span style="font-family:var(--font-bn)">সার্চ ও SEO</span>
       </div>
@@ -2469,6 +2475,18 @@ body {
           </div>
         </div>
 
+        <!-- ফেরত ও রিটার্ন ট্র্যাকার -->
+        <div class="panel" id="returnPanel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(232,89,12,0.1);color:#E8590C"><i class="fa-solid fa-rotate-left"></i></div>
+              <span style="font-family:var(--font-bn)">ফেরত ও রিটার্ন ট্র্যাকার</span>
+            </div>
+            <span id="returnPanelNote" style="font-size:0.65rem;font-family:var(--font-bn);color:var(--text3)"></span>
+          </div>
+          <div style="padding:16px 20px" id="returnTracker"></div>
+        </div>
+
         <!-- KPI Row -->
         <div class="kpi-grid" id="analyticsKPIs" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px"></div>
 
@@ -2950,6 +2968,92 @@ end $$;
             <table class="data-table">
               <thead><tr><th>নাম</th><th>শর্তের ধরন</th><th>মান</th><th>ন্যূনতম ৳</th><th>মেয়াদ</th><th>চালু</th><th>Actions</th></tr></thead>
               <tbody id="fdBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ পুশ নোটিফিকেশন ══ -->
+      <div class="section" id="sec-push">
+        <div class="panel" style="margin-bottom:18px;max-width:760px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-bell"></i></div>
+              <span style="font-family:var(--font-bn)">পুশ নোটিফিকেশন পাঠান</span>
+            </div>
+            <span id="pushCount" style="font-size:.7rem;font-family:var(--font-bn);color:var(--text3);background:var(--bg3);padding:3px 10px;border-radius:100px">সাবস্ক্রাইবার: …</span>
+          </div>
+          <div style="padding:0 18px 18px;display:grid;gap:13px">
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="PUSHADM.tpl('flash')"><i class="fa-solid fa-bolt" style="color:var(--amber)"></i> <span style="font-family:var(--font-bn)">ফ্ল্যাশ সেল শুরু</span></button>
+              <button class="btn btn-ghost btn-sm" onclick="PUSHADM.tpl('preorder')"><i class="fa-solid fa-book" style="color:var(--blue)"></i> <span style="font-family:var(--font-bn)">প্রি-অর্ডার বই প্রকাশ</span></button>
+              <button class="btn btn-ghost btn-sm" onclick="PUSHADM.tpl('custom')"><i class="fa-solid fa-pen"></i> <span style="font-family:var(--font-bn)">কাস্টম</span></button>
+            </div>
+            <div class="form-group" id="pushPickWrap" style="display:none">
+              <label class="form-label bn-label" id="pushPickLabel">বেছে নিন</label>
+              <select class="form-inp" id="pushPick" onchange="PUSHADM.fill()" style="font-family:var(--font-bn)"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label bn-label">টাইটেল <span class="required">*</span></label>
+              <input class="form-inp" id="pushTitle" maxlength="80" placeholder="যেমন: ⚡ ফ্ল্যাশ সেল শুরু!" style="font-family:var(--font-bn)">
+            </div>
+            <div class="form-group">
+              <label class="form-label bn-label">মেসেজ <span class="required">*</span></label>
+              <textarea class="form-inp" id="pushBody" maxlength="240" rows="3" placeholder="সংক্ষিপ্ত মেসেজ (সর্বোচ্চ ২৪০ অক্ষর)" style="font-family:var(--font-bn)"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label bn-label">ট্যাপ করলে কোথায় যাবে (লিংক)</label>
+              <input class="form-inp" id="pushUrl" value="/" placeholder="/ বা /product/..." style="font-family:var(--mono)">
+            </div>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn btn-primary" id="pushSendBtn" onclick="PUSHADM.send()"><i class="fa-solid fa-paper-plane"></i> <span style="font-family:var(--font-bn)">সবাইকে পাঠান</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="max-width:760px">
+          <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-gears"></i></div><span style="font-family:var(--font-bn)">অটো নোটিফিকেশন</span></div></div>
+          <div style="padding:0 18px 18px;font-family:var(--font-bn);font-size:.84rem;color:var(--text2);display:grid;gap:10px">
+            <label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="pushAutoOrder" onchange="PUSHADM.setAuto(this.checked)" style="margin-top:3px"> <span><strong>অর্ডারের স্ট্যাটাস বদলালে কাস্টমারকে পুশ</strong><br><span style="font-size:.74rem;color:var(--text3)">নিশ্চিত, প্রসেসিং, শিপড, ডেলিভারড ও বাতিল হলে — শুধু যেসব কাস্টমারের নোটিফিকেশন চালু আছে।</span></span></label>
+            <div style="font-size:.76rem;color:var(--text3)">প্রি-অর্ডার বই "প্রকাশিত" করার সময় আলাদা করে জিজ্ঞেস করা হবে (শুধু ওই বইয়ের প্রি-অর্ডার করা কাস্টমারদের জন্য)।</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ব্ল্যাকলিস্ট / ফেক অর্ডার ফিল্টার ══ -->
+      <div class="section" id="sec-blacklist">
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-user-slash"></i></div>
+              <span style="font-family:var(--font-bn)">ব্ল্যাকলিস্ট</span>
+            </div>
+          </div>
+          <div style="padding:0 18px 12px;font-family:var(--font-bn);font-size:.82rem;color:var(--text2)">এখানকার নম্বর থেকে অর্ডার আটকে যাবে এবং কাস্টমার "অগ্রিম পেমেন্ট করে অর্ডার করুন" মেসেজ দেখবে। একই নম্বর থেকে ৩ বারের বেশি ফেরত গেলেও নম্বরটি নিজে থেকে ব্লক হয়।</div>
+          <div style="display:flex;flex-wrap:wrap;gap:9px;padding:0 18px 14px">
+            <input class="form-inp" id="fgPhone" type="text" placeholder="ফোন নম্বর (01XXXXXXXXX)" style="flex:1 1 180px;max-width:240px">
+            <input class="form-inp" id="fgNote" type="text" placeholder="নোট (ঐচ্ছিক)" style="flex:2 1 220px;font-family:var(--font-bn)">
+            <button class="btn btn-primary btn-sm" onclick="FG.addFromForm()"><i class="fa-solid fa-plus"></i> <span style="font-family:var(--font-bn)">ব্ল্যাকলিস্টে যোগ</span></button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>নম্বর</th><th>নোট</th><th>তারিখ</th><th>Actions</th></tr></thead>
+              <tbody id="fgBlockBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(255,159,10,0.12);color:var(--amber)"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <span style="font-family:var(--font-bn)">ফেরতের ভিত্তিতে সতর্কতা</span>
+            </div>
+          </div>
+          <div style="padding:0 18px 12px;font-family:var(--font-bn);font-size:.82rem;color:var(--text2)">২+ ফেরত = হলুদ, ৩ বারের বেশি (৪+) = লাল ও অটো-ব্লক। অগ্রিম পেমেন্ট নিশ্চিত হলে "ছাড় দিন" চাপুন।</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>নম্বর</th><th>নাম</th><th>ফেরত</th><th>অবস্থা</th><th>Actions</th></tr></thead>
+              <tbody id="fgAutoBody"></tbody>
             </table>
           </div>
         </div>
@@ -4391,6 +4495,52 @@ end $$;
   </div>
 </div>
 
+<!-- ফেরত (Return) মডাল -->
+<div class="modal-overlay" id="returnModal" onclick="if(event.target===this)closeReturnModal()">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex;align-items:center;gap:9px">
+        <i class="fa-solid fa-rotate-left" style="color:#E8590C"></i>
+        <span style="font-family:var(--font-bn)">ফেরত অর্ডার</span>
+        <span id="retOrderNo" style="font-family:var(--mono);font-size:.74rem;color:var(--text3)"></span>
+      </div>
+      <button class="modal-close" onclick="closeReturnModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;gap:13px">
+        <div class="form-group">
+          <label class="form-label bn-label">ফেরতের কারণ <span class="required">*</span></label>
+          <select class="form-inp" id="retReason" onchange="retReasonChanged()" style="font-family:var(--font-bn)">
+            <option value="">— কারণ বেছে নিন —</option>
+            <option value="not_taken">কাস্টমার নেয়নি</option>
+            <option value="damaged">ক্ষতিগ্রস্ত</option>
+            <option value="wrong_book">ভুল বই</option>
+            <option value="phone_off">নম্বর বন্ধ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label bn-label">কুরিয়ারের খরচ (৳)</label>
+          <input class="form-inp" type="number" id="retCourier" min="0" step="1" placeholder="যেমন: 120">
+        </div>
+        <div class="form-group">
+          <label class="form-label bn-label">নোট (ঐচ্ছিক)</label>
+          <input class="form-inp" type="text" id="retNote" placeholder="যেমন: ৩ বার কল দেওয়া হয়েছে" style="font-family:var(--font-bn)">
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-family:var(--font-bn);font-size:.84rem;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 13px">
+          <input type="checkbox" id="retRestock" style="margin-top:3px;accent-color:#E8590C">
+          <span><strong>বইগুলো স্টকে ফেরত যোগ করুন</strong><br><span id="retRestockInfo" style="font-size:.72rem;color:var(--text3)"></span></span>
+        </label>
+        <div style="display:flex;justify-content:flex-end;gap:9px;padding-top:4px">
+          <button class="btn btn-ghost" onclick="closeReturnModal()">Cancel</button>
+          <button class="btn btn-primary" id="retSaveBtn" onclick="confirmReturn()">
+            <i class="fa-solid fa-check"></i> <span style="font-family:var(--font-bn)">ফেরত নিশ্চিত করুন</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════
      ADD BOOK TYPE MODAL
 ══════════════════════════════════════ -->
@@ -4995,6 +5145,7 @@ async function loadOrders() {
     if (error) { toast('Orders Error', error.message, 'error'); return; }
     allOrders = data || [];
     document.getElementById('nb-orders').textContent = allOrders.length;
+    try { await FG.load(); } catch (e) {}
     renderOrders();
     // ── Auto-check: verify order_status_history table is accessible ──
     checkStatusHistoryTable();
@@ -5658,7 +5809,6 @@ async function omAct(id, status) {
   if (!o) return;
   if (omStatusOf(o) === status) return;
   if (status === 'cancelled' && !confirm(`অর্ডার ${o.order_number || ''} বাতিল করবেন?`)) { renderOrderManager(); return; }
-  if (status === 'returned' && !confirm(`অর্ডার ${o.order_number || ''} রিটার্ন হিসেবে মার্ক করবেন?`)) { renderOrderManager(); return; }
   omBusy.add(id); renderOrderManager();
   try { await updateOrderStatus(o.id, status); }
   finally { omBusy.delete(id); omSelected.delete(id); renderOrderManager(); }
@@ -5816,6 +5966,8 @@ function renderDashboard() {
   renderLowStockAlert();
   // ── NEW: Revenue comparison (today vs yesterday)
   renderRevenueComparison();
+  // ── ফেরত ও রিটার্ন ট্র্যাকার
+  renderReturnTracker();
 }
 
 /* ══════════════════════════════════════
@@ -6589,6 +6741,7 @@ function renderOrders() {
   );
   document.getElementById('orderFooter').textContent = `Showing ${filtered.length} of ${allOrders.length} orders`;
   const tbody = document.getElementById('orderTableBody');
+  FG.build();
 
   if (!filtered.length) {
     tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div><div class="empty-title">No orders found</div></div></td></tr>`;
@@ -6609,7 +6762,7 @@ function renderOrders() {
       ? o.status
       : (['in_stock','collecting','collected'].includes(o.status) ? 'processing' : 'pending');
     return `<tr class="order-row" onclick="orderRowTap(event,'${o.id}')">
-      <td style="font-family:var(--mono);font-size:0.74rem;color:var(--blue);cursor:pointer;font-weight:600" onclick="viewOrder('${o.id}')">${o.order_number || '—'}</td>
+      <td style="font-family:var(--mono);font-size:0.74rem;color:var(--blue);cursor:pointer;font-weight:600" onclick="viewOrder('${o.id}')">${o.order_number || '—'}${FG.badge(o)}</td>
       <td style="font-weight:500">${o.customer_name || '—'}</td>
       <td style="font-size:0.76rem;color:var(--text2);font-family:var(--mono)">${o.customer_phone || '—'}</td>
       <td style="font-size:0.76rem">${o.customer_district || '—'}</td>
@@ -6633,8 +6786,10 @@ let currentOrderId = null;
 // Local cache for status history — updated immediately on admin action, before DB confirms
 const localStatusHistoryCache = {}; // keyed by orderId
 
-async function updateOrderStatus(id, status, customNote) {
+async function updateOrderStatus(id, status, customNote, extra) {
   if (!sb) return;
+  // ফেরত: আগে কারণ/কুরিয়ার খরচ নেওয়া হবে (মডাল), নিশ্চিত হলে extra সহ আবার এই ফাংশন চলবে
+  if (status === 'returned' && !extra) { openReturnModal(id); return false; }
   const BN_STATUS_NOTE = {
     pending:     'অর্ডারটি পেন্ডিং অবস্থায় আছে।',
     confirmed:   'অর্ডারটি নিশ্চিত করা হয়েছে।',
@@ -6685,7 +6840,9 @@ async function updateOrderStatus(id, status, customNote) {
   }
   const orderUpdate = { status: dbStatus, updated_at: now };
   if (newItems) orderUpdate.items = newItems;
+  if (extra) Object.assign(orderUpdate, extra);
   const { error } = await sb.from('orders').update(orderUpdate).eq('id', id);
+  if (error && extra && /return_|returned_at|schema cache|column/i.test(error.message || '')) { showReturnSetupSql(error.message); }
   if (error) {
     const hint = (status === 'returned' && /check constraint|orders_status_check/i.test(error.message || ''))
       ? ' — Supabase SQL Editor এ একবার চালান: ALTER TABLE orders DROP CONSTRAINT orders_status_check; ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN (\'pending\',\'confirmed\',\'processing\',\'shipped\',\'delivered\',\'cancelled\',\'returned\'));'
@@ -6711,9 +6868,10 @@ async function updateOrderStatus(id, status, customNote) {
     }
   }
   const o = allOrders.find(x => x.id === id);
-  if (o) o.status = status;  // keep UI showing real status
+  if (o) { o.status = status; if (extra) Object.assign(o, extra); }  // keep UI showing real status
   renderOrders(); renderDashboard();
   toast('Success', `Status → ${cap(status)} — User tracking synced`, 'success');
+  try { PUSHADM.orderStatus(o, status); } catch (e) {}   // কাস্টমারকে পুশ (সম্ভব হলে)
   if (currentOrderId === id) refreshOrderModal(id);
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
@@ -6740,6 +6898,480 @@ async function updateOrderStatus(id, status, customNote) {
       ch.close();
     } catch(e) { console.warn('[BroadcastChannel] auto item sync failed:', e.message); }
   }
+}
+
+/* ══════════════════════════════════════
+   পুশ নোটিফিকেশন (৪.১) — /api/push-send এর মাধ্যমে
+══════════════════════════════════════ */
+const PUSHADM = {
+  g(id) { return document.getElementById(id); },
+  autoOn() { try { return localStorage.getItem('gm_push_auto_order') !== '0'; } catch (e) { return true; } },
+  setAuto(v) { try { localStorage.setItem('gm_push_auto_order', v ? '1' : '0'); } catch (e) {} },
+  async call(payload) {
+    let tok = ''; try { tok = (await sb.auth.getSession()).data.session.access_token; } catch (e) {}
+    const r = await fetch('/api/push-send', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: JSON.stringify(payload) });
+    let j = {}; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+    return j;
+  },
+  ORDER_MSG: {
+    confirmed:  ['অর্ডার নিশ্চিত হয়েছে ✅', 'আপনার অর্ডারটি নিশ্চিত করা হয়েছে।'],
+    processing: ['অর্ডার প্যাক হচ্ছে 📦', 'আপনার অর্ডারটি প্রস্তুত করা হচ্ছে।'],
+    shipped:    ['অর্ডার পাঠানো হয়েছে 🚚', 'আপনার অর্ডারটি কুরিয়ারে পাঠানো হয়েছে।'],
+    delivered:  ['অর্ডার ডেলিভারি হয়েছে 🎉', 'ধন্যবাদ! বইটা কেমন লাগল জানাতে রিভিউ দিতে পারেন।'],
+    cancelled:  ['অর্ডার বাতিল হয়েছে', 'আপনার অর্ডারটি বাতিল করা হয়েছে।'],
+  },
+  // updateOrderStatus থেকে কল হয় — ব্যর্থ হলে চুপচাপ (অর্ডার আপডেটে প্রভাব নেই)
+  async orderStatus(o, status) {
+    if (!o || !o.user_id || !this.autoOn()) return;
+    const m = this.ORDER_MSG[status]; if (!m) return;
+    try {
+      await this.call({ action: 'send', title: m[0], body: `অর্ডার #${o.order_number || ''} — ${m[1]}`, url: '/order/' + encodeURIComponent(o.order_number || ''), tag: 'order-' + o.id, audience: { type: 'order', order_id: o.id } });
+    } catch (e) { console.warn('[push] order status:', e.message); }
+  },
+  async preorder(p) {
+    try {
+      const r = await this.call({ action: 'send', title: '📚 প্রি-অর্ডার করা বই প্রকাশিত!', body: `"${p.name}" এখন পাওয়া যাচ্ছে — শীঘ্রই আপনার কাছে পাঠানো হবে।`, url: '/product/' + encodeURIComponent(p.id), audience: { type: 'preorder', book_id: p.id } });
+      toast('পুশ পাঠানো হয়েছে', `${r.sent} জনকে পাঠানো গেছে`, 'success');
+    } catch (e) { toast('পুশ পাঠানো যায়নি', e.message, 'error'); }
+  },
+
+  async load() {
+    this.g('pushAutoOrder').checked = this.autoOn();
+    try { const r = await this.call({ action: 'count' }); this.g('pushCount').textContent = 'সাবস্ক্রাইবার: ' + r.total; }
+    catch (e) { this.g('pushCount').textContent = 'সেটআপ বাকি'; console.warn('[push]', e.message); }
+  },
+  async tpl(kind) {
+    this._kind = kind;
+    const wrap = this.g('pushPickWrap'), sel = this.g('pushPick'), lb = this.g('pushPickLabel');
+    if (kind === 'custom') { wrap.style.display = 'none'; this.g('pushTitle').value = ''; this.g('pushBody').value = ''; this.g('pushUrl').value = '/'; return; }
+    wrap.style.display = '';
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    if (kind === 'flash') {
+      lb.textContent = 'কোন ফ্ল্যাশ সেল?';
+      if (!FS.rows.length) { try { await FS.load(); } catch (e) {} }
+      this._list = FS.rows;
+      sel.innerHTML = this._list.map((r, i) => `<option value="${i}">${esc(r.name)}</option>`).join('') || '<option value="">কোনো সেল নেই</option>';
+    } else {
+      lb.textContent = 'কোন প্রি-অর্ডার বই প্রকাশ হলো?';
+      this._list = allProducts.filter(p => p.is_preorder || p.preorder_release_date);
+      sel.innerHTML = this._list.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join('') || '<option value="">কোনো প্রি-অর্ডার বই নেই</option>';
+    }
+    this.fill();
+  },
+  fill() {
+    const it = (this._list || [])[Number(this.g('pushPick').value)]; if (!it) return;
+    if (this._kind === 'flash') {
+      const off = Number(it.fixed_price) > 0 ? 'বিশেষ দামে' : (it.discount_percent + '% ছাড়ে');
+      const end = new Date(it.ends_at).toLocaleString('bn-BD', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
+      this.g('pushTitle').value = '⚡ ফ্ল্যাশ সেল শুরু!';
+      this.g('pushBody').value = `${it.name} — ${off} বই কেনার সুযোগ। শেষ হবে ${end}। এখনই দেখুন!`;
+      this.g('pushUrl').value = '/';
+    } else {
+      this.g('pushTitle').value = '📚 নতুন বই এখন পাওয়া যাচ্ছে!';
+      this.g('pushBody').value = `"${it.name}" প্রকাশিত হয়েছে। এখনই অর্ডার করুন!`;
+      this.g('pushUrl').value = '/product/' + encodeURIComponent(it.id);
+    }
+  },
+  async send() {
+    const title = this.g('pushTitle').value.trim(), body = this.g('pushBody').value.trim(), url = this.g('pushUrl').value.trim() || '/';
+    if (!title || !body) { toast('অসম্পূর্ণ', 'টাইটেল ও মেসেজ দিন', 'warning'); return; }
+    if (!confirm('সব সাবস্ক্রাইবারকে এই নোটিফিকেশন পাঠাবেন?\n\n' + title + '\n' + body)) return;
+    const btn = this.g('pushSendBtn'); btn.disabled = true;
+    try {
+      const r = await this.call({ action: 'send', title, body, url, audience: { type: 'all' } });
+      toast('পাঠানো হয়েছে', `${r.sent} জনের কাছে গেছে${r.failed ? ' • ব্যর্থ ' + r.failed : ''}`, 'success');
+      this.load();
+    } catch (e) { toast('পাঠানো যায়নি', e.message, 'error'); }
+    finally { btn.disabled = false; }
+  },
+};
+
+/* ══════════════════════════════════════
+   ফেক অর্ডার ফিল্টার (৩.২) — ঝুঁকি ব্যাজ + ব্ল্যাকলিস্ট
+   টেবিল: blacklist (phone, mode 'block'|'allow', note) — না থাকলে SQL banner আসবে
+══════════════════════════════════════ */
+const FG = (() => {
+  const RET_WARN = 2, RET_BLOCK = 4;        // ৩ বারের বেশি ফেরত (৪+) = ব্লক
+  const BURST_MS = 3600000, BURST_WARN = 3, BURST_RED = 5;   // ১ ঘণ্টায় একই নম্বরে অর্ডার
+  let list = [];                            // blacklist সারি
+  let idx = null;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function normPhone(raw) {
+    let v = String(raw || '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[\s\-().]/g, '');
+    return v.replace(/^(\+?880|00880)/, '0');
+  }
+  function validPhone(raw) {
+    const v = normPhone(raw);
+    if (!/^01[3-9]\d{8}$/.test(v)) return false;
+    const rest = v.slice(3);
+    if (/^(\d)\1+$/.test(rest) || /^(\d\d)\1{3}$/.test(rest) || /^(\d\d\d\d)\1$/.test(rest)) return false;
+    if ('01234567890123456789'.includes(rest) || '98765432109876543210'.includes(rest)) return false;
+    return !/(\d)\1{5,}/.test(v);
+  }
+  const normAddr = a => String(a || '').toLowerCase().replace(/[\s,.\-\/।()]/g, '');
+
+  function build() {
+    idx = { retP: {}, retA: {}, times: {} };
+    allOrders.forEach(o => {
+      const ph = normPhone(o.customer_phone), ad = normAddr(o.customer_address);
+      if (o.status === 'returned') {
+        if (ph) idx.retP[ph] = (idx.retP[ph] || 0) + 1;
+        if (ad.length >= 10) idx.retA[ad] = (idx.retA[ad] || 0) + 1;
+      }
+      if (ph && o.created_at) (idx.times[ph] = idx.times[ph] || []).push(new Date(o.created_at).getTime());
+    });
+  }
+  const modeOf = ph => { const r = list.find(x => normPhone(x.phone) === ph); return r ? (r.mode || 'block') : null; };
+
+  // → { level:'green'|'yellow'|'red', reasons:[...] }
+  function risk(o) {
+    if (!idx) build();
+    const ph = normPhone(o.customer_phone), ad = normAddr(o.customer_address);
+    const reasons = []; let lvl = 0;
+    const bump = (l, m) => { reasons.push(m); if (l > lvl) lvl = l; };
+    const mode = modeOf(ph);
+    const self = o.status === 'returned' ? 1 : 0;
+    const rp = (idx.retP[ph] || 0) - self;
+    const ra = ad.length >= 10 ? (idx.retA[ad] || 0) - self : 0;
+    if (mode === 'block') bump(2, 'ব্ল্যাকলিস্টে আছে');
+    if (!validPhone(ph)) bump(2, 'ফোন নম্বরের ফরম্যাট ভুল');
+    const retLvl = (n, what) => {
+      if (n >= RET_BLOCK) bump(mode === 'allow' ? 1 : 2, `${what} থেকে ${n} বার ফেরত${mode === 'allow' ? ' (ছাড়প্রাপ্ত)' : ' — ব্লকড'}`);
+      else if (n >= RET_WARN) bump(1, `${what} থেকে ${n} বার ফেরত`);
+    };
+    retLvl(rp, 'এই নম্বর'); retLvl(ra, 'এই ঠিকানা');
+    const t0 = o.created_at ? new Date(o.created_at).getTime() : 0;
+    if (t0) {
+      const near = (idx.times[ph] || []).filter(t => Math.abs(t - t0) <= BURST_MS).length;
+      if (near >= BURST_RED) bump(2, `১ ঘণ্টায় একই নম্বরে ${near}টি অর্ডার`);
+      else if (near >= BURST_WARN) bump(1, `১ ঘণ্টায় একই নম্বরে ${near}টি অর্ডার`);
+    }
+    return { level: ['green', 'yellow', 'red'][lvl], reasons };
+  }
+
+  const LABEL = { green: 'ঝুঁকি কম', yellow: 'সতর্ক', red: 'ঝুঁকি বেশি' };
+  const STYLE = { green: ['rgba(52,199,89,0.12)', '#1a9c3e'], yellow: ['rgba(255,159,10,0.15)', '#B7791F'], red: ['rgba(255,59,48,0.12)', '#D92D20'] };
+  function badge(o) {
+    const r = risk(o), [bg, c] = STYLE[r.level];
+    const tip = r.reasons.length ? r.reasons.join(' • ') : 'কোনো ঝুঁকির লক্ষণ নেই';
+    return `<span title="${esc(tip)}" style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px;border-radius:100px;background:${bg};color:${c};font-family:var(--font-bn);font-size:.62rem;font-weight:700;white-space:nowrap;vertical-align:middle"><span style="width:6px;height:6px;border-radius:50%;background:${c}"></span>${LABEL[r.level]}</span>`;
+  }
+  const badgeWithReasons = o => { const r = risk(o); return badge(o) + (r.reasons.length ? `<div style="font-size:.68rem;color:var(--text3);margin-top:4px;font-family:var(--font-bn)">${esc(r.reasons.join(' • '))}</div>` : ''); };
+
+  function setupSql(msg) {
+    if (document.getElementById('fgSetupBanner')) return;
+    const sql = `create table if not exists blacklist (
+  id uuid default gen_random_uuid() primary key,
+  phone text not null unique,
+  mode text not null default 'block',   -- 'block' = ব্ল্যাকলিস্ট, 'allow' = ছাড়প্রাপ্ত
+  note text,
+  created_at timestamptz default now()
+);
+alter table blacklist enable row level security;
+drop policy if exists "allow_all" on blacklist;
+create policy "allow_all" on blacklist for all using (true) with check (true);
+
+create or replace function fg_norm_phone(p text) returns text language sql immutable as $$
+  select regexp_replace(regexp_replace(translate(coalesce(p,''),'০১২৩৪৫৬৭৮৯','0123456789'),'[\\s\\-().]','','g'),'^(\\+?880|00880)','0')
+$$;
+create or replace function fg_norm_addr(a text) returns text language sql immutable as $$
+  select regexp_replace(lower(coalesce(a,'')),'[\\s,.\\-/।()]','','g')
+$$;
+
+create or replace function check_customer_blocked(p_phone text, p_address text default null)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare ph text := fg_norm_phone(p_phone); ad text := fg_norm_addr(p_address); m text; rc int;
+begin
+  select mode into m from blacklist where fg_norm_phone(phone) = ph limit 1;
+  if m = 'block' then return jsonb_build_object('blocked', true, 'reason', 'blacklist'); end if;
+  if m = 'allow' then return jsonb_build_object('blocked', false); end if;
+  select count(*) into rc from orders where status = 'returned' and fg_norm_phone(customer_phone) = ph;
+  if rc > 3 then return jsonb_build_object('blocked', true, 'reason', 'returns'); end if;
+  if length(ad) >= 10 then
+    select count(*) into rc from orders where status = 'returned' and fg_norm_addr(customer_address) = ad;
+    if rc > 3 then return jsonb_build_object('blocked', true, 'reason', 'returns'); end if;
+  end if;
+  return jsonb_build_object('blocked', false);
+end $$;
+grant execute on function check_customer_blocked(text, text) to anon, authenticated;
+
+create or replace function fg_block_orders() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if (check_customer_blocked(new.customer_phone, new.customer_address) ->> 'blocked')::boolean then
+    raise exception 'BLOCKED_CUSTOMER';
+  end if;
+  return new;
+end $$;
+drop trigger if exists fg_block_orders_trg on orders;
+create trigger fg_block_orders_trg before insert on orders for each row execute function fg_block_orders();`;
+    const b = document.createElement('div');
+    b.id = 'fgSetupBanner';
+    b.style.cssText = 'position:fixed;bottom:16px;right:16px;max-width:520px;background:#1E293B;color:white;border-radius:12px;padding:16px 18px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.35)';
+    b.innerHTML = `<div style="display:flex;gap:10px;margin-bottom:10px"><div style="flex:1">
+      <div style="font-weight:700;font-size:.82rem;margin-bottom:3px;font-family:var(--font-bn)">ব্ল্যাকলিস্টের জন্য একবার SQL চালান</div>
+      <div style="color:#94A3B8;font-size:.72rem;font-family:var(--font-bn)">Supabase → SQL Editor-এ paste করে Run দিন, তারপর পেজ রিফ্রেশ করুন</div>
+      ${msg ? `<div style="color:#F87171;font-size:.66rem;margin-top:4px;font-family:monospace">${esc(msg)}</div>` : ''}</div>
+      <button onclick="this.closest('#fgSetupBanner').remove()" style="background:none;border:none;color:#64748B;cursor:pointer;align-self:flex-start">✕</button></div>
+      <textarea id="fgSetupSql" readonly style="width:100%;height:170px;background:#0F172A;color:#7DD3FC;border:1px solid #334155;border-radius:7px;padding:9px;font-size:.66rem;resize:none;line-height:1.5"></textarea>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('fgSetupSql').value).then(()=>this.textContent='✓ Copied!')" style="margin-top:8px;background:#3B82F6;color:white;border:none;border-radius:7px;padding:7px 14px;cursor:pointer;font-size:.74rem">Copy SQL</button>`;
+    document.body.appendChild(b);
+    document.getElementById('fgSetupSql').value = sql;
+  }
+
+  async function load() {
+    if (!sb) return;
+    const { data, error } = await sb.from('blacklist').select('*').order('created_at', { ascending: false });
+    if (error) { console.warn('[blacklist]', error.message); if (document.getElementById('sec-blacklist')?.classList.contains('active')) setupSql(error.message); return; }
+    list = data || [];
+    renderPage();
+  }
+
+  async function setMode(phoneRaw, mode, note) {
+    const phone = normPhone(phoneRaw);
+    if (!validPhone(phone)) { toast('ভুল নম্বর', 'সঠিক বাংলাদেশি নম্বর দিন (01XXXXXXXXX)', 'warning'); return false; }
+    const { error } = await sb.from('blacklist').upsert({ phone, mode, note: note || null }, { onConflict: 'phone' });
+    if (error) { toast('ব্যর্থ', error.message, 'error'); setupSql(error.message); return false; }
+    await load(); renderOrders();
+    toast('সেভ হয়েছে', mode === 'block' ? phone + ' ব্ল্যাকলিস্টে গেছে' : phone + ' কে ছাড় দেওয়া হয়েছে', 'success');
+    return true;
+  }
+  async function addFromForm() {
+    const ph = document.getElementById('fgPhone'), nt = document.getElementById('fgNote');
+    if (await setMode(ph.value, 'block', nt.value.trim())) { ph.value = ''; nt.value = ''; }
+  }
+  async function remove(id) {
+    if (!confirm('তালিকা থেকে সরাবেন?')) return;
+    const { error } = await sb.from('blacklist').delete().eq('id', id);
+    if (error) { toast('ব্যর্থ', error.message, 'error'); return; }
+    await load(); renderOrders();
+    toast('সরানো হয়েছে', '', 'success');
+  }
+
+  function renderPage() {
+    build();
+    const bb = document.getElementById('fgBlockBody'), ab = document.getElementById('fgAutoBody');
+    if (!bb || !ab) return;
+    const empty = (n, t) => `<tr><td colspan="${n}" style="text-align:center;padding:18px;color:var(--text3);font-family:var(--font-bn);font-size:.8rem">${t}</td></tr>`;
+    const rows = list.map(r => `<tr>
+      <td style="font-family:var(--mono)">${esc(r.phone)} ${r.mode === 'allow' ? '<span class="pill pill-delivered" style="margin-left:6px">ছাড়প্রাপ্ত</span>' : ''}</td>
+      <td style="font-family:var(--font-bn);font-size:.8rem">${esc(r.note || '—')}</td>
+      <td style="font-size:.72rem;color:var(--text3)">${fmtDate(r.created_at)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="FG.remove('${esc(r.id)}')"><i class="fa-solid fa-trash"></i> <span style="font-family:var(--font-bn)">সরান</span></button></td></tr>`);
+    bb.innerHTML = rows.join('') || empty(4, 'ব্ল্যাকলিস্ট ফাঁকা');
+
+    const last = {};
+    allOrders.forEach(o => { const p = normPhone(o.customer_phone); if (p && !last[p]) last[p] = o; });   // allOrders নতুন→পুরনো
+    const flagged = Object.entries(idx.retP).filter(([, n]) => n >= RET_WARN).sort((a, b) => b[1] - a[1]);
+    ab.innerHTML = flagged.map(([p, n]) => {
+      const m = modeOf(p), blocked = n >= RET_BLOCK;
+      const st = m === 'block' ? '<span class="pill pill-cancelled">ব্ল্যাকলিস্টেড</span>'
+               : m === 'allow' ? '<span class="pill pill-delivered">ছাড়প্রাপ্ত</span>'
+               : blocked ? '<span class="pill pill-cancelled">অটো-ব্লকড</span>' : '<span class="pill pill-pending">সতর্কতা</span>';
+      return `<tr><td style="font-family:var(--mono)">${esc(p)}</td><td style="font-family:var(--font-bn);font-size:.8rem">${esc(last[p]?.customer_name || '—')}</td>
+        <td style="font-weight:700">${n}</td><td>${st}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          ${m === 'block' ? '' : `<button class="btn btn-danger btn-sm" onclick="FG.setMode('${esc(p)}','block','${n} বার ফেরত')"><span style="font-family:var(--font-bn)">ব্ল্যাকলিস্ট</span></button>`}
+          ${m === 'allow' || !blocked ? '' : `<button class="btn btn-ghost btn-sm" onclick="FG.setMode('${esc(p)}','allow','অগ্রিম পেমেন্টে ছাড়')"><span style="font-family:var(--font-bn)">ছাড় দিন</span></button>`}
+        </td></tr>`;
+    }).join('') || empty(5, 'কোনো সতর্কতা নেই');
+  }
+
+  return { load, risk, badge, badgeWithReasons, build, setMode, addFromForm, remove, renderPage };
+})();
+
+/* ══════════════════════════════════════
+   ফেরত ও রিটার্ন ট্র্যাকার
+   orders টেবিলের কলাম: return_reason, return_courier_cost, return_note,
+   return_restocked, returned_at  (না থাকলে SQL banner আসবে)
+══════════════════════════════════════ */
+const RETURN_REASONS = {
+  not_taken:  { bn: 'কাস্টমার নেয়নি', color: '#E8590C' },
+  damaged:    { bn: 'ক্ষতিগ্রস্ত',     color: '#FF3B30' },
+  wrong_book: { bn: 'ভুল বই',          color: '#AF52DE' },
+  phone_off:  { bn: 'নম্বর বন্ধ',      color: '#FF9F0A' },
+};
+let _retOrderId = null;
+
+function _retEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function _retItems(o) {
+  if (Array.isArray(o.items)) return o.items;
+  if (typeof o.items === 'string') { try { const a = JSON.parse(o.items); return Array.isArray(a) ? a : []; } catch (e) {} }
+  return [];
+}
+
+function openReturnModal(id) {
+  const o = allOrders.find(x => String(x.id) === String(id));
+  if (!o) return;
+  _retOrderId = o.id;
+  document.getElementById('retOrderNo').textContent = o.order_number ? '#' + o.order_number : '';
+  document.getElementById('retReason').value = o.return_reason || '';
+  document.getElementById('retCourier').value = o.return_courier_cost || '';
+  document.getElementById('retNote').value = o.return_note || '';
+  retReasonChanged();
+  openModal('returnModal');
+}
+
+// ক্ষতিগ্রস্ত হলে স্টকে ফেরত যোগের টিক ডিফল্টে বন্ধ, বাকি কারণে চালু
+function retReasonChanged() {
+  const o = allOrders.find(x => String(x.id) === String(_retOrderId));
+  const cb = document.getElementById('retRestock');
+  const info = document.getElementById('retRestockInfo');
+  const reason = document.getElementById('retReason').value;
+  const copies = o ? _retItems(o).reduce((s, i) => s + Math.max(1, Number(i.qty || 1)), 0) : 0;
+  if (o && o.return_restocked) {
+    cb.checked = true; cb.disabled = true;
+    info.textContent = 'এই অর্ডারের বই আগেই স্টকে যোগ হয়েছে — আবার যোগ হবে না';
+    return;
+  }
+  cb.disabled = false;
+  cb.checked = reason !== 'damaged';
+  info.textContent = `মোট ${copies} কপি বই স্টকে যোগ হবে — বই ঠিক থাকলে টিক রাখুন`;
+}
+
+function closeReturnModal() {
+  closeModal('returnModal');
+  _retOrderId = null;
+  // ক্যানসেল করলে ড্রপডাউন/কার্ড আগের স্ট্যাটাসে ফিরিয়ে আনো
+  renderOrders(); if (typeof renderOrderManager === 'function') renderOrderManager();
+}
+
+async function confirmReturn() {
+  const id = _retOrderId;
+  const o = allOrders.find(x => String(x.id) === String(id));
+  if (!o) return;
+  const reason = document.getElementById('retReason').value;
+  if (!reason) { toast('কারণ দিন', 'ফেরতের কারণ বেছে নিন', 'warning'); return; }
+  const courier = Math.max(0, parseFloat(document.getElementById('retCourier').value) || 0);
+  const note = document.getElementById('retNote').value.trim();
+  const alreadyRestocked = !!o.return_restocked;
+  const wantRestock = !alreadyRestocked && document.getElementById('retRestock').checked;
+  const btn = document.getElementById('retSaveBtn');
+  btn.disabled = true;
+  try {
+    const extra = {
+      return_reason: reason,
+      return_courier_cost: courier,
+      return_note: note || null,
+      return_restocked: alreadyRestocked || wantRestock,
+      returned_at: o.returned_at || new Date().toISOString(),
+    };
+    await updateOrderStatus(o.id, 'returned', undefined, extra);
+    if (o.status !== 'returned') return;          // সেভ হয়নি — মডাল খোলা থাকুক
+    if (wantRestock) {
+      const r = await restockOrderItems(o);
+      if (r.failed.length) {
+        o.return_restocked = false;
+        await sb.from('orders').update({ return_restocked: false }).eq('id', o.id);
+        toast('স্টক আংশিক আপডেট', 'এই বইগুলো স্টকে যোগ হয়নি: ' + r.failed.join(', ') + ' — স্টক ম্যানুয়ালি ঠিক করুন', 'warning');
+      } else {
+        toast('স্টকে ফেরত যোগ হয়েছে', r.added + ' কপি বই স্টকে যোগ হয়েছে', 'success');
+      }
+      if (typeof renderProducts === 'function') { try { renderProducts(); } catch (e) {} }
+      renderDashboard();
+    }
+    closeReturnModal();
+  } finally { btn.disabled = false; }
+}
+
+// প্রতিটা আইটেমের স্টক DB থেকে পড়ে qty যোগ করে
+async function restockOrderItems(o) {
+  const res = { added: 0, failed: [] };
+  for (const it of _retItems(o)) {
+    const qty = Math.max(1, Number(it.qty || 1));
+    const p = allProducts.find(x => (it.id != null && String(x.id) === String(it.id)) || (it.product_id != null && String(x.id) === String(it.product_id)))
+           || allProducts.find(x => x.name === it.name);
+    if (!p) { res.failed.push(it.name || 'অজানা বই'); continue; }
+    try {
+      const cur = await sb.from('products').select('stock').eq('id', p.id).single();
+      if (cur.error) throw cur.error;
+      const ns = Number(cur.data.stock || 0) + qty;
+      const up = await sb.from('products').update({ stock: ns }).eq('id', p.id);
+      if (up.error) throw up.error;
+      p.stock = ns; res.added += qty;
+    } catch (e) { console.warn('[restock]', e.message); res.failed.push(it.name || p.name); }
+  }
+  return res;
+}
+
+function showReturnSetupSql(errMsg) {
+  if (document.getElementById('retSetupBanner')) return;
+  const sql = `ALTER TABLE orders
+  ADD COLUMN IF NOT EXISTS return_reason text,
+  ADD COLUMN IF NOT EXISTS return_courier_cost numeric DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS return_note text,
+  ADD COLUMN IF NOT EXISTS return_restocked boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS returned_at timestamptz;
+
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check
+  CHECK (status IN ('pending','confirmed','in_stock','collecting','collected',
+                    'processing','shipped','delivered','cancelled','returned'));`;
+  const b = document.createElement('div');
+  b.id = 'retSetupBanner';
+  b.style.cssText = 'position:fixed;bottom:16px;right:16px;max-width:480px;background:#1E293B;color:white;border-radius:12px;padding:16px 18px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.35)';
+  b.innerHTML = `<div style="display:flex;gap:10px;margin-bottom:10px"><div style="flex:1">
+      <div style="font-weight:700;font-size:.82rem;margin-bottom:3px;font-family:var(--font-bn)">ফেরত ট্র্যাকারের জন্য একবার SQL চালান</div>
+      <div style="color:#94A3B8;font-size:.72rem;font-family:var(--font-bn)">Supabase → SQL Editor-এ নিচের কোড paste করে Run দিন, তারপর আবার চেষ্টা করুন</div>
+      ${errMsg ? `<div style="color:#F87171;font-size:.66rem;margin-top:4px;font-family:monospace">${_retEsc(errMsg)}</div>` : ''}</div>
+    <button onclick="this.closest('#retSetupBanner').remove()" style="background:none;border:none;color:#64748B;cursor:pointer;font-size:.9rem;align-self:flex-start">✕</button></div>
+    <textarea id="retSetupSql" readonly style="width:100%;height:150px;background:#0F172A;color:#7DD3FC;border:1px solid #334155;border-radius:7px;padding:9px;font-size:.68rem;resize:none;line-height:1.5"></textarea>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('retSetupSql').value).then(()=>this.textContent='✓ Copied!')" style="margin-top:8px;background:#3B82F6;color:white;border:none;border-radius:7px;padding:7px 14px;cursor:pointer;font-size:.74rem">Copy SQL</button>`;
+  document.body.appendChild(b);
+  document.getElementById('retSetupSql').value = sql;
+}
+
+function renderReturnTracker() {
+  const box = document.getElementById('returnTracker');
+  if (!box) return;
+  const taka = n => '৳' + Math.round(n).toLocaleString();
+  const rets = allOrders.filter(o => o.status === 'returned');
+  const doneCnt = allOrders.filter(o => ['delivered', 'returned'].includes(o.status)).length;
+  const rate = doneCnt ? (rets.length / doneCnt * 100) : 0;
+  const note = document.getElementById('returnPanelNote');
+  if (note) note.textContent = 'হার = ফেরত ÷ (ডেলিভারড + ফেরত)';
+
+  let courier = 0, bookLoss = 0;
+  const reasons = {}, dists = {}, books = {};
+  rets.forEach(o => {
+    const known = !!o.return_reason;
+    reasons[o.return_reason || 'unknown'] = (reasons[o.return_reason || 'unknown'] || 0) + 1;
+    const d = String(o.customer_district || '').split('>')[0].trim() || 'অজানা';
+    dists[d] = (dists[d] || 0) + 1;
+    const items = _retItems(o);
+    items.forEach(i => { const n = i.name || 'অজানা বই'; books[n] = (books[n] || 0) + Math.max(1, Number(i.qty || 1)); });
+    if (known) {
+      courier += Number(o.return_courier_cost || 0);
+      if (!o.return_restocked) bookLoss += items.reduce((s, i) => s + Number(i.price || 0) * Math.max(1, Number(i.qty || 1)), 0);
+    }
+  });
+  const loss = courier + bookLoss;
+
+  const tile = (icon, c, bg, val, label, sub) => `<div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:${bg};color:${c}"><i class="fa-solid ${icon}"></i></div></div><div class="kpi-val">${val}</div><div class="kpi-label" style="font-family:var(--font-bn)">${label}</div>${sub ? `<div style="font-size:.64rem;color:var(--text3);margin-top:3px;font-family:var(--font-bn)">${sub}</div>` : ''}</div>`;
+  const list = (obj, colorFn, labelFn) => {
+    const arr = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const mx = Math.max(...arr.map(x => x[1]), 1);
+    return arr.map(([k, n]) => `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${_retEsc(labelFn ? labelFn(k) : k)}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n / mx * 100)}%;background:${colorFn ? colorFn(k) : '#E8590C'}"></div></div></div>`).join('')
+      || '<p style="color:var(--text3);text-align:center;padding:12px;font-size:.78rem;font-family:var(--font-bn)">কোনো ডেটা নেই</p>';
+  };
+  const sec = (t, inner) => `<div><div style="font-size:.7rem;font-weight:700;color:var(--text3);margin-bottom:8px;font-family:var(--font-bn)">${t}</div>${inner}</div>`;
+
+  const rLabel = k => k === 'unknown' ? 'কারণ লেখা নেই' : (RETURN_REASONS[k] ? RETURN_REASONS[k].bn : k);
+  const rColor = k => RETURN_REASONS[k] ? RETURN_REASONS[k].color : 'var(--text3)';
+
+  box.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px">
+      ${tile('fa-percent', '#E8590C', 'rgba(232,89,12,0.1)', rate.toFixed(1) + '%', 'ফেরতের হার', rets.length + ' / ' + doneCnt + ' অর্ডার')}
+      ${tile('fa-rotate-left', '#E8590C', 'rgba(232,89,12,0.1)', rets.length, 'মোট ফেরত অর্ডার', '')}
+      ${tile('fa-truck', 'var(--cyan)', 'rgba(50,173,230,0.1)', taka(courier), 'কুরিয়ার খরচ', '')}
+      ${tile('fa-sack-xmark', 'var(--red)', 'rgba(255,59,48,0.1)', taka(loss), 'মোট ক্ষতি', 'কুরিয়ার ' + taka(courier) + ' + স্টকে না ফেরা বই ' + taka(bookLoss))}
+    </div>
+    ${rets.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px">
+      ${sec('কারণ অনুযায়ী', list(reasons, rColor, rLabel))}
+      ${sec('বেশি ফেরত আসা জেলা', list(dists))}
+      ${sec('বেশি ফেরত আসা বই', list(books))}
+    </div>` : '<p style="color:var(--text3);text-align:center;padding:8px;font-size:.8rem;font-family:var(--font-bn)">এখনো কোনো ফেরত অর্ডার নেই</p>'}`;
 }
 
 // পণ্য স্টকে আছে কিনা (product_id দিয়ে, না পেলে নাম দিয়ে মিলিয়ে; স্টক ≥ অর্ডারের পরিমাণ)
@@ -6916,6 +7548,7 @@ function refreshOrderModal(id) {
       <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px">
         <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:7px">Customer</div>
         <div style="font-weight:700;margin-bottom:3px">${o.customer_name || '—'}</div>
+        <div style="margin-bottom:5px">${FG.badgeWithReasons(o)}</div>
         <div style="font-size:0.76rem;color:var(--text2)">${o.customer_phone ? `<i class="fa-solid fa-phone" style="font-size:0.65rem;color:var(--green)"></i> ${o.customer_phone}` : ''}</div>
         <div style="font-size:0.76rem;color:var(--text2)">${o.customer_email ? `<i class="fa-solid fa-envelope" style="font-size:0.65rem;color:var(--blue)"></i> ${o.customer_email}` : ''}</div>
       </div>
@@ -9010,6 +9643,7 @@ async function publishPreorder(id) {
   const r2 = await sb.from('orders').update({ preorder_released: true }).eq('preorder_book_id', String(id)).eq('preorder_released', false).select('id');
   if (r2.error) return toast('বই প্রকাশিত হয়েছে, কিন্তু অর্ডার আপডেট ব্যর্থ', r2.error.message, 'error');
   toast('বই প্রকাশিত!', `${(r2.data || []).length}টি অর্ডার পাঠানোর জন্য প্রস্তুত`);
+  if ((r2.data || []).length && confirm('এই বইয়ের প্রি-অর্ডার করা কাস্টমারদের পুশ নোটিফিকেশন পাঠাবেন?')) PUSHADM.preorder(p);
   try { await loadProducts(); } catch(e) {}
   try { await loadOrders(); } catch(e) {}
 }
@@ -9019,7 +9653,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { seo:'সার্চ ও SEO', flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
+  const titles = { seo:'সার্চ ও SEO', flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', blacklist:'ব্ল্যাকলিস্ট', push:'পুশ নোটিফিকেশন', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -9028,6 +9662,8 @@ function navTo(sec) {
   if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
   if (sec === 'freedel')    FD.load();
+  if (sec === 'blacklist')  FG.load();
+  if (sec === 'push')       PUSHADM.load();
   if (sec === 'seo')        SEO.load();
   if (sec === 'combos')     CMB.load();
   if (sec === 'flash')      FS.load();
