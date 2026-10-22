@@ -1734,6 +1734,9 @@ body {
       <div class="nav-item" data-sec="freedel">
         <i class="fa-solid fa-truck-fast"></i> <span style="font-family:var(--font-bn)">ফ্রি ডেলিভারি</span>
       </div>
+      <div class="nav-item" data-sec="seo">
+        <i class="fa-solid fa-magnifying-glass-chart"></i> <span style="font-family:var(--font-bn)">সার্চ ও SEO</span>
+      </div>
       <div class="nav-item" data-sec="blog">
         <i class="fa-solid fa-pen-nib"></i> <span style="font-family:var(--font-bn)">ব্লগ ম্যানেজার</span>
       </div>
@@ -2952,6 +2955,30 @@ end $$;
         </div>
       </div>
 
+      <div class="section" id="sec-seo">
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-icon" style="background:rgba(255,149,0,0.12);color:#ff9500"><i class="fa-solid fa-magnifying-glass-minus"></i></div>যে সার্চে কিছু পাওয়া যায়নি</div>
+            <button class="btn btn-ghost btn-sm" onclick="SEO.load()"><i class="fa-solid fa-rotate"></i> রিফ্রেশ</button>
+          </div>
+          <div style="padding:0 18px 12px;font-family:var(--font-bn);font-size:.82rem;color:var(--text2)">কাস্টমার এগুলো খুঁজেছে কিন্তু কোনো বই মেলেনি। যে বই আপনি রাখেন কিন্তু অন্য নামে চেনে, সেটার জন্য "সমার্থক যোগ" চাপুন। না-রাখা বই হলে আনার কথা ভাবতে পারেন।</div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>কী খুঁজেছে</th><th>কতবার</th><th>শেষবার</th><th>Actions</th></tr></thead><tbody id="seoMissBody"></tbody></table></div>
+        </div>
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(0,122,255,0.1);color:var(--blue)"><i class="fa-solid fa-link"></i></div>সমার্থক শব্দ</div></div>
+          <div style="padding:0 18px 12px;font-family:var(--font-bn);font-size:.82rem;color:var(--text2)">একই জিনিসের বিভিন্ন নাম কমা দিয়ে লিখুন (যেমন: <b>হিমু, হুমায়ূন আহমেদের হিমু, himu</b>)। এর যেকোনো একটা সার্চ করলে বাকিগুলোর রেজাল্টও আসবে।</div>
+          <div style="display:flex;gap:8px;padding:0 18px 12px;flex-wrap:wrap"><input class="form-inp" id="seoSynInput" placeholder="শব্দ১, শব্দ২, শব্দ৩" style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter'){event.preventDefault();SEO.addSyn()}"><button class="btn btn-primary btn-sm" onclick="SEO.addSyn()"><i class="fa-solid fa-plus"></i> যোগ করুন</button></div>
+          <div id="seoSynList"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-magnifying-glass-chart"></i></div>SEO এখনো দেওয়া হয়নি এমন বই (<span id="seoBookCnt">০</span>)</div>
+            <button class="btn btn-primary btn-sm" onclick="SEO.autoAll()"><i class="fa-solid fa-wand-magic-sparkles"></i> সবার জন্য অটো লিখে দাও</button>
+          </div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>বই</th><th>লেখক</th><th>Actions</th></tr></thead><tbody id="seoBookBody"></tbody></table></div>
+        </div>
+      </div>
+
       <div class="section" id="sec-blog">
         <div id="blList" class="panel">
           <div class="panel-header">
@@ -3496,6 +3523,27 @@ end $$;
               <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.6rem">প্রি-অর্ডার দাম (৳) — ফাঁকা হলে Sale Price</label><input class="form-inp" type="number" min="0" id="pPreorderPrice" style="padding:7px 10px;font-size:0.82rem"></div>
             </div>
           </div>
+
+          <!-- "এগুলো দেখাও" — সাইটের "যারা এটা কিনেছেন, তারা এগুলোও কিনেছেন" -->
+          <div class="form-group" style="gap:6px;border:1px dashed var(--border2);border-radius:10px;padding:10px">
+            <label class="form-label" style="font-size:0.62rem;margin-bottom:0">"এগুলো দেখাও" — নিজে বেছে দিন (সর্বোচ্চ ৪টি, ঐচ্ছিক)</label>
+            <div style="font-family:var(--font-bn);font-size:.68rem;color:var(--text3);line-height:1.5">এখানে বই বেছে দিলে এই বইয়ের পেজে "যারা এটা কিনেছেন, তারা এগুলোও কিনেছেন" অংশে সবার আগে এগুলো দেখাবে। বাকি জায়গা অর্ডারের তথ্য বা একই লেখক/ক্যাটাগরির বই দিয়ে নিজে থেকে ভরবে।</div>
+            <div id="abPicked" style="display:flex;flex-direction:column;gap:4px"></div>
+            <input class="form-inp" type="text" id="abSearch" placeholder="বইয়ের নাম বা লেখক লিখে খুঁজুন..." oninput="abSearchInput()" autocomplete="off" style="padding:7px 10px;font-size:0.82rem">
+            <div id="abResults" style="display:none;flex-direction:column;border:1px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto"></div>
+          </div>
+
+          <!-- SEO — গুগল ও শেয়ারে কেমন দেখাবে -->
+          <details id="seoBox" style="border:1px dashed var(--border2);border-radius:10px;padding:10px">
+            <summary style="cursor:pointer;font-family:var(--font-bn);font-size:0.82rem;font-weight:700"><i class="fa-solid fa-magnifying-glass-chart" style="margin-right:6px;color:var(--blue)"></i>SEO — গুগল ও শেয়ারে কেমন দেখাবে</summary>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+              <div id="seoPrev"></div>
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.62rem">মেটা টাইটেল <span id="seoTCnt" style="font-weight:400;color:var(--text3)"></span></label><input class="form-inp" type="text" id="pSeoTitle" maxlength="90" oninput="seoPreview()" placeholder="ফাঁকা থাকলে: বইয়ের নাম — বুক গ্যালাক্সি" style="padding:7px 10px;font-size:0.82rem"></div>
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.62rem">মেটা ডেসক্রিপশন <span id="seoDCnt" style="font-weight:400;color:var(--text3)"></span></label><textarea class="form-inp" id="pSeoDesc" rows="3" maxlength="220" oninput="seoPreview()" placeholder="ফাঁকা থাকলে: বইয়ের বিবরণের শুরুর অংশ" style="padding:7px 10px;font-size:0.82rem;min-height:60px"></textarea></div>
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.62rem">শেয়ারের ছবির URL (ফাঁকা থাকলে বইয়ের কভার)</label><input class="form-inp" type="text" id="pSeoImage" placeholder="https://..." oninput="seoPreview()" style="padding:7px 10px;font-size:0.82rem"></div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><button type="button" class="btn btn-primary btn-sm" onclick="seoAutoFill()"><i class="fa-solid fa-wand-magic-sparkles"></i> অটো লিখে দাও</button><span style="font-family:var(--font-bn);font-size:.68rem;color:var(--text3)">URL স্লাগ নামের নিচের ঘরে বদলানো যায়</span></div>
+            </div>
+          </details>
 
           <!-- Row 4.5: Product Variants — dynamic color/price/stock rows, saved to the `variants` JSONB column -->
           <div class="form-group" style="gap:6px">
@@ -7761,6 +7809,8 @@ async function openProductModal(product = null) {
   document.getElementById('pOldPrice').value    = product?.old_price || '';
   { const c = document.getElementById('pIsPreorder'); if (c) { c.checked = !!product?.is_preorder; c.dataset.was = product?.is_preorder ? '1' : '';
     document.getElementById('pPreorderDate').value = product?.preorder_release_date || ''; document.getElementById('pPreorderPrice').value = product?.preorder_price || ''; poToggle(); } }
+  _abIds = Array.isArray(product?.also_buy_ids) ? product.also_buy_ids.map(String).slice(0, 4) : []; _abWas = JSON.stringify(_abIds); { const s = document.getElementById('abSearch'); if (s) s.value = ''; } abRender();
+  seoLoadForm(product);
   document.getElementById('pStock').value       = product?.stock || '';
   document.getElementById('pColor').value       = product?.color || '#AA2C2D';
   document.getElementById('pDescription').value = product?.description || ''; if(window.PDE) PDE.load(product?.description || '');
@@ -8310,6 +8360,8 @@ async function saveProduct() {
       price,
       old_price:   parseFloat(document.getElementById('pOldPrice').value) || null,
       ...poPayload(),
+      ...abPayload(),
+      ...seoPayload(),
       stock,
       variants:    collectVariants(),
       specifications: collectSpecifications(),
@@ -8340,6 +8392,20 @@ async function saveProduct() {
       const { slug: _omit, ...withoutSlug } = payload;
       ({ data: _saved, error } = await _write(withoutSlug));
       if (!error) toast('Slug কলাম নেই', 'পণ্য সেভ হয়েছে, কিন্তু slug সংরক্ষণ করতে SQL চালান (supabase_slug_migration.sql)', 'info');
+    }
+
+    if (error && /also_buy_ids/i.test(error.message || '')) {
+      // also_buy_ids কলাম এখনো নেই — ওটা ছাড়া সেভ করো
+      const { also_buy_ids: _omit2, ...withoutAlso } = payload;
+      ({ data: _saved, error } = await _write(withoutAlso));
+      if (!error) toast('"এগুলো দেখাও" সেভ হয়নি', 'পণ্য সেভ হয়েছে, কিন্তু also_buy_ids কলাম নেই — SQL চালান: alter table products add column also_buy_ids jsonb default \'[]\'::jsonb;', 'info');
+    }
+
+    if (error && /seo_(title|description|image)/i.test(error.message || '')) {
+      // SEO কলাম এখনো নেই — ওগুলো ছাড়া সেভ করো
+      const { seo_title: _s1, seo_description: _s2, seo_image: _s3, ...withoutSeo } = payload;
+      ({ data: _saved, error } = await _write(withoutSeo));
+      if (!error) toast('SEO সেভ হয়নি', 'পণ্য সেভ হয়েছে, কিন্তু SEO কলাম নেই — SQL চালান (SEO ও সার্চ সেটআপ)', 'info');
     }
 
     clearTimeout(timeoutId);
@@ -8770,6 +8836,169 @@ function poPayload() {
   if (c.checked) return { is_preorder: true, preorder_release_date: document.getElementById('pPreorderDate').value || null, preorder_price: parseFloat(document.getElementById('pPreorderPrice').value) || null };
   return c.dataset.was === '1' ? { is_preorder: false } : {};   // কলাম না থাকলে সাধারণ সেভ ভাঙবে না
 }
+
+// ══════════════════════════════════════════════════
+// "এগুলো দেখাও" — বইয়ের জন্য নিজে বেছে সাজেশন ঠিক করা (সর্বোচ্চ ৪টি)
+// ══════════════════════════════════════════════════
+let _abIds = [], _abWas = '[]';
+function abPayload() { return (_abIds.length || JSON.stringify(_abIds) !== _abWas) ? { also_buy_ids: _abIds } : {}; }
+function abRender() {
+  const box = document.getElementById('abPicked'); if (!box) return;
+  box.innerHTML = _abIds.map(id => {
+    const p = allProducts.find(x => String(x.id) === String(id));
+    return `<div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-family:var(--font-bn);font-size:.78rem">
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(p ? p.name : 'মুছে যাওয়া বই')}</span>
+      <button type="button" onclick="abRemove('${String(id).replace(/'/g, '')}')" style="border:none;background:none;color:#dc2626;cursor:pointer;font-size:.9rem" title="সরান"><i class="fa-solid fa-xmark"></i></button></div>`;
+  }).join('');
+}
+function abSearchInput() {
+  const q = (document.getElementById('abSearch').value || '').trim().toLowerCase();
+  const res = document.getElementById('abResults'); if (!res) return;
+  if (!q) { res.style.display = 'none'; res.innerHTML = ''; return; }
+  const selfId = String(document.getElementById('editProductId')?.value || '');
+  const list = allProducts.filter(p => String(p.id) !== selfId && !_abIds.includes(String(p.id)) && p.is_active !== false &&
+    (String(p.name || '').toLowerCase().includes(q) || String(p.author || p.author_name || '').toLowerCase().includes(q))).slice(0, 8);
+  res.style.display = 'flex';
+  res.innerHTML = list.length ? list.map(p => `<div onclick="abAdd('${String(p.id).replace(/'/g, '')}')" style="padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-family:var(--font-bn);font-size:.78rem">
+      <b>${escHtml(p.name || '')}</b><div style="font-size:.66rem;color:var(--text3)">${escHtml(p.author || p.author_name || '')}</div></div>`).join('')
+    : '<div style="padding:8px 10px;font-family:var(--font-bn);font-size:.75rem;color:var(--text3)">কোনো বই পাওয়া যায়নি</div>';
+}
+function abAdd(id) {
+  id = String(id);
+  if (_abIds.includes(id)) return;
+  if (_abIds.length >= 4) { toast('সর্বোচ্চ ৪টি', 'আগে একটা সরিয়ে তারপর নতুন বই যোগ করুন', 'warning'); return; }
+  _abIds.push(id); abRender();
+  const s = document.getElementById('abSearch'); if (s) s.value = '';
+  abSearchInput();
+}
+function abRemove(id) { _abIds = _abIds.filter(x => x !== String(id)); abRender(); }
+
+
+// ══════════════════════════════════════════════════
+// SEO — বইয়ের মেটা টাইটেল/ডেসক্রিপশন/শেয়ার ছবি + সার্চ ম্যানেজমেন্ট
+// ══════════════════════════════════════════════════
+const SEO_HOST = 'bookgalaxybd.vercel.app';
+let _seoWas = '';
+function seoGen(p) {
+  const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+  const name = String(p.name || '').trim(), author = String(p.author || p.author_name || '').trim(), pub = String(p.publisher || '').trim();
+  const price = Math.round(Number(p.price) || 0);
+  let title = name + (author ? ' — ' + author : '');
+  if ((title + ' | বুক গ্যালাক্সি').length <= 60) title += ' | বুক গ্যালাক্সি';
+  const bits = [name + ' কিনুন বুক গ্যালাক্সি-তে।'];
+  if (author) bits.push('লেখক: ' + author + '।');
+  if (pub) bits.push('প্রকাশক: ' + pub + '।');
+  if (price) bits.push('দাম ৳' + bn(price) + '।');
+  bits.push('ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।');
+  let desc = bits.join(' ');
+  if (desc.length > 160) desc = bits.filter(b => !b.startsWith('প্রকাশক')).join(' ');
+  if (desc.length > 160) desc = desc.slice(0, 157).replace(/\s+\S*$/, '') + '…';
+  return { title: title.slice(0, 70), desc };
+}
+function _seoFormBook() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  return { name: v('pName'), author: v('pAuthor'), publisher: v('pPublisher'), price: parseFloat(v('pPrice')) || 0 };
+}
+function seoCur() {
+  const v = id => (document.getElementById(id)?.value || '').trim() || null;
+  return { seo_title: v('pSeoTitle'), seo_description: v('pSeoDesc'), seo_image: v('pSeoImage') };
+}
+function seoLoadForm(p) {
+  const set = (id, val) => { const e = document.getElementById(id); if (e) e.value = val || ''; };
+  set('pSeoTitle', p?.seo_title); set('pSeoDesc', p?.seo_description); set('pSeoImage', p?.seo_image);
+  _seoWas = JSON.stringify(seoCur()); seoPreview();
+}
+function seoPayload() { const c = seoCur(); return (c.seo_title || c.seo_description || c.seo_image || JSON.stringify(c) !== _seoWas) ? c : {}; }
+function seoPreview() {
+  const box = document.getElementById('seoPrev'); if (!box) return;
+  const b = _seoFormBook(), c = seoCur();
+  const slug = (document.getElementById('pSlug')?.value || '').trim() || (typeof makeSlug === 'function' ? makeSlug(b.name) : '') || 'book';
+  const plain = (window.PDE ? PDE.get() : (document.getElementById('pDescription')?.value || '')).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const title = c.seo_title || (b.name ? b.name + ' — বুক গ্যালাক্সি' : 'বইয়ের নাম — বুক গ্যালাক্সি');
+  const desc = c.seo_description || (plain ? plain.slice(0, 155) : (b.name || 'বইয়ের নাম') + ' কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।');
+  const cut = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+  box.innerHTML = `<div style="font-family:Arial,sans-serif;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+    <div style="font-size:.72rem;color:#202124;word-break:break-all">${SEO_HOST} <span style="color:#5f6368">› product › ${escHtml(slug)}</span></div>
+    <div style="font-size:1.05rem;color:#1a0dab;line-height:1.3;margin:2px 0">${escHtml(cut(title, 60))}</div>
+    <div style="font-size:.8rem;color:#4d5156;line-height:1.5">${escHtml(cut(desc, 160))}</div></div>`;
+  const tc = document.getElementById('seoTCnt'), dc = document.getElementById('seoDCnt');
+  if (tc) { tc.textContent = `(${title.length}/৬০)`; tc.style.color = title.length > 60 ? '#dc2626' : ''; }
+  if (dc) { dc.textContent = `(${desc.length}/১৬০)`; dc.style.color = desc.length > 160 ? '#dc2626' : ''; }
+}
+function seoAutoFill() {
+  const b = _seoFormBook(); if (!b.name) { toast('আগে বইয়ের নাম দিন', '', 'warning'); return; }
+  const g = seoGen(b);
+  document.getElementById('pSeoTitle').value = g.title; document.getElementById('pSeoDesc').value = g.desc; seoPreview();
+}
+document.addEventListener('DOMContentLoaded', () => ['pName', 'pSlug', 'pAuthor', 'pPrice', 'pPublisher'].forEach(id => document.getElementById(id)?.addEventListener('input', seoPreview)));
+
+const SEO = {
+  syn: [],
+  async load() { await Promise.all([this.loadMiss(), this.loadSyn()]); this.renderBooks(); },
+  async loadMiss() {
+    const tb = document.getElementById('seoMissBody'); if (!tb) return;
+    const { data, error } = await sb.from('search_misses').select('query,created_at').order('created_at', { ascending: false }).limit(2000);
+    if (error) { tb.innerHTML = `<tr><td colspan="4" style="padding:22px;text-align:center;font-family:var(--font-bn);color:var(--red)">লোড হয়নি — "SEO ও সার্চ সেটআপ" SQL চালিয়েছেন? (${escHtml(error.message)})</td></tr>`; return; }
+    const m = {};
+    (data || []).forEach(r => { const o = m[r.query] || (m[r.query] = { q: r.query, n: 0, last: r.created_at }); o.n++; });
+    const rows = Object.values(m).sort((a, b) => b.n - a.n || (a.last < b.last ? 1 : -1)).slice(0, 100);
+    tb.innerHTML = rows.length ? rows.map(r => `<tr><td style="font-family:var(--font-bn)"><b>${escHtml(r.q)}</b></td><td>${r.n}</td><td style="font-size:.74rem;color:var(--text3)">${new Date(r.last).toLocaleDateString('bn-BD')}</td>
+      <td style="white-space:nowrap"><button class="btn btn-ghost btn-xs" data-q="${escHtml(r.q)}" onclick="SEO.fromMiss(this.dataset.q)"><i class="fa-solid fa-link"></i> সমার্থক যোগ</button>
+      <button class="btn btn-ghost btn-xs" data-q="${escHtml(r.q)}" onclick="SEO.delMiss(this.dataset.q)" style="color:var(--red)"><i class="fa-solid fa-xmark"></i></button></td></tr>`).join('')
+      : '<tr><td colspan="4" style="padding:22px;text-align:center;font-family:var(--font-bn);color:var(--text3)">এখনো কোনো না-পাওয়া সার্চ নেই</td></tr>';
+  },
+  async delMiss(q) { const { error } = await sb.from('search_misses').delete().eq('query', q); if (error) return toast('ব্যর্থ', error.message, 'error'); this.loadMiss(); },
+  fromMiss(q) { const i = document.getElementById('seoSynInput'); if (!i) return; i.value = q + ', '; i.focus(); i.scrollIntoView({ behavior: 'smooth', block: 'center' }); },
+  async loadSyn() {
+    const { data, error } = await sb.from('site_settings').select('search_synonyms').eq('id', 1).single();
+    this.syn = error ? [] : (Array.isArray(data?.search_synonyms) ? data.search_synonyms : []);
+    this.renderSyn(error ? error.message : '');
+  },
+  renderSyn(err) {
+    const box = document.getElementById('seoSynList'); if (!box) return;
+    box.innerHTML = err ? `<div style="padding:10px 18px;font-family:var(--font-bn);font-size:.78rem;color:var(--red)">লোড হয়নি — "SEO ও সার্চ সেটআপ" SQL চালিয়েছেন? (${escHtml(err)})</div>`
+      : (this.syn.length ? this.syn.map((g, i) => `<div style="display:flex;align-items:center;gap:8px;padding:8px 18px;border-top:1px solid var(--border);font-family:var(--font-bn);font-size:.82rem"><span style="flex:1">${g.map(w => `<span style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:2px 8px;margin-right:4px;display:inline-block">${escHtml(w)}</span>`).join('')}</span><button class="btn btn-ghost btn-xs" onclick="SEO.delSyn(${i})" style="color:var(--red)"><i class="fa-solid fa-trash"></i></button></div>`).join('')
+        : '<div style="padding:10px 18px;font-family:var(--font-bn);font-size:.78rem;color:var(--text3)">এখনো কোনো সমার্থক শব্দ যোগ করা হয়নি</div>');
+  },
+  async saveSyn() {
+    const { error } = await sb.from('site_settings').update({ search_synonyms: this.syn }).eq('id', 1);
+    if (error) { toast('সেভ হয়নি', error.message + ' — "SEO ও সার্চ সেটআপ" SQL চালান', 'error'); return false; }
+    return true;
+  },
+  async addSyn() {
+    const i = document.getElementById('seoSynInput');
+    const g = [...new Set((i.value || '').split(/[,،\n]+/).map(s => s.trim()).filter(Boolean))];
+    if (g.length < 2) { toast('কমপক্ষে দুটো শব্দ দিন', 'কমা দিয়ে আলাদা করুন', 'warning'); return; }
+    this.syn.push(g);
+    if (await this.saveSyn()) { i.value = ''; this.renderSyn(); toast('যোগ হয়েছে', g.join(' = '), 'success'); } else this.syn.pop();
+  },
+  async delSyn(i) { const old = this.syn.slice(); this.syn.splice(i, 1); if (await this.saveSyn()) this.renderSyn(); else this.syn = old; },
+  missingBooks() { return (allProducts || []).filter(p => p.is_active !== false && !p.seo_title && !p.seo_description); },
+  renderBooks() {
+    const tb = document.getElementById('seoBookBody'), cnt = document.getElementById('seoBookCnt'); if (!tb) return;
+    const list = this.missingBooks();
+    if (cnt) cnt.textContent = list.length;
+    tb.innerHTML = list.length ? list.slice(0, 200).map(p => `<tr><td style="font-family:var(--font-bn)">${escHtml(p.name || '')}</td><td style="font-family:var(--font-bn);font-size:.78rem;color:var(--text3)">${escHtml(p.author || p.author_name || '')}</td><td><button class="btn btn-ghost btn-xs" onclick="SEO.editBook('${String(p.id).replace(/'/g, '')}')"><i class="fa-solid fa-pen"></i> এডিট</button></td></tr>`).join('')
+      : '<tr><td colspan="3" style="padding:22px;text-align:center;font-family:var(--font-bn);color:var(--green)">সব বইয়ে SEO দেওয়া আছে</td></tr>';
+  },
+  editBook(id) { navTo('products'); setTimeout(() => editProduct(id), 80); },
+  async autoAll() {
+    const list = this.missingBooks();
+    if (!list.length) return;
+    if (!confirm(`${list.length}টি বইয়ের মেটা টাইটেল ও ডেসক্রিপশন নিজে থেকে লেখা হবে। পরে চাইলে প্রতিটা এডিট করা যাবে। চালিয়ে যাবেন?`)) return;
+    let done = 0;
+    for (const p of list) {
+      const g = seoGen(p);
+      const { error } = await sb.from('products').update({ seo_title: g.title, seo_description: g.desc }).eq('id', p.id);
+      if (error) { toast('থেমে গেছে (' + done + 'টি হয়েছে)', error.message + ' — "SEO ও সার্চ সেটআপ" SQL চালান', 'error'); break; }
+      done++;
+    }
+    try { await loadProducts(); } catch (e) {}
+    this.renderBooks();
+    if (done) toast('শেষ', done + 'টি বইয়ে SEO লেখা হয়েছে', 'success');
+  }
+};
+
 const PO_OPEN = ['pending', 'confirmed', 'processing'];
 function poIsWaiting(o) { return !!o.preorder_book_id && !o.preorder_released && !['cancelled','returned','delivered'].includes(o.status); }
 function poIsReady(o)   { return !!o.preorder_book_id &&  o.preorder_released && PO_OPEN.includes(o.status); }
@@ -8790,7 +9019,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); }
-  const titles = { flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
+  const titles = { seo:'সার্চ ও SEO', flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -8799,6 +9028,7 @@ function navTo(sec) {
   if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
   if (sec === 'freedel')    FD.load();
+  if (sec === 'seo')        SEO.load();
   if (sec === 'combos')     CMB.load();
   if (sec === 'flash')      FS.load();
   if (sec === 'blog' && window.BL) BL.load();
