@@ -18353,6 +18353,14 @@ window.addEventListener('popstate', function(e) {
   .bf-hint{display:none}
   .bf-lite{width:100%;font-size:.82rem;padding:8px 10px}
 }
+
+/* ৯টি মুড: ৫টি করে ২ সারি, মাঝখানে */
+@media(min-width:701px){
+  .bf-n9 .bf-opt{flex-basis:calc(20% - 10px);grid-template-columns:1fr;justify-items:center;text-align:center;row-gap:5px;padding:12px 8px}
+  .bf-n9 .bf-opt .e{grid-row:auto;grid-column:1}
+  .bf-n9 .bf-opt b,.bf-n9 .bf-opt small{grid-column:1}
+}
+@media(max-width:700px){.bf-n9 .bf-opt{flex-basis:calc(50% - 4px);grid-template-columns:34px minmax(0,1fr);justify-items:stretch;text-align:left;padding:9px}.bf-n9 .bf-opt .e{grid-row:1/span 3}.bf-n9 .bf-opt b,.bf-n9 .bf-opt small{grid-column:2}}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
 <button type="button" class="bf-fab" onclick="openBookFinder()" aria-label="Magical Book Finder খুলুন" title="কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">বই খুঁজুন</span></button>
@@ -18386,7 +18394,8 @@ var BUDGETS=[
 ];
 var DEFAULT_MOODS=[
  {slug:'love',name:'ভালোবাসায় ডুব দিতে চাই',icon:'fa-heart',tagline:'রোমান্টিক উপন্যাস ও প্রেমের গল্প',keywords:'রোমান্টিক,প্রেম,ভালোবাসা,ভালবাসা,রোমান্স,বিরহ,প্রণয়,love,romance'},
- {slug:'mystery',name:'রহস্য ও আতঙ্কে শিহরিত হতে চাই',icon:'fa-user-secret',tagline:'গোয়েন্দা, ক্রাইম থ্রিলার ও ভৌতিক',keywords:'রহস্য,গোয়েন্দা,থ্রিলার,ক্রাইম,খুনি,হত্যা,প্রতিশোধ,ভৌতিক,ভুতুড়ে,ভূতুড়ে,অতিপ্রাকৃত,অলৌকিক,হরর,সাইকোলজিক্যাল,মাসুদ রানা,ফেলুদা,ব্যোমকেশ,মিসির আলী,শার্লক,thriller,mystery,detective,horror,crime'},
+ {slug:'mystery',name:'রহস্য ও রোমাঞ্চে শিহরিত হতে চাই',icon:'fa-user-secret',tagline:'গোয়েন্দা, ক্রাইম ও সাইকোলজিক্যাল থ্রিলার',keywords:'রহস্য,গোয়েন্দা,থ্রিলার,ক্রাইম,খুনি,হত্যা,প্রতিশোধ,সাইকোলজিক্যাল,মাসুদ রানা,ফেলুদা,ব্যোমকেশ,মিসির আলী,শার্লক,thriller,mystery,detective,crime'},
+ {slug:'ghost',name:'ভুতুড়ে ও অলৌকিক ঘটনার স্বাদ নিতে চাই',icon:'fa-ghost',tagline:'হরর, ভৌতিক ও অতিপ্রাকৃত',keywords:'ভৌতিক,ভুতুড়ে,ভূতুড়ে,অতিপ্রাকৃত,অলৌকিক,ভূতের,হরর,তান্ত্রিক,পিশাচ,horror,ghost'},
  {slug:'inspire',name:'নিজেকে বদলে অনুপ্রাণিত হতে চাই',icon:'fa-fire',tagline:'সেলফ-হেল্প, ক্যারিয়ার ও মোটিভেশন',keywords:'অনুপ্রেরণা,সফল,সফলতা,ক্যারিয়ার,অভ্যাস,মোটিভেশন,আত্মউন্নয়ন,মাইন্ডসেট,সেলফ হেল্প,সেলফ-হেল্প,আত্মবিশ্বাস,motivation,habit,self-help,career'},
  {slug:'relax',name:'হেসে মনের চাপ কমাতে চাই',icon:'fa-face-laugh-beam',tagline:'হাসি-রম্য ও সহজ-সরল জীবনের গল্প',keywords:'হাসির,হাস্যরস,মজা,মজার,কৌতুক,রম্য,ব্যঙ্গ,হালকা,ফিলগুড,ফিল গুড,গ্রামীণ,পারিবারিক,স্লাইস অফ লাইফ,humor,comedy'},
  {slug:'learn',name:'নতুন জ্ঞান অর্জন করতে চাই',icon:'fa-brain',tagline:'ইতিহাস, রাজনীতি, বিজ্ঞান ও জীবনী',keywords:'ইতিহাস,ঐতিহাসিক,রাজনীতি,রাজনৈতিক,বিজ্ঞান,জ্ঞান,মুক্তিযুদ্ধ,একাত্তর,জীবনী,আত্মজীবনী,সমাজ,দর্শন,history,science,politics,biography'},
@@ -18395,14 +18404,15 @@ var DEFAULT_MOODS=[
  {slug:'feel',name:'স্মৃতি আর আবেগে ভিজে বুক হালকা করতে চাই',icon:'fa-cloud-rain',tagline:'নস্টালজিয়া, স্মৃতিকথা ও আবেগঘন গল্প',keywords:'নস্টালজিয়া,স্মৃতিকথা,স্মৃতিচারণ,স্মৃতির,শৈশব,ট্র্যাজেডি,বিষাদ,আবেগ,কান্না,কবিতা,nostalgia'}
 ];
 /* আগের ডিফল্ট নাম — ডাটাবেসে এই নাম থাকলে নতুন লেখায় বদলে দেওয়া হয় */
-var PREV_NAMES={escape:['কল্পবিজ্ঞানের জগতে হারাতে চাই'],feel:['অতীতের স্মৃতি আর আবেগে বুক হালকা করতে চাই']};
-var NEW_SLUGS={love:1,mystery:1,inspire:1,relax:1,learn:1,escape:1,peace:1,feel:1};
+var PREV_NAMES={mystery:['রহস্য ও আতঙ্কে শিহরিত হতে চাই'],escape:['কল্পবিজ্ঞানের জগতে হারাতে চাই'],feel:['অতীতের স্মৃতি আর আবেগে বুক হালকা করতে চাই']};
+var NEW_SLUGS={love:1,mystery:1,ghost:1,inspire:1,relax:1,learn:1,escape:1,peace:1,feel:1};
 var OLD_ALIAS={romantic:'love',thriller:'mystery',motivation:'inspire',fun:'relax',knowledge:'learn',fantasy:'escape',nostalgia:'feel'};
 /* পুরোনো (ডাটাবেসে থাকা) মুডের নাম দেখে নতুন ৮টির কোনটার সমান তা বের করে — পুরোনো ট্যাগ যেন হারিয়ে না যায় */
 function legacySlug(name){
   name=String(name||'');
   if(/রোমান্টিক|প্রেম|ভালোবাসা/.test(name))return 'love';
-  if(/রহস্য|থ্রিলার|গোয়েন্দা|অতিপ্রাকৃত|ভৌতিক|ভুতুড়ে|হরর/.test(name))return 'mystery';
+  if(/ভৌতিক|ভুতুড়ে|হরর|অতিপ্রাকৃত/.test(name))return 'ghost';
+  if(/রহস্য|থ্রিলার|গোয়েন্দা/.test(name))return 'mystery';
   if(/অনুপ্রেরণা|মোটিভেশন/.test(name))return 'inspire';
   if(/হাসি|মজা|রম্য/.test(name))return 'relax';
   if(/সায়েন্স|কল্প|ফ্যান্টাসি|অ্যাডভেঞ্চার/.test(name))return 'escape';
@@ -18418,9 +18428,12 @@ var FLAVORS={
  'love-sad':{label:'বিরহে ভিজে বুক ভারী করতে চাই',tag:'বিরহ ও ট্র্যাজিক প্রেম',icon:'fa-heart-crack',kw:['বিরহ','ট্র্যাজেডি','বিষাদ','কান্না','বেদনা','শোক']},
  'love-modern':{label:'আজকের দিনের সম্পর্কের গল্প পড়তে চাই',tag:'সমকালীন ও পারিবারিক সম্পর্ক',icon:'fa-people-roof',kw:['সমকালীন','পারিবারিক','সম্পর্ক','দাম্পত্য']},
  'love-classic':{label:'কালজয়ী ক্লাসিক প্রেমে হারাতে চাই',tag:'ক্লাসিক সাহিত্য',icon:'fa-book-open',kw:['ক্লাসিক','কালজয়ী','রবীন্দ্র','শরৎচন্দ্র','শরৎ চন্দ্র','বঙ্কিম','বিভূতিভূষণ','classic']},
- 'my-detective':{label:'মস্তিষ্কের বুদ্ধিদীপ্ত ব্যায়াম বা ধাঁধার সমাধান করতে চাই',tag:'ডিটেকটিভ ও সাইকোলজিক্যাল পাজল',icon:'fa-magnifying-glass',kw:['গোয়েন্দা','রহস্য','ডিটেকটিভ','সাইকোলজিক্যাল','মনস্তাত্ত্বিক','ধাঁধা','মিসির আলী','ফেলুদা','ব্যোমকেশ','শার্লক','পোয়ারো','কিরীটী','কাকাবাবু','তিন গোয়েন্দা','detective','mystery','psychological','sherlock']},
+ 'my-detective':{label:'মস্তিষ্কের বুদ্ধিদীপ্ত ব্যায়াম বা ধাঁধার সমাধান করতে চাই',tag:'গোয়েন্দা ও ডিটেকটিভ পাজল',icon:'fa-magnifying-glass',kw:['গোয়েন্দা','রহস্য','ডিটেকটিভ','ধাঁধা','মিসির আলী','ফেলুদা','ব্যোমকেশ','শার্লক','পোয়ারো','কিরীটী','কাকাবাবু','তিন গোয়েন্দা','detective','mystery','sherlock']},
  'my-crime':{label:'অন্যায়কারীর পতন ও তীব্র প্রতিশোধ দেখতে চাই',tag:'ক্রাইম ও রিভেঞ্জ থ্রিলার',icon:'fa-gavel',kw:['ক্রাইম','অপরাধ','প্রতিশোধ','খুনি','হত্যা','থ্রিলার','মাসুদ রানা','অ্যাকশন','রিভেঞ্জ','thriller','crime','revenge']},
- 'my-ghost':{label:'ভুতুড়ে ও অলৌকিক ঘটনার স্বাদ নিতে চাই',tag:'হরর ও অতিপ্রাকৃত',icon:'fa-ghost',kw:['ভৌতিক','ভুতুড়ে','ভূতুড়ে','অতিপ্রাকৃত','অলৌকিক','ভূতের','হরর','তান্ত্রিক','পিশাচ','horror','ghost']},
+ 'my-psych':{label:'মানুষের মনের অন্ধকার গলিতে ঢুকতে চাই',tag:'সাইকোলজিক্যাল থ্রিলার',icon:'fa-brain',kw:['সাইকোলজিক্যাল','মনস্তাত্ত্বিক','psychological']},
+ 'my-ghost':{label:'গা ছমছমে ভুতুড়ে গল্পে শিউরে উঠতে চাই',tag:'ভৌতিক ও ভুতুড়ে গল্প',icon:'fa-ghost',kw:['ভৌতিক','ভুতুড়ে','ভূতুড়ে','ভূতের','পিশাচ','ghost']},
+ 'gh-occult':{label:'অলৌকিক আর অতিপ্রাকৃত রহস্যের স্বাদ নিতে চাই',tag:'অলৌকিক ও অতিপ্রাকৃত',icon:'fa-moon',kw:['অলৌকিক','অতিপ্রাকৃত','তান্ত্রিক','জাদুটোনা','paranormal','supernatural']},
+ 'gh-horror':{label:'ভয়ে হৃদস্পন্দন বাড়িয়ে নিতে চাই',tag:'হরর ও আতঙ্কের গল্প',icon:'fa-skull',kw:['হরর','আতঙ্ক','ভয়ংকর','ভয়ঙ্কর','horror']},
  'in-self':{label:'অভ্যাস আর জীবনযাপন গুছিয়ে নিতে চাই',tag:'আত্মউন্নয়ন ও অভ্যাস',icon:'fa-seedling',kw:['আত্মউন্নয়ন','আত্ম-উন্নয়ন','অভ্যাস','সেলফ হেল্প','সেলফ-হেল্প','সেলফহেল্প','self-help','habit','productivity']},
  'in-career':{label:'ক্যারিয়ার আর আয়ে এগিয়ে যেতে চাই',tag:'ক্যারিয়ার, ব্যবসা ও সফলতা',icon:'fa-chart-line',kw:['ক্যারিয়ার','সফল','ব্যবসা','আর্থিক','ধনী','ফ্রিল্যান্স','উদ্যোক্তা','নেতৃত্ব','business','career','money']},
  'in-mind':{label:'মনের জোর আর আত্মবিশ্বাস বাড়াতে চাই',tag:'মাইন্ডসেট ও মনোবল',icon:'fa-dumbbell',kw:['মাইন্ডসেট','মনোবল','মানসিক','আত্মবিশ্বাস','মোটিভেশন','অনুপ্রেরণা','প্রেরণা','mindset','confidence']},
@@ -18449,10 +18462,11 @@ var FLAVORS={
  'u-real':{label:'বাস্তব মানুষের জীবনের কথা জানতে চাই',tag:'জীবনী, স্মৃতিকথা ও ভ্রমণ',icon:'fa-user',kw:['জীবনী','আত্মজীবনী','স্মৃতিকথা','স্মৃতিচারণ','memoir','biography']}
 };
 /* পুরোনো শেয়ার-লিংকের কী যেন ভেঙে না যায় */
-var FL_ALIAS={'my-psych':'my-detective','le-war':'le-history','u-islam':'pe-quran'};
+var FL_ALIAS={'le-war':'le-history','u-islam':'pe-quran'};
 var FL_BY_MOOD={
  love:['love-sweet','love-sad','love-modern','love-classic'],
- mystery:['my-detective','my-crime','my-ghost'],
+ mystery:['my-detective','my-crime','my-psych'],
+ ghost:['my-ghost','gh-occult','gh-horror'],
  inspire:['in-self','in-career','in-mind','in-bio'],
  relax:['re-fun','re-slice','re-short'],
  learn:['le-history','le-politics','le-science','le-bio'],
@@ -18463,7 +18477,8 @@ var FL_BY_MOOD={
 /* মুড অনুযায়ী ২য় প্রশ্ন — প্রশ্ন আর উত্তরের ভাষা যেন মিলে যায় */
 var Q2_TXT={
  love:{q:'ভালোবাসার কোন রূপটা পড়তে চান?',s:'যেটা আপনার মনের সবচেয়ে কাছের, সেটায় ক্লিক করুন'},
- mystery:{q:'কোন ধরনের রোমাঞ্চ আপনার ভালো লাগে?',s:'রহস্যের কোন স্বাদটা আজ বেশি টানছে?'},
+ mystery:{q:'কোন ধরনের রহস্য আপনার ভালো লাগে?',s:'রহস্যের কোন স্বাদটা আজ বেশি টানছে?'},
+ ghost:{q:'কেমন গা ছমছমে অনুভূতি চান?',s:'ভয়ের কোন রূপটা আজ ছুঁতে চান?'},
  inspire:{q:'নিজের কোন দিকটা বদলাতে চান?',s:'যেখানে সবচেয়ে বেশি পরিবর্তন দরকার মনে হয়, সেটা বেছে নিন'},
  relax:{q:'কেমন গল্পে মন হালকা হবে?',s:'আপনার মনের চাপ কমাতে যেটা কাজে লাগবে'},
  learn:{q:'কোন বিষয়ের গভীরে যেতে চান?',s:'যে বিষয়ে জানার কৌতূহল সবচেয়ে বেশি, সেটা বেছে নিন'},
@@ -18507,6 +18522,10 @@ async function loadMoods(){
     tags=rt;moods=[];
   }
   if(!moods.length)moods=DEFAULT_MOODS.map(function(m){return Object.assign({},m)});
+  if(moods.length&&!moods.some(function(m){return m.slug==='ghost'})&&moods.some(function(m){return NEW_SLUGS[m.slug]})){
+    var gm=Object.assign({},DEFAULT_MOODS.find(function(x){return x.slug==='ghost'})),mi=moods.findIndex(function(m){return m.slug==='mystery'});
+    moods.splice(mi>-1?mi+1:moods.length,0,gm);
+  }
   moods.forEach(function(m){      // ডাটাবেসে আগের ডিফল্ট নাম থাকলে নতুন প্রশ্নের সাথে মানানসই লেখায় বদলে দিই
     var pn=PREV_NAMES[m.slug],dm=DEFAULT_MOODS.find(function(x){return x.slug===m.slug});
     if(pn&&dm&&pn.indexOf(m.name)>-1){m.name=dm.name;m.tagline=dm.tagline;m.icon=dm.icon}
