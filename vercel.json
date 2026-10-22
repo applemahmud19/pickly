@@ -2,6 +2,7 @@
   "redirects": [
     {
       "source": "/:path*",
+      "has": [{ "type": "host", "value": "bookgalaxybd.shop" }],
       "destination": "https://www.bookgalaxybd.shop/:path*",
       "permanent": true
     }
