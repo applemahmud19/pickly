@@ -18361,6 +18361,23 @@ window.addEventListener('popstate', function(e) {
   .bf-n9 .bf-opt b,.bf-n9 .bf-opt small{grid-column:1}
 }
 @media(max-width:700px){.bf-n9 .bf-opt{flex-basis:calc(50% - 4px);grid-template-columns:34px minmax(0,1fr);justify-items:stretch;text-align:left;padding:9px}.bf-n9 .bf-opt .e{grid-row:1/span 3}.bf-n9 .bf-opt b,.bf-n9 .bf-opt small{grid-column:2}}
+
+/* ═══ মোবাইল ফিক্স: কার্ট-ছাঁটা বন্ধ, ৬+ অপশনে আইকন ছাড়া কমপ্যাক্ট কার্ড ═══ */
+.bf-stage>*:first-child{margin-top:auto}.bf-stage>*:last-child{margin-bottom:auto}
+.bf-stage{justify-content:flex-start}
+@media(max-width:700px){
+  .bf-top{margin-bottom:4px}
+  .bf-step-tag{font-size:.78rem;margin-bottom:4px}
+  .bf-q{font-size:1.1rem;margin-bottom:2px}
+  .bf-qs{font-size:.78rem;margin-bottom:8px}
+  .bf-n6 .bf-opt .e,.bf-n7 .bf-opt .e,.bf-n8 .bf-opt .e,.bf-n9 .bf-opt .e,.bf-n10 .bf-opt .e{display:none}
+  .bf-n6 .bf-opt,.bf-n7 .bf-opt,.bf-n8 .bf-opt,.bf-n9 .bf-opt,.bf-n10 .bf-opt{grid-template-columns:1fr;text-align:center;justify-items:center;min-height:54px;padding:8px 8px}
+  .bf-n6 .bf-opt b,.bf-n7 .bf-opt b,.bf-n8 .bf-opt b,.bf-n9 .bf-opt b,.bf-n10 .bf-opt b{grid-column:1;font-size:.84rem;line-height:1.35}
+  .bf-n6 .bf-opt .n,.bf-n7 .bf-opt .n,.bf-n8 .bf-opt .n,.bf-n9 .bf-opt .n{grid-column:1;justify-self:center}
+  .bf-grid{gap:7px}
+  .bf-lite{margin-top:0}.bf-litewrap{margin-top:8px}
+  .bf-nav{margin-top:6px}.bf-link{padding:3px 14px;font-size:.84rem}
+}
 </style>
 <!-- ═══ MAGICAL BOOK FINDER: floating button + quiz overlay ═══ -->
 <button type="button" class="bf-fab" onclick="openBookFinder()" aria-label="Magical Book Finder খুলুন" title="কয়েকটি ক্লিকেই খুঁজে নিন আপনার পছন্দের বই!"><i class="fa-solid fa-wand-magic-sparkles"></i><span class="bn">বই খুঁজুন</span></button>
