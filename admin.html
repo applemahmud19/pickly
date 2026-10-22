@@ -15,12 +15,12 @@
 =================================================================
   OMNI SHOP ADMIN — DATA INTEGRITY AUDIT v2.1
   Fixed:
-  ✅ verifyAndEnter checks admin_users table first (DB-driven)
+  verifyAndEnter checks admin_users table first (DB-driven)
      then falls back to ALLOWED_EMAIL (legacy)
-  ✅ Realtime subscription toasts admin on new order
-  ✅ Revenue calculation NaN-guarded
-  ✅ old_price null guard in product table
-  ✅ CMS module: promobar, page content, footer links
+  Realtime subscription toasts admin on new order
+  Revenue calculation NaN-guarded
+  old_price null guard in product table
+  CMS module: promobar, page content, footer links
 =================================================================
 -->
 
@@ -2029,8 +2029,8 @@ body {
               </div>
               <select class="form-inp" style="padding:7px 11px;font-size:0.76rem;min-width:120px" id="orderStatusFilter" onchange="renderOrders()">
                 <option value="">All Status</option>
-                <option value="po_waiting">⏳ প্রকাশের অপেক্ষায় (প্রি-অর্ডার)</option>
-                <option value="po_ready">✅ পাঠানোর জন্য প্রস্তুত (প্রি-অর্ডার)</option>
+                <option value="po_waiting">প্রকাশের অপেক্ষায় (প্রি-অর্ডার)</option>
+                <option value="po_ready">পাঠানোর জন্য প্রস্তুত (প্রি-অর্ডার)</option>
                 <option value="pending">Pending</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="in_stock">স্টক এ আছে</option>
@@ -2995,7 +2995,7 @@ end $$;
             </div>
             <div class="form-group">
               <label class="form-label bn-label">টাইটেল <span class="required">*</span></label>
-              <input class="form-inp" id="pushTitle" maxlength="80" placeholder="যেমন: ⚡ ফ্ল্যাশ সেল শুরু!" style="font-family:var(--font-bn)">
+              <input class="form-inp" id="pushTitle" maxlength="80" placeholder="যেমন: ফ্ল্যাশ সেল শুরু!" style="font-family:var(--font-bn)">
             </div>
             <div class="form-group">
               <label class="form-label bn-label">মেসেজ <span class="required">*</span></label>
@@ -4728,7 +4728,7 @@ end $$;
 
 <script>
 /* ══════════════════════════════════════
-   ⚙️ CONFIG — Edit these values
+   CONFIG — Edit these values
 ══════════════════════════════════════ */
 const ALLOWED_EMAIL = 'applemahmud4004@gmail.com';
 const SB_URL_DEFAULT = 'https://srasvcuycvfspbwhnbpl.supabase.co';
@@ -6756,7 +6756,7 @@ function renderOrders() {
   };
   tbody.innerHTML = filtered.map(o => {
     const items = Array.isArray(o.items) ? o.items : [];
-    const names = (o.preorder_book_id ? (o.preorder_released ? '✅ ' : '⏳ ') : '') + items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
+    const names = (o.preorder_book_id ? (o.preorder_released ? '<i class="fa-solid fa-circle-check" style="color:#1a9c3e"></i> ' : '<i class="fa-solid fa-hourglass-half" style="color:#B7791F"></i> ') : '') + items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
     // Normalize legacy status values for the 6-status dropdown
     const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled','returned'].includes(o.status))
       ? o.status
@@ -6876,7 +6876,7 @@ async function updateOrderStatus(id, status, customNote, extra) {
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
     const trackCh = new BroadcastChannel('gm_order_sync');
-    // ✅ শুধু plain primitive values — DataCloneError এড়াতে
+    // শুধু plain primitive values — DataCloneError এড়াতে
     trackCh.postMessage(JSON.parse(JSON.stringify({
       type:        'order_status_update',
       orderId:     String(id),
@@ -6915,10 +6915,10 @@ const PUSHADM = {
     return j;
   },
   ORDER_MSG: {
-    confirmed:  ['অর্ডার নিশ্চিত হয়েছে ✅', 'আপনার অর্ডারটি নিশ্চিত করা হয়েছে।'],
-    processing: ['অর্ডার প্যাক হচ্ছে 📦', 'আপনার অর্ডারটি প্রস্তুত করা হচ্ছে।'],
-    shipped:    ['অর্ডার পাঠানো হয়েছে 🚚', 'আপনার অর্ডারটি কুরিয়ারে পাঠানো হয়েছে।'],
-    delivered:  ['অর্ডার ডেলিভারি হয়েছে 🎉', 'ধন্যবাদ! বইটা কেমন লাগল জানাতে রিভিউ দিতে পারেন।'],
+    confirmed:  ['অর্ডার নিশ্চিত হয়েছে', 'আপনার অর্ডারটি নিশ্চিত করা হয়েছে।'],
+    processing: ['অর্ডার প্যাক হচ্ছে', 'আপনার অর্ডারটি প্রস্তুত করা হচ্ছে।'],
+    shipped:    ['অর্ডার পাঠানো হয়েছে', 'আপনার অর্ডারটি কুরিয়ারে পাঠানো হয়েছে।'],
+    delivered:  ['অর্ডার ডেলিভারি হয়েছে', 'ধন্যবাদ! বইটা কেমন লাগল জানাতে রিভিউ দিতে পারেন।'],
     cancelled:  ['অর্ডার বাতিল হয়েছে', 'আপনার অর্ডারটি বাতিল করা হয়েছে।'],
   },
   // updateOrderStatus থেকে কল হয় — ব্যর্থ হলে চুপচাপ (অর্ডার আপডেটে প্রভাব নেই)
@@ -6931,7 +6931,7 @@ const PUSHADM = {
   },
   async preorder(p) {
     try {
-      const r = await this.call({ action: 'send', title: '📚 প্রি-অর্ডার করা বই প্রকাশিত!', body: `"${p.name}" এখন পাওয়া যাচ্ছে — শীঘ্রই আপনার কাছে পাঠানো হবে।`, url: '/product/' + encodeURIComponent(p.id), audience: { type: 'preorder', book_id: p.id } });
+      const r = await this.call({ action: 'send', title: 'প্রি-অর্ডার করা বই প্রকাশিত!', body: `"${p.name}" এখন পাওয়া যাচ্ছে — শীঘ্রই আপনার কাছে পাঠানো হবে।`, url: '/product/' + encodeURIComponent(p.id), audience: { type: 'preorder', book_id: p.id } });
       toast('পুশ পাঠানো হয়েছে', `${r.sent} জনকে পাঠানো গেছে`, 'success');
     } catch (e) { toast('পুশ পাঠানো যায়নি', e.message, 'error'); }
   },
@@ -6964,11 +6964,11 @@ const PUSHADM = {
     if (this._kind === 'flash') {
       const off = Number(it.fixed_price) > 0 ? 'বিশেষ দামে' : (it.discount_percent + '% ছাড়ে');
       const end = new Date(it.ends_at).toLocaleString('bn-BD', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
-      this.g('pushTitle').value = '⚡ ফ্ল্যাশ সেল শুরু!';
+      this.g('pushTitle').value = 'ফ্ল্যাশ সেল শুরু!';
       this.g('pushBody').value = `${it.name} — ${off} বই কেনার সুযোগ। শেষ হবে ${end}। এখনই দেখুন!`;
       this.g('pushUrl').value = '/';
     } else {
-      this.g('pushTitle').value = '📚 নতুন বই এখন পাওয়া যাচ্ছে!';
+      this.g('pushTitle').value = 'নতুন বই এখন পাওয়া যাচ্ছে!';
       this.g('pushBody').value = `"${it.name}" প্রকাশিত হয়েছে। এখনই অর্ডার করুন!`;
       this.g('pushUrl').value = '/product/' + encodeURIComponent(it.id);
     }
@@ -7069,6 +7069,10 @@ const FG = (() => {
   note text,
   created_at timestamptz default now()
 );
+alter table blacklist add column if not exists mode text not null default 'block';
+alter table blacklist add column if not exists note text;
+alter table blacklist add column if not exists created_at timestamptz default now();
+create unique index if not exists blacklist_phone_key on blacklist (phone);
 alter table blacklist enable row level security;
 drop policy if exists "allow_all" on blacklist;
 create policy "allow_all" on blacklist for all using (true) with check (true);
@@ -7446,7 +7450,7 @@ async function updateItemStatus(orderId, itemIdx, newStatus, selectEl) {
   // Broadcast to tracking page (index) via BroadcastChannel for real-time sync
   try {
     const trackCh = new BroadcastChannel('gm_order_sync');
-    // ✅ o.items থেকে শুধু plain fields নাও — Supabase internal objects DataCloneError করে
+    // o.items থেকে শুধু plain fields নাও — Supabase internal objects DataCloneError করে
     const safeItems = (o.items || []).map(it => ({
       name:        String(it.name        || ''),
       qty:         Number(it.qty         || 0),
@@ -7967,7 +7971,7 @@ function updateDiscountPreview() {
 }
 
 async function applyDiscount() {
-  console.log('[applyDiscount] ▶ START — orderId:', currentOrderId);
+  console.log('[applyDiscount] START — orderId:', currentOrderId);
   if (!sb || !currentOrderId) return;
   const type = document.getElementById('oa-discount-type').value;
   const val = parseFloat(document.getElementById('oa-discount-val').value);
@@ -8017,7 +8021,7 @@ async function saveOrderNote() {
 }
 
 async function saveCourierInfo() {
-  console.log('[saveCourierInfo] ▶ START — orderId:', currentOrderId);
+  console.log('[saveCourierInfo] START — orderId:', currentOrderId);
   if (!sb || !currentOrderId) return;
   const service = document.getElementById('oc-service').value;
   const trackingId = document.getElementById('oc-tracking-id').value.trim();
@@ -8090,7 +8094,7 @@ async function saveQuickDelivery() {
 }
 
 async function saveOrderEdits() {
-  console.log('[saveOrderEdits] ▶ START — orderId:', currentOrderId);
+  console.log('[saveOrderEdits] START — orderId:', currentOrderId);
   if (!sb || !currentOrderId) {
     console.warn('[saveOrderEdits] ✗ Missing sb or currentOrderId — aborting');
     return;
@@ -8984,7 +8988,7 @@ async function saveProduct() {
 
     const payload = {
       name, category,
-      slug: finalSlug,   // ✅ English URL slug → /product/<slug>
+      slug: finalSlug,   // English URL slug → /product/<slug>
       product_type: productType, // 'book' | 'general' — explicit top-level type
       sub_category,
       brand:       brandVal,
@@ -9218,11 +9222,22 @@ const FD = {
   rules: [],
   scopeLabel: { all:'সব বই', category:'ক্যাটাগরি', author:'লেখক', publisher:'প্রকাশনী' },
   esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  defaultRules() {
+    let min = 999;
+    try { min = Number(localStorage.getItem('gm_cms_freedel')) || 999; } catch(e) {}
+    return [{ id:'default', name:'সব বই (ডিফল্ট)', scope:'all', value:'', min, expires:'', active:true }];
+  },
+  async restoreDefault() {
+    const prev = this.rules.slice();
+    this.rules = this.rules.concat(this.defaultRules());
+    if (!(await this.persist('ডিফল্ট রুল ফিরে এসেছে'))) { this.rules = prev; this.render(); }
+  },
   async load() {
     try {
       const { data, error } = await sb.from('site_settings').select('free_delivery_rules').eq('id',1).single();
       if (error) throw error;
-      this.rules = Array.isArray(data.free_delivery_rules) ? data.free_delivery_rules : [];
+      // কখনো সেভ না হয়ে থাকলে (null) সাইটের ডিফল্ট রুলটাই তালিকায় দেখাই, যাতে অন/অফ/এডিট/ডিলিট করা যায়
+      this.rules = Array.isArray(data.free_delivery_rules) ? data.free_delivery_rules : this.defaultRules();
     } catch(e) {
       this.rules = [];
       toast('রুল লোড হয়নি', 'SQL মাইগ্রেশন চালানো হয়েছে কিনা দেখুন (free_delivery_rules কলাম)', 'warning');
@@ -9232,7 +9247,7 @@ const FD = {
   render() {
     const tb = document.getElementById('fdBody');
     if (!this.rules.length) {
-      tb.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:30px;text-align:center;font-family:var(--font-bn)">কোনো রুল নেই — সাইটে ডিফল্ট ৳৯৯৯+ রুল চলছে</td></tr>';
+      tb.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:30px;text-align:center;font-family:var(--font-bn)">কোনো রুল নেই — এখন কোনো অর্ডারেই ফ্রি ডেলিভারি হবে না<br><button class="btn btn-sm" style="margin-top:10px" onclick="FD.restoreDefault()"><i class="fa-solid fa-rotate-left"></i> ডিফল্ট রুল ফিরিয়ে আনুন</button></td></tr>';
       return;
     }
     tb.innerHTML = this.rules.map(r => `<tr>
@@ -9674,7 +9689,7 @@ function navTo(sec) {
   if (sec === 'reviews')    loadReviewsAdmin();
   if (sec === 'requests')   loadOrderRequests();
   if (sec === 'finder')     loadFinder();
-  // ✅ URL: admin.html#/products, #/orders ...
+  // URL: admin.html#/products, #/orders ...
   if (location.hash !== '#/' + sec) history.pushState({ sec }, '', '#/' + sec);
   document.title = (titles[sec] || sec) + ' — বুক গ্যালাক্সি Admin';
 }
@@ -13165,7 +13180,7 @@ function renderFooterPreview(links) {
 function broadcastCmsUpdate(key, value) {
   try {
     const ch = new BroadcastChannel('gm_cms');
-    // ✅ JSON round-trip: non-cloneable objects (Headers, Response, etc.) বাদ পড়বে
+    // JSON round-trip: non-cloneable objects (Headers, Response, etc.) বাদ পড়বে
     ch.postMessage(JSON.parse(JSON.stringify({ key: String(key), value })));
     ch.close();
   } catch(e) { /* BroadcastChannel not supported — localStorage only */ }
@@ -14130,7 +14145,7 @@ function bulkCanonSub(cat, sub){
   const k = bulkKey(sub), hit = bulkSubList(cat).find(n => bulkKey(n) === k);
   return hit || String(sub).trim();
 }
-// ড্রপডাউনের অপশন। newLabel দিলে শেষে "➕ নতুন তৈরি করুন" অপশন যোগ হয়; pend = এই Import-এ নতুন বানানো নামগুলো
+// ড্রপডাউনের অপশন। newLabel দিলে শেষে "নতুন তৈরি করুন" অপশন যোগ হয়; pend = এই Import-এ নতুন বানানো নামগুলো
 function bulkOpts(list, current, blank, newLabel, pend){
   const ck = bulkKey(current), pk = new Set((pend || []).map(bulkKey));
   const hit = current ? list.find(n => bulkKey(n) === ck) : null;
