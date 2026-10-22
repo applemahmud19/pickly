@@ -3196,6 +3196,26 @@ footer, footer *:not(i):not([class*="fa-"]) {
   .rec-card{scroll-snap-align:start}
 }
 
+#dymBox{display:none;margin:8px 0 2px;font-size:.9rem;color:#fff}
+body.search-results-open #dymBox:not(:empty){display:block}
+#dymBox a{color:#fff;font-weight:800;text-decoration:underline;cursor:pointer}
+/* ── যারা এটা কিনেছেন, তারা এগুলোও কিনেছেন ── */
+.also-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.also-grid .rec-card{flex:none;min-width:0;width:auto}
+@media(max-width:600px){.also-grid{grid-template-columns:repeat(2,1fr);gap:10px}.also-grid .rec-card{flex:none}}
+.cart-also{margin-top:16px;padding-top:12px;border-top:1px dashed var(--border)}
+.cart-also-hd{font-family:'Hind Siliguri',sans-serif;font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.cart-also-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.cart-also-row:last-child{border-bottom:none}
+.cart-also-img{width:42px;height:56px;flex-shrink:0;border-radius:6px;border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--dbgf8f9fa,#f8f9fa)}
+.cart-also-img img{width:100%;height:100%;object-fit:contain}
+.cart-also-info{flex:1;min-width:0}
+.cart-also-name{font-family:'Hind Siliguri',sans-serif;font-size:.74rem;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cart-also-sub{font-size:.64rem;color:var(--text-light);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-also-price{font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:800;color:var(--text)}
+.cart-also-add{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:var(--blue);color:#fff;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+
+
 
 
 </style>
@@ -6894,6 +6914,16 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
 
     <div id="pdComboBox" class="pd-combo-box" style="display:none"></div>
 
+    <div id="pdAlsoSection" style="display:none;margin-bottom:28px">
+      <div class="rec-section-hd">
+        <div class="rec-section-title bn">
+          <span class="rec-title-bar"></span>
+          <i class="fa-solid fa-people-arrows"></i> যারা এটা কিনেছেন, তারা এগুলোও কিনেছেন
+        </div>
+      </div>
+      <div class="also-grid" id="pdAlsoGrid"></div>
+    </div>
+
     <div id="pdRelatedSection" style="display:none">
       <div class="rec-section-hd">
         <div class="rec-section-title bn">
@@ -8403,6 +8433,7 @@ function updateRecArrows(key) {
 
 function loadRecommendations(product) {
   if (!product || !products.length) return;
+  renderAlsoBought(product);
 
   // ── Related: same category, exclude current ──
   const related = products
@@ -8421,6 +8452,92 @@ function loadRecommendations(product) {
 
   renderRecSection('related',   related,   'pdRelatedSection',   'relatedTrack',   product.category);
   renderRecSection('suggested', suggested, 'pdSuggestedSection', 'suggestedTrack', null);
+}
+
+
+// ══════════════════════════════════════════════════
+// যারা এটা কিনেছেন, তারা এগুলোও কিনেছেন
+// ১) অ্যাডমিন যে বইগুলো নিজে বেছে দিয়েছে (products.also_buy_ids)  ২) ডেলিভারি হওয়া অর্ডারে একসাথে বেশি কেনা বই
+// ৩) কম পড়লে একই লেখক, তারপর একই ক্যাটাগরির বই দিয়ে ভরাট — মোট ৪টা
+// ══════════════════════════════════════════════════
+let _coBuy = null, _coBuyLoading = null, _coBuyTried = false, _alsoTok = 0;
+function loadCoBuy() {
+  if (_coBuy) return Promise.resolve(_coBuy);
+  if (_coBuyLoading) return _coBuyLoading;
+  _coBuyLoading = (async () => {
+    const map = {};
+    try {
+      const { data, error } = await sb.from('orders').select('items').eq('status', 'delivered').order('created_at', { ascending: false }).limit(3000);
+      if (!error) {
+        (data || []).forEach(o => {
+          const ids = [...new Set((o.items || []).filter(it => it && it.id && !it.is_combo).map(it => String(it.id)))];
+          for (const a of ids) for (const b of ids) { if (a === b) continue; (map[a] = map[a] || {})[b] = (map[a][b] || 0) + 1; }
+        });
+        _coBuy = map;
+      }
+    } catch (e) { /* নেটওয়ার্ক সমস্যা হলে শুধু অটো-ডেটা ছাড়া চলবে */ }
+    _coBuyTried = true; _coBuyLoading = null;
+    return _coBuy || map;
+  })();
+  return _coBuyLoading;
+}
+function _alsoAvail(x) { return x && (x.is_preorder || !(x.stock != null && Number(x.stock) <= 0)); }
+function _alsoAuthors(p) { return String(p.author || p.author_name || '').split(/[,،&]|\sএবং\s/).map(s => s.trim().toLowerCase()).filter(Boolean); }
+// একটা বইয়ের জন্য তিন স্তরের তালিকা
+function _alsoTiers(p, skip) {
+  const byId = new Map(products.map(x => [String(x.id), x]));
+  const ok = x => x && !skip.has(String(x.id)) && _alsoAvail(x);
+  const manual = (Array.isArray(p.also_buy_ids) ? p.also_buy_ids : []).map(id => byId.get(String(id))).filter(ok);
+  const co = (_coBuy && _coBuy[String(p.id)]) || {};
+  const cobuy = Object.keys(co).sort((a, b) => co[b] - co[a]).map(id => byId.get(id)).filter(ok);
+  const sold = (typeof _soldMap !== 'undefined' && _soldMap) || {};
+  const byPop = (a, b) => (sold[String(b.id)] || 0) - (sold[String(a.id)] || 0);
+  const au = _alsoAuthors(p);
+  const sameAuthor = au.length ? products.filter(x => ok(x) && _alsoAuthors(x).some(a => au.includes(a))).sort(byPop) : [];
+  const sameCat = p.category ? products.filter(x => ok(x) && x.category === p.category).sort(byPop) : [];
+  return { manual, cobuy, fill: [...sameAuthor, ...sameCat] };
+}
+function alsoPick(bases, n, extraSkip) {
+  const skip = new Set((extraSkip || []).map(String)); bases.forEach(b => skip.add(String(b.id)));
+  const tiers = bases.map(b => _alsoTiers(b, skip));
+  const out = [], seen = new Set();
+  const add = x => { if (x && out.length < n && !seen.has(String(x.id))) { seen.add(String(x.id)); out.push(x); } };
+  for (const key of ['manual', 'cobuy', 'fill']) {         // স্তর ধরে, একাধিক বই থাকলে পালা করে
+    const lists = tiers.map(t => t[key]); const max = Math.max(0, ...lists.map(l => l.length));
+    for (let i = 0; i < max && out.length < n; i++) lists.forEach(l => add(l[i]));
+  }
+  return out;
+}
+function renderAlsoBought(p) {
+  const sec = document.getElementById('pdAlsoSection'), grid = document.getElementById('pdAlsoGrid'); if (!sec || !grid || !p) return;
+  const tok = ++_alsoTok;
+  const paint = () => {
+    if (tok !== _alsoTok) return;
+    const list = alsoPick([products.find(x => String(x.id) === String(p.id)) || p], 4);
+    if (!list.length) { sec.style.display = 'none'; grid.innerHTML = ''; return; }
+    grid.innerHTML = list.map(buildRecCard).join(''); sec.style.display = 'block';
+  };
+  paint();
+  if (!_coBuy) loadCoBuy().then(paint);
+}
+function _alsoEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+function renderCartAlso() {
+  const box = document.getElementById('cartAlso'); if (!box) return;
+  const bases = cart.filter(x => !x.is_combo).map(x => products.find(p => String(p.id) === String(x.id)) || x);
+  if (!bases.length || !products.length) { box.innerHTML = ''; return; }
+  const list = alsoPick(bases, 4, cart.map(x => x.id));
+  if (!list.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="cart-also-hd bn"><i class="fa-solid fa-people-arrows" style="color:var(--blue)"></i> যারা এটা কিনেছেন, তারা এগুলোও কিনেছেন</div>` + list.map(p => {
+    const { displayPrice } = getEffectiveSalePrice(p);
+    const img = p.image_url ? `<img src="${_alsoEsc(p.image_url)}" alt="" loading="lazy">` : `<i class="fa-solid ${p.icon || 'fa-book'}" style="color:${p.color || '#AA2C2D'}"></i>`;
+    const who = isBookProduct(p) ? firstWriter(p.author || p.brand || '') : (p.brand || '');
+    return `<div class="cart-also-row" onclick="closeCart();openProduct('${p.id}')">
+      <div class="cart-also-img">${img}</div>
+      <div class="cart-also-info"><div class="cart-also-name bn">${_alsoEsc(p.name)}</div>${who ? `<div class="cart-also-sub bn">${_alsoEsc(who)}</div>` : ''}<div class="cart-also-price bn">৳${fmtPrice(displayPrice)}</div></div>
+      <button class="cart-also-add" title="কার্টে নিন" onclick="event.stopPropagation();quickAddToCart('${p.id}')"><i class="fa-solid fa-plus"></i></button>
+    </div>`;
+  }).join('');
+  if (!_coBuy && !_coBuyTried) loadCoBuy().then(renderCartAlso);
 }
 
 async function init() {
@@ -9901,7 +10018,7 @@ function _genreHit(terms, gfds) {
 }
 
 // প্রোডাক্ট তালিকা → মিল অনুযায়ী সাজানো রেজাল্ট (সব শব্দ মিলতে হবে; of/the/a-র মতো ছোট শব্দ না মিললে বাদ)
-function smartSearchProducts(query, list) {
+function _smartSearchCore(query, list) {
   let qs = ' ' + String(query || '').trim().toLowerCase().replace(/\s+/g, ' ') + ' ';
   const raws = [];
   for (const ph of _GEN_PHRASES) {                                   // "science fiction", "love story" — একসাথে ধরো
@@ -9945,6 +10062,102 @@ function smartSearchProducts(query, list) {
   return res.filter(r => r.lv >= floor).sort((a, b) => (b.score - a.score) || pop(a.p, b.p)).map(r => r.p);
 }
 
+
+/* ══════════════════════════════════════════════════
+   সার্চ: সমার্থক শব্দ (অ্যাডমিন → site_settings.search_synonyms), "আপনি কি খুঁজছেন", না-পাওয়া সার্চের রেকর্ড
+   ══════════════════════════════════════════════════ */
+let _synGroups = null;
+async function loadSynonyms() {
+  try {
+    const { data, error } = await sb.from('site_settings').select('search_synonyms').eq('id', 1).single();
+    if (error) { _synGroups = []; return; }
+    _synGroups = (Array.isArray(data && data.search_synonyms) ? data.search_synonyms : [])
+      .map(g => Array.isArray(g) ? g.map(String).filter(Boolean) : []).filter(g => g.length > 1);
+    if (_synGroups.length && typeof currentSearchMode !== 'undefined' && currentSearchMode) renderSearchPageProducts();
+  } catch (e) { _synGroups = []; }
+}
+document.addEventListener('DOMContentLoaded', () => { loadSynonyms(); });
+function _synKey(s) { return String(bnTranslit(String(s || '').toLowerCase())).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+function _synFor(q) {
+  if (!_synGroups || !_synGroups.length) return [];
+  const key = _synKey(q); if (!key) return [];
+  const res = [];
+  _synGroups.forEach(g => { if (g.some(m => _synKey(m) === key)) g.forEach(m => { if (_synKey(m) !== key) res.push(m); }); });
+  return res;
+}
+// মূল সার্চ + সমার্থক শব্দের ফলাফল (মূলটা আগে)
+function smartSearchProducts(query, list) {
+  const base = _smartSearchCore(query, list);
+  const alts = _synFor(query);
+  if (!alts.length) return base;
+  const seen = new Set(base.map(p => String(p.id))), out = base.slice();
+  alts.forEach(t => _smartSearchCore(t, list).forEach(p => { const k = String(p.id); if (!seen.has(k)) { seen.add(k); out.push(p); } }));
+  return out;
+}
+
+let _vocab = null, _vocabN = -1;
+function _buildVocab() {
+  if (_vocab && _vocabN === products.length) return _vocab;
+  const m = new Map();
+  products.forEach(p => [p.name, p.author, p.author_name, p.publisher].forEach(t => {
+    String(t || '').split(/[^\u0980-\u09FFA-Za-z0-9]+/).forEach(w => {
+      if (w.length < 3) return; const lw = w.toLowerCase(); m.set(lw, (m.get(lw) || 0) + 1);
+    });
+  }));
+  _vocab = [...m.entries()].map(([w, n]) => ({ w, n, key: _skelWords(w).join('') }));
+  _vocabN = products.length;
+  return _vocab;
+}
+// টাইপো হলে সবচেয়ে কাছের শব্দ দিয়ে নতুন সার্চ প্রস্তাব করে। typo=true মানে বানান ভুলই (শুধু বাংলা/বাংলিশ ভেদ নয়)
+function didYouMean(q) {
+  const toks = String(q || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!toks.length || !products.length) return null;
+  const vocab = _buildVocab();
+  let changed = false, typo = false;
+  const out = toks.map(w => {
+    if (w.length < 3 || _SEARCH_STOP.has(w)) return w;
+    const rm = String(bnTranslit(w)).toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const exists = products.some(p => _prodSearchData(p).f.some(([, fd]) => fd.raw.includes(w) || (rm.length >= 3 && fd.roman.replace(/ /g, '').includes(rm))));
+    if (exists) return w;                                         // শব্দটা কোনো বইয়ে হুবহু আছে — ঠিক আছে
+    const tk = _skelWords(w).join('');
+    if (tk.length < 2) return w;
+    const lim = tk.length >= 6 ? 2 : tk.length >= 3 ? 1 : 0;
+    let best = null;
+    for (const v of vocab) {
+      let d;
+      if (v.key === tk) d = 0.5;
+      else {
+        if (!lim || Math.abs(v.key.length - tk.length) > lim) continue;
+        const l = _lev(tk, v.key, lim); if (l > lim) continue; d = l;
+      }
+      if (!best || d < best.d || (d === best.d && v.n > best.n)) best = { d, n: v.n, w: v.w };
+    }
+    if (best) { changed = true; if (best.d >= 1) typo = true; return best.w; }
+    return w;
+  });
+  if (!changed) return null;
+  const text = out.join(' ');
+  return text === toks.join(' ') ? null : { text, typo };
+}
+function renderDidYouMean(q, list) {
+  const sub = document.getElementById('catPageSubtitle'); if (!sub || !sub.parentNode) return;
+  let box = document.getElementById('dymBox');
+  if (!box) { box = document.createElement('div'); box.id = 'dymBox'; box.className = 'bn'; sub.parentNode.insertBefore(box, sub.nextSibling); }
+  let s = null; try { s = didYouMean(q); } catch (e) {}
+  if (s && (list.length === 0 || s.typo) && _smartSearchCore(s.text, products).length) {
+    box.innerHTML = 'আপনি কি খুঁজছেন: <a data-q="' + _sgEsc(s.text) + '" onclick="openSearchPage(this.dataset.q)">' + _sgEsc(s.text) + '</a>';
+  } else box.innerHTML = '';
+}
+// কিছু না পাওয়া সার্চ অ্যাডমিনকে দেখানোর জন্য জমা রাখে (এক সেশনে একই সার্চ একবারই)
+function logSearchMiss(q) {
+  try {
+    const k = String(q || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 120); if (k.length < 2) return;
+    const seen = JSON.parse(sessionStorage.getItem('gm_sm') || '[]'); if (seen.includes(k)) return;
+    seen.push(k); sessionStorage.setItem('gm_sm', JSON.stringify(seen.slice(-50)));
+    sb.from('search_misses').insert({ query: k }).then(() => {}, () => {});
+  } catch (e) {}
+}
+
 function openSearchPage(q, pushUrl = true) {
   q = String(q || '').trim().replace(/\s+/g, ' ');
   if (!q) return;
@@ -9978,6 +10191,8 @@ function renderSearchPageProducts() {
   /* sort === 'popular' → মিলের ক্রমই থাকে */
   const subtitle = document.getElementById('catPageSubtitle');
   if (subtitle) subtitle.textContent = `${_bnDigits(list.length)} টি পণ্য পাওয়া গেছে`;
+  renderDidYouMean(currentSearchQuery, list);
+  if (!list.length) logSearchMiss(currentSearchQuery);
   if (!list.length) {
     grid.innerHTML = '';
     empty.style.display = 'block';
@@ -10326,6 +10541,7 @@ function _safeDecode(s) { try { return decodeURIComponent(s); } catch (e) { retu
 // URL বদলায় — আগের URL থেকে আলাদা হলে pushState, একই হলে replaceState
 // (এতে popstate/restore-এর সময় history-তে duplicate entry তৈরি হয় না)
 function _navTo(state, title, url, push = true) {
+  if (!state || state.page !== 'product') { try { _clearProductLd(); _restoreOg(); } catch (e) {} }
   const current = _safeDecode(location.pathname) + location.search;
   if (push && current !== url) history.pushState(state, title, url);
   else history.replaceState(state, title, url);
@@ -10365,15 +10581,60 @@ function findCategoryBySlug(raw) {
 
 function pushProductUrl(p, push = true) {
   const url = `/product/${productSlug(p)}`;
-  _navTo({ productId: p.id, slug: productSlug(p), page: 'product' }, `${p.name} — বুক গ্যালাক্সি`, url, push);
-  _setMeta(p.description ? String(p.description).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0, 155)
-                         : `${p.name} কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`, url);
+  const ttl = p.seo_title ? String(p.seo_title) : `${p.name} — বুক গ্যালাক্সি`;            // অ্যাডমিনের SEO ট্যাবে দেওয়া থাকলে সেটা
+  const desc = p.seo_description ? String(p.seo_description)
+    : (p.description ? String(p.description).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0, 155)
+                     : `${p.name} কিনুন বুক গ্যালাক্সি-তে। সেরা দামে, ক্যাশ অন ডেলিভারি।`);
+  _navTo({ productId: p.id, slug: productSlug(p), page: 'product' }, ttl, url, push);
+  _setMeta(desc, url);
+  try { _setOg(ttl, desc, p.seo_image || p.image_url, url); _setProductLd(p, url, desc); } catch (e) {}
+}
+// শেয়ার-ট্যাগ (og) ও গুগলের কাঠামোবদ্ধ ডেটা (দাম, স্টক, রিভিউ থাকলে তারা)
+let _ogDefaults = null;
+function _ogMeta(prop) {
+  let m = document.querySelector('meta[property="' + prop + '"]');
+  if (!m) { m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); }
+  return m;
+}
+function _setOg(title, desc, image, urlPath) {
+  if (!_ogDefaults) _ogDefaults = ['og:title', 'og:description', 'og:url', 'og:image'].map(k => [k, (document.querySelector('meta[property="' + k + '"]') || {}).content || '']);
+  const abs = u => /^https?:/i.test(u || '') ? u : location.origin + (u || '/favicon.png');
+  _ogMeta('og:title').content = title; _ogMeta('og:description').content = desc;
+  _ogMeta('og:url').content = location.origin + encodeURI(urlPath);
+  if (image) _ogMeta('og:image').content = abs(image);
+  _ogMeta('og:type').content = 'product';
+}
+function _restoreOg() {
+  if (!_ogDefaults) return;
+  _ogDefaults.forEach(([k, v]) => { if (v) _ogMeta(k).content = v; });
+  _ogMeta('og:type').content = 'website';
+}
+function _clearProductLd() { const e = document.getElementById('pdLd'); if (e) e.remove(); }
+function _setProductLd(p, urlPath, desc) {
+  _clearProductLd();
+  const price = Number(getEffectiveSalePrice(p).displayPrice) || Number(p.price) || 0;
+  const avail = p.is_preorder ? 'https://schema.org/PreOrder'
+    : (p.stock != null && Number(p.stock) <= 0 ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock');
+  const imgs = [p.seo_image || p.image_url].concat(Array.isArray(p.images) ? p.images : []).filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i).slice(0, 4).map(u => /^https?:/i.test(u) ? u : location.origin + u);
+  const d = { '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: desc, sku: String(p.id) };
+  if (imgs.length) d.image = imgs;
+  const brand = isBookProduct(p) ? (p.publisher || '') : (p.brand || '');
+  if (brand) d.brand = { '@type': 'Brand', name: brand };
+  if (isBookProduct(p) && (p.author || p.author_name)) d.author = { '@type': 'Person', name: String(p.author || p.author_name).split(/[,،]/)[0].trim() };
+  if (p.isbn) d.isbn = String(p.isbn);
+  d.offers = { '@type': 'Offer', url: location.origin + encodeURI(urlPath), priceCurrency: 'BDT', price: String(price), availability: avail, itemCondition: 'https://schema.org/NewCondition' };
+  const rm = (typeof _ratingMap !== 'undefined' && _ratingMap) ? _ratingMap[String(p.id)] : null;   // শুধু সত্যিকারের approved রিভিউ থাকলে
+  if (rm && rm.n >= 1) d.aggregateRating = { '@type': 'AggregateRating', ratingValue: String(Math.round(rm.sum / rm.n * 10) / 10), reviewCount: String(rm.n) };
+  const s = document.createElement('script'); s.type = 'application/ld+json'; s.id = 'pdLd'; s.textContent = JSON.stringify(d);
+  document.head.appendChild(s);
 }
 
 function restoreHomeUrl() {
   // pushState দিলে নতুন history entry হয় এবং popstate fire করে —
   // replaceState ব্যবহার করো যাতে শুধু URL পরিবর্তন হয়, event না ওঠে
   history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
+  try { _clearProductLd(); _restoreOg(); } catch (e) {}
   document.title = 'বুক গ্যালাক্সি';
 }
 
@@ -11328,7 +11589,8 @@ function renderCartItems() {
     </div>
     <div class="ci-price bn">৳${(getEffectiveSalePrice(item).displayPrice * item.qty).toLocaleString('en-US')}</div>
   </div>`;
-  }).join('');
+  }).join('') + '<div id="cartAlso" class="cart-also"></div>';
+  renderCartAlso();
   // Cart shows ONLY book subtotal (no delivery) — bulk-aware effective price ব্যবহার
   const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString('en-US')}`;
