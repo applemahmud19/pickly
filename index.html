@@ -11,6 +11,13 @@
 <link rel="shortcut icon" type="image/png"              id="favShortcut" href="/favicon.png?v=1.1" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#AA2C2D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="বুক গ্যালাক্সি">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>বুক গ্যালাক্সি - A Trusted Online Bookstore</title>
 <!--HOME-SEO-->
 <meta name="description" content="বুক গ্যালাক্সি — বাংলাদেশের বিশ্বস্ত অনলাইন বইয়ের দোকান। উপন্যাস, কবিতা, ইসলামী বই, একাডেমিক ও আরও হাজারো বই কম দামে, সারা দেশে হোম ডেলিভারি ও ক্যাশ অন ডেলিভারি।">
@@ -8725,6 +8732,7 @@ async function _restorePageFromUrl() {
 
 async function handleUser(user) {
   currentUser = user;
+  try { window.gmPushSync && gmPushSync(); } catch (e) {}   // পুশ সাবস্ক্রিপশন অ্যাকাউন্টের সাথে জোড়া
 
   // প্রোফাইল রো নিশ্চিত করো — সবার আগে, session cache/admin check-এর আগে, যাতে নতুন ইউজার সবসময় অ্যাডমিনের লিস্টে আসে
   if (window.__gmProfileEnsuredFor !== user.id) {
@@ -12151,6 +12159,27 @@ function isValidBDPhone(raw) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
+// ── ফেক অর্ডার ফিল্টার: ব্ল্যাকলিস্ট / ৩ বারের বেশি ফেরত হলে ভদ্র মেসেজ ──
+async function checkCustomerBlocked(phone, address) {
+  try {
+    const { data, error } = await sb.rpc('check_customer_blocked', { p_phone: phone, p_address: address || '' });
+    if (error) { console.warn('[block-check] skipped:', error.message); return false; }   // সেটআপ না থাকলে অর্ডার আটকাবে না
+    return !!(data && data.blocked);
+  } catch (e) { return false; }
+}
+function showBlockedCustomerDialog() {
+  if (document.getElementById('gmBlockedDlg')) return;
+  const d = document.createElement('div');
+  d.id = 'gmBlockedDlg';
+  d.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px';
+  d.innerHTML = `<div style="background:#fff;color:#222;max-width:380px;width:100%;border-radius:16px;padding:24px 22px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+    <div style="font-size:2rem;margin-bottom:8px">🙏</div>
+    <div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">দুঃখিত, সরাসরি অর্ডার নেওয়া যাচ্ছে না</div>
+    <div style="font-size:.9rem;line-height:1.6;color:#555;margin-bottom:16px">নিরাপত্তার কারণে এই মুহূর্তে ক্যাশ অন ডেলিভারিতে অর্ডার নেওয়া সম্ভব হচ্ছে না। অনুগ্রহ করে <strong>অগ্রিম পেমেন্ট</strong> (bKash / Nagad / Rocket) করে অর্ডার করুন। আমাদের সাথে যোগাযোগ করলে আমরা সাহায্য করব। ধন্যবাদ!</div>
+    <button onclick="document.getElementById('gmBlockedDlg').remove()" style="background:#AA2C2D;color:#fff;border:0;border-radius:10px;padding:10px 26px;font-size:.9rem;cursor:pointer">ঠিক আছে</button></div>`;
+  document.body.appendChild(d);
+}
+
 async function placeOrder() {
   // ── AUTH GATE (double-check) — লগইন না থাকলে কোনো DB call নয় ──
   if (!currentUser) {
@@ -12212,6 +12241,11 @@ async function placeOrder() {
   };
   { const _po = cartPreorderItem();   // প্রি-অর্ডার: প্রকাশের পর পুরো অর্ডার একসাথে যাবে
     if (_po) Object.assign(orderRow, { has_preorder:true, preorder_book_id:String(_po.id), preorder_release_date:_po.preorder_release_date || null, preorder_released:false }); }
+  // ── ফেক অর্ডার ফিল্টার ──
+  if (await checkCustomerBlocked(phone, address)) {
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
+    showBlockedCustomerDialog(); return;
+  }
   // ── ফ্ল্যাশ সেল: সার্ভারের ঘড়ি ও সীমা যাচাই করে সংখ্যা আটকে নাও ──
   const _fc = await flashClaimForCart();
   if (!_fc.ok) {
@@ -12226,6 +12260,7 @@ async function placeOrder() {
   }
   if (error) await flashRelease(_fc.claimed);   // অর্ডার না হলে সেলের সংখ্যা ফেরত
   btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন';
+  if(error && /BLOCKED_CUSTOMER/.test(error.message || '')){ showBlockedCustomerDialog(); return; }   // সার্ভার-সাইড ব্লক (ট্রিগার)
   if(error && /COUPON_UNAVAILABLE/.test(error.message || '')){
     const usedCode = appliedCoupon ? appliedCoupon.code : '';
     clearAppliedCoupon(); renderCartItems(); syncCheckoutCouponUI(true);
@@ -20679,6 +20714,94 @@ async function oaSubmit(){
   (function(){ var _cp = window.closePage; if(typeof _cp !== 'function') return;
     window.closePage = function(name){ if(name === 'profile'){ restoreOrders(); } return _cp.apply(this, arguments); };
   })();
+})();
+</script>
+<script>
+/* ══════════════════════════════════════
+   PWA: অ্যাপ ইনস্টল ব্যানার + পুশ নোটিফিকেশন
+   VAPID পাবলিক কী বসান (npx web-push generate-vapid-keys → Public Key)
+══════════════════════════════════════ */
+(function () {
+  const VAPID_PUBLIC_KEY = 'REPLACE_WITH_VAPID_PUBLIC_KEY';
+  const LS = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  const DAY = 86400000;
+  const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const pushReady = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !/^REPLACE_/.test(VAPID_PUBLIC_KEY);
+  const snoozed = k => { const t = Number(LS.get(k) || 0); return t && Date.now() - t < 14 * DAY; };
+
+  // ── Service Worker ──
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(e => console.warn('[sw]', e.message)); });
+  }
+
+  // ── ব্যানার (একসাথে একটাই) ──
+  let bar = null;
+  function hideBar() { if (bar) { bar.remove(); bar = null; } }
+  function showBar(icon, title, text, btnLabel, onBtn, snoozeKey) {
+    if (bar) return;
+    bar = document.createElement('div');
+    bar.setAttribute('role', 'dialog');
+    bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:99990;max-width:460px;margin:0 auto;background:var(--white,#fff);color:var(--text,#222);border:1px solid var(--border,rgba(0,0,0,.08));border-radius:16px;box-shadow:0 10px 36px rgba(0,0,0,.22);padding:14px 14px;display:flex;align-items:center;gap:12px;font-family:inherit';
+    bar.innerHTML = `<img src="/icon-192.png" alt="" width="44" height="44" style="border-radius:11px;flex-shrink:0">
+      <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.92rem;margin-bottom:2px">${title}</div><div style="font-size:.78rem;line-height:1.45;opacity:.75">${text}</div></div>
+      ${btnLabel ? `<button data-go style="background:#AA2C2D;color:#fff;border:0;border-radius:10px;padding:9px 14px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">${btnLabel}</button>` : ''}
+      <button data-x aria-label="বন্ধ করুন" style="background:none;border:0;font-size:1.1rem;cursor:pointer;color:inherit;opacity:.5;padding:4px">✕</button>`;
+    bar.querySelector('[data-x]').onclick = () => { LS.set(snoozeKey, String(Date.now())); hideBar(); };
+    const go = bar.querySelector('[data-go]');
+    if (go) go.onclick = async () => { await onBtn(); LS.set(snoozeKey, String(Date.now())); hideBar(); };
+    document.body.appendChild(bar);
+  }
+
+  // ── ইনস্টল ──
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferred = e;
+    if (standalone() || snoozed('gm_install_snooze')) return;
+    setTimeout(() => showBar('', 'অ্যাপ হিসেবে যোগ করুন', 'হোম স্ক্রিনে বুক গ্যালাক্সি আইকন রাখুন — এক ট্যাপে খুলুন, দ্রুত অর্ডার করুন।', 'যোগ করুন',
+      async () => { deferred.prompt(); try { await deferred.userChoice; } catch (e) {} deferred = null; }, 'gm_install_snooze'), 8000);
+  });
+  window.addEventListener('appinstalled', () => { hideBar(); deferred = null; LS.set('gm_installed', '1'); });
+  // iOS Safari-তে স্বয়ংক্রিয় প্রম্পট নেই — কীভাবে যোগ করবেন তা বলে দিই
+  if (isIOS && !standalone() && !snoozed('gm_install_snooze') && /safari/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent)) {
+    setTimeout(() => showBar('', 'অ্যাপ হিসেবে যোগ করুন', 'নিচের Share (⬆︎) বাটনে ট্যাপ করে "Add to Home Screen" বেছে নিন।', '', null, 'gm_install_snooze'), 10000);
+  }
+
+  // ── পুশ ──
+  const b64ToU8 = s => { const p = '='.repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+  async function saveSub(sub) {
+    const j = sub.toJSON();
+    const { error } = await sb.rpc('save_push_subscription', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth });
+    if (error) console.warn('[push] save failed:', error.message);
+  }
+  async function enablePush() {
+    if (!pushReady()) return false;
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return false;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(VAPID_PUBLIC_KEY) });
+    await saveSub(sub);
+    return true;
+  }
+  // লগইনের পর সাবস্ক্রিপশন অ্যাকাউন্টের সাথে জুড়ে দেয় (অর্ডার স্ট্যাটাস পুশের জন্য)
+  window.gmPushSync = async function () {
+    try {
+      if (!pushReady() || Notification.permission !== 'granted') return;
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await saveSub(sub);
+    } catch (e) { console.warn('[push] sync', e.message); }
+  };
+  window.gmEnablePush = enablePush;     // প্রোফাইলে "নোটিফিকেশন চালু করুন" বাটন চাইলে এটাই কল করুন
+
+  // লগইন করা ইউজারকে আস্তে করে একবার জিজ্ঞেস (ইনস্টল ব্যানার না থাকলে)
+  setTimeout(function tick() {
+    if (!pushReady() || Notification.permission !== 'default' || snoozed('gm_push_snooze')) return;
+    if (typeof currentUser === 'undefined' || !currentUser) return setTimeout(tick, 15000);
+    if (bar) return setTimeout(tick, 15000);
+    showBar('', 'অর্ডার ও অফারের আপডেট পান', 'অর্ডারের স্ট্যাটাস, ফ্ল্যাশ সেল আর নতুন বইয়ের খবর নোটিফিকেশনে জানিয়ে দেব।', 'চালু করুন',
+      async () => { const ok = await enablePush(); if (typeof toast === 'function') toast(ok ? 'নোটিফিকেশন চালু হয়েছে' : 'নোটিফিকেশন চালু হয়নি', ok ? 'এখন থেকে আপডেট পাবেন' : 'ব্রাউজার সেটিংস থেকে অনুমতি দিতে পারেন', ok ? 's' : 'w'); }, 'gm_push_snooze');
+  }, 20000);
 })();
 </script>
 </body>
