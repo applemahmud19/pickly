@@ -8260,13 +8260,59 @@ async function applyTrackingScripts() {
   } catch(e) { console.warn('[Tracking] fetch failed', e); }
 }
 applyTrackingScripts();
-// SPA পেজ বদলালে Meta Pixel-এ PageView পাঠাও (Google Analytics নিজে history change ধরে)
-(function(){
-  let first = true, last = location.pathname;
-  const fire = () => { if (location.pathname !== last) { last = location.pathname; try { window.fbq && fbq('track', 'PageView'); } catch(e) {} } };
-  ['pushState','replaceState'].forEach(m => { const o = history[m]; history[m] = function(){ const r = o.apply(this, arguments); setTimeout(fire, 0); return r; }; });
-  window.addEventListener('popstate', () => setTimeout(fire, 0));
-})();
+
+// ── ই-কমার্স ইভেন্ট: AddToCart / InitiateCheckout / Purchase ──
+// Meta Pixel (fbq) আর Google Analytics/Ads (gtag) থাকলে দুটোতেই পাঠায়; না থাকলে কিছুই করে না।
+function gmTrackEvent(fbName, gaName, p) {
+  try {
+    if (typeof fbq === 'function') {
+      const fbp = { content_type: 'product', currency: 'BDT', value: p.value, content_ids: p.ids, contents: p.contents, num_items: p.num };
+      if (p.name) fbp.content_name = p.name;
+      p.eventId ? fbq('track', fbName, fbp, { eventID: p.eventId }) : fbq('track', fbName, fbp);
+    }
+  } catch(e) {}
+  try {
+    if (typeof gtag === 'function') {
+      const g = { currency: 'BDT', value: p.value, items: p.contents.map(c => ({ item_id: c.id, item_name: c.name || '', price: c.item_price, quantity: c.quantity })) };
+      if (p.eventId) g.transaction_id = p.eventId;
+      gtag('event', gaName, g);
+    }
+  } catch(e) {}
+}
+function gmTrackAddToCart(p, qty) {
+  try {
+    let price = Number(p.price) || 0;
+    try { price = Number(getEffectiveSalePrice(p).displayPrice) || price; } catch(e) {}
+    const id = String(p.is_combo ? (p.combo_id || p.id) : p.id);
+    gmTrackEvent('AddToCart', 'add_to_cart', {
+      value: price * qty, ids: [id], num: qty, name: p.name,
+      contents: [{ id, name: p.name, quantity: qty, item_price: price }]
+    });
+  } catch(e) {}
+}
+function gmTrackCheckoutStart() {
+  try {
+    const contents = cart.map(x => {
+      let price = Number(x.price) || 0;
+      try { price = Number(getEffectiveSalePrice(x).displayPrice) || price; } catch(e) {}
+      return { id: String(x.is_combo ? (x.combo_id || x.id) : x.id), name: x.name, quantity: x.qty, item_price: price };
+    });
+    gmTrackEvent('InitiateCheckout', 'begin_checkout', {
+      value: contents.reduce((s, c) => s + c.item_price * c.quantity, 0),
+      ids: contents.map(c => c.id), num: contents.reduce((s, c) => s + c.quantity, 0), contents
+    });
+  } catch(e) {}
+}
+function gmTrackPurchase(orderNum, items, total) {
+  try {
+    const contents = items.map(x => ({ id: String(x.id), name: x.name, quantity: x.qty, item_price: Number(x.price) || 0 }));
+    gmTrackEvent('Purchase', 'purchase', {
+      value: Number(total) || 0, ids: contents.map(c => c.id),
+      num: contents.reduce((s, c) => s + c.quantity, 0), contents, eventId: orderNum
+    });
+  } catch(e) {}
+}
+
 
 
 // ══════════════════════════════════════════════════
@@ -11685,6 +11731,7 @@ function addToCart(p, qty=1) {
   }
   const ex = cart.find(x=>x.id===p.id);
   if(ex) ex.qty += qty; else cart.push({...p, qty});
+  gmTrackAddToCart(p, qty);
   updateCartBadge(); renderCartItems();
   toast('কার্টে যোগ হয়েছে!', `"${p.name.slice(0,22)}..." কার্টে যোগ করা হয়েছে`, 's');
 }
@@ -12085,6 +12132,7 @@ function openCheckout() {
   }
   if(currentUser){ document.getElementById('cEmail').value = currentUser.email||''; }
 
+  gmTrackCheckoutStart();
   renderCheckoutItems();
   populateDistricts();
   loadCheckoutAddress(); // Rokomari-style saved address card (non-blocking)
@@ -12428,6 +12476,7 @@ async function placeOrder() {
       if (pe) console.warn('[profile_autosave] failed (non-critical):', pe.message);
     });
   }
+  gmTrackPurchase(orderNum, items, total);   // Meta/Google-কে অর্ডার সফলের ইভেন্ট
   cart = []; clearAppliedCoupon(); updateCartBadge(); renderCartItems();
   try { sessionStorage.removeItem('gm_checkout_pending'); } catch(e) {}
   closePage('checkout');
