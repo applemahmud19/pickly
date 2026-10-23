@@ -11733,7 +11733,7 @@ function fdRenderBar() {
     : `<div class="fd-msg"><i class="fa-solid fa-truck-fast"></i> আর ৳${s.remain.toLocaleString('en-US')}-এর ${fdLabel(s.rule)} নিলে ডেলিভারি ফ্রি</div><div class="fd-track"><div class="fd-fill" style="width:${pct}%"></div></div>`;
   el.style.display = 'block';
 }
-document.addEventListener('DOMContentLoaded', () => { fdLoadRules(); });
+document.addEventListener('DOMContentLoaded', () => { fdLoadRules(); dcLoad(); });
 
 // ══════════════════════════════════════════════════
 // প্রি-অর্ডার (products.is_preorder / preorder_release_date / preorder_price)
@@ -16666,29 +16666,58 @@ const UPAZILA_EN = {
 })();
 
 
-// Districts that are considered "Dhaka" for delivery pricing
-const DHAKA_DISTRICTS = ['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'];
+// ডেলিভারি চার্জের নিয়ম (admin → site_settings.delivery_config); না পেলে নিচের ডিফল্ট
+const DC_DEFAULT = { inside:60, outside:75, extra_from:3, extra_inside:7, extra_outside:8, high_min:700, high_add:15,
+  dhaka_districts:['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'] };
+let dcCfg = null;
+function dcGet() { return Object.assign({}, DC_DEFAULT, dcCfg || {}); }
+async function dcLoad() {
+  try { const c = JSON.parse(localStorage.getItem('gm_dc_cfg') || 'null'); if (c && typeof c === 'object') dcCfg = c; } catch(e) {}
+  try {
+    const { data, error } = await sb.from('site_settings').select('delivery_config').eq('id',1).single();
+    if (!error && data && data.delivery_config && typeof data.delivery_config === 'object') {
+      dcCfg = data.delivery_config;
+      try { localStorage.setItem('gm_dc_cfg', JSON.stringify(dcCfg)); } catch(e) {}
+    }
+  } catch(e) { console.warn('[DeliveryCfg] fetch failed', e); }
+  if (typeof refreshCheckoutTotals === 'function') { try { refreshCheckoutTotals(); } catch(e) {} }
+}
 
 function isDhaka(district) {
-  return DHAKA_DISTRICTS.includes(district);
+  return dcGet().dhaka_districts.includes(district);
+}
+
+// পণ্যের নিজস্ব ডেলিভারি চার্জ (admin → products.delivery_charge_inside/outside); ফাঁকা হলে null
+function dcItemCustom(item, inside) {
+  const v = inside ? item.delivery_charge_inside : item.delivery_charge_outside;
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v); return isFinite(n) && n >= 0 ? n : null;
 }
 
 function calcDeliveryCharge() {
   const district = document.getElementById('cDistrict')?.value || '';
   if (!district) return 0;
   if (fdIsFree()) return 0;   // ফ্রি ডেলিভারি রুল পূরণ হলে চার্জ ০
-  const totalQty = cart.reduce((s,x)=>s+x.qty*(x.is_combo ? x.books.length : 1), 0);
-  const insideDhaka = isDhaka(district);
-  const baseCharge = insideDhaka ? 60 : 75;
-  let charge = baseCharge;
-  // Weight/Quantity: 3+ books → +7 TK per extra (Dhaka) or +8 TK (Outside)
-  if (totalQty >= 3) {
-    const extraBooks = totalQty - 2;
-    charge += extraBooks * (insideDhaka ? 7 : 8);
+  const c = dcGet(), inside = isDhaka(district);
+  let custom = 0, stdQty = 0, hasStd = false, hasHigh = false;
+  cart.forEach(x => {
+    if (x.is_combo) {
+      hasStd = true; stdQty += x.qty * x.books.length;
+      if (x.books.some(b => b.price > c.high_min)) hasHigh = true;
+      return;
+    }
+    const cv = dcItemCustom(x, inside);
+    if (cv !== null) { custom += cv * x.qty; return; }   // নির্দিষ্ট চার্জওয়ালা পণ্য: প্রতি পিসে ওই চার্জ
+    hasStd = true; stdQty += x.qty;
+    if (x.price > c.high_min) hasHigh = true;
+  });
+  let charge = custom;
+  if (hasStd) {
+    charge += inside ? c.inside : c.outside;
+    // পরিমাণ: extra_from বা তার বেশি পণ্য হলে প্রতিটি বাড়তি পণ্যে বাড়তি চার্জ
+    if (stdQty >= c.extra_from) charge += (stdQty - (c.extra_from - 1)) * (inside ? c.extra_inside : c.extra_outside);
+    if (hasHigh) charge += c.high_add;   // দামি পণ্য
   }
-  // High-value product: any single book > 700 TK → +15 TK
-  const hasHighValue = cart.some(item => item.is_combo ? item.books.some(b => b.price > 700) : item.price > 700);
-  if (hasHighValue) charge += 15;
   return charge;
 }
 
@@ -20961,12 +20990,23 @@ function oaInner(o){
 }
 function oaWrap(o){ if (!o || !o.id) return ''; window._oaOrders[o.id] = o; setTimeout(() => oaRefresh(o), 0); return `<div class="oa-wrap" data-oid="${o.id}">${oaInner(o)}</div>`; }
 function oaPaint(oid){ const o = window._oaOrders[oid]; if (!o) return; document.querySelectorAll('.oa-wrap[data-oid="' + oid + '"]').forEach(w => { w.innerHTML = oaInner(o); }); }
-async function oaRefresh(o, force){
-  if (!document.querySelector('.oa-wrap[data-oid="' + o.id + '"]')) return;
-  if (!force && Date.now() - (window._oaTs[o.id] || 0) < 15000) return;
+async function oaRefresh(o, force, tries){
+  tries = tries || 0;
+  /* পেজ DOM-এ বসতে দেরি হলে কয়েকবার আবার চেষ্টা করবে */
+  if (!document.querySelector('.oa-wrap[data-oid="' + o.id + '"]')) { if (tries < 8) setTimeout(() => oaRefresh(o, force, tries + 1), 400); return; }
+  if (!force && Date.now() - (window._oaTs[o.id] || 0) < 5000) return;
   window._oaTs[o.id] = Date.now();
-  try { const { data, error } = await sb.rpc('customer_order_requests', { p_order_id: o.id }); if (!error) { window._oaCache[o.id] = data || []; oaPaint(o.id); } } catch (e) {}
+  try {
+    const { data, error } = await sb.rpc('customer_order_requests', { p_order_id: o.id });
+    if (error) { console.warn('[customer_order_requests]', error.message); return; }
+    const next = data || [];
+    if (JSON.stringify(window._oaCache[o.id] || null) !== JSON.stringify(next)) { window._oaCache[o.id] = next; oaPaint(o.id); }
+  } catch (e) { console.warn('[oaRefresh]', e); }
 }
+/* অর্ডার পেজ খোলা থাকলে অ্যাডমিনের আপডেট নিজে থেকেই চলে আসবে */
+function oaRefreshVisible(){ if (document.hidden) return; document.querySelectorAll('.oa-wrap[data-oid]').forEach(w => { const o = window._oaOrders[w.getAttribute('data-oid')]; if (o) oaRefresh(o, true); }); }
+setInterval(oaRefreshVisible, 20000);
+document.addEventListener('visibilitychange', oaRefreshVisible);
 function oaModal(){ let m = document.getElementById('oaModal'); if (!m) { m = document.createElement('div'); m.id = 'oaModal'; m.className = 'oa-ov'; m.onclick = e => { if (e.target === m) oaClose(); }; document.body.appendChild(m); } return m; }
 function oaClose(){ const m = document.getElementById('oaModal'); if (m) m.classList.remove('open'); }
 function oaPick(inp){
