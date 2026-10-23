@@ -8488,81 +8488,71 @@ function gmTrackPurchase(orderNum, items, total) {
 // ══════════════════════════════════════════════════
 (async function initVisitorTracking() {
   try {
-    // ── 1. Daily-scoped session ID ──
-    // প্রতিদিন মধ্যরাতে নতুন session_id তৈরি হবে → নতুন unique row = নতুন ভিজিটর counted
-    const todayKey = new Date().toISOString().slice(0, 10); // "2025-05-17"
-    const storedDay = localStorage.getItem('gm_vday');
+    // ── 1. Visit session (GA-এর মতো): ৩০ মিনিট inactive থাকলে বা নতুন করে এলে = নতুন ভিজিট ──
+    // একই মানুষ দিনে ৩ বার এলে মোট ভিজিট = ৩, কিন্তু ইউনিক = ১ (visitor_id একই)
+    const VISIT_GAP = 30 * 60 * 1000;
+    const lsGet = (k) => { try { return localStorage.getItem(k); } catch(e) { return null; } };
+    const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} };
+    const newId = () => (crypto.randomUUID ? crypto.randomUUID()
+                   : Date.now().toString(36) + Math.random().toString(36).slice(2));
 
-    let sid = sessionStorage.getItem('gm_vsid');
-
-    // নতুন দিন অথবা প্রথমবার → নতুন session_id বানাও
-    if (!sid || storedDay !== todayKey) {
-      sid = (crypto.randomUUID ? crypto.randomUUID()
-           : Date.now().toString(36) + Math.random().toString(36).slice(2));
-      sessionStorage.setItem('gm_vsid', sid);
-      localStorage.setItem('gm_vday', todayKey);
-    }
-
-    // ── 1b. Persistent visitor ID (কখনো expire হয় না) ──
-    // একই browser থেকে যতবারই আসুক, visitor_id একই থাকবে → admin-এ "ইউনিক ভিজিটর" গোনা যাবে
-    let vid = null;
-    try {
-      vid = localStorage.getItem('gm_vid');
-      if (!vid) {
-        vid = (crypto.randomUUID ? crypto.randomUUID()
-             : Date.now().toString(36) + Math.random().toString(36).slice(2));
-        localStorage.setItem('gm_vid', vid);
-      }
-    } catch(e) { vid = null; }
+    // ── Persistent visitor ID (কখনো expire হয় না) ──
+    let vid = lsGet('gm_vid');
+    if (!vid) { vid = newId(); lsSet('gm_vid', vid); }
 
     const page = window.location.pathname || '/';
-    const now  = new Date().toISOString();
+    let sid = null;
 
-    // ── 2. Insert-only (ignoreDuplicates: true) ──
-    // Same session_id একই দিনে দ্বিতীয়বার এলে skip → created_at কখনো overwrite হবে না
-    // নতুন দিনে নতুন sid → নতুন row insert → সেই দিনের count-এ যোগ হবে
-    const vRow = {
-      session_id: sid,
-      created_at: now,
-      last_seen:  now,
-      page:       page,
-      is_active:  true,
-    };
-    if (vid) vRow.visitor_id = vid;
-    const vOpts = { onConflict: 'session_id', ignoreDuplicates: true }; // ← conflict হলে কিছুই করবে না
-    let { error } = await sb.from('visitor_logs').upsert(vRow, vOpts);
-    // visitor_id column এখনো DB-তে যোগ না হয়ে থাকলে (SQL রান করা হয়নি) → আগের মতোই visitor_id ছাড়া insert
-    if (error && vRow.visitor_id && /visitor_id/i.test(error.message || '')) {
-      delete vRow.visitor_id;
-      ({ error } = await sb.from('visitor_logs').upsert(vRow, vOpts));
+    async function startVisit() {
+      sid = newId();
+      const now = new Date().toISOString();
+      const vRow = { session_id: sid, created_at: now, last_seen: now, page: page, is_active: true, visitor_id: vid };
+      const vOpts = { onConflict: 'session_id', ignoreDuplicates: true };
+      let { error } = await sb.from('visitor_logs').upsert(vRow, vOpts);
+      if (error && /visitor_id/i.test(error.message || '')) {
+        delete vRow.visitor_id; // SQL এখনো রান হয়নি
+        ({ error } = await sb.from('visitor_logs').upsert(vRow, vOpts));
+      }
+      if (error) console.warn('[Visitor] insert error:', error.message);
+      sessionStorage.setItem('gm_vsid', sid);
+      lsSet('gm_vlast', String(Date.now()));
     }
-    if (error) console.warn('[Visitor] insert error:', error.message);
 
-    // ── 4. Heartbeat: update last_seen every 30s to mark as "live" ──
+    // এই tab-এ চলমান visit আছে (reload/পেজ বদল) এবং ৩০ মিনিটের মধ্যে → একই ভিজিট; না হলে নতুন ভিজিট
+    const prevSid  = sessionStorage.getItem('gm_vsid');
+    const lastSeen = Number(lsGet('gm_vlast') || 0);
+    if (prevSid && (Date.now() - lastSeen) < VISIT_GAP) {
+      sid = prevSid;
+      lsSet('gm_vlast', String(Date.now()));
+    } else {
+      await startVisit();
+    }
+
+    // ── Heartbeat: প্রতি ৩০ সেকেন্ডে last_seen আপডেট (live count) ──
     setInterval(async () => {
       try {
+        if (document.hidden) return;
+        // অনেকক্ষণ inactive থাকার পর ফিরলে নতুন ভিজিট
+        if ((Date.now() - Number(lsGet('gm_vlast') || 0)) > VISIT_GAP) { await startVisit(); return; }
+        lsSet('gm_vlast', String(Date.now()));
         await sb.from('visitor_logs')
           .update({ last_seen: new Date().toISOString(), is_active: true })
           .eq('session_id', sid);
       } catch(e) { /* silent */ }
     }, 30000);
 
-    // ── 5. Mark inactive on page hide/close ──
     document.addEventListener('visibilitychange', async () => {
-      if (document.hidden) {
-        try {
-          await sb.from('visitor_logs')
-            .update({ is_active: false })
-            .eq('session_id', sid);
-        } catch(e) { /* silent */ }
-      } else {
-        // Page visible again → mark active + refresh last_seen
-        try {
+      try {
+        if (document.hidden) {
+          await sb.from('visitor_logs').update({ is_active: false }).eq('session_id', sid);
+        } else {
+          if ((Date.now() - Number(lsGet('gm_vlast') || 0)) > VISIT_GAP) { await startVisit(); return; }
+          lsSet('gm_vlast', String(Date.now()));
           await sb.from('visitor_logs')
             .update({ last_seen: new Date().toISOString(), is_active: true })
             .eq('session_id', sid);
-        } catch(e) { /* silent */ }
-      }
+        }
+      } catch(e) { /* silent */ }
     });
   } catch(e) {
     console.warn('[Visitor] tracking init failed:', e.message);
