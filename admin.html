@@ -1617,6 +1617,7 @@ body {
   #orderTableBody tr.order-row td:nth-child(1){font-size:.8rem !important;text-align:left}
   #orderTableBody tr.order-row td:nth-child(9) select{width:100%;min-height:38px}
 }
+@media(max-width:900px){.sp-grid{grid-template-columns:1fr !important}}
 </style>
 </head>
 <body>
@@ -1752,6 +1753,9 @@ body {
       </div>
       <div class="nav-item" data-sec="blog">
         <i class="fa-solid fa-pen-nib"></i> <span style="font-family:var(--font-bn)">ব্লগ ম্যানেজার</span>
+      </div>
+      <div class="nav-item" data-sec="subpages">
+        <i class="fa-solid fa-bookmark"></i> <span style="font-family:var(--font-bn)">সাব-ক্যাটাগরি পেজ</span>
       </div>
       <div class="nav-item" data-sec="settings">
         <i class="fa-solid fa-gear"></i> Settings
@@ -3160,6 +3164,48 @@ grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, 
             <button class="btn btn-primary btn-sm" onclick="SEO.autoAll()"><i class="fa-solid fa-wand-magic-sparkles"></i> সবার জন্য অটো লিখে দাও</button>
           </div>
           <div class="table-wrap"><table class="data-table"><thead><tr><th>বই</th><th>লেখক</th><th>Actions</th></tr></thead><tbody id="seoBookBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="section" id="sec-subpages">
+        <div style="display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start" class="sp-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-bookmark"></i></div><span style="font-family:var(--font-bn)">তৈরি করা পেজ</span></div>
+              <button class="btn btn-primary btn-xs" onclick="SP.newPage()"><i class="fa-solid fa-plus"></i> <span style="font-family:var(--font-bn)">নতুন</span></button>
+            </div>
+            <div id="spList" style="padding:8px"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-book-medical"></i></div><span style="font-family:var(--font-bn)" id="spEditorTitle">নতুন সাব-ক্যাটাগরি পেজ</span></div>
+              <a id="spViewLink" class="btn btn-secondary btn-xs" target="_blank" rel="noopener" style="display:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> <span style="font-family:var(--font-bn)">পেজ দেখুন</span></a>
+            </div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+              <div>
+                <label style="font-family:var(--font-bn);font-size:0.78rem;font-weight:600;display:block;margin-bottom:5px">সাব-ক্যাটাগরির নাম (এটাই বইয়ের স্পেসিফিকেশনে দেখাবে)</label>
+                <input class="form-inp" id="spName" list="spNameList" placeholder="যেমন: Japanese Book" autocomplete="off" style="width:100%">
+                <datalist id="spNameList"></datalist>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <input class="form-inp" id="spSearch" placeholder="বইয়ের নাম / লেখক দিয়ে খুঁজুন…" oninput="SP.render()" style="flex:1;min-width:180px">
+                <select class="form-inp" id="spFilter" onchange="SP.render()" style="width:auto">
+                  <option value="all">সব বই</option>
+                  <option value="sel">শুধু বাছাই করা</option>
+                  <option value="none">সাব-ক্যাটাগরি নেই</option>
+                </select>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--font-bn);font-size:0.78rem;color:var(--text3)">
+                <span id="spCount">০টি বাছাই</span>
+                <span><a href="javascript:void(0)" onclick="SP.selectShown(true)" style="color:var(--blue)">দেখানোগুলো সব বাছুন</a> · <a href="javascript:void(0)" onclick="SP.selectShown(false)" style="color:var(--blue)">বাদ দিন</a></span>
+              </div>
+              <div id="spBooks" style="max-height:480px;overflow:auto;border:1px solid var(--border);border-radius:10px"></div>
+              <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn btn-secondary" id="spDelBtn" onclick="SP.removePage()" style="display:none;margin-right:auto"><i class="fa-solid fa-trash"></i> <span style="font-family:var(--font-bn)">পেজ মুছুন</span></button>
+                <button class="btn btn-primary" id="spSaveBtn" onclick="SP.save()"><i class="fa-solid fa-floppy-disk"></i> <span style="font-family:var(--font-bn)">সেভ করুন</span></button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -9681,6 +9727,120 @@ function abRemove(id) { _abIds = _abIds.filter(x => x !== String(id)); abRender(
 // ══════════════════════════════════════════════════
 // SEO — বইয়ের মেটা টাইটেল/ডেসক্রিপশন/শেয়ার ছবি + সার্চ ম্যানেজমেন্ট
 // ══════════════════════════════════════════════════
+
+/* ══════════════════════════════════════════════════
+   সাব-ক্যাটাগরি পেজ ম্যানেজার
+   — বই বেছে একটি সাব-ক্যাটাগরি নাম দিলে products.sub_category সেট হয়;
+     সাইটের /subcategory/<নাম> পেজ ও স্পেসিফিকেশনের লিংক আগে থেকেই এটা ব্যবহার করে।
+══════════════════════════════════════════════════ */
+const SP = {
+  sel: new Set(), orig: null, editing: '',
+  _key(s){ return String(s||'').normalize('NFC').replace(/\s+/g,' ').trim().toLowerCase(); },
+  _name(){ return String(document.getElementById('spName').value||'').normalize('NFC').replace(/\s+/g,' ').trim(); },
+  async load(){
+    if (!allProducts.length) { try { await loadProducts(); } catch(e) {} }
+    this.renderList(); this.render();
+  },
+  groups(){
+    const m = new Map();
+    allProducts.forEach(p => { const n = String(p.sub_category||'').trim(); if (!n) return; const k = this._key(n); if (!m.has(k)) m.set(k,{name:n,ids:[]}); m.get(k).ids.push(p.id); });
+    return [...m.values()].sort((a,b)=>a.name.localeCompare(b.name));
+  },
+  url(name){ return 'https://' + SEO_HOST + '/subcategory/' + encodeURIComponent(name); },
+  renderList(){
+    const g = this.groups();
+    document.getElementById('spNameList').innerHTML = g.map(x=>`<option value="${escHtml(x.name)}">`).join('');
+    document.getElementById('spList').innerHTML = g.length ? g.map(x=>`
+      <div onclick="SP.open(this.dataset.n)" data-n="${escHtml(x.name)}" style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid ${this._key(x.name)===this._key(this.editing)?'var(--blue)':'var(--border)'};border-radius:10px;margin-bottom:6px;cursor:pointer">
+        <i class="fa-solid fa-bookmark" style="color:var(--blue)"></i>
+        <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(x.name)}</div>
+        <div style="font-size:0.7rem;color:var(--text3);font-family:var(--font-bn)">${x.ids.length}টি বই</div></div>
+        <i class="fa-solid fa-pen" style="font-size:0.72rem;color:var(--text3)"></i>
+      </div>`).join('') : '<div style="padding:18px;text-align:center;color:var(--text3);font-family:var(--font-bn);font-size:0.8rem">এখনো কোনো পেজ নেই। ডানে নাম দিয়ে বই বাছুন।</div>';
+  },
+  newPage(){
+    this.editing=''; this.sel=new Set(); this.orig=new Set();
+    document.getElementById('spName').value='';
+    this.afterOpen();
+  },
+  open(name){
+    const k=this._key(name);
+    this.editing=name;
+    this.orig=new Set(allProducts.filter(p=>this._key(p.sub_category)===k).map(p=>String(p.id)));
+    this.sel=new Set(this.orig);
+    document.getElementById('spName').value=name;
+    this.afterOpen();
+  },
+  afterOpen(){
+    document.getElementById('spEditorTitle').textContent = this.editing ? 'এডিট: ' + this.editing : 'নতুন সাব-ক্যাটাগরি পেজ';
+    const a=document.getElementById('spViewLink');
+    a.style.display=this.editing?'':'none'; if(this.editing) a.href=this.url(this.editing);
+    document.getElementById('spDelBtn').style.display=this.editing?'':'none';
+    document.getElementById('spSearch').value=''; document.getElementById('spFilter').value='all';
+    this.renderList(); this.render();
+  },
+  toggle(id,on){ id=String(id); on?this.sel.add(id):this.sel.delete(id); this.updCount(); },
+  updCount(){ document.getElementById('spCount').textContent = this.sel.size + 'টি বাছাই'; },
+  shown(){
+    const q=this._key(document.getElementById('spSearch').value), f=document.getElementById('spFilter').value;
+    return allProducts.filter(p=>{
+      if (q && !this._key([p.name,p.author,p.brand,p.publisher].join(' ')).includes(q)) return false;
+      if (f==='sel' && !this.sel.has(String(p.id))) return false;
+      if (f==='none' && String(p.sub_category||'').trim()) return false;
+      return true;
+    });
+  },
+  render(){
+    if (!this.orig) { this.orig=new Set(); }
+    const list=this.shown().slice(0,300);
+    document.getElementById('spBooks').innerHTML = list.length ? list.map(p=>{
+      const sc=String(p.sub_category||'').trim(), mine=sc && this._key(sc)===this._key(this.editing);
+      return `<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;${p.is_active===false?'opacity:.55':''}">
+        <input type="checkbox" ${this.sel.has(String(p.id))?'checked':''} onchange="SP.toggle('${String(p.id).replace(/'/g,"\\'")}',this.checked)">
+        ${p.image_url?`<img src="${escHtml(p.image_url)}" loading="lazy" style="width:34px;height:44px;object-fit:contain;border-radius:4px;background:#f8f9fa;border:1px solid var(--border)">`:'<div style="width:34px;height:44px;background:var(--bg3);border-radius:4px"></div>'}
+        <div style="flex:1;min-width:0"><div style="font-size:0.83rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(p.name||'')}</div>
+        <div style="font-size:0.7rem;color:var(--text3)">${escHtml(p.author||p.brand||'')}${p.category?' · '+escHtml(p.category):''}</div></div>
+        ${sc && !mine?`<span style="font-size:0.66rem;background:var(--bg3);color:var(--text3);padding:2px 8px;border-radius:100px;white-space:nowrap;font-family:var(--font-bn)">এখন: ${escHtml(sc)}</span>`:''}
+      </label>`; }).join('') + (this.shown().length>300?'<div style="padding:10px;text-align:center;font-size:0.75rem;color:var(--text3);font-family:var(--font-bn)">আরও আছে — সার্চ করে খুঁজুন</div>':'')
+      : '<div style="padding:24px;text-align:center;color:var(--text3);font-family:var(--font-bn);font-size:0.8rem">কোনো বই পাওয়া যায়নি</div>';
+    this.updCount();
+  },
+  selectShown(on){ this.shown().forEach(p=>on?this.sel.add(String(p.id)):this.sel.delete(String(p.id))); this.render(); },
+  async save(){
+    const name=this._name();
+    if (!name) return toast('নাম দিন','সাব-ক্যাটাগরির নাম লিখুন','error');
+    if (!sb) return;
+    const nk=this._key(name), ek=this._key(this.editing);
+    const byId=new Map(allProducts.map(p=>[String(p.id),p]));
+    const toSet=[...this.sel].filter(id=>{ const p=byId.get(id); return p && String(p.sub_category||'').trim()!==name; });
+    const toClear=[...this.orig].filter(id=>!this.sel.has(id));
+    const overwrite=toSet.filter(id=>{ const c=String(byId.get(id).sub_category||'').trim(); return c && this._key(c)!==nk && this._key(c)!==ek; });
+    if (!this.editing && this.groups().some(g=>this._key(g.name)===nk) && !confirm('"'+name+'" নামে পেজ আগে থেকেই আছে। বাছাই করা বইগুলো ওই পেজে যোগ হবে। চালিয়ে যাবেন?')) return;
+    if (overwrite.length && !confirm(overwrite.length+'টি বইয়ের আগের সাব-ক্যাটাগরি বদলে "'+name+'" হবে (একটি বইয়ের একটাই সাব-ক্যাটাগরি থাকে)। চালিয়ে যাবেন?')) return;
+    if (!toSet.length && !toClear.length) return toast('কোনো পরিবর্তন নেই','','warning');
+    const btn=document.getElementById('spSaveBtn'); btn.disabled=true;
+    try {
+      const run=async(ids,val)=>{ for(let i=0;i<ids.length;i+=100){ const part=ids.slice(i,i+100).map(id=>byId.get(id).id);
+        const {error}=await sb.from('products').update({sub_category:val}).in('id',part); if(error) throw error; } };
+      await run(toSet,name); await run(toClear,null);
+      toast('সেভ হয়েছে', toSet.length+'টি যোগ, '+toClear.length+'টি বাদ','success');
+      await loadProducts();
+      this.open(name);
+    } catch(e){ toast('ত্রুটি', e.message||'সেভ হয়নি','error'); }
+    btn.disabled=false;
+  },
+  async removePage(){
+    if (!this.editing || !sb) return;
+    const ids=[...this.orig].map(id=>allProducts.find(p=>String(p.id)===id)).filter(Boolean).map(p=>p.id);
+    if (!confirm('"'+this.editing+'" পেজ মুছবেন? '+ids.length+'টি বইয়ের সাব-ক্যাটাগরি ফাঁকা হবে (বই মুছবে না)।')) return;
+    try {
+      for(let i=0;i<ids.length;i+=100){ const {error}=await sb.from('products').update({sub_category:null}).in('id',ids.slice(i,i+100)); if(error) throw error; }
+      toast('পেজ মুছে গেছে','','success'); await loadProducts(); this.newPage();
+    } catch(e){ toast('ত্রুটি', e.message||'মোছা যায়নি','error'); }
+  }
+};
+window.SP = SP;
+
 const SEO_HOST = 'bookgalaxybd.shop';
 let _seoWas = '';
 function seoGen(p) {
@@ -9824,7 +9984,7 @@ function navTo(sec) {
   document.getElementById('sec-' + sec).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.sec === sec));
   if (sec === 'settings') { loadCurrentBranding(); loadCurrentSocialLinks(); loadTrackingScripts(); }
-  const titles = { seo:'সার্চ ও SEO', flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', blacklist:'ব্ল্যাকলিস্ট', push:'পুশ নোটিফিকেশন', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার' };
+  const titles = { seo:'সার্চ ও SEO', flash:'ফ্ল্যাশ সেল', combos:'কম্বো অফার', freedel:'ফ্রি ডেলিভারি', blacklist:'ব্ল্যাকলিস্ট', push:'পুশ নোটিফিকেশন', requests:'Order Requests & Reports', dashboard:'Dashboard', products:'Products', orders:'Orders', users:'users', analytics:'Analytics', settings:'Settings', banners:'Banner Management', promos:'Promo Codes', admins:'Manage Admins', categories:'Category Management', cms:'কন্টেন্ট ম্যানেজার', questions:'Product Questions', reviews:'Reviews & Ratings', finder:'Magical Book Finder', blog:'ব্লগ ম্যানেজার', subpages:'সাব-ক্যাটাগরি পেজ' };
   document.getElementById('topbarTitle').textContent = titles[sec] || sec;
   if (sec === 'orders')     loadOrders();
   if (sec === 'banners')    loadBannersFromSupabase();
@@ -9845,6 +10005,7 @@ function navTo(sec) {
   if (sec === 'reviews')    loadReviewsAdmin();
   if (sec === 'requests')   loadOrderRequests();
   if (sec === 'finder')     loadFinder();
+  if (sec === 'subpages')   SP.load();
   // URL: admin.html#/products, #/orders ...
   if (location.hash !== '#/' + sec) history.pushState({ sec }, '', '#/' + sec);
   document.title = (titles[sec] || sec) + ' — বুক গ্যালাক্সি Admin';
@@ -11395,6 +11556,8 @@ async function loadBookSubCategoriesForGenre(genreName, selectedVal = '') {
   if (loading) loading.style.display = 'none';
 
   const currentVal = selectedVal || sel.getAttribute('data-pending-val') || '';
+  // সাব-ক্যাটাগরি পেজ ম্যানেজার থেকে বসানো নাম sub_categories টেবিলে নাও থাকতে পারে — তাই অপশনে রাখা হচ্ছে, না হলে এডিটে মুছে যেত
+  if (currentVal && !items.some(s => s.name === currentVal)) items = [...items, { name: currentVal }];
   sel.innerHTML = `<option value="">— সিলেক্ট করুন (ঐচ্ছিক) —</option>` +
     items.map(s => `<option value="${escHtml(s.name)}" ${s.name === currentVal ? 'selected' : ''}>${escHtml(s.name)}</option>`).join('');
   sel.removeAttribute('data-pending-val');
