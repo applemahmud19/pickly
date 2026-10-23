@@ -8503,22 +8503,39 @@ function gmTrackPurchase(orderNum, items, total) {
       localStorage.setItem('gm_vday', todayKey);
     }
 
+    // ── 1b. Persistent visitor ID (কখনো expire হয় না) ──
+    // একই browser থেকে যতবারই আসুক, visitor_id একই থাকবে → admin-এ "ইউনিক ভিজিটর" গোনা যাবে
+    let vid = null;
+    try {
+      vid = localStorage.getItem('gm_vid');
+      if (!vid) {
+        vid = (crypto.randomUUID ? crypto.randomUUID()
+             : Date.now().toString(36) + Math.random().toString(36).slice(2));
+        localStorage.setItem('gm_vid', vid);
+      }
+    } catch(e) { vid = null; }
+
     const page = window.location.pathname || '/';
     const now  = new Date().toISOString();
 
     // ── 2. Insert-only (ignoreDuplicates: true) ──
     // Same session_id একই দিনে দ্বিতীয়বার এলে skip → created_at কখনো overwrite হবে না
     // নতুন দিনে নতুন sid → নতুন row insert → সেই দিনের count-এ যোগ হবে
-    const { error } = await sb.from('visitor_logs').upsert(
-      {
-        session_id: sid,
-        created_at: now,
-        last_seen:  now,
-        page:       page,
-        is_active:  true,
-      },
-      { onConflict: 'session_id', ignoreDuplicates: true } // ← conflict হলে কিছুই করবে না
-    );
+    const vRow = {
+      session_id: sid,
+      created_at: now,
+      last_seen:  now,
+      page:       page,
+      is_active:  true,
+    };
+    if (vid) vRow.visitor_id = vid;
+    const vOpts = { onConflict: 'session_id', ignoreDuplicates: true }; // ← conflict হলে কিছুই করবে না
+    let { error } = await sb.from('visitor_logs').upsert(vRow, vOpts);
+    // visitor_id column এখনো DB-তে যোগ না হয়ে থাকলে (SQL রান করা হয়নি) → আগের মতোই visitor_id ছাড়া insert
+    if (error && vRow.visitor_id && /visitor_id/i.test(error.message || '')) {
+      delete vRow.visitor_id;
+      ({ error } = await sb.from('visitor_logs').upsert(vRow, vOpts));
+    }
     if (error) console.warn('[Visitor] insert error:', error.message);
 
     // ── 4. Heartbeat: update last_seen every 30s to mark as "live" ──
