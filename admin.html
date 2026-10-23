@@ -496,6 +496,8 @@ body {
 .pill-cancelled::before  { background: var(--red); }
 .pill-returned   { background: rgba(232,89,12,0.10);   color: #E8590C;    border: 1px solid rgba(232,89,12,0.28); }
 .pill-returned::before   { background: #E8590C; }
+.pill-on_hold    { background: rgba(13,148,136,0.10);  color: #0D9488;  border: 1px solid rgba(13,148,136,0.28); }
+.pill-on_hold::before    { background: #0D9488; }
 .pill-active     { background: rgba(52,199,89,0.10);   color: var(--green);  border: 1px solid rgba(52,199,89,0.25); }
 .pill-active::before     { background: var(--green); }
 .pill-inactive   { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
@@ -613,6 +615,7 @@ body {
 .status-select[data-status="shipped"]    { color: var(--cyan);   border-color: rgba(50,173,230,0.35); }
 .status-select[data-status="delivered"]  { color: var(--green);  border-color: rgba(52,199,89,0.35); }
 .status-select[data-status="cancelled"]  { color: var(--red);    border-color: rgba(255,59,48,0.3); }
+.status-select[data-status="on_hold"]    { color: #0D9488;       border-color: rgba(13,148,136,0.35); }
 
 /* ═══════════════════════════════════════
    FORM ELEMENTS
@@ -1935,6 +1938,7 @@ body {
           <div class="om-bulk" id="omBulk">
             <b id="omBulkCount">0</b> <span>টি সিলেক্টেড</span>
             <button class="om-btn primary" style="--omc:var(--blue)" onclick="omBulkNext()"><i class="fa-solid fa-forward-step"></i> পরের ধাপে পাঠান</button>
+            <button class="om-btn warn" onclick="omBulkHold()"><i class="fa-solid fa-circle-pause"></i> হোল্ড</button>
             <button class="om-btn danger" onclick="omBulkCancel()"><i class="fa-solid fa-ban"></i> বাতিল</button>
             <button class="om-btn" onclick="omClearSel()">সিলেকশন মুছুন</button>
           </div>
@@ -2052,6 +2056,7 @@ body {
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
                 <option value="returned">Returned</option>
+                <option value="on_hold">On Hold</option>
               </select>
               <button class="btn btn-ghost btn-sm filter-refresh" onclick="loadOrders()">
                 <i class="fa-solid fa-rotate-right"></i> <span>Refresh</span>
@@ -4221,7 +4226,8 @@ grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, 
         <select class="form-inp" id="orStatus" style="padding:8px 10px;font-size:0.84rem">
           <option value="open">নতুন</option><option value="in_progress">দেখা হচ্ছে</option><option value="resolved">সমাধান হয়েছে</option><option value="rejected">প্রত্যাখ্যাত</option></select></div>
       <div class="form-group"><label class="form-label">গ্রাহককে উত্তর / আপডেট <span style="font-weight:400;text-transform:none">(গ্রাহক নিজের অর্ডার পেজে দেখবে)</span></label>
-        <textarea class="form-inp" id="orNote" rows="3" style="font-family:var(--font-bn)" placeholder="যেমন: আপনার বই বদলে দেওয়া হবে, আমরা ফোন করব..."></textarea></div>
+        <textarea class="form-inp" id="orNote" rows="3" style="font-family:var(--font-bn)" placeholder="যেমন: আপনার বই বদলে দেওয়া হবে, আমরা ফোন করব..."></textarea>
+        <div id="orTpls" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:7px"></div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn btn-ghost btn-sm" onclick="orViewOrder()">অর্ডার দেখুন</button>
         <button class="btn btn-sm" id="orAcceptBtn" style="background:var(--red);color:#fff" onclick="orAcceptCancel()">অনুরোধ গ্রহণ — অর্ডার বাতিল</button>
@@ -5257,7 +5263,7 @@ CREATE POLICY "allow_all" ON order_status_history FOR ALL USING (true) WITH CHEC
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
 ALTER TABLE orders ADD CONSTRAINT orders_status_check
   CHECK (status IN ('pending','confirmed','in_stock','collecting','collected',
-                    'processing','shipped','delivered','cancelled'));`;
+                    'processing','shipped','delivered','cancelled','returned','on_hold'));`;
 
   const banner = document.createElement('div');
   banner.id = 'dbSetupBanner';
@@ -5935,6 +5941,7 @@ const OM_DEF = [
   { k:'processing', en:'Processing',  bn:'প্রসেসিং',       sub:'প্যাকিং চলছে',      ic:'fa-box-open',      c:'#32ADE6' },
   { k:'shipped',    en:'Shipped',     bn:'শিপিং এ আছে',    sub:'on shipping',       ic:'fa-truck-fast',    c:'#AF52DE' },
   { k:'delivered',  en:'Delivered',   bn:'ডেলিভারড',       sub:'সম্পন্ন',           ic:'fa-check-double',  c:'#34C759' },
+  { k:'on_hold',    en:'On Hold',     bn:'হোল্ড',          sub:'স্থগিত',            ic:'fa-circle-pause',  c:'#0D9488' },
   { k:'cancelled',  en:'Cancelled',   bn:'বাতিল',          sub:'cancel',            ic:'fa-ban',           c:'#FF3B30' },
   { k:'returned',   en:'Returned',    bn:'রিটার্ন',        sub:'ফেরত এসেছে',        ic:'fa-rotate-left',   c:'#E8590C' },
 ];
@@ -5952,7 +5959,7 @@ const omBusy = new Set();
 
 function omStatusOf(o) {
   const s = o.status;
-  if (['pending','confirmed','processing','shipped','delivered','cancelled','returned'].includes(s)) return s;
+  if (['pending','confirmed','processing','shipped','delivered','cancelled','returned','on_hold'].includes(s)) return s;
   if (['in_stock','collecting','collected'].includes(s)) return 'processing';
   return 'pending';
 }
@@ -6024,6 +6031,48 @@ async function omBulkCancel() {
   renderOrderManager();
 }
 
+/* ── ORDER HOLD ── */
+const OM_HOLDABLE = ['pending','confirmed','processing'];
+function omHoldNote(reason) {
+  reason = (reason || '').trim();
+  return reason ? `অর্ডারটি সাময়িকভাবে হোল্ডে রাখা হয়েছে — ${reason}` : undefined;
+}
+async function omPrevStatus(id) {
+  // হোল্ডের আগের স্ট্যাটাস খুঁজে বের করে; না পেলে pending
+  try {
+    const { data } = await sb.from('order_status_history').select('status,status_name,created_at')
+      .eq('order_id', id).order('created_at', { ascending: false }).limit(15);
+    const hit = (data || []).map(h => h.status_name || h.status)
+      .find(s => s && !['on_hold','cancelled','returned','delivered'].includes(s));
+    if (hit) return hit;
+  } catch (e) { console.warn('[hold] prev status lookup failed', e); }
+  return 'pending';
+}
+async function omResume(id) {
+  id = String(id);
+  const o = allOrders.find(x => String(x.id) === id);
+  if (!o || o.status !== 'on_hold') return;
+  const target = await omPrevStatus(o.id);
+  if (!confirm(`অর্ডার ${o.order_number || ''} হোল্ড থেকে তুলে "${STATUS_LABEL_BN[target] || target}" ধাপে ফেরাবেন?`)) return;
+  omBusy.add(id); renderOrderManager();
+  try { await updateOrderStatus(o.id, target, 'হোল্ড তুলে নেওয়া হয়েছে — অর্ডার আবার প্রক্রিয়ায় আছে।'); }
+  finally { omBusy.delete(id); omSelected.delete(id); renderOrderManager(); }
+}
+async function omBulkHold() {
+  const list = [...omSelected].map(id => allOrders.find(o => String(o.id) === id)).filter(o => o && OM_HOLDABLE.includes(omStatusOf(o)));
+  if (!list.length) { toast('Nothing to do', 'হোল্ড করার মতো অর্ডার সিলেক্ট নেই (শুধু পেন্ডিং/কনফার্মড/প্রসেসিং)', 'info'); return; }
+  const reason = prompt(`${list.length}টি অর্ডার হোল্ডে রাখবেন?\nকারণ লিখুন (ঐচ্ছিক — কাস্টমার দেখতে পাবে):`, '');
+  if (reason === null) return;
+  const note = omHoldNote(reason) || 'অর্ডারটি সাময়িকভাবে হোল্ডে রাখা হয়েছে।';
+  for (const o of list) omBusy.add(String(o.id));
+  renderOrderManager();
+  for (const o of list) {
+    try { await updateOrderStatus(o.id, 'on_hold', note); } catch (e) { console.warn(e); }
+    omBusy.delete(String(o.id)); omSelected.delete(String(o.id));
+  }
+  renderOrderManager();
+}
+
 function renderOrderManager() {
   const statsEl = document.getElementById('omStats');
   const listEl  = document.getElementById('omList');
@@ -6087,6 +6136,8 @@ function renderOrderManager() {
       const opts = OM_DEF.filter(x => x.k !== 'all').map(x => `<option value="${x.k}" ${x.k === st ? 'selected' : ''}>${x.en}</option>`).join('');
       const acts = [
         nx ? `<button class="om-btn primary" style="--omc:${OM_DEF.find(x => x.k === nx.to).c}" onclick="omAct('${id}','${nx.to}')"><i class="fa-solid ${nx.ic}"></i> ${nx.label}</button>` : '',
+        OM_HOLDABLE.includes(st) ? `<button class="om-btn warn icon" onclick="omAct('${id}','on_hold')" title="হোল্ডে রাখুন"><i class="fa-solid fa-circle-pause"></i></button>` : '',
+        st === 'on_hold' ? `<button class="om-btn primary" style="--omc:#0D9488" onclick="omResume('${id}')"><i class="fa-solid fa-play"></i> Resume</button>` : '',
         `<button class="om-btn icon" onclick="viewOrder('${id}')" title="বিস্তারিত"><i class="fa-solid fa-eye"></i></button>`,
       ].join('');
       return `<div class="om-row ${omSelected.has(id) ? 'sel' : ''} ${omBusy.has(id) ? 'busy' : ''}">
@@ -6127,14 +6178,14 @@ function renderDashboard() {
   renderRevenueChart(currentTimeframe);
 
   // Status breakdown
-  const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
-  const statusColors = { pending:'var(--amber)', confirmed:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)', returned:'#E8590C' };
+  const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'on_hold', 'cancelled', 'returned'];
+  const statusColors = { on_hold:'#0D9488', pending:'var(--amber)', confirmed:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)', returned:'#E8590C' };
   const total = Math.max(allOrders.length, 1);
   document.getElementById('statusBreakdown').innerHTML = statuses.map(s => {
     const cnt = allOrders.filter(o => o.status === s).length;
     const pct = Math.round(cnt / total * 100);
     return `<div class="breakdown-row">
-      <div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${cap(s)}</span><span class="breakdown-val">${cnt}</span></div>
+      <div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${s === 'on_hold' ? 'On Hold' : cap(s)}</span><span class="breakdown-val">${cnt}</span></div>
       <div class="breakdown-bar"><div class="breakdown-fill" style="width:${pct}%;background:${statusColors[s]}"></div></div>
     </div>`;
   }).join('');
@@ -6933,16 +6984,16 @@ function renderOrders() {
   }
 
   // Part 1: Standardized 6-status dropdown for global order status
-  const globalStatusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
+  const globalStatusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'on_hold', 'cancelled', 'returned'];
   const globalStatusLabels  = {
     pending:'Pending', confirmed:'Confirmed', processing:'Processing',
-    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled', returned:'Returned'
+    shipped:'Shipped', delivered:'Delivered', on_hold:'On Hold', cancelled:'Cancelled', returned:'Returned'
   };
   tbody.innerHTML = filtered.map(o => {
     const items = Array.isArray(o.items) ? o.items : [];
     const names = (o.preorder_book_id ? (o.preorder_released ? '<i class="fa-solid fa-circle-check" style="color:#1a9c3e"></i> ' : '<i class="fa-solid fa-hourglass-half" style="color:#B7791F"></i> ') : '') + items.slice(0, 2).map(i => i.name || 'Item').join(', ') + (items.length > 2 ? ` +${items.length - 2}` : '');
     // Normalize legacy status values for the 6-status dropdown
-    const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled','returned'].includes(o.status))
+    const normalizedStatus = (['pending','confirmed','processing','shipped','delivered','cancelled','returned','on_hold'].includes(o.status))
       ? o.status
       : (['in_stock','collecting','collected'].includes(o.status) ? 'processing' : 'pending');
     return `<tr class="order-row" onclick="orderRowTap(event,'${o.id}')">
@@ -6974,6 +7025,13 @@ async function updateOrderStatus(id, status, customNote, extra) {
   if (!sb) return;
   // ফেরত: আগে কারণ/কুরিয়ার খরচ নেওয়া হবে (মডাল), নিশ্চিত হলে extra সহ আবার এই ফাংশন চলবে
   if (status === 'returned' && !extra) { openReturnModal(id); return false; }
+  // হোল্ড: কারণ জিজ্ঞাসা (ঐচ্ছিক) — কাস্টমারের ট্র্যাকিং পেজে নোট হিসেবে দেখাবে
+  if (status === 'on_hold' && customNote === undefined && !extra) {
+    const ordH = allOrders.find(x => x.id === id);
+    const reason = prompt(`অর্ডার ${ordH && ordH.order_number ? ordH.order_number : ''} হোল্ডে রাখছেন।\nকারণ লিখুন (ঐচ্ছিক — কাস্টমার দেখতে পাবে):`, '');
+    if (reason === null) { setTimeout(() => { try { renderOrders(); renderDashboard(); } catch (e) {} }, 0); return false; }
+    customNote = omHoldNote(reason);
+  }
   const BN_STATUS_NOTE = {
     pending:     'অর্ডারটি পেন্ডিং অবস্থায় আছে।',
     confirmed:   'অর্ডারটি নিশ্চিত করা হয়েছে।',
@@ -6985,6 +7043,7 @@ async function updateOrderStatus(id, status, customNote, extra) {
     delivered:   'পণ্যটি সফলভাবে ডেলিভারি হয়েছে। ধন্যবাদ!',
     cancelled:   'অর্ডারটি বাতিল করা হয়েছে।',
     returned:    'অর্ডারটি ফেরত (return) এসেছে।',
+    on_hold:     'অর্ডারটি সাময়িকভাবে হোল্ডে রাখা হয়েছে।',
   };
   // ── DB STATUS MAPPING ──────────────────────────────────────────────────────
   // orders_status_check constraint only allows:
@@ -7028,8 +7087,8 @@ async function updateOrderStatus(id, status, customNote, extra) {
   const { error } = await sb.from('orders').update(orderUpdate).eq('id', id);
   if (error && extra && /return_|returned_at|schema cache|column/i.test(error.message || '')) { showReturnSetupSql(error.message); }
   if (error) {
-    const hint = (status === 'returned' && /check constraint|orders_status_check/i.test(error.message || ''))
-      ? ' — Supabase SQL Editor এ একবার চালান: ALTER TABLE orders DROP CONSTRAINT orders_status_check; ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN (\'pending\',\'confirmed\',\'processing\',\'shipped\',\'delivered\',\'cancelled\',\'returned\'));'
+    const hint = ((status === 'returned' || status === 'on_hold') && /check constraint|orders_status_check/i.test(error.message || ''))
+      ? ' — Supabase SQL Editor এ একবার চালান: ALTER TABLE orders DROP CONSTRAINT orders_status_check; ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN (\'pending\',\'confirmed\',\'processing\',\'shipped\',\'delivered\',\'cancelled\',\'returned\',\'on_hold\'));'
       : '';
     toast('Update Failed', error.message + hint, 'error'); return;
   }
@@ -7104,6 +7163,7 @@ const PUSHADM = {
     shipped:    ['অর্ডার পাঠানো হয়েছে', 'আপনার অর্ডারটি কুরিয়ারে পাঠানো হয়েছে।'],
     delivered:  ['অর্ডার ডেলিভারি হয়েছে', 'ধন্যবাদ! বইটা কেমন লাগল জানাতে রিভিউ দিতে পারেন।'],
     cancelled:  ['অর্ডার বাতিল হয়েছে', 'আপনার অর্ডারটি বাতিল করা হয়েছে।'],
+    on_hold:    ['অর্ডার হোল্ডে আছে', 'আপনার অর্ডারটি সাময়িকভাবে হোল্ডে রাখা হয়েছে।'],
   },
   // updateOrderStatus থেকে কল হয় — ব্যর্থ হলে চুপচাপ (অর্ডার আপডেটে প্রভাব নেই)
   async orderStatus(o, status) {
@@ -7495,7 +7555,7 @@ function showReturnSetupSql(errMsg) {
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
 ALTER TABLE orders ADD CONSTRAINT orders_status_check
   CHECK (status IN ('pending','confirmed','in_stock','collecting','collected',
-                    'processing','shipped','delivered','cancelled','returned'));`;
+                    'processing','shipped','delivered','cancelled','returned','on_hold'));`;
   const b = document.createElement('div');
   b.id = 'retSetupBanner';
   b.style.cssText = 'position:fixed;bottom:16px;right:16px;max-width:480px;background:#1E293B;color:white;border-radius:12px;padding:16px 18px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.35)';
@@ -7701,7 +7761,7 @@ async function viewOrder(id) {
   currentOrderId = id;
   document.getElementById('orderModalTitle').textContent = `Order #${o.order_number || id.slice(0,8)}`;
   const badge = document.getElementById('orderModalBadge');
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned', on_hold:'pill-on_hold' };
   badge.className = 'pill ' + (pmap[o.status] || 'pill-pending');
   badge.textContent = cap(o.status || 'pending');
   switchOrderTab('overview');
@@ -7723,10 +7783,10 @@ function refreshOrderModal(id) {
   // Fallback: check order_items key too
   if (!items.length && Array.isArray(o.order_items)) items = o.order_items;
 
-  const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const statusOptions = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'on_hold', 'cancelled'];
 
   // Update badge
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned', on_hold:'pill-on_hold' };
   const badge = document.getElementById('orderModalBadge');
   if (badge) { badge.className = 'pill ' + (pmap[o.status] || 'pill-pending'); badge.textContent = STATUS_LABEL_BN[o.status] || cap(o.status || 'pending'); }
 
@@ -7848,7 +7908,7 @@ function refreshOrderModal(id) {
     { label: 'অর্ডার প্রক্রিয়া', statuses: ['pending','confirmed'] },
     { label: 'পণ্য সংগ্রহ', statuses: ['in_stock','collecting','collected'] },
     { label: 'শিপিং', statuses: ['processing','shipped','delivered'] },
-    { label: '', statuses: ['cancelled'] },
+    { label: '', statuses: ['on_hold','cancelled'] },
   ];
   const btnColors = {
     pending:    { idle:'background:rgba(255,159,10,0.1);color:#D97706;border-color:rgba(255,159,10,0.3)', active:'background:#D97706;color:white;border-color:#D97706' },
@@ -7860,6 +7920,7 @@ function refreshOrderModal(id) {
     shipped:    { idle:'background:rgba(50,173,230,0.12);color:var(--cyan);border-color:rgba(50,173,230,0.35)', active:'background:var(--cyan);color:white;border-color:var(--cyan)' },
     delivered:  { idle:'background:rgba(52,199,89,0.12);color:var(--green);border-color:rgba(52,199,89,0.35)', active:'background:var(--green);color:white;border-color:var(--green)' },
     cancelled:  { idle:'background:rgba(255,59,48,0.08);color:var(--red);border-color:rgba(255,59,48,0.25)', active:'background:var(--red);color:white;border-color:var(--red)' },
+    on_hold:    { idle:'background:rgba(13,148,136,0.1);color:#0D9488;border-color:rgba(13,148,136,0.3)', active:'background:#0D9488;color:white;border-color:#0D9488' },
   };
   document.getElementById('statusBtnRow').innerHTML = `
     <div style="display:grid;gap:8px;width:100%">
@@ -7884,14 +7945,14 @@ function refreshOrderModal(id) {
           </div>
         </div>`;
       }).join('')}
-      <div style="display:flex;justify-content:flex-end;margin-top:2px">
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:2px">
         ${statusGroups.filter(g => !g.label).flatMap(g => g.statuses).map(s => {
           const isActive = s === o.status;
           const c = btnColors[s] || { idle:'', active:'' };
           return `<button
             onclick="updateOrderStatus('${o.id}','${s}')"
             style="border:1.5px solid;border-radius:8px;padding:8px 20px;font-size:0.72rem;font-family:var(--font-bn);font-weight:600;cursor:pointer;transition:all .18s;${isActive ? c.active : c.idle}"
-          ><i class="fa-solid fa-ban" style="margin-right:4px;font-size:0.65rem"></i>${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
+          ><i class="fa-solid ${s === 'on_hold' ? 'fa-circle-pause' : 'fa-ban'}" style="margin-right:4px;font-size:0.65rem"></i>${isActive ? '✓ ' : ''}${STATUS_LABEL_BN[s] || cap(s)}</button>`;
         }).join('')}
       </div>
     </div>`;
@@ -10823,6 +10884,8 @@ const STATUS_LABEL_BN = {
   shipped:     'পাঠানো হয়েছে',
   delivered:   'ডেলিভারি হয়েছে',
   cancelled:   'বাতিল',
+  returned:    'ফেরত',
+  on_hold:     'হোল্ডে আছে',
 };
 
 function pillHTML(status) {
@@ -10830,13 +10893,13 @@ function pillHTML(status) {
   const map = {
     pending:'pill-pending', confirmed:'pill-confirmed',
     processing:'pill-processing', shipped:'pill-shipped',
-    delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned',
+    delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned', on_hold:'pill-on_hold',
     // legacy aliases
     in_stock:'pill-confirmed', collecting:'pill-processing', collected:'pill-processing',
   };
   const labelMap = {
     pending:'Pending', confirmed:'Confirmed', processing:'Processing',
-    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled', returned:'Returned',
+    shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled', returned:'Returned', on_hold:'On Hold',
     in_stock:'Confirmed', collecting:'Processing', collected:'Processing',
   };
   const label = labelMap[status] || cap(status || 'pending');
@@ -10852,6 +10915,7 @@ const STATUS_COLOR_MAP = {
   delivered:  { color:'#34C759', border:'rgba(52,199,89,0.35)', bg:'rgba(52,199,89,0.08)'   },
   cancelled:  { color:'#FF3B30', border:'rgba(255,59,48,0.3)',  bg:'rgba(255,59,48,0.07)'   },
   returned:   { color:'#E8590C', border:'rgba(232,89,12,0.35)', bg:'rgba(232,89,12,0.08)'   },
+  on_hold:    { color:'#0D9488', border:'rgba(13,148,136,0.35)',bg:'rgba(13,148,136,0.08)'  },
 };
 
 function getStatusSelectStyle(status) {
@@ -10910,8 +10974,8 @@ async function loadStatusHistory(orderId) {
 }
 
 function _renderHistoryFallback(el, o) {
-  const colorMap2 = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
-  const pmap2 = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
+  const colorMap2 = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)', on_hold:'#0D9488' };
+  const pmap2 = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned', on_hold:'pill-on_hold' };
   const currentStatus = o?.status || 'pending';
   // Build synthetic history: initial pending + current status if different
   const entries = [];
@@ -10925,9 +10989,9 @@ function _renderHistoryFallback(el, o) {
 }
 
 function _renderHistoryHTML(el, data, o) {
-  const iconMap = { pending:'fa-clock', confirmed:'fa-circle-check', in_stock:'fa-boxes-stacked', collecting:'fa-hand-holding', collected:'fa-box-open', processing:'fa-gear', shipped:'fa-truck-fast', delivered:'fa-house-circle-check', cancelled:'fa-ban' };
-  const colorMap = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)' };
-  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
+  const iconMap = { pending:'fa-clock', confirmed:'fa-circle-check', in_stock:'fa-boxes-stacked', collecting:'fa-hand-holding', collected:'fa-box-open', processing:'fa-gear', shipped:'fa-truck-fast', delivered:'fa-house-circle-check', cancelled:'fa-ban', on_hold:'fa-circle-pause' };
+  const colorMap = { pending:'var(--amber)', confirmed:'var(--blue)', in_stock:'var(--blue)', collecting:'#D97706', collected:'var(--blue)', processing:'var(--purple)', shipped:'var(--cyan)', delivered:'var(--green)', cancelled:'var(--red)', on_hold:'#0D9488' };
+  const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', in_stock:'pill-in_stock', collecting:'pill-collecting', collected:'pill-collected', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned', on_hold:'pill-on_hold' };
   el.innerHTML = `
     <div style="font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:10px"><i class="fa-solid fa-clock-rotate-left" style="margin-right:4px"></i>স্ট্যাটাস আপডেটের ইতিহাস</div>
     <div style="position:relative;padding-left:20px">
@@ -12574,7 +12638,7 @@ function viewUserDetail(userId) {
     if (!recent.length) {
       recentEl.innerHTML = `<div style="color:var(--text3);font-size:0.78rem;text-align:center;padding:12px;font-family:var(--font-bn)">কোনো অর্ডার নেই</div>`;
     } else {
-      const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned' };
+      const pmap = { pending:'pill-pending', confirmed:'pill-confirmed', processing:'pill-processing', shipped:'pill-shipped', delivered:'pill-delivered', cancelled:'pill-cancelled', returned:'pill-returned', on_hold:'pill-on_hold' };
       recentEl.innerHTML = recent.map(o => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:0.78rem">
           <div>
@@ -12769,7 +12833,7 @@ async function loadOrderRequests() {
   const tb = document.getElementById('orTableBody');
   if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:36px"><div class="spinner" style="margin:auto"></div></td></tr>';
   const { data, error } = await sb.from('order_requests').select('*').order('created_at', { ascending: false }).limit(500);
-  if (error) { if (tb) tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red)">লোড হয়নি — Supabase-এ <code>order_requests_setup.sql</code> চালিয়েছেন? (${escHtml(error.message)})</td></tr>`; return; }
+  if (error) { if (tb) tb.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--red)">লোড হয়নি — Supabase-এ <code>order_requests_setup.sql</code> ও <code>order_requests_fix.sql</code> চালিয়েছেন? (${escHtml(error.message)})</td></tr>`; return; }
   allOrderReqs = data || []; renderOrderRequests(); orBadge();
 }
 function orFiles(r) {
@@ -12815,18 +12879,50 @@ function orOpen(id) {
     <b>${OR_KIND[r.kind] || r.kind}:</b> ${escHtml(r.reason || '')}${r.product_name ? `<br><b>পণ্য:</b> ${escHtml(r.product_name)}` : ''}${r.details ? `<br>${escHtml(r.details)}` : ''}
     ${orFilesHtml(r)}
     ${ord ? `<br><span style="color:var(--text3)">অর্ডারের বর্তমান স্ট্যাটাস: ${escHtml(ord.status)}</span>` : ''}`;
+  // একই অর্ডারের আগের রিপোর্ট/উত্তর
+  const prevReqs = allOrderReqs.filter(x => x.order_id === r.order_id && x.id !== r.id && x.kind !== 'self_cancel');
+  if (r.is_follow_up) document.getElementById('orMeta').insertAdjacentHTML('afterbegin', '<div style="display:inline-block;background:#FEF3C7;color:#92400E;border-radius:10px;padding:1px 9px;font-size:.7rem;font-weight:700;margin-bottom:6px"><i class="fa-solid fa-rotate-right"></i> গ্রাহক আবার রিপোর্ট করেছেন — আগের উত্তরে সমাধান হয়নি</div><br>');
+  if (prevReqs.length) document.getElementById('orMeta').insertAdjacentHTML('beforeend', `<div style="margin-top:10px;border-top:1px dashed var(--border);padding-top:8px"><b style="font-size:.74rem">এই অর্ডারের আগের অনুরোধ (${prevReqs.length})</b>${prevReqs.map(p => `<div style="font-size:.74rem;color:var(--text2);margin-top:5px">• ${OR_KIND[p.kind] || p.kind} · <b>${OR_STATUS[p.status] || p.status}</b> · ${fmtDate(p.created_at)}${p.admin_note ? `<br>&nbsp;&nbsp;↳ আমাদের উত্তর: ${escHtml(p.admin_note)}` : ''}</div>`).join('')}</div>`);
+  const tpls = OR_TPLS;
+  document.getElementById('orTpls').innerHTML = tpls.map((t, i) => `<button type="button" class="btn btn-ghost btn-xs" style="font-family:var(--font-bn)" onclick="orTpl(${i})">${escHtml(t.l)}</button>`).join('');
   document.getElementById('orStatus').value = r.status; document.getElementById('orNote').value = r.admin_note || '';
   document.getElementById('orAcceptBtn').style.display = (r.kind === 'cancel_request' && r.status !== 'resolved' && !(ord && ord.status === 'cancelled')) ? '' : 'none';
   document.getElementById('orStatusRow').style.display = r.kind === 'self_cancel' ? 'none' : '';
   openModal('orModal');
 }
+const OR_TPLS = [
+  { l:'দেখছি',        s:'in_progress', t:'আপনার সমস্যাটি আমরা দেখছি। ২৪ ঘণ্টার মধ্যে আপনাকে জানানো হবে।' },
+  { l:'বদলে দেওয়া হবে', s:'resolved',    t:'আপনার পণ্যটি বদলে দেওয়া হবে। আমাদের টিম শীঘ্রই আপনাকে ফোন করবে।' },
+  { l:'রিফান্ড',       s:'resolved',    t:'আপনার টাকা ফেরত (রিফান্ড) দেওয়া হবে। প্রক্রিয়া সম্পন্ন হলে জানানো হবে।' },
+  { l:'সমাধান হয়েছে',  s:'resolved',    t:'আপনার সমস্যাটি সমাধান করা হয়েছে। এরপরও সমস্যা থাকলে নিচের বাটন থেকে আবার রিপোর্ট করুন।' },
+  { l:'সমাধান সম্ভব নয়', s:'rejected',   t:'দুঃখিত, এই ক্ষেত্রে আমরা সমাধান দিতে পারছি না। বিস্তারিত জানতে আমাদের সাথে যোগাযোগ করুন।' },
+];
+function orTpl(i) { const t = OR_TPLS[i]; if (!t) return; document.getElementById('orNote').value = t.t; document.getElementById('orStatus').value = t.s; }
 async function orSave(overrides) {
   if (!_orCur) return;
-  const upd = Object.assign({ status: document.getElementById('orStatus').value, admin_note: document.getElementById('orNote').value.trim() || null, updated_at: new Date().toISOString() }, overrides || {});
-  const { data: saved, error } = await sb.from('order_requests').update(upd).eq('id', _orCur.id).select('id');
+  const cur = _orCur;
+  let status = document.getElementById('orStatus').value;
+  const note = document.getElementById('orNote').value.trim();
+  if (!overrides && cur.kind !== 'self_cancel') {
+    // উত্তর লিখে স্ট্যাটাস "নতুন" রেখে দিলে আপনা-আপনি "দেখা হচ্ছে"
+    if (note && status === 'open') status = 'in_progress';
+    // সমাধান/প্রত্যাখ্যান করলে গ্রাহককে কিছু জানাতেই হবে
+    if ((status === 'resolved' || status === 'rejected') && !note) { toast('উত্তর লিখুন', 'সমাধান/প্রত্যাখ্যান করার আগে গ্রাহককে কী হলো তা লিখে জানান', 'error'); return false; }
+  }
+  const upd = Object.assign({ status, admin_note: note || null, updated_at: new Date().toISOString() }, overrides || {});
+  const { data: saved, error } = await sb.from('order_requests').update(upd).eq('id', cur.id).select('id');
   if (error) { toast('Update Failed', error.message, 'error'); return false; }
-  if (!saved || !saved.length) { toast('Save হয়নি', 'Supabase RLS-এ order_requests UPDATE permission নেই — গ্রাহক আপডেট পাবে না', 'error'); return false; }
-  toast('Saved', 'গ্রাহক তার অর্ডার পেজে এই আপডেট দেখতে পাবে'); closeModal('orModal'); loadOrderRequests(); return true;
+  if (!saved || !saved.length) { toast('Save হয়নি', 'Supabase এ order_requests_fix.sql একবার চালান (UPDATE permission নেই) — নাহলে গ্রাহক আপডেট পাবে না', 'error'); return false; }
+  toast('Saved', 'গ্রাহক তার অর্ডার পেজে এই আপডেট দেখতে পাবে'); closeModal('orModal');
+  // গ্রাহককে পুশ (সম্ভব হলে) — উত্তর/স্ট্যাটাস বদলালে
+  try {
+    const changed = (upd.admin_note || null) !== (cur.admin_note || null) || upd.status !== cur.status;
+    if (changed && cur.kind !== 'self_cancel' && PUSHADM.autoOn()) {
+      const msg = upd.admin_note || ('স্ট্যাটাস: ' + (OR_STATUS[upd.status] || upd.status));
+      PUSHADM.call({ action: 'send', title: 'আপনার ' + (cur.kind === 'report' ? 'রিপোর্টে' : 'অনুরোধে') + ' আপডেট এসেছে', body: `অর্ডার #${cur.order_number || ''} — ${msg}`.slice(0, 180), url: '/order/' + encodeURIComponent(cur.order_number || ''), tag: 'req-' + cur.id, audience: { type: 'order', order_id: cur.order_id } }).catch(e => console.warn('[push] request update:', e.message));
+    }
+  } catch (e) {}
+  loadOrderRequests(); return true;
 }
 async function orAcceptCancel() {
   if (!_orCur || !confirm('অনুরোধ গ্রহণ করে অর্ডারটি বাতিল করবেন?')) return;
