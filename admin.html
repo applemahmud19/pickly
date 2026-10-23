@@ -2403,7 +2403,7 @@ body {
                   <i class="fa-solid fa-eye"></i>
                 </div>
                 <div>
-                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিট</div>
+                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিট (সেশন)</div>
                   <div style="display:flex;align-items:baseline;gap:8px">
                     <div class="kpi-val" id="kpi-dynamic-visitors" style="font-size:2rem;line-height:1;color:var(--cyan)">—</div>
                     <span id="visitorKPITrend" class="kpi-badge na" style="font-size:0.62rem"></span>
@@ -5434,8 +5434,8 @@ async function loadVisitorStats(retryCount = 0) {
 
     const todayStart     = D(y, mo, d);
     const yesterdayStart = D(y, mo, d - 1);
-    const weekStart      = D(y, mo, d - now.getUTCDay()); // Sunday of this week
-    const monthStart     = D(y, mo, 1);
+    const weekStart      = D(y, mo, d - 6);  // শেষ ৭ দিন (আজ সহ)
+    const monthStart     = D(y, mo, d - 29); // শেষ ৩০ দিন (আজ সহ)
     // Live = last_seen within the past 3 minutes
     const liveThreshold  = new Date(Date.now() - 3 * 60 * 1000).toISOString();
 
@@ -5742,8 +5742,8 @@ function renderVisitorStats() {
     <!-- Time-filter bars -->
     ${bar(todayV,     'var(--cyan)',   'আজকের ভিজিটর',       'Today')}
     ${bar(yesterdayV, 'var(--purple)', 'গতকালের ভিজিটর',     'Yesterday')}
-    ${bar(weekV,      'var(--blue)',   'এই সপ্তাহের ভিজিটর', 'This Week')}
-    ${bar(monthV,     'var(--green)',  'এই মাসের ভিজিটর',    'This Month')}
+    ${bar(weekV,      'var(--blue)',   'শেষ ৭ দিনের ভিজিট', 'Last 7 Days')}
+    ${bar(monthV,     'var(--green)',  'শেষ ৩০ দিনের ভিজিট', 'Last 30 Days')}
     ${bar(todayOrders,'var(--amber)',  'আজকের অর্ডার',       'Orders')}
 
     <!-- Unique visitors (একই মানুষ একবারই) -->
@@ -5753,8 +5753,8 @@ function renderVisitorStats() {
     ${uq ? `
       ${bar(uTodayV, 'var(--cyan)',   'আজ',        'Unique Today')}
       ${bar(uYestV,  'var(--purple)', 'গতকাল',     'Unique Yesterday')}
-      ${bar(uWeekV,  'var(--blue)',   'এই সপ্তাহ',  'Unique Week')}
-      ${bar(uMonthV, 'var(--green)',  'এই মাস',    'Unique Month')}
+      ${bar(uWeekV,  'var(--blue)',   'শেষ ৭ দিন',  'Unique 7 Days')}
+      ${bar(uMonthV, 'var(--green)',  'শেষ ৩০ দিন',    'Unique 30 Days')}
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;font-size:0.78rem;font-family:var(--font-bn)">
         <span style="font-weight:600">এখন পর্যন্ত মোট ইউনিক</span>
         <span style="font-family:var(--mono);font-weight:800;color:var(--green)">${uAllV.toLocaleString()}</span>
