@@ -14840,8 +14840,8 @@ function buildSpecTable(p) {
     `<span class="ap-link" role="link" tabindex="0" title="${_sx(p.category)} — সব বই দেখুন" data-a="${encodeURIComponent(p.category)}" onclick="openCatFromProduct(decodeURIComponent(this.dataset.a))" onkeydown="if(event.key==='Enter'){openCatFromProduct(decodeURIComponent(this.dataset.a))}">${_sx(p.category)}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`]);
   // Optional Sub-Category — books: the flexible tag under the genre (e.g.
   // "রোমান্টিক উপন্যাস"); General products: the ordinary sub-category select.
-  if (p.sub_category) rows.push(['সাব-ক্যাটাগরি',
-    `<span class="ap-link" role="link" tabindex="0" title="${_sx(p.sub_category)} — সব বই দেখুন" data-a="${encodeURIComponent(p.sub_category)}" onclick="openAuthorPage(decodeURIComponent(this.dataset.a),true,'subcategory')" onkeydown="if(event.key==='Enter'){openAuthorPage(decodeURIComponent(this.dataset.a),true,'subcategory')}">${_sx(p.sub_category)}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`]);
+  if (p.sub_category) rows.push(['সাব-ক্যাটাগরি', _subList(p.sub_category).map(sc =>
+    `<span class="ap-link" role="link" tabindex="0" title="${_sx(sc)} — সব বই দেখুন" data-a="${encodeURIComponent(sc)}" onclick="openAuthorPage(decodeURIComponent(this.dataset.a),true,'subcategory')" onkeydown="if(event.key==='Enter'){openAuthorPage(decodeURIComponent(this.dataset.a),true,'subcategory')}">${_sx(sc)}<i class="fa-solid fa-angle-right ap-link-arrow"></i></span>`).join(' &nbsp; ')]);
   // Books: publisher from publisher column (separate from author/brand)
   // Others: brand column
   if (isBook && p.publisher) {
@@ -18117,6 +18117,9 @@ let currentCatSub = '';            // বাছাই করা সাব-ক্
 let _catSubRows = null, _catSubLoading = null;
 function _cpsEsc(v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function _subKey(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+/* একাধিক সাব-ক্যাটাগরি কমা (,) দিয়ে আলাদা করা থাকে */
+function _subList(v) { return String(v == null ? '' : v).split(/[,،]/).map(x => x.trim()).filter(Boolean); }
+function _hasSub(p, name) { const k = _subKey(name); return _subList(p && p.sub_category).some(x => _subKey(x) === k); }
 function _loadCatSubRows() {
   if (_catSubRows) return Promise.resolve(_catSubRows);
   if (_catSubLoading) return _catSubLoading;
@@ -18137,7 +18140,7 @@ function renderCatSubChips() {
   const map = new Map();                                    // key → { name, n }
   const add = (name) => { const k = _subKey(name); if (k && !map.has(k)) map.set(k, { name: String(name).trim(), n: 0 }); return map.get(k); };
   (_catSubRows || []).forEach(r => { if (r.category_name === cat) add(r.name || r.sub_name); });
-  inCat.forEach(p => { const e = add(p.sub_category); if (e) e.n++; });
+  inCat.forEach(p => { _subList(p.sub_category).forEach(sc => { const e = add(sc); if (e) e.n++; }); });
   const items = [...map.values()].sort((a, b) => (b.n - a.n) || a.name.localeCompare(b.name, 'bn'));
   if (!items.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
   if (currentCatSub && !map.has(_subKey(currentCatSub))) currentCatSub = '';
@@ -18207,7 +18210,7 @@ function renderCatPageProducts() {
   let list = currentCatPage === 'সব'
     ? [...products]
     : products.filter(p => p.category === currentCatPage);
-  if (currentCatSub) list = list.filter(p => _subKey(p.sub_category) === _subKey(currentCatSub));
+  if (currentCatSub) list = list.filter(p => _hasSub(p, currentCatSub));
 
   if (sort === 'low')      list.sort((a,b) => getEffectiveSalePrice(a).displayPrice - getEffectiveSalePrice(b).displayPrice);
   else if (sort === 'high') list.sort((a,b) => getEffectiveSalePrice(b).displayPrice - getEffectiveSalePrice(a).displayPrice);
@@ -20496,7 +20499,7 @@ function bgNameKey(s){
 
   // একটি বইয়ের লেখক / প্রকাশনীর নামগুলো
   function namesOf(p, kind) {
-    if (kind === 'subcategory') return p && p.sub_category ? [_norm(p.sub_category)].filter(Boolean) : [];
+    if (kind === 'subcategory') return p && p.sub_category ? String(p.sub_category).split(/[,،]/).map(_norm).filter(Boolean) : [];
     if (!p || !isBookProduct(p)) return [];
     if (kind === 'publisher') return p.publisher ? [_norm(p.publisher)].filter(Boolean) : [];
     return String(p.author || p.brand || '').split(/[,،]/).map(_norm).filter(Boolean);
