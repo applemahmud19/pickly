@@ -1740,7 +1740,7 @@ body {
         <i class="fa-solid fa-layer-group"></i> <span style="font-family:var(--font-bn)">কম্বো অফার</span>
       </div>
       <div class="nav-item" data-sec="freedel">
-        <i class="fa-solid fa-truck-fast"></i> <span style="font-family:var(--font-bn)">ফ্রি ডেলিভারি</span>
+        <i class="fa-solid fa-truck-fast"></i> <span style="font-family:var(--font-bn)">ডেলিভারি চার্জ ও ফ্রি</span>
       </div>
       <div class="nav-item" data-sec="blacklist">
         <i class="fa-solid fa-user-slash"></i> <span style="font-family:var(--font-bn)">ব্ল্যাকলিস্ট</span>
@@ -3041,6 +3041,23 @@ grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, 
       <div class="section" id="sec-freedel">
         <div class="panel" style="margin-bottom:18px">
           <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-icon" style="background:rgba(10,132,255,0.1);color:var(--blue)"><i class="fa-solid fa-sliders"></i></div>ডেলিভারি চার্জ সেটিংস</div>
+            <button class="btn btn-primary btn-sm" onclick="DC.save()"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
+          </div>
+          <div style="padding:0 18px 6px;font-family:var(--font-bn);font-size:.82rem;color:var(--text2)">এখানে বদলালে সাইটে সাথে সাথে নতুন চার্জ চলবে। নির্দিষ্ট পণ্যের আলাদা চার্জ — পণ্য এডিট করার ফর্মে "ডেলিভারি চার্জ" ঘরে দিন।</div>
+          <div style="padding:10px 18px 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+            <div class="form-group"><label class="form-label">ঢাকার ভেতরে বেসিক চার্জ (৳)</label><input class="form-inp" type="number" min="0" id="dcInside"></div>
+            <div class="form-group"><label class="form-label">ঢাকার বাইরে বেসিক চার্জ (৳)</label><input class="form-inp" type="number" min="0" id="dcOutside"></div>
+            <div class="form-group"><label class="form-label">কত পণ্য থেকে বাড়তি চার্জ শুরু</label><input class="form-inp" type="number" min="1" id="dcExtraFrom"></div>
+            <div class="form-group"><label class="form-label">প্রতিটি বাড়তি পণ্যে — ঢাকায় (৳)</label><input class="form-inp" type="number" min="0" id="dcExtraIn"></div>
+            <div class="form-group"><label class="form-label">প্রতিটি বাড়তি পণ্যে — ঢাকার বাইরে (৳)</label><input class="form-inp" type="number" min="0" id="dcExtraOut"></div>
+            <div class="form-group"><label class="form-label">দামি পণ্যের সীমা (৳ এর বেশি)</label><input class="form-inp" type="number" min="0" id="dcHighMin"></div>
+            <div class="form-group"><label class="form-label">দামি পণ্যের বাড়তি চার্জ (৳)</label><input class="form-inp" type="number" min="0" id="dcHighAdd"></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">"ঢাকা" হিসেবে ধরা জেলা (কমা দিয়ে লিখুন)</label><textarea class="form-inp" id="dcDhaka" rows="2" style="font-family:var(--font-bn)"></textarea></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:18px">
+          <div class="panel-header">
             <div class="panel-title">
               <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-truck-fast"></i></div>
               ফ্রি ডেলিভারি রুল
@@ -3743,6 +3760,16 @@ grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, 
               <label class="form-label" style="font-size:0.6rem">Color Hex</label>
               <input class="form-inp" type="text" id="pColor" placeholder="#AA2C2D" style="padding:7px 10px;font-size:0.82rem">
             </div>
+          </div>
+
+          <!-- Per-product delivery charge -->
+          <div class="form-group" style="gap:6px;border:1px dashed var(--border2);border-radius:10px;padding:10px">
+            <label class="form-label" style="font-family:var(--font-bn);font-size:0.82rem;font-weight:600"><i class="fa-solid fa-truck-fast"></i> এই পণ্যের নির্দিষ্ট ডেলিভারি চার্জ (ঐচ্ছিক)</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.6rem">ঢাকার ভেতরে (৳) — ফাঁকা = সাধারণ চার্জ</label><input class="form-inp" type="number" min="0" id="pDelIn" style="padding:7px 10px;font-size:0.82rem"></div>
+              <div class="form-group" style="gap:3px"><label class="form-label" style="font-size:0.6rem">ঢাকার বাইরে (৳) — ফাঁকা = সাধারণ চার্জ</label><input class="form-inp" type="number" min="0" id="pDelOut" style="padding:7px 10px;font-size:0.82rem"></div>
+            </div>
+            <div style="font-family:var(--font-bn);font-size:.72rem;color:var(--text3)">দিলে এই পণ্যের প্রতি পিসে এই চার্জ যোগ হবে (সাধারণ বেসিক চার্জের বদলে)। ০ দিলে এই পণ্যের ডেলিভারি ফ্রি।</div>
           </div>
 
           <!-- Pre-order -->
@@ -8603,6 +8630,9 @@ async function openProductModal(product = null) {
   document.getElementById('pOldPrice').value    = product?.old_price || '';
   { const c = document.getElementById('pIsPreorder'); if (c) { c.checked = !!product?.is_preorder; c.dataset.was = product?.is_preorder ? '1' : '';
     document.getElementById('pPreorderDate').value = product?.preorder_release_date || ''; document.getElementById('pPreorderPrice').value = product?.preorder_price || ''; poToggle(); } }
+  { const a = document.getElementById('pDelIn'), b = document.getElementById('pDelOut'); if (a && b) {
+    a.value = product?.delivery_charge_inside ?? ''; b.value = product?.delivery_charge_outside ?? '';
+    a.dataset.was = (product?.delivery_charge_inside != null || product?.delivery_charge_outside != null) ? '1' : ''; } }
   _abIds = Array.isArray(product?.also_buy_ids) ? product.also_buy_ids.map(String).slice(0, 4) : []; _abWas = JSON.stringify(_abIds); { const s = document.getElementById('abSearch'); if (s) s.value = ''; } abRender();
   seoLoadForm(product);
   document.getElementById('pStock').value       = product?.stock || '';
@@ -9154,6 +9184,7 @@ async function saveProduct() {
       price,
       old_price:   parseFloat(document.getElementById('pOldPrice').value) || null,
       ...poPayload(),
+      ...dcPayload(),
       ...abPayload(),
       ...seoPayload(),
       stock,
@@ -9200,6 +9231,13 @@ async function saveProduct() {
       const { seo_title: _s1, seo_description: _s2, seo_image: _s3, ...withoutSeo } = payload;
       ({ data: _saved, error } = await _write(withoutSeo));
       if (!error) toast('SEO সেভ হয়নি', 'পণ্য সেভ হয়েছে, কিন্তু SEO কলাম নেই — SQL চালান (SEO ও সার্চ সেটআপ)', 'info');
+    }
+
+    if (error && /delivery_charge_/i.test(error.message || '')) {
+      // ডেলিভারি চার্জ কলাম এখনো নেই — ওগুলো ছাড়া সেভ করো
+      const { delivery_charge_inside: _d1, delivery_charge_outside: _d2, ...withoutDel } = payload;
+      ({ data: _saved, error } = await _write(withoutDel));
+      if (!error) toast('ডেলিভারি চার্জ সেভ হয়নি', 'পণ্য সেভ হয়েছে, কিন্তু কলাম নেই — delivery_charge_setup.sql চালান', 'info');
     }
 
     clearTimeout(timeoutId);
@@ -9488,6 +9526,54 @@ const FD = {
     if (!confirm('এই রুল মুছে ফেলবেন?')) return;
     const prev = this.rules.slice(); this.rules = this.rules.filter(x=>x.id!==id);
     if (!(await this.persist('রুল মুছে গেছে'))) { this.rules = prev; this.render(); }
+  }
+};
+
+// ══════════════════════════════════════════════════
+// ডেলিভারি চার্জ সেটিংস (site_settings.delivery_config) + পণ্যভিত্তিক চার্জ (products.delivery_charge_inside/outside)
+// ══════════════════════════════════════════════════
+function dcPayload() {
+  const a = document.getElementById('pDelIn'), b = document.getElementById('pDelOut'); if (!a || !b) return {};
+  const n = v => { const x = parseFloat(v); return isFinite(x) && x >= 0 ? x : null; };
+  const pl = { delivery_charge_inside: n(a.value), delivery_charge_outside: n(b.value) };
+  return (pl.delivery_charge_inside === null && pl.delivery_charge_outside === null && a.dataset.was !== '1') ? {} : pl;   // কলাম না থাকলে সাধারণ সেভ ভাঙবে না
+}
+const DC = {
+  def: { inside:60, outside:75, extra_from:3, extra_inside:7, extra_outside:8, high_min:700, high_add:15,
+         dhaka_districts:['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'] },
+  cfg: null,
+  g(id){ return document.getElementById(id); },
+  async load() {
+    try {
+      const { data, error } = await sb.from('site_settings').select('delivery_config').eq('id',1).single();
+      if (error) throw error;
+      this.cfg = Object.assign({}, this.def, data.delivery_config || {});
+    } catch(e) {
+      this.cfg = Object.assign({}, this.def);
+      toast('ডেলিভারি সেটিংস লোড হয়নি', 'delivery_charge_setup.sql চালানো হয়েছে কিনা দেখুন (delivery_config কলাম)', 'warning');
+    }
+    this.fill();
+  },
+  fill() {
+    const c = this.cfg || this.def;
+    this.g('dcInside').value = c.inside; this.g('dcOutside').value = c.outside; this.g('dcExtraFrom').value = c.extra_from;
+    this.g('dcExtraIn').value = c.extra_inside; this.g('dcExtraOut').value = c.extra_outside;
+    this.g('dcHighMin').value = c.high_min; this.g('dcHighAdd').value = c.high_add;
+    this.g('dcDhaka').value = (c.dhaka_districts || []).join(', ');
+  },
+  async save() {
+    const num = id => Number(this.g(id).value);
+    const cfg = { inside:num('dcInside'), outside:num('dcOutside'), extra_from:Math.max(1, Math.round(num('dcExtraFrom'))),
+      extra_inside:num('dcExtraIn'), extra_outside:num('dcExtraOut'), high_min:num('dcHighMin'), high_add:num('dcHighAdd'),
+      dhaka_districts: this.g('dcDhaka').value.split(/[,،\n]/).map(s => s.trim()).filter(Boolean) };
+    if ([cfg.inside, cfg.outside, cfg.extra_inside, cfg.extra_outside, cfg.high_min, cfg.high_add].some(v => !isFinite(v) || v < 0))
+      return toast('সংখ্যা ঠিক নেই', 'সব ঘরে ০ বা তার বেশি সংখ্যা দিন', 'warning');
+    const { data, error } = await sb.from('site_settings').update({ delivery_config: cfg }).eq('id',1).select('id');
+    if (error) return toast('সেভ ব্যর্থ', error.message, 'error');
+    if (!data || !data.length) return toast('সেভ হয়নি', 'site_settings-এ UPDATE permission (RLS) নেই', 'error');
+    this.cfg = cfg;
+    try { new BroadcastChannel('gm_cms').postMessage({ key:'delivery_config' }); } catch(e) {}
+    toast('ডেলিভারি চার্জ সেভ হয়েছে', 'সাইটে নতুন চার্জ চলবে');
   }
 };
 
@@ -10001,7 +10087,7 @@ function navTo(sec) {
   if (sec === 'admins')     renderAdminList();
   if (sec === 'categories') { loadCategoriesFromSupabase(); renderBookTypeList(); }
   if (sec === 'cms')        initCms();
-  if (sec === 'freedel')    FD.load();
+  if (sec === 'freedel')    { FD.load(); DC.load(); }
   if (sec === 'blacklist')  FG.load();
   if (sec === 'push')       PUSHADM.load();
   if (sec === 'seo')        SEO.load();
@@ -12737,8 +12823,9 @@ function orOpen(id) {
 async function orSave(overrides) {
   if (!_orCur) return;
   const upd = Object.assign({ status: document.getElementById('orStatus').value, admin_note: document.getElementById('orNote').value.trim() || null, updated_at: new Date().toISOString() }, overrides || {});
-  const { error } = await sb.from('order_requests').update(upd).eq('id', _orCur.id);
+  const { data: saved, error } = await sb.from('order_requests').update(upd).eq('id', _orCur.id).select('id');
   if (error) { toast('Update Failed', error.message, 'error'); return false; }
+  if (!saved || !saved.length) { toast('Save হয়নি', 'Supabase RLS-এ order_requests UPDATE permission নেই — গ্রাহক আপডেট পাবে না', 'error'); return false; }
   toast('Saved', 'গ্রাহক তার অর্ডার পেজে এই আপডেট দেখতে পাবে'); closeModal('orModal'); loadOrderRequests(); return true;
 }
 async function orAcceptCancel() {
