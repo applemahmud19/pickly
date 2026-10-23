@@ -232,6 +232,86 @@ footer .logo .logo-text{font-size:1.1rem!important;font-weight:800!important}
 .combo-btn:disabled{opacity:.5;cursor:not-allowed}
 .pd-combo-box{margin:0 0 28px}
 .pd-combo-box .combo-row{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+/* ── কম্বো: কার্ড ক্লিকযোগ্য + কম্বো লিস্ট/ডিটেইল পেজ ── */
+.combo-card{cursor:pointer;transition:box-shadow .2s,transform .2s,border-color .2s}
+.combo-card:hover{box-shadow:0 8px 22px rgba(0,0,0,.1);transform:translateY(-2px);border-color:var(--blue)}
+.combo-books{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.combo-view{font-size:.72rem;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:4px}
+@media (max-width:600px){
+  #comboGrid.combo-row,#cmbGrid.combo-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  #comboGrid .combo-card,#cmbGrid .combo-card{padding:9px;gap:7px}
+  #comboGrid .combo-name,#cmbGrid .combo-name{font-size:.8rem;line-height:1.35}
+  #comboGrid .combo-books,#cmbGrid .combo-books{font-size:.66rem}
+  #comboGrid .combo-price b,#cmbGrid .combo-price b{font-size:.92rem}
+  #comboGrid .combo-save,#cmbGrid .combo-save{font-size:.6rem;padding:2px 6px}
+  #comboGrid .combo-btn,#cmbGrid .combo-btn{font-size:.7rem;padding:8px 4px}
+  #comboGrid .combo-imgs,#cmbGrid .combo-imgs{height:80px}
+  #comboGrid .combo-imgs img,#cmbGrid .combo-imgs img{height:76px}
+}
+.cmb-wrap{max-width:1100px;margin:0 auto;padding:16px 18px 44px}
+.cmb-search{display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:12px;background:var(--dbgffffff,#fff);padding:0 12px;margin-bottom:12px}
+.cmb-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:11px 0;font:500 .86rem 'Hind Siliguri',sans-serif;color:var(--text)}
+.cmb-search i{color:var(--text-light)}
+.cmb-frow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.cmb-flbl{flex:0 0 auto;min-width:62px;font:700 .74rem 'Hind Siliguri',sans-serif;color:var(--text-mid)}
+.cmb-chips{display:flex;gap:7px;overflow-x:auto;padding:2px 1px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cmb-chips::-webkit-scrollbar{display:none}
+.cmb-chip{flex-shrink:0;padding:6px 13px;border-radius:100px;border:1.5px solid var(--border);background:var(--dbgffffff,#fff);color:var(--text-mid);font:600 .74rem 'Hind Siliguri',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+.cmb-chip:hover{border-color:var(--blue);color:var(--blue)}
+.cmb-chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.cmb-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:14px 0 12px}
+.cmb-count{font:700 .84rem 'Hind Siliguri',sans-serif;color:var(--text-mid)}
+.cmb-bar-r{display:flex;align-items:center;gap:8px}
+.cmb-reset{border:0;background:none;color:var(--red,#dc2626);font:700 .74rem 'Hind Siliguri',sans-serif;cursor:pointer;padding:4px 6px}
+.cmb-empty{text-align:center;padding:56px 20px}
+.cd-wrap{max-width:1000px;margin:0 auto;padding:16px 18px 44px}
+.cd-top{display:grid;grid-template-columns:minmax(240px,380px) 1fr;gap:22px;align-items:start;margin-bottom:26px}
+.cd-media{border:1px solid var(--border);border-radius:16px;background:rgba(128,128,128,.07);overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:240px;padding:14px}
+.cd-media img.cd-cover{width:100%;max-height:360px;object-fit:contain;border-radius:10px}
+.cd-collage{display:flex;justify-content:center;align-items:center;width:100%}
+.cd-collage img{height:210px;width:auto;max-width:46%;object-fit:contain;margin:0 -10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+.cd-tag{display:inline-flex;align-items:center;gap:6px;font:700 .72rem 'Hind Siliguri',sans-serif;color:var(--blue);background:var(--blue-light);padding:4px 11px;border-radius:100px;margin-bottom:9px}
+.cd-title{font:800 1.35rem/1.35 'Hind Siliguri',sans-serif;color:var(--text);margin:0 0 8px}
+.cd-desc{font:500 .84rem/1.65 'Hind Siliguri',sans-serif;color:var(--text-mid);margin-bottom:12px}
+.cd-price{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.cd-price b{font:800 1.6rem 'Sora','Hind Siliguri',sans-serif;color:var(--blue)}
+.cd-price s{font-size:.95rem;color:var(--text-light)}
+.cd-note{font:600 .78rem 'Hind Siliguri',sans-serif;color:var(--text-mid);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.cd-note.warn{color:#b45309}
+.cd-add{width:100%;max-width:340px;padding:13px;font-size:.92rem;margin-top:10px}
+.cd-h{font:800 1.05rem 'Hind Siliguri',sans-serif;color:var(--text);margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.cd-books{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.cd-book{display:flex;gap:14px;border:1px solid var(--border);border-radius:14px;background:var(--dbgffffff,#fff);padding:12px}
+.cd-bimg{flex:0 0 92px;height:128px;border-radius:9px;background:rgba(128,128,128,.08);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-light);font-size:1.8rem;text-decoration:none}
+.cd-bimg img{width:100%;height:100%;object-fit:contain}
+.cd-bbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.cd-bname{font:700 .95rem/1.4 'Hind Siliguri',sans-serif;color:var(--text)}
+.cd-bmeta{font:500 .76rem/1.55 'Hind Siliguri',sans-serif;color:var(--text-mid)}
+.cd-bmeta b{color:var(--text);font-weight:600}
+.cd-bspecs{display:flex;flex-wrap:wrap;gap:5px}
+.cd-bspecs span{font:600 .66rem 'Hind Siliguri',sans-serif;padding:2px 8px;border-radius:100px;background:var(--blue-light);color:var(--blue)}
+.cd-bdesc{font:500 .76rem/1.6 'Hind Siliguri',sans-serif;color:var(--text-light);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cd-bfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.cd-bprice{font:800 .95rem 'Sora','Hind Siliguri',sans-serif;color:var(--blue)}
+.cd-bprice s{font-weight:500;font-size:.74rem;color:var(--text-light);margin-left:5px}
+.cd-bbtn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;border:1.5px solid var(--blue);color:var(--blue);background:transparent;font:700 .74rem 'Hind Siliguri',sans-serif;text-decoration:none;cursor:pointer}
+.cd-bbtn:hover{background:var(--blue);color:#fff}
+.cd-sum{border:1.5px dashed var(--blue-mid,#e3b3b3);border-radius:14px;padding:14px 16px;margin-bottom:26px;background:var(--dbgffffff,#fff)}
+.cd-sum .row{display:flex;justify-content:space-between;gap:12px;font:500 .82rem 'Hind Siliguri',sans-serif;padding:4px 0;color:var(--text-mid)}
+.cd-sum .row.tot{border-top:1px solid var(--border);margin-top:5px;padding-top:9px;font-weight:700;color:var(--text)}
+.cd-sum .row.sv{color:var(--green,#16a34a);font-weight:700}
+@media (max-width:700px){
+  .cd-top{grid-template-columns:1fr;gap:14px}
+  .cd-media{min-height:190px}
+  .cd-collage img{height:160px}
+  .cd-title{font-size:1.15rem}
+  .cd-price b{font-size:1.35rem}
+  .cd-add{max-width:none}
+  .cd-book{gap:10px;padding:10px}
+  .cd-bimg{flex-basis:72px;height:104px}
+  .cmb-wrap,.cd-wrap{padding:12px 12px 40px}
+}
+
 
 /* ── ফ্ল্যাশ সেল ── */
 .fs-badge{background:linear-gradient(135deg,#ff7a00,#ff2d55)!important;color:#fff!important}
@@ -317,6 +397,12 @@ body.page-wishlist-open .mobile-search-row,
 body.page-order-detail-open .social-bar,
 body.page-order-detail-open .nav-cats,
 body.page-order-detail-open .mobile-search-row,
+body.page-combos-open .social-bar,
+body.page-combos-open .nav-cats,
+body.page-combos-open .mobile-search-row,
+body.page-combo-open .social-bar,
+body.page-combo-open .nav-cats,
+body.page-combo-open .mobile-search-row,
 body.page-category-open .social-bar,
 body.page-category-open .nav-cats,
 body.page-category-open .mobile-search-row {
@@ -2960,6 +3046,15 @@ footer, footer *:not(i):not([class*="fa-"]) {
 
 /* Order list (left col) */
 .tp-orders-list { display: flex; flex-direction: column; gap: 12px; }
+.osb-returned{background:var(--dbgffedd5,#FFEDD5);color:var(--dfg9a3412,#9A3412)}
+.tp-filter-bar{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tp-filter-bar::-webkit-scrollbar{display:none}
+.tp-fchip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:100px;border:1.5px solid var(--border);background:var(--dbgffffff,white);color:var(--text-mid);font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all var(--t)}
+.tp-fchip:hover{border-color:var(--blue);color:var(--blue)}
+.tp-fchip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.tp-fchip .tp-fcnt{font-family:'Sora',sans-serif;font-size:.64rem;font-weight:700;min-width:18px;padding:1px 6px;border-radius:100px;background:var(--blue-light);color:var(--blue);text-align:center}
+.tp-fchip.active .tp-fcnt{background:rgba(255,255,255,.25);color:#fff}
+.tp-fchip.zero:not(.active){opacity:.55}
 
 /* Enhanced order card for track page */
 .tp-order-card {
@@ -6433,6 +6528,7 @@ html.gm-boot #gmSplash{display:flex}
         <h2 class="bn"><i class="fa-solid fa-layer-group" style="color:var(--blue);margin-right:6px"></i>কম্বো অফার</h2>
       </div>
       <div class="combo-row" id="comboGrid"></div>
+      <div id="comboMore" class="grid-more-wrap"></div>
     </section>
 
     <!-- নতুন প্রকাশিত বই — shown under the popular grid on the default home view -->
@@ -6441,6 +6537,7 @@ html.gm-boot #gmSplash{display:flex}
         <h2 class="bn"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--blue);margin-right:6px"></i>নতুন প্রকাশিত বই</h2>
       </div>
       <div class="pgrid" id="newReleaseGrid"></div>
+      <div id="newReleaseMore" class="grid-more-wrap"></div>
     </section>
 
     <!-- বাজেট অনুযায়ী সেরা বই — বাটনে ক্লিক করলে আলাদা পেজে ওই দামের মধ্যে সব বই -->
@@ -6457,6 +6554,7 @@ html.gm-boot #gmSplash{display:flex}
         <h2 class="bn"><i class="fa-solid fa-tags" style="color:var(--blue);margin-right:6px"></i>সর্বোচ্চ ছাড়ের বই</h2>
       </div>
       <div class="pgrid" id="discountGrid"></div>
+      <div id="discountMore" class="grid-more-wrap"></div>
     </section>
 
     <!-- জনপ্রিয় লেখক / জনপ্রিয় প্রকাশনী — রেটিং (ও বিক্রি) হিসাব করে সাজানো -->
@@ -7609,6 +7707,7 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
           <span id="tpOrderCountBadge" style="display:none;margin-left:auto;background:var(--blue);color:white;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px;font-family:'Sora',sans-serif"></span>
         </div>
         <div class="tp-panel-body">
+          <div class="tp-filter-bar" id="tpFilterBar" style="display:none" role="tablist" aria-label="অর্ডার ফিল্টার"></div>
           <div class="tp-orders-list" id="tpMyOrdersList">
             <!-- populated by JS -->
           </div>
@@ -7642,6 +7741,72 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
   </div><!-- /tp-wrapper -->
 
 </div><!-- /#page-track -->
+
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: সব কম্বো অফার  (/combos) — ফিল্টারসহ
+══════════════════════════════════════════════════ -->
+<div id="page-combos" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn" onclick="closePage('combos')"><i class="fa-solid fa-arrow-left"></i> হোম</button>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('combos')"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current">কম্বো অফার</span>
+    </nav>
+  </div>
+  <div style="background:linear-gradient(120deg,#AA2C2D,#711D1E);padding:20px 24px 18px;color:white">
+    <div style="display:flex;align-items:center;gap:12px;max-width:1100px;margin:0 auto">
+      <div style="width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0"><i class="fa-solid fa-layer-group"></i></div>
+      <div>
+        <div style="font-family:'Hind Siliguri',sans-serif;font-size:1.25rem;font-weight:900;line-height:1.2">কম্বো অফার</div>
+        <div id="cmbSubtitle" style="font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.88;margin-top:3px">একসাথে কিনলে বাড়তি সাশ্রয়</div>
+      </div>
+    </div>
+  </div>
+  <div class="cmb-wrap">
+    <div class="cmb-search"><i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" id="cmbSearch" placeholder="কম্বো, বই বা লেখকের নাম খুঁজুন..." oninput="comboSearchInput(this.value)" autocomplete="off">
+    </div>
+    <div id="cmbFilters"></div>
+    <div class="cmb-bar">
+      <div class="cmb-count" id="cmbCount"></div>
+      <div class="cmb-bar-r">
+        <button type="button" class="cmb-reset" id="cmbReset" onclick="comboResetFilters()" style="display:none"><i class="fa-solid fa-rotate-left"></i> ফিল্টার মুছুন</button>
+        <select class="sort-sel bn" id="cmbSort" onchange="comboSetFilter('sort',this.value)" style="font-size:.74rem;padding:6px 10px;max-width:190px">
+          <option value="new">নতুন আগে</option>
+          <option value="low">দাম: কম → বেশি</option>
+          <option value="high">দাম: বেশি → কম</option>
+          <option value="save">সবচেয়ে বেশি সাশ্রয়</option>
+          <option value="pct">সর্বোচ্চ ছাড় %</option>
+        </select>
+      </div>
+    </div>
+    <div class="combo-row" id="cmbGrid"></div>
+    <div id="cmbEmpty" class="cmb-empty" style="display:none">
+      <i class="fa-solid fa-layer-group" style="font-size:3rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
+      <div class="bn" style="font-size:.95rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কোনো কম্বো পাওয়া যায়নি</div>
+      <div class="bn" style="font-size:.78rem;color:var(--text-light);margin-bottom:14px">ফিল্টার বদলে আবার দেখুন</div>
+      <button type="button" onclick="comboResetFilters()" class="bn" style="padding:8px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--dbgffffff,white);color:var(--blue);font-size:.78rem;font-weight:700;cursor:pointer">সব কম্বো দেখুন</button>
+    </div>
+  </div>
+</div><!-- /#page-combos -->
+
+<!-- ══════════════════════════════════════════════════
+     FULL-PAGE: কম্বো ডিটেইল  (/combo/<id>) — কম্বোতে কোন কোন বই আছে
+══════════════════════════════════════════════════ -->
+<div id="page-combo" class="full-page" aria-hidden="true">
+  <div class="fp-topbar">
+    <button class="fp-back-btn" onclick="closeComboDetail()"><i class="fa-solid fa-arrow-left"></i> পিছনে</button>
+    <nav class="fp-breadcrumb" aria-label="breadcrumb">
+      <span class="bc-link" onclick="closePage('combo')"><i class="fa-solid fa-house bc-home-icon"></i> হোম</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-link" onclick="openCombosPage()">কম্বো অফার</span>
+      <i class="fa-solid fa-chevron-right bc-sep"></i>
+      <span class="bc-current" id="cdBreadName">কম্বো</span>
+    </nav>
+  </div>
+  <div class="cd-wrap" id="comboDetailBody"></div>
+</div><!-- /#page-combo -->
 
 <!-- ── AUTH MODAL ── -->
 <div class="overlay" id="authModal" onclick="if(event.target===this)closeModal('authModal')">
@@ -8852,6 +9017,31 @@ async function _restorePageFromUrl() {
     return;
   }
 
+  if (path === '/combos') {
+    openCombosPage(false);
+    return;
+  }
+
+  if (path.startsWith('/combo/')) {
+    openComboPage(_safeDecode(path.slice(7)).replace(/\/+$/, ''), false);
+    return;
+  }
+
+  if (path === '/max-discount') {
+    openMaxDiscountPage(false);
+    return;
+  }
+
+  if (path === '/new-releases') {
+    openNewReleasesPage(false);
+    return;
+  }
+
+  if (path === '/flash-sale') {
+    openFlashPage(new URLSearchParams(location.search).get('sale'), false);
+    return;
+  }
+
   if (path === '/all-products') {
     { const _sp = new URLSearchParams(location.search); openAllBooksPage(parseInt(_sp.get('page')) || 1, false, false, _sp.get('type') || 'all'); }
     return;
@@ -9577,9 +9767,19 @@ function buildProductCard(p) {
    HOME GRID — প্রথমে ১৫টি জনপ্রিয় পণ্য, "আরও দেখুন" এ আরও ১৫টি করে।
    তার নিচে "নতুন প্রকাশিত বই" সেকশন (শুধু ডিফল্ট হোম ভিউতে)।
    ══════════════════════════════════════════════════ */
-const HOME_PAGE_SIZE = 15;      // একবারে কতগুলো পণ্য দেখাবে
-const NEW_RELEASE_COUNT = 10;   // "নতুন প্রকাশিত বই" সেকশনে কতগুলো বই
-let _gridLimit = HOME_PAGE_SIZE;
+const HOME_PAGE_SIZE_DESKTOP = 15;  // ডেস্কটপে একবারে কতগুলো পণ্য দেখাবে
+const HOME_PAGE_SIZE_MOBILE  = 6;   // মোবাইলে প্রথমে মাত্র ৬টি; বাকিগুলো "আরও দেখুন" চাপলে
+function homePageSize() { return window.innerWidth <= 768 ? HOME_PAGE_SIZE_MOBILE : HOME_PAGE_SIZE_DESKTOP; }
+const NEW_RELEASE_COUNT = 10;   // ডেস্কটপে "নতুন প্রকাশিত বই" সেকশনে কতগুলো বই (মোবাইলে ৬টি)
+const NEW_RELEASE_MOBILE = 6;   // মোবাইলে হোমে প্রথমে কতগুলো
+const NEW_RELEASE_PAGE_COUNT = 20;   // "আরও দেখুন" পেজে কতগুলো নতুন বই
+// "New" ব্যাজ দেওয়া বই আগে, তারপর সর্বশেষ যোগ হওয়া
+function newReleaseSorted(excludeIds) {
+  const ts = p => new Date(p.created_at || 0).getTime() || 0;
+  return products.filter(p => isBookProduct(p) && !(excludeIds && excludeIds.has(p.id)))
+    .sort((a, b) => ((b.badge === 'new') - (a.badge === 'new')) || (ts(b) - ts(a)));
+}
+let _gridLimit = homePageSize();
 let _gridList = [];
 let _lastFiltered = null;
 let _soldMap = {};              // product id → মোট বিক্রি (orders থেকে, loadTopSellingBooks ভরে দেয়)
@@ -9593,11 +9793,11 @@ function popularCmp(a, b) {
 }
 
 function renderProducts(list) {
-  _gridLimit = HOME_PAGE_SIZE;
+  _gridLimit = homePageSize();
   _paintGrid(list, false);
 }
 function showMoreProducts() {
-  _gridLimit += HOME_PAGE_SIZE;
+  _gridLimit += homePageSize();
   _paintGrid(_gridList, true);
 }
 function _paintGrid(list, append) {
@@ -9622,6 +9822,16 @@ function _paintGrid(list, append) {
     : '';
   renderNewReleases();
 }
+(function () {
+  var _wasMobile = window.innerWidth <= 768, _rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(_rt);
+    _rt = setTimeout(function () {
+      var m = window.innerWidth <= 768;
+      if (m !== _wasMobile) { _wasMobile = m; if (_gridList && _gridList.length) renderProducts(_gridList); }
+    }, 200);
+  });
+})();
 function renderNewReleases() {
   updateHeroDynamic();
   const sec = document.getElementById('newReleaseSec');
@@ -9635,28 +9845,69 @@ function renderNewReleases() {
   renderBudgetButtons(_onHome);
   renderHomeReviews(_onHome);
   if (!_onHome) { sec.style.display = 'none'; renderMaxDiscount(false); return; }
-  const aboveIds = new Set(_gridList.slice(0, HOME_PAGE_SIZE).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
-  const ts = p => new Date(p.created_at || 0).getTime() || 0;
-  const books = products.filter(p => isBookProduct(p) && !aboveIds.has(p.id))
-    .sort((a, b) => ((b.badge === 'new') - (a.badge === 'new')) || (ts(b) - ts(a)))   // "New" ব্যাজ দেওয়া বই আগে, তারপর সর্বশেষ যোগ হওয়া
-    .slice(0, NEW_RELEASE_COUNT);
+  const aboveIds = new Set(_gridList.slice(0, homePageSize()).map(p => p.id)); // উপরের জনপ্রিয় ১৫টি বাদ
+  const _nrLim = window.innerWidth <= 768 ? NEW_RELEASE_MOBILE : NEW_RELEASE_COUNT;
+  const books = newReleaseSorted(aboveIds).slice(0, _nrLim);
+  const _nrMore = document.getElementById('newReleaseMore');
+  if (_nrMore) _nrMore.innerHTML = Math.min(NEW_RELEASE_PAGE_COUNT, newReleaseSorted().length) > books.length
+    ? '<button type="button" class="grid-more-btn bn" onclick="openNewReleasesPage()"><i class="fa-solid fa-angles-down"></i> আরও দেখুন</button>' : '';
   if (!books.length) { sec.style.display = 'none'; renderMaxDiscount(true); return; }
   grid.innerHTML = books.map(p => buildProductCard(p)).join('');
   sec.style.display = '';
   renderMaxDiscount(true);
 }
 // সর্বোচ্চ ছাড়ের বই — মোট ছাড় % সবচেয়ে বেশি যেগুলো (বই কম থাকলেও যেন সেকশন দেখায়, তাই জনপ্রিয়/নতুন সেকশনের বই বাদ দেওয়া হয় না)
+const DISC_PAGE_MIN = 30;       // "আরও দেখুন" পেজে সর্বনিম্ন কত % ছাড়ের বই দেখাবে
+const DISC_MOBILE = 6;          // মোবাইলে হোমে প্রথমে কতগুলো
+// ছাড় % বেশি থেকে কম ক্রমে (সমান হলে জনপ্রিয় আগে)
+function maxDiscSorted(minPct) {
+  const pct = p => getEffectiveSalePrice(p).totalDiscPct;
+  return products.filter(p => isBookProduct(p) && pct(p) > 0 && pct(p) >= (minPct || 0))
+    .sort((a, b) => (pct(b) - pct(a)) || popularCmp(a, b));
+}
 function renderMaxDiscount(show) {
   const sec = document.getElementById('discountSec'), grid = document.getElementById('discountGrid');
   if (!sec || !grid) return;
   if (!show) { sec.style.display = 'none'; return; }
-  const pct = p => getEffectiveSalePrice(p).totalDiscPct;
-  const books = products.filter(p => isBookProduct(p) && pct(p) > 0)
-    .sort((a, b) => (pct(b) - pct(a)) || popularCmp(a, b))
-    .slice(0, NEW_RELEASE_COUNT);
+  const lim = window.innerWidth <= 768 ? DISC_MOBILE : NEW_RELEASE_COUNT;
+  const books = maxDiscSorted(0).slice(0, lim);
   if (!books.length) { sec.style.display = 'none'; return; }
   grid.innerHTML = books.map(p => buildProductCard(p)).join('');
+  const more = document.getElementById('discountMore');
+  if (more) more.innerHTML = maxDiscSorted(DISC_PAGE_MIN).length > books.length
+    ? '<button type="button" class="grid-more-btn bn" onclick="openMaxDiscountPage()"><i class="fa-solid fa-angles-down"></i> আরও দেখুন</button>' : '';
   sec.style.display = '';
+}
+
+/* ══════════════════════════════════════════════════
+   সর্বোচ্চ ছাড়ের বই — আলাদা পেজ (/max-discount):
+   ৩০% বা তার বেশি ছাড়ের সব বই, সবচেয়ে বেশি ছাড় আগে
+   ══════════════════════════════════════════════════ */
+function openMaxDiscountPage(pushUrl = true) {
+  resetBudgetMode();
+  currentDiscMode = true; currentCatPage = 'সব';
+  document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
+  document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-tags" style="color:white;font-size:1.4rem"></i>';
+  document.getElementById('catPageTitle').textContent = 'সর্বোচ্চ ছাড়ের বই';
+  document.getElementById('catPageBreadcrumb').textContent = 'সর্বোচ্চ ছাড়ের বই';
+  renderCatPageProducts();
+  _navTo({ page: 'category', cat: 'সব', maxdisc: 1 }, 'সর্বোচ্চ ছাড়ের বই — বুক গ্যালাক্সি', '/max-discount', pushUrl);
+  _setMeta('বুক গ্যালাক্সি-তে ৩০% বা তার বেশি ছাড়ের সব বই। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।', '/max-discount');
+  openPage('category');
+  const pg = document.getElementById('page-category'); if (pg) pg.scrollTop = 0;
+}
+function renderMaxDiscountPageProducts() {
+  const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
+  const sub = document.getElementById('catPageSubtitle');
+  const pager = document.getElementById('catPagePager'); if (pager) pager.innerHTML = '';
+  const topSort = document.getElementById('catPageSort')?.parentElement; if (topSort) topSort.style.display = 'none';   // ক্রম নির্দিষ্ট: বেশি ছাড় আগে
+  if (!grid || !empty) return;
+  const list = maxDiscSorted(DISC_PAGE_MIN);
+  if (sub) sub.textContent = `${_bnDigits(DISC_PAGE_MIN)}% বা তার বেশি ছাড় · ${_bnDigits(list.length)}টি বই`;
+  if (empty.lastElementChild) empty.lastElementChild.textContent = `এখন ${_bnDigits(DISC_PAGE_MIN)}% বা বেশি ছাড়ের কোনো বই নেই`;
+  if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
 }
 
 
@@ -9858,6 +10109,9 @@ const BUDGET_RANGES = [            // এখানের সংখ্যা ব�
 ];
 let currentSearchMode = false;    // true = হেডার সার্চের রেজাল্ট পেজ (/search?q=...)
 let currentSearchQuery = '';
+let currentDiscMode = false;  // true = সর্বোচ্চ ছাড়ের বইয়ের আলাদা পেজ
+let currentNewMode = false;   // true = নতুন প্রকাশিত বইয়ের আলাদা পেজ
+let currentFlashMode = false, currentFlashId = null;   // true = ফ্ল্যাশ সেলের আলাদা পেজ
 let currentAllMode = false;       // true = "আরও দেখুন" থেকে খোলা সব-পণ্যের পেজ (পেজিনেশন সহ)
 let currentAllPage = 1;
 let currentAllType = 'all';        // 'all' | 'book' | 'product'(বই ছাড়া অন্য পণ্য)
@@ -9896,7 +10150,7 @@ function renderBudgetButtons(show) {
 function openBudgetPage(key, pushUrl = true) {
   const r = typeof key === 'object' && key ? key : parseBudgetKey(key);
   if (!r) return;
-  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব'; currentAllMode = false; currentSearchMode = false; document.body.classList.remove('search-results-open');
+  currentBudget = r; currentBudgetCat = 'সব'; currentCatPage = 'সব'; currentAllMode = false; currentSearchMode = false; currentFlashMode = false; currentNewMode = false; currentDiscMode = false; document.body.classList.remove('search-results-open');
   const title = r.min === 0 ? `${budgetLabel(r)} সেরা বই` : `${budgetLabel(r)} দামের সেরা বই`;
   document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
   document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-wallet" style="color:white;font-size:1.4rem"></i>';
@@ -9910,7 +10164,7 @@ function openBudgetPage(key, pushUrl = true) {
   openPage('category');
 }
 function resetBudgetMode() {
-  currentBudget = 0; currentBudgetCat = 'সব'; currentAllMode = false; currentSearchMode = false;
+  currentBudget = 0; currentBudgetCat = 'সব'; currentAllMode = false; currentSearchMode = false; currentFlashMode = false; currentNewMode = false; currentDiscMode = false;
   document.body.classList.remove('search-results-open');
   const bars = document.getElementById('budgetBars'); if (bars) bars.style.display = 'none';
   const top = document.getElementById('catPageSort')?.parentElement; if (top) top.style.display = '';
@@ -10822,7 +11076,7 @@ function restoreHomeUrl() {
 
 // ── Global UI visibility manager ──
 // Hides social-bar + category-nav on product/checkout/track pages per design spec
-const _PAGES_HIDE_TOPBARS = ['blog', 'blog-post', 'product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category', 'author'];
+const _PAGES_HIDE_TOPBARS = ['blog', 'blog-post', 'product', 'checkout', 'track', 'profile', 'wishlist', 'order-detail', 'category', 'author', 'combos', 'combo'];
 function updatePageUIVisibility(name) {
   if (_PAGES_HIDE_TOPBARS.includes(name)) {
     document.body.classList.add('page-' + name + '-open');
@@ -10874,7 +11128,8 @@ function closePage(name) {
     if (ctaBar) ctaBar.classList.remove('active');
   }
   if (name === 'product') restoreHomeUrl();
-  if (name === 'category' && /^\/(category|budget|all-products|search)(\/|$)/.test(_safeDecode(location.pathname))) { restoreHomeUrl(); if (currentSearchMode) { ['searchInput','mobileSearchInput'].forEach(id => { const i = document.getElementById(id); if (i) i.value = ''; }); currentSearchMode = false; document.body.classList.remove('search-results-open'); } }
+  if (name === 'combos' || name === 'combo') restoreHomeUrl();
+  if (name === 'category' && /^\/(category|budget|all-products|search|flash-sale|new-releases|max-discount)(\/|$)/.test(_safeDecode(location.pathname))) { restoreHomeUrl(); if (currentSearchMode) { ['searchInput','mobileSearchInput'].forEach(id => { const i = document.getElementById(id); if (i) i.value = ''; }); currentSearchMode = false; document.body.classList.remove('search-results-open'); } }
   if (name === 'author' && /^\/(author|publisher|subcategory)\//.test(_safeDecode(location.pathname))) restoreHomeUrl();
   if (name === 'checkout' && location.pathname === '/checkout') restoreHomeUrl();
   if (name === 'track') history.replaceState({ page: 'home' }, 'বুক গ্যালাক্সি', '/');
@@ -11573,17 +11828,97 @@ function flashFmt(ms) {
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60, z = n => String(n).padStart(2, '0');
   return (d > 0 ? d + ' দিন ' : '') + z(h) + ':' + z(m) + ':' + z(sec);
 }
+/* ══════════════════════════════════════════════════
+   ফ্ল্যাশ সেল — আলাদা পেজ (/flash-sale  বা  /flash-sale?sale=<id>)
+   হোমে প্রথমে ৬টি (মোবাইল), বাকিগুলো "আরও দেখুন" চাপলে এই পেজে।
+   ক্যাটাগরি-পেজের কাঠামোই ব্যবহার হয় (সাজানোসহ)।
+   ══════════════════════════════════════════════════ */
+function openFlashPage(saleId, pushUrl = true) {
+  resetBudgetMode();
+  currentFlashMode = true; currentFlashId = saleId ? String(saleId) : null; currentCatPage = 'সব';
+  document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#ff7a00,#ff2d55)';
+  document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-bolt" style="color:white;font-size:1.4rem"></i>';
+  document.getElementById('catPageBreadcrumb').textContent = 'ফ্ল্যাশ সেল';
+  document.getElementById('catPageSort').value = 'popular';
+  renderCatPageProducts();
+  const url = '/flash-sale' + (currentFlashId ? '?sale=' + encodeURIComponent(currentFlashId) : '');
+  _navTo({ page: 'category', cat: 'সব', flash: currentFlashId || 'all' }, 'ফ্ল্যাশ সেল — বুক গ্যালাক্সি', url, pushUrl);
+  openPage('category');
+  const pg = document.getElementById('page-category'); if (pg) pg.scrollTop = 0;
+}
+function renderFlashPageProducts() {
+  const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
+  const sub = document.getElementById('catPageSubtitle'), ttl = document.getElementById('catPageTitle');
+  const pager = document.getElementById('catPagePager'); if (pager) pager.innerHTML = '';
+  if (!grid || !empty) return;
+  if (!_fsLoaded) {
+    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p class="bn">ফ্ল্যাশ সেল লোড হচ্ছে...</p></div>';
+    empty.style.display = 'none'; if (ttl) ttl.textContent = 'ফ্ল্যাশ সেল'; if (sub) sub.textContent = ''; return;
+  }
+  const sale = currentFlashId ? flashSales.find(x => String(x.id) === currentFlashId) : null;
+  const list = products.filter(p => {
+    if (p.is_active === false || p.is_combo) return false;
+    const fs = flashFor(p); return fs && (!currentFlashId || String(fs.id) === currentFlashId);
+  });
+  const sort = document.getElementById('catPageSort')?.value || 'popular';
+  const price = p => getEffectiveSalePrice(p).displayPrice;
+  if (sort === 'low') list.sort((a, b) => price(a) - price(b));
+  else if (sort === 'high') list.sort((a, b) => price(b) - price(a));
+  else if (sort === 'rating') list.sort((a, b) => (b.rating || 4) - (a.rating || 4) || popularCmp(a, b));
+  else if (sort === 'discount') list.sort((a, b) => getEffectiveSalePrice(b).totalDiscPct - getEffectiveSalePrice(a).totalDiscPct);
+  else list.sort(popularCmp);
+  if (ttl) ttl.textContent = sale ? sale.name : 'ফ্ল্যাশ সেল';
+  if (sub) sub.innerHTML = `${_bnDigits(list.length)} টি পণ্য` + (sale && flashActive(sale) ? ` · শেষ হতে <b class="fs-timer" style="font-size:.78rem;padding:2px 9px;margin-left:4px" data-fs-end="${new Date(sale.ends_at).getTime()}">${flashFmt(new Date(sale.ends_at).getTime() - flashNow())}</b>` : '');
+  if (empty.lastElementChild) empty.lastElementChild.textContent = 'এই মুহূর্তে কোনো ফ্ল্যাশ সেল চলছে না';
+  if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+}
+/* ══════════════════════════════════════════════════
+   নতুন প্রকাশিত বই — আলাদা পেজ (/new-releases): সর্বশেষ ২০টি বই
+   ══════════════════════════════════════════════════ */
+function openNewReleasesPage(pushUrl = true) {
+  resetBudgetMode();
+  currentNewMode = true; currentCatPage = 'সব';
+  document.getElementById('catPageHero').style.background = 'linear-gradient(120deg,#AA2C2D,#711D1E)';
+  document.getElementById('catPageIcon').innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color:white;font-size:1.4rem"></i>';
+  document.getElementById('catPageTitle').textContent = 'নতুন প্রকাশিত বই';
+  document.getElementById('catPageBreadcrumb').textContent = 'নতুন প্রকাশিত বই';
+  renderCatPageProducts();
+  _navTo({ page: 'category', cat: 'সব', newrel: 1 }, 'নতুন প্রকাশিত বই — বুক গ্যালাক্সি', '/new-releases', pushUrl);
+  _setMeta('বুক গ্যালাক্সি-র সর্বশেষ প্রকাশিত নতুন বইগুলো। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।', '/new-releases');
+  openPage('category');
+  const pg = document.getElementById('page-category'); if (pg) pg.scrollTop = 0;
+}
+function renderNewReleasesPageProducts() {
+  const grid = document.getElementById('catPageGrid'), empty = document.getElementById('catPageEmpty');
+  const sub = document.getElementById('catPageSubtitle');
+  const pager = document.getElementById('catPagePager'); if (pager) pager.innerHTML = '';
+  const topSort = document.getElementById('catPageSort')?.parentElement; if (topSort) topSort.style.display = 'none';   // ক্রম নির্দিষ্ট: সবচেয়ে নতুন আগে
+  if (!grid || !empty) return;
+  const list = newReleaseSorted().slice(0, NEW_RELEASE_PAGE_COUNT);
+  if (sub) sub.textContent = `সর্বশেষ ${_bnDigits(list.length)}টি বই`;
+  if (empty.lastElementChild) empty.lastElementChild.textContent = 'এখনো কোনো নতুন বই যোগ হয়নি';
+  if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(p => buildProductCard(p)).join('');
+}
 function renderFlashSection(onHome) {
   _flashOnHome = !!onHome;
   const sec = document.getElementById('flashSec'), wrap = document.getElementById('flashWrap'); if (!sec || !wrap) return;
   const act = flashSales.filter(flashActive).sort((a, b) => new Date(a.ends_at) - new Date(b.ends_at));
   const blocks = act.map(s => {
-    const list = products.filter(p => p.is_active !== false && flashMatches(s, p) && flashFor(p) === s).slice(0, 10);
+    const _all = products.filter(p => p.is_active !== false && flashMatches(s, p) && flashFor(p) === s);
+    const _lim = window.innerWidth <= 768 ? 6 : 10;          // মোবাইলে প্রথমে ৬টি
+    const list = _all.slice(0, _lim);
     if (!list.length) return '';
+    const _sid = String(s.id).replace(/[^\w-]/g, '');
+    const moreBtn = _all.length > list.length
+      ? `<div class="grid-more-wrap"><button type="button" class="grid-more-btn bn" onclick="openFlashPage('${_sid}')"><i class="fa-solid fa-angles-down"></i> আরও দেখুন <span>(${_all.length - list.length} টি বাকি)</span></button></div>` : '';
     const left = s.limit_qty != null ? `<div class="fs-sub bn">মাত্র ${Number(s.limit_qty)}টির মধ্যে আর ${Math.max(0, Number(s.limit_qty) - Number(s.sold_qty))}টি বাকি</div>` : '';
     return `<div class="fs-block"><div class="fs-banner"><div><h2 class="bn"><i class="fa-solid fa-bolt"></i> ${fdEsc(s.name)}</h2>${left}</div>
       <div class="fs-timer" data-fs-end="${new Date(s.ends_at).getTime()}">${flashFmt(new Date(s.ends_at).getTime() - flashNow())}</div></div>
-      <div class="pgrid">${list.map(p => buildProductCard(p)).join('')}</div></div>`;
+      <div class="pgrid">${list.map(p => buildProductCard(p)).join('')}</div>${moreBtn}</div>`;
   }).join('');
   if (!onHome || !blocks) { sec.style.display = 'none'; wrap.innerHTML = ''; return; }
   wrap.innerHTML = blocks; sec.style.display = '';
@@ -11591,6 +11926,7 @@ function renderFlashSection(onHome) {
 function flashRefreshAll() {
   _fsActiveKey = flashSales.filter(flashActive).map(s => s.id).sort().join(',');
   renderFlashSection(_flashOnHome);
+  try { if (currentFlashMode && document.getElementById('page-category')?.classList.contains('open')) renderCatPageProducts(); } catch(e) {}
   try { if (typeof filterProducts === 'function') filterProducts(); } catch(e) {}
   try { renderCartItems(); } catch(e) {}
 }
@@ -11700,18 +12036,191 @@ function comboCardHtml(inf) {
     ? `<div class="combo-imgs combo-single"><img src="${fdEsc(c.image_url)}" alt="${fdEsc(c.name)}" loading="lazy"></div>`
     : `<div class="combo-imgs">${inf.books.slice(0,3).map(b => b.image_url ? `<img src="${fdEsc(b.image_url)}" alt="" loading="lazy">` : '').join('')}</div>`;
   const out = inf.stock <= 0;
-  return `<div class="combo-card bn">${imgs}
+  const _cid = String(c.id).replace(/[^\w-]/g, '');
+  return `<div class="combo-card bn" onclick="openComboPage('${_cid}')">${imgs}
     <div class="combo-name">${fdEsc(c.name)}</div>
     <div class="combo-books">${inf.books.map(b => fdEsc(b.name)).join(' + ')}</div>
     <div class="combo-price"><b>৳${inf.price.toLocaleString('en-US')}</b>${inf.save>0?`<s>৳${inf.reg.toLocaleString('en-US')}</s><span class="combo-save">৳${inf.save.toLocaleString('en-US')} সাশ্রয়</span>`:''}</div>
-    <button class="combo-btn" ${out?'disabled':''} onclick="addComboToCart('${c.id}')">${out?'স্টক শেষ':'<i class="fa-solid fa-cart-plus"></i> কম্বো কার্টে নিন'}</button></div>`;
+    <button class="combo-btn" ${out?'disabled':''} onclick="event.stopPropagation();addComboToCart('${c.id}')">${out?'স্টক শেষ':'<i class="fa-solid fa-cart-plus"></i> কম্বো কার্টে নিন'}</button>
+    <div class="combo-view">কোন কোন বই আছে দেখুন <i class="fa-solid fa-angle-right"></i></div></div>`;
 }
 function renderComboSection(onHome) {
   _comboOnHome = !!onHome;
   const sec = document.getElementById('comboSec'), grid = document.getElementById('comboGrid'); if (!sec || !grid) return;
   const list = combos.map(comboInfo).filter(i => i.valid && i.stock > 0);
-  if (!onHome || !list.length) { sec.style.display = 'none'; return; }
-  grid.innerHTML = list.map(comboCardHtml).join(''); sec.style.display = '';
+  if (!onHome || !list.length) { sec.style.display = 'none'; comboPagesRefresh(); return; }
+  grid.innerHTML = list.slice(0, COMBO_HOME_COUNT).map(comboCardHtml).join(''); sec.style.display = '';
+  const more = document.getElementById('comboMore');
+  if (more) more.innerHTML = list.length > COMBO_HOME_COUNT
+    ? `<button type="button" class="grid-more-btn bn" onclick="openCombosPage()"><i class="fa-solid fa-angles-down"></i> সব কম্বো দেখুন <span>(${list.length - COMBO_HOME_COUNT} টি বাকি)</span></button>` : '';
+  comboPagesRefresh();
+}
+
+/* ══════════════════════════════════════════════════
+   কম্বো — লিস্ট পেজ (/combos, ফিল্টারসহ) ও ডিটেইল পেজ (/combo/<id>)
+   • হোমে প্রথমে ৪টি কম্বো, বাকিগুলো "সব কম্বো দেখুন" এ
+   • কম্বো কার্ডে ক্লিক করলে ডিটেইল: কোন কোন বই আছে + প্রতিটি বইয়ের তথ্য
+   ══════════════════════════════════════════════════ */
+const COMBO_HOME_COUNT = 4;
+const CMB_DEFAULT = { q: '', n: 'all', price: 'all', cat: 'all', save: false, sort: 'new' };
+let _cmbF = Object.assign({}, CMB_DEFAULT);
+let _comboCurId = null, _comboFromList = false;
+const CMB_BANDS = [['all', 'সব দাম', 0, Infinity], ['a', '~৫০০', 0, 500], ['b', '৫০১–১,০০০', 501, 1000], ['c', '১,০০১–২,০০০', 1001, 2000], ['d', '২,০০০+', 2001, Infinity]];
+const CMB_COUNTS = [['all', 'সব'], ['2', '২টি বই'], ['3', '৩টি বই'], ['4', '৪+ বই']];
+const _taka = n => '৳' + Number(n || 0).toLocaleString('en-US');
+function comboValidList() { return combos.map(comboInfo).filter(i => i.valid && i.stock > 0); }
+function comboPct(i) { return i.reg > 0 ? Math.round(i.save / i.reg * 100) : 0; }
+function comboFiltered() {
+  const f = _cmbF, q = f.q.trim().toLowerCase();
+  let list = comboValidList();
+  if (q) list = list.filter(i => [i.c.name].concat(i.books.map(b => [b.name, b.author, b.publisher].join(' '))).join(' ').toLowerCase().includes(q));
+  if (f.n !== 'all') list = list.filter(i => f.n === '4' ? i.books.length >= 4 : i.books.length === Number(f.n));
+  if (f.price !== 'all') { const bd = CMB_BANDS.find(b => b[0] === f.price); if (bd) list = list.filter(i => i.price >= bd[2] && i.price <= bd[3]); }
+  if (f.cat !== 'all') list = list.filter(i => i.books.some(b => b.category === f.cat));
+  if (f.save) list = list.filter(i => i.save > 0);
+  if (f.sort === 'low') list.sort((a, b) => a.price - b.price);
+  else if (f.sort === 'high') list.sort((a, b) => b.price - a.price);
+  else if (f.sort === 'save') list.sort((a, b) => b.save - a.save);
+  else if (f.sort === 'pct') list.sort((a, b) => comboPct(b) - comboPct(a));
+  return list;   // 'new' → combos আগে থেকেই created_at অনুযায়ী নতুন আগে
+}
+function comboFiltersActive() { return Object.keys(CMB_DEFAULT).some(k => k !== 'sort' && _cmbF[k] !== CMB_DEFAULT[k]); }
+function comboSetFilter(k, v) { _cmbF[k] = v; renderCombosPage(); }
+function comboSearchInput(v) { clearTimeout(comboSearchInput._t); comboSearchInput._t = setTimeout(() => comboSetFilter('q', v), 180); }
+function comboResetFilters() {
+  _cmbF = Object.assign({}, CMB_DEFAULT);
+  const si = document.getElementById('cmbSearch'); if (si) si.value = '';
+  const ss = document.getElementById('cmbSort'); if (ss) ss.value = 'new';
+  renderCombosPage();
+}
+function renderCombosPage() {
+  const grid = document.getElementById('cmbGrid'); if (!grid) return;
+  const empty = document.getElementById('cmbEmpty'), cnt = document.getElementById('cmbCount');
+  const fbox = document.getElementById('cmbFilters'), sub = document.getElementById('cmbSubtitle');
+  const rst = document.getElementById('cmbReset');
+  if (!combosLoaded || !products.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-spinner fa-spin"></i><p class="bn">কম্বো লোড হচ্ছে...</p></div>';
+    if (empty) empty.style.display = 'none'; if (fbox) fbox.innerHTML = ''; if (cnt) cnt.textContent = ''; return;
+  }
+  const all = comboValidList();
+  if (sub) sub.textContent = `মোট ${_bnDigits(all.length)}টি কম্বো · একসাথে কিনলে বাড়তি সাশ্রয়`;
+  const cats = [...new Set(all.flatMap(i => i.books.map(b => b.category)).filter(Boolean))].sort();
+  const chip = (k, val, label) => `<button type="button" class="cmb-chip bn${_cmbF[k] === val ? ' on' : ''}" onclick="comboSetFilter('${k}', ${typeof val === 'string' ? JSON.stringify(val).replace(/&/g, '&amp;').replace(/"/g, '&quot;') : val})">${label}</button>`;
+  const row = (lbl, chips) => `<div class="cmb-frow"><div class="cmb-flbl">${lbl}</div><div class="cmb-chips">${chips}</div></div>`;
+  if (fbox) fbox.innerHTML =
+    row('বইয়ের সংখ্যা', CMB_COUNTS.map(([v, l]) => chip('n', v, l)).join('')) +
+    row('দামের সীমা', CMB_BANDS.map(([v, l]) => chip('price', v, l)).join('')) +
+    (cats.length > 1 ? row('ক্যাটাগরি', chip('cat', 'all', 'সব') + cats.map(c => chip('cat', c, fdEsc(c))).join('')) : '') +
+    row('অফার', chip('save', false, 'সব') + chip('save', true, '<i class="fa-solid fa-tags" style="margin-right:4px"></i>সাশ্রয় আছে'));
+  const list = comboFiltered();
+  if (cnt) cnt.textContent = `${_bnDigits(list.length)}টি কম্বো পাওয়া গেছে`;
+  if (rst) rst.style.display = comboFiltersActive() ? '' : 'none';
+  if (!list.length) { grid.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = list.map(comboCardHtml).join('');
+}
+function openCombosPage(pushUrl = true) {
+  if (pushUrl) { _cmbF = Object.assign({}, CMB_DEFAULT); const si = document.getElementById('cmbSearch'); if (si) si.value = ''; const ss = document.getElementById('cmbSort'); if (ss) ss.value = 'new'; }
+  renderCombosPage();
+  _navTo({ page: 'combos' }, 'কম্বো অফার — বুক গ্যালাক্সি', '/combos', pushUrl);
+  _setMeta('বুক গ্যালাক্সি-র সব কম্বো অফার — একসাথে কিনলে বাড়তি সাশ্রয়। ক্যাশ অন ডেলিভারি, সারা বাংলাদেশে।', '/combos');
+  openPage('combos');
+  const pg = document.getElementById('page-combos'); if (pg) pg.scrollTop = 0;
+}
+// ── ডিটেইল পেজ ──
+function openComboPage(id, pushUrl = true) {
+  if (pushUrl) _comboFromList = !!document.getElementById('page-combos')?.classList.contains('open');
+  _comboCurId = String(id);
+  renderComboDetail();
+  const c = combos.find(x => String(x.id) === _comboCurId);
+  const ttl = c ? c.name + ' — কম্বো অফার' : 'কম্বো অফার';
+  _navTo({ page: 'combo', id: _comboCurId }, ttl + ' — বুক গ্যালাক্সি', '/combo/' + encodeURIComponent(_comboCurId), pushUrl);
+  openPage('combo');
+  const pg = document.getElementById('page-combo'); if (pg) pg.scrollTop = 0;
+}
+function closeComboDetail() { if (_comboFromList) history.back(); else closePage('combo'); }
+function renderComboDetail() {
+  const body = document.getElementById('comboDetailBody'); if (!body) return;
+  const crumb = document.getElementById('cdBreadName');
+  if (!combosLoaded || !products.length) {
+    body.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p class="bn">কম্বো লোড হচ্ছে...</p></div>'; return;
+  }
+  const c = combos.find(x => String(x.id) === String(_comboCurId));
+  const inf = c && comboInfo(c);
+  if (!inf || !inf.valid) {
+    if (crumb) crumb.textContent = 'কম্বো';
+    body.innerHTML = `<div class="cmb-empty"><i class="fa-solid fa-layer-group" style="font-size:3rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
+      <div class="bn" style="font-size:.95rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">কম্বোটি এখন পাওয়া যাচ্ছে না</div>
+      <div class="bn" style="font-size:.78rem;color:var(--text-light);margin-bottom:14px">মেয়াদ শেষ হয়ে গেছে বা কোনো বই নেই</div>
+      <button type="button" onclick="openCombosPage()" class="bn" style="padding:8px 18px;border-radius:var(--radius-sm);border:none;background:var(--blue);color:#fff;font-size:.8rem;font-weight:700;cursor:pointer">সব কম্বো দেখুন</button></div>`;
+    return;
+  }
+  if (crumb) crumb.textContent = c.name;
+  const pct = comboPct(inf), out = inf.stock <= 0;
+  const media = c.image_url
+    ? `<img class="cd-cover" src="${fdEsc(c.image_url)}" alt="${fdEsc(c.name)}">`
+    : `<div class="cd-collage">${inf.books.slice(0, 3).map(b => b.image_url ? `<img src="${fdEsc(b.image_url)}" alt="">` : '').join('')}</div>`;
+  const desc = c.description ? `<div class="cd-desc">${fdEsc(String(c.description))}</div>` : '';
+  const exp = c.expires_at ? `<div class="cd-note"><i class="fa-regular fa-clock"></i>অফার চলবে: ${fdEsc(new Date(c.expires_at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }))} পর্যন্ত</div>` : '';
+  const stockNote = out ? '<div class="cd-note warn"><i class="fa-solid fa-circle-exclamation"></i>স্টক শেষ</div>'
+    : (inf.stock <= 10 ? `<div class="cd-note warn"><i class="fa-solid fa-fire"></i>মাত্র ${_bnDigits(inf.stock)}টি কম্বো সেট বাকি</div>`
+                       : '<div class="cd-note"><i class="fa-solid fa-circle-check" style="color:var(--green,#16a34a)"></i>স্টকে আছে</div>');
+  const bookCards = inf.books.map(b => {
+    const ep = getEffectiveSalePrice(b), bid = String(b.id).replace(/[^\w-]/g, '');
+    const href = productHref(b.id);
+    const img = b.image_url ? `<img src="${fdEsc(b.image_url)}" alt="${fdEsc(b.name)}" loading="lazy">` : '<i class="fa-solid fa-book"></i>';
+    const meta = [];
+    if (b.author || b.brand) meta.push(`<b>লেখক:</b> ${fdEsc(b.author || b.brand)}`);
+    if (b.publisher) meta.push(`<b>প্রকাশনী:</b> ${fdEsc(b.publisher)}`);
+    if (b.category) meta.push(`<b>ক্যাটাগরি:</b> ${fdEsc(b.category)}`);
+    const specs = [];
+    if (b.edition) specs.push(fdEsc(b.edition)); if (b.pages) specs.push(fdEsc(b.pages) + ' পৃষ্ঠা'); if (b.language) specs.push(fdEsc(b.language)); if (b.country) specs.push(fdEsc(b.country));
+    const d = b.description ? String(b.description).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 260) : '';
+    const r = Number(b.rating) || 4;
+    return `<div class="cd-book">
+      <a class="cd-bimg" href="${href}" onclick="return _pcLinkClick(event,'${bid}')">${img}</a>
+      <div class="cd-bbody">
+        <a class="cd-bname" href="${href}" onclick="return _pcLinkClick(event,'${bid}')" style="text-decoration:none">${fdEsc(b.name)}</a>
+        <div class="cd-bmeta">${meta.join('<br>')}</div>
+        ${specs.length ? `<div class="cd-bspecs">${specs.map(x => `<span>${x}</span>`).join('')}</div>` : ''}
+        <div class="cd-bmeta"><span style="color:#f59e0b">${'★'.repeat(Math.floor(r))}${'☆'.repeat(5 - Math.floor(r))}</span> ${r.toFixed(1)}</div>
+        ${d ? `<div class="cd-bdesc">${fdEsc(d)}</div>` : ''}
+        <div class="cd-bfoot">
+          <div class="cd-bprice">${_taka(ep.displayPrice)}${ep.hasStrike ? `<s>${_taka(ep.originalPrice)}</s>` : ''}</div>
+          <a class="cd-bbtn" href="${href}" onclick="return _pcLinkClick(event,'${bid}')">বইয়ের বিস্তারিত দেখুন <i class="fa-solid fa-angle-right"></i></a>
+        </div>
+      </div></div>`;
+  }).join('');
+  const sumRows = inf.books.map(b => `<div class="row"><span>${fdEsc(b.name)}</span><span>${_taka(getEffectiveSalePrice(b).displayPrice)}</span></div>`).join('');
+  const others = comboValidList().filter(i => String(i.c.id) !== String(c.id)).slice(0, 4);
+  body.innerHTML = `
+    <div class="cd-top">
+      <div class="cd-media">${media}</div>
+      <div class="bn">
+        <div class="cd-tag"><i class="fa-solid fa-layer-group"></i> কম্বো অফার · ${_bnDigits(inf.books.length)}টি বই একসাথে</div>
+        <h1 class="cd-title">${fdEsc(c.name)}</h1>
+        ${desc}
+        <div class="cd-price"><b>${_taka(inf.price)}</b>${inf.save > 0 ? `<s>${_taka(inf.reg)}</s><span class="combo-save">${_taka(inf.save)} সাশ্রয${pct > 0 ? ' (' + _bnDigits(pct) + '%)' : ''}</span>` : ''}</div>
+        ${stockNote}${exp}
+        <button class="combo-btn cd-add" ${out ? 'disabled' : ''} onclick="addComboToCart('${String(c.id).replace(/[^\w-]/g, '')}')">${out ? 'স্টক শেষ' : '<i class="fa-solid fa-cart-plus"></i> কম্বো কার্টে নিন'}</button>
+      </div>
+    </div>
+    <h2 class="cd-h bn"><i class="fa-solid fa-book-open" style="color:var(--blue)"></i> এই কম্বোতে যা যা আছে (${_bnDigits(inf.books.length)}টি বই)</h2>
+    <div class="cd-books bn">${bookCards}</div>
+    <div class="cd-sum bn">
+      ${sumRows}
+      <div class="row tot"><span>আলাদা আলাদা কিনলে মোট</span><span>${_taka(inf.reg)}</span></div>
+      <div class="row tot" style="border-top:0;margin-top:0;padding-top:2px;color:var(--blue)"><span>কম্বো দাম</span><span>${_taka(inf.price)}</span></div>
+      ${inf.save > 0 ? `<div class="row sv"><span>আপনার সাশ্রয়</span><span>${_taka(inf.save)}</span></div>` : ''}
+    </div>
+    ${others.length ? `<h2 class="cd-h bn"><i class="fa-solid fa-layer-group" style="color:var(--blue)"></i> আরও কম্বো অফার</h2><div class="combo-row">${others.map(comboCardHtml).join('')}</div>` : ''}`;
+}
+// কম্বো/প্রোডাক্ট লোড শেষ হলে খোলা কম্বো-পেজ নতুন করে আঁকা
+function comboPagesRefresh() {
+  try {
+    if (document.getElementById('page-combos')?.classList.contains('open')) renderCombosPage();
+    if (document.getElementById('page-combo')?.classList.contains('open')) renderComboDetail();
+  } catch (e) { console.warn('[Combo] page refresh', e && e.message); }
 }
 function renderProductComboBox(p) {
   const box = document.getElementById('pdComboBox'); if (!box) return;
@@ -12795,7 +13304,7 @@ async function signOut() {
     const adminBtn2 = document.getElementById('adminBtn');
     if (adminBtn2) adminBtn2.style.display = 'none';
     closeDropdown();
-    ['checkout','profile','track','product','category','wishlist'].forEach(p => {
+    ['checkout','profile','track','product','category','wishlist','combos','combo'].forEach(p => {
       const el = document.getElementById('page-' + p);
       if (el && el.classList.contains('open')) closePage(p);
     });
@@ -13305,7 +13814,8 @@ const STATUS_LABEL = {
   processing: 'প্যাক হচ্ছে',
   shipped:    'ডেলিভারিতে আছে',
   delivered:  'ডেলিভারি সম্পন্ন',
-  cancelled:  'বাতিল হয়েছে'
+  cancelled:  'বাতিল হয়েছে',
+  returned:   'ফেরত হয়েছে'
 };
 const STATUS_ICON = {
   pending:    'fa-clock',
@@ -13316,7 +13826,8 @@ const STATUS_ICON = {
   processing: 'fa-box',
   shipped:    'fa-truck-fast',
   delivered:  'fa-house-circle-check',
-  cancelled:  'fa-ban'
+  cancelled:  'fa-ban',
+  returned:   'fa-rotate-left'
 };
 const STATUS_BADGE_CLS = {
   pending:    'osb-pending',
@@ -13327,7 +13838,8 @@ const STATUS_BADGE_CLS = {
   processing: 'osb-processing',
   shipped:    'osb-shipped',
   delivered:  'osb-delivered',
-  cancelled:  'osb-cancelled'
+  cancelled:  'osb-cancelled',
+  returned:   'osb-returned'
 };
 
 function fmtDateTime(iso) {
@@ -13501,7 +14013,7 @@ async function tpLoadMyOrders(retryCount = 0) {
       () => sb.from('orders').select('*')
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
-        .limit(20),
+        .limit(100),
       {
         timeout: 20000,
         retries: 3,
@@ -13568,7 +14080,67 @@ async function tpLoadMyOrders(retryCount = 0) {
   orders.forEach(o => { tpOrderMap[o.id] = { order: o, hist: (allHist||[]).filter(h=>h.order_id===o.id) }; });
   window._tpOrderMap = tpOrderMap;
 
-  el.innerHTML = orders.map((o, idx) => {
+  window._tpAllOrders = orders;
+  window._tpAllHist   = allHist || [];
+  if (!window._tpFilter) window._tpFilter = 'all';
+  tpRenderOrders();
+}
+
+// ── অর্ডার স্ট্যাটাস ফিল্টার ──
+const TP_FILTERS = [
+  { k:'all',        label:'সব',        ic:'fa-layer-group' },
+  { k:'pending',    label:'পেন্ডিং',    ic:'fa-clock' },
+  { k:'confirmed',  label:'কনফার্ম',    ic:'fa-circle-check' },
+  { k:'processing', label:'প্রসেসিং',   ic:'fa-box' },
+  { k:'shipped',    label:'শিপড',      ic:'fa-truck-fast' },
+  { k:'delivered',  label:'ডেলিভারড',   ic:'fa-house-circle-check' },
+  { k:'cancelled',  label:'ক্যান্সেল',  ic:'fa-ban' },
+  { k:'returned',   label:'রিটার্ন',    ic:'fa-rotate-left' }
+];
+// in_stock/collecting/collected → processing গ্রুপে গণ্য হবে
+function tpNormStatus(st) {
+  if (['in_stock','collecting','collected'].includes(st)) return 'processing';
+  return st || 'pending';
+}
+function tpSetFilter(k) {
+  window._tpFilter = k;
+  tpRenderOrders();
+}
+function tpRenderOrders() {
+  const el = document.getElementById('tpMyOrdersList');
+  const bar = document.getElementById('tpFilterBar');
+  const orders = window._tpAllOrders || [];
+  const allHist = window._tpAllHist || [];
+  if (!el) return;
+  const cur = window._tpFilter || 'all';
+
+  // কাউন্টসহ ফিল্টার চিপ
+  const counts = { all: orders.length };
+  orders.forEach(o => { const k = tpNormStatus(o.status); counts[k] = (counts[k] || 0) + 1; });
+  if (bar) {
+    bar.style.display = 'flex';
+    bar.innerHTML = TP_FILTERS.map(f => {
+      const c = counts[f.k] || 0;
+      return `<button type="button" role="tab" aria-selected="${f.k===cur}" class="tp-fchip${f.k===cur?' active':''}${c===0?' zero':''}" onclick="tpSetFilter('${f.k}')">
+        <i class="fa-solid ${f.ic}"></i>${f.label}<span class="tp-fcnt">${c}</span></button>`;
+    }).join('');
+  }
+  const badge = document.getElementById('tpOrderCountBadge');
+  if (badge) { badge.textContent = orders.length; badge.style.display = 'inline-block'; }
+
+  const list = cur === 'all' ? orders : orders.filter(o => tpNormStatus(o.status) === cur);
+  if (!list.length) {
+    const f = TP_FILTERS.find(x => x.k === cur);
+    el.innerHTML = `
+      <div style="text-align:center;padding:40px 20px">
+        <i class="fa-solid ${f ? f.ic : 'fa-box-open'}" style="font-size:2.6rem;color:var(--text-light);opacity:.3;display:block;margin-bottom:14px"></i>
+        <div class="bn" style="font-size:.9rem;font-weight:700;color:var(--text-mid);margin-bottom:5px">"${f ? f.label : ''}" স্ট্যাটাসে কোনো অর্ডার নেই</div>
+        <button onclick="tpSetFilter('all')" class="bn" style="margin-top:10px;padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--dbgffffff,white);color:var(--blue);font-size:.76rem;font-weight:700;cursor:pointer">সব অর্ডার দেখুন</button>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = list.map((o, idx) => {
     const items = Array.isArray(o.items) ? o.items : [];
     const hist = (allHist || []).filter(h => h.order_id === o.id);
     const badgeCls   = STATUS_BADGE_CLS[o.status] || 'osb-pending';
@@ -14009,7 +14581,7 @@ function footerFilter(type) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // সব open full-page বন্ধ করো
-  ['product','category','checkout','profile','wishlist','track'].forEach(n => {
+  ['product','category','checkout','profile','wishlist','track','combos','combo'].forEach(n => {
     const el = document.getElementById('page-' + n);
     if (el && el.classList.contains('open')) closePage(n);
   });
@@ -17613,6 +18185,9 @@ function closeCatPage() {
 function renderCatPageProducts() {
   const _pgr = document.getElementById('catPagePager'); if (_pgr) _pgr.innerHTML = '';
   const _afb = document.getElementById('allFilterBar'); if (_afb) _afb.style.display = 'none';
+  if (currentDiscMode) { renderCatSubChips(); return renderMaxDiscountPageProducts(); }
+  if (currentNewMode) { renderCatSubChips(); return renderNewReleasesPageProducts(); }
+  if (currentFlashMode) { renderCatSubChips(); return renderFlashPageProducts(); }
   if (currentBudget) { renderCatSubChips(); return renderBudgetPageProducts(); }
   if (currentSearchMode) { renderCatSubChips(); return renderSearchPageProducts(); }
   if (currentAllMode) { renderCatSubChips(); return renderAllPageProducts(); }
@@ -18490,7 +19065,7 @@ window.addEventListener('scroll', onScroll, { passive: true });
 
 // ── 1. REGISTRY ──────────────────────────────────────────────────
 // All known full-pages (matches id="page-{name}")
-const ALL_PAGES   = ['blog','blog-post','product','track','order-detail','checkout','category','profile','wishlist','author'];
+const ALL_PAGES   = ['blog','blog-post','product','track','order-detail','checkout','category','profile','wishlist','author','combos','combo'];
 // All overlay modals (matches id)
 const ALL_MODALS  = ['cartOverlay','authModal','adminOverlay'];
 // Notif panel id
@@ -18760,6 +19335,8 @@ document.addEventListener('keydown', function(e) {
     'checkout':     'mobNavCart',
     'product':      'mobNavHome',
     'category':     'mobNavHome',
+    'combos':       'mobNavHome',
+    'combo':        'mobNavHome',
     'profile':      'mobNavAccount',
     'wishlist':     'mobNavAccount',
   };
@@ -18838,6 +19415,12 @@ window.addEventListener('popstate', function(e) {
     // Order detail — track page খোলো (user সেখান থেকে detail দেখবে)
     if (typeof window.openTrack === 'function') window.openTrack(false);
 
+  } else if (state.page === 'combos') {
+    openCombosPage(false);
+
+  } else if (state.page === 'combo' && state.id) {
+    openComboPage(state.id, false);
+
   } else if (state.page === 'profile') {
     if (currentUser && typeof window.openProfilePage === 'function') openProfilePage();
     else document.title = 'বুক গ্যালাক্সি';
@@ -18845,6 +19428,15 @@ window.addEventListener('popstate', function(e) {
   } else if (state.page === 'wishlist') {
     if (typeof window.openWishlistPage === 'function') openWishlistPage();
     else document.title = 'বুক গ্যালাক্সি';
+
+  } else if (state.page === 'category' && state.maxdisc) {
+    openMaxDiscountPage(false);
+
+  } else if (state.page === 'category' && state.newrel) {
+    openNewReleasesPage(false);
+
+  } else if (state.page === 'category' && state.flash) {
+    openFlashPage(state.flash === 'all' ? null : state.flash, false);
 
   } else if (state.page === 'category' && state.search) {
     openSearchPage(state.search, false);
@@ -20709,22 +21301,23 @@ async function oaSubmit(){
 .gm-cp-cd.urgent .gm-cd-box{background:#fee2e2}
 .gm-cp-cd.urgent .gm-cd-box b,.gm-cp-cd.urgent .gm-cd-lbl{color:#b91c1c}
 @media (max-width:760px){
-  .gm-cp{display:flex;flex-direction:row;border-radius:14px}
-  .gm-cp-l{flex:0 0 58px;padding:10px 4px}
+  .gm-cp{flex-wrap:wrap;border-radius:14px;margin-bottom:10px}
+  .gm-cp-l{flex:0 0 64px;padding:8px 4px;gap:0}
   .gm-cp-val{font-size:1.05rem}
-  .gm-cp-t{font-size:.68rem}
-  .gm-cp-r{padding:10px 8px;gap:5px;min-width:0}
-  .gm-cp-code{font-size:.74rem;letter-spacing:.03em;padding:4px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-  .gm-cp-meta{font-size:.62rem;line-height:1.45}
-  .gm-cp-act{flex-direction:column;flex-wrap:nowrap;gap:5px}
-  .gm-cp-btn{flex:none;width:100%;padding:6px 4px;white-space:nowrap;text-align:center;font-size:.68rem}
-  .gm-cp-btn.pri{flex:none}
-  .gm-cp-cd{flex:0 0 auto;margin-left:auto;border-left:1.5px dashed var(--blue-mid,#e3b3b3);border-top:0;padding:8px 6px;gap:6px;background:none}
-  .gm-cd-lbl{font-size:.6rem;text-align:center;max-width:120px}
-  .gm-cd-row{display:flex;gap:3px;width:auto}
-  .gm-cd-box{min-width:27px;padding:5px 2px;border-radius:8px}
-  .gm-cd-box b{font-size:.82rem}
-  .gm-cd-box span{font-size:.5rem}
+  .gm-cp-t{font-size:.7rem}
+  .gm-cp-r{flex:1 1 0;min-width:0;padding:9px 10px;gap:5px}
+  .gm-cp-code{font-size:.78rem;letter-spacing:.04em;padding:3px 8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gm-cp-desc{font-size:.76rem;line-height:1.4}
+  .gm-cp-meta{font-size:.7rem;line-height:1.4}
+  .gm-cp-act{flex-direction:row;flex-wrap:nowrap;gap:6px;margin-top:1px}
+  .gm-cp-btn{flex:0 0 auto;width:auto;padding:5px 11px;white-space:nowrap;text-align:center;font-size:.72rem;line-height:1.3}
+  .gm-cp-btn.pri{flex:1 1 auto}
+  .gm-cp-cd{flex:1 1 100%;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin-left:0;border-left:0;border-top:1.5px dashed var(--blue-mid,#e3b3b3);padding:6px 10px;background:none}
+  .gm-cd-lbl{font-size:.68rem;text-align:left;max-width:none;line-height:1.3}
+  .gm-cd-row{display:flex;gap:4px;width:auto;flex-shrink:0}
+  .gm-cd-box{min-width:36px;padding:3px 3px;border-radius:7px;display:flex;flex-direction:column;align-items:center}
+  .gm-cd-box b{font-size:.84rem;line-height:1.15}
+  .gm-cd-box span{font-size:.56rem;line-height:1.2}
 }
 .gm-cp.off{opacity:.62}
 .gm-cp.off .gm-cp-l{filter:grayscale(.8)}
