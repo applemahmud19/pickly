@@ -3047,6 +3047,7 @@ footer, footer *:not(i):not([class*="fa-"]) {
 /* Order list (left col) */
 .tp-orders-list { display: flex; flex-direction: column; gap: 12px; }
 .osb-returned{background:var(--dbgffedd5,#FFEDD5);color:var(--dfg9a3412,#9A3412)}
+.osb-on_hold{background:#CCFBF1;color:#0F766E}
 .tp-filter-bar{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tp-filter-bar::-webkit-scrollbar{display:none}
 .tp-fchip{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:100px;border:1.5px solid var(--border);background:var(--dbgffffff,white);color:var(--text-mid);font-family:'Hind Siliguri',sans-serif;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all var(--t)}
@@ -13024,6 +13025,7 @@ async function trackOrder() {
     shipped:   {label:'ডেলিভারিতে আছে',   done:false, active:true},
     delivered: {label:'ডেলিভারি সম্পন্ন', done:true,  active:false},
     cancelled: {label:'বাতিল',            done:false, active:false},
+    on_hold:   {label:'হোল্ডে আছে',       done:false, active:false},
   };
   const steps = ['pending','confirmed','processing','shipped','delivered'];
   const curIdx = steps.indexOf(data.status);
@@ -13807,7 +13809,7 @@ function _tpEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/<
 function _tpSafeUrl(u){ u=String(u||'').trim(); return /^https?:\/\//i.test(u) ? _tpEsc(u) : '#'; }
 // in_stock/collecting/collected → প্রগ্রেস বারে "processing" ধাপ; delivered → সব ধাপ সম্পন্ন
 function _tpCurIdx(status, steps){
-  if (status === 'cancelled') return -1;
+  if (status === 'cancelled' || status === 'on_hold') return -1;
   if (status === 'delivered') return steps.length;
   const norm = ['in_stock','collecting','collected'].includes(status) ? 'processing' : status;
   return steps.indexOf(norm);
@@ -13822,7 +13824,8 @@ const STATUS_LABEL = {
   shipped:    'ডেলিভারিতে আছে',
   delivered:  'ডেলিভারি সম্পন্ন',
   cancelled:  'বাতিল হয়েছে',
-  returned:   'ফেরত হয়েছে'
+  returned:   'ফেরত হয়েছে',
+  on_hold:    'হোল্ডে আছে'
 };
 const STATUS_ICON = {
   pending:    'fa-clock',
@@ -13834,7 +13837,8 @@ const STATUS_ICON = {
   shipped:    'fa-truck-fast',
   delivered:  'fa-house-circle-check',
   cancelled:  'fa-ban',
-  returned:   'fa-rotate-left'
+  returned:   'fa-rotate-left',
+  on_hold:    'fa-circle-pause'
 };
 const STATUS_BADGE_CLS = {
   pending:    'osb-pending',
@@ -13846,7 +13850,8 @@ const STATUS_BADGE_CLS = {
   shipped:    'osb-shipped',
   delivered:  'osb-delivered',
   cancelled:  'osb-cancelled',
-  returned:   'osb-returned'
+  returned:   'osb-returned',
+  on_hold:    'osb-on_hold'
 };
 
 function fmtDateTime(iso) {
@@ -13857,13 +13862,24 @@ function fmtDateTime(iso) {
   return `${date} · ${time}`;
 }
 
+// ── হোল্ড ব্যানার (অ্যাডমিন অর্ডার হোল্ডে রাখলে) ──
+function _tpHoldBanner(data, pad){
+  let note = '';
+  try { const h = (arguments[2]||[]).find(e => (e.status_name||e.status)==='on_hold'); note = h && h.note ? h.note : ''; } catch(e){}
+  return `<div style="background:#CCFBF1;border-radius:var(--radius-sm);padding:${pad||'11px 13px'};display:flex;align-items:flex-start;gap:8px;margin-bottom:14px">
+      <i class="fa-solid fa-circle-pause" style="color:#0F766E;margin-top:2px"></i>
+      <div><div class="bn" style="font-size:.82rem;font-weight:700;color:#0F766E">অর্ডারটি সাময়িকভাবে হোল্ডে আছে</div>
+      <div class="bn" style="font-size:.74rem;color:#115E59;margin-top:3px">আমরা শীঘ্রই আবার প্রক্রিয়া শুরু করব। প্রয়োজনে আমাদের সাথে যোগাযোগ করুন।</div></div>
+    </div>`;
+}
 function buildOrderCard(data, history) {
   const steps = ['pending','confirmed','processing','shipped','delivered'];
   const curIdx = _tpCurIdx(data.status, steps);
   const items = (data.items||[]).map(i=>i.name).join(', ');
 
   // ── Progress Steps ──
-  const stepsHtml = data.status==='cancelled'
+  const stepsHtml = data.status==='on_hold' ? _tpHoldBanner(data,'11px 13px',history)
+    : data.status==='cancelled'
     ? `<div style="background:var(--dbgfee2e2,#FEE2E2);border-radius:var(--radius-sm);padding:11px 13px;display:flex;align-items:center;gap:8px;margin-bottom:14px">
         <i class="fa-solid fa-ban" style="color:var(--red)"></i>
         <span class="bn" style="font-size:.82rem;font-weight:700;color:var(--dfg991b1b,#991B1B)">এই অর্ডারটি বাতিল করা হয়েছে</span>
@@ -14101,6 +14117,7 @@ const TP_FILTERS = [
   { k:'processing', label:'প্রসেসিং',   ic:'fa-box' },
   { k:'shipped',    label:'শিপড',      ic:'fa-truck-fast' },
   { k:'delivered',  label:'ডেলিভারড',   ic:'fa-house-circle-check' },
+  { k:'on_hold',    label:'হোল্ড',      ic:'fa-circle-pause' },
   { k:'cancelled',  label:'ক্যান্সেল',  ic:'fa-ban' },
   { k:'returned',   label:'রিটার্ন',    ic:'fa-rotate-left' }
 ];
@@ -14262,7 +14279,8 @@ function buildTpOrderDetail(data, history) {
     </div>` : '';
 
   // Progress timeline
-  const timelineHtml = data.status === 'cancelled'
+  const timelineHtml = data.status === 'on_hold' ? _tpHoldBanner(data,'12px 14px')
+    : data.status === 'cancelled'
     ? `<div style="background:var(--dbgfee2e2,#FEE2E2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:9px">
         <i class="fa-solid fa-ban" style="color:var(--red)"></i>
         <span class="bn" style="font-size:.82rem;font-weight:700;color:var(--dfg991b1b,#991B1B)">এই অর্ডারটি বাতিল করা হয়েছে</span>
@@ -14402,7 +14420,8 @@ function buildOrderDetailPanel(data, history) {
   const items  = Array.isArray(data.items) ? data.items : [];
 
   // Progress steps
-  const stepsHtml = data.status==='cancelled'
+  const stepsHtml = data.status==='on_hold' ? _tpHoldBanner(data,'10px 13px')
+    : data.status==='cancelled'
     ? `<div style="background:var(--dbgfee2e2,#FEE2E2);border-radius:var(--radius-sm);padding:10px 13px;display:flex;align-items:center;gap:8px;margin-bottom:12px">
         <i class="fa-solid fa-ban" style="color:var(--red)"></i>
         <span class="bn" style="font-size:.8rem;font-weight:700;color:var(--dfg991b1b,#991B1B)">এই অর্ডারটি বাতিল করা হয়েছে</span>
@@ -20788,6 +20807,18 @@ window.openBlogList=list;window.openBlogPost=open;
 .oa-pv i.fa-file-pdf{font-size:1.3rem;color:var(--dfgb91c1c,#B91C1C)}
 .oa-pv button{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:.6rem;line-height:1;cursor:pointer;z-index:2;padding:0}
 
+.oa-when{font-size:.66rem;color:var(--text-light);margin:2px 0 4px}
+.oa-rsn{font-weight:600;color:var(--text)}
+.oa-det{margin-top:4px;color:var(--text-mid);white-space:pre-wrap;word-break:break-word}
+.oa-fu{font-size:.62rem;font-weight:700;background:#FEF3C7;color:#92400E;border-radius:10px;padding:1px 7px;margin-left:3px}
+.oa-files{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.oa-files img{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.oa-fpdf{display:flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:8px;border:1px solid var(--border);color:#B91C1C;font-size:1.2rem;text-decoration:none}
+.oa-reply{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.25)}
+.oa-reply b{color:#065F46;font-size:.74rem}.oa-reply .oa-when{float:right;margin:0}
+.oa-rtxt{margin-top:4px;color:var(--text);white-space:pre-wrap;word-break:break-word;font-size:.8rem;line-height:1.55}
+.oa-wait{background:rgba(59,130,246,.07);color:#1D4ED8;font-size:.74rem}
+
 /* ═══ Mobile: full-page গুলো নিচের nav-এর ঠিক উপরে শেষ হবে (ফাঁকা জায়গা/কাটা পড়া দুটোই ঠিক) ═══ */
 @media (max-width: 768px) {
   body:not(.page-checkout-open) .full-page,
@@ -20976,17 +21007,49 @@ const OA_REASONS = ['ভুল পণ্য অর্ডার করেছি',
 const OA_RTYPES = { product:'পণ্য নিয়ে সমস্যা (ভুল / ক্ষতিগ্রস্ত / অসম্পূর্ণ)', delivery:'ডেলিভারি নিয়ে সমস্যা', order:'অর্ডার / পেমেন্ট নিয়ে সমস্যা', other:'অন্য সমস্যা' };
 const OA_ST = { open:['অপেক্ষায়','#FEF3C7','#92400E'], in_progress:['দেখা হচ্ছে','#DBEAFE','#1D4ED8'], resolved:['সমাধান হয়েছে','#D1FAE5','#065F46'], rejected:['গ্রহণ করা হয়নি','#FEE2E2','#991B1B'] };
 const oaEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function oaMode(st){ if (st === 'pending') return 'cancel'; if (st === 'cancelled') return 'none'; if (st === 'shipped' || st === 'delivered') return 'report'; return 'request'; }
+function oaMode(st){ if (st === 'pending') return 'cancel'; if (st === 'cancelled') return 'none'; if (st === 'shipped' || st === 'delivered' || st === 'returned') return 'report'; return 'request'; }
+const OA_KIND_LBL = { report:'রিপোর্ট', cancel_request:'বাতিলের অনুরোধ' };
+function oaFiles(r){
+  let a = r.attachments; if (typeof a === 'string') { try { a = JSON.parse(a); } catch (e) { a = []; } }
+  return Array.isArray(a) ? a.filter(f => f && f.url) : [];
+}
+function oaWhen(iso){ if (!iso) return ''; try { return typeof fmtDateTime === 'function' ? fmtDateTime(iso) : new Date(iso).toLocaleString(); } catch (e) { return ''; } }
+function oaItem(r){
+  const s = OA_ST[r.status] || OA_ST.open, files = oaFiles(r), isRep = r.kind === 'report';
+  const rt = isRep && r.report_type && OA_RTYPES[r.report_type] ? OA_RTYPES[r.report_type] : (r.reason || '');
+  let reply;
+  if (r.admin_note) {
+    reply = `<div class="oa-note oa-reply"><b><i class="fa-solid fa-reply"></i> আমাদের উত্তর</b>${r.updated_at ? `<span class="oa-when">${oaEsc(oaWhen(r.updated_at))}</span>` : ''}<div class="oa-rtxt">${oaEsc(r.admin_note)}</div></div>`;
+  } else if (r.status === 'open') {
+    reply = `<div class="oa-note oa-wait"><i class="fa-solid fa-hourglass-half"></i> আমরা আপনার ${isRep ? 'রিপোর্ট' : 'অনুরোধ'} পেয়েছি — উত্তর এলে এখানেই দেখতে পাবেন।</div>`;
+  } else if (r.status === 'in_progress') {
+    reply = `<div class="oa-note oa-wait"><i class="fa-solid fa-magnifying-glass"></i> আমাদের টিম বিষয়টি দেখছে। শীঘ্রই জানানো হবে।</div>`;
+  } else reply = '';
+  return `<div class="oa-item"><span class="oa-st" style="background:${s[1]};color:${s[2]}">${s[0]}</span>
+    <b>${OA_KIND_LBL[r.kind] || 'অনুরোধ'}${r.is_follow_up ? ' <span class="oa-fu">আবার</span>' : ''}</b>
+    <div class="oa-when">${oaEsc(oaWhen(r.created_at))}</div>
+    <div class="oa-rsn">${oaEsc(rt)}${r.product_name ? ` — <i>${oaEsc(r.product_name)}</i>` : ''}</div>
+    ${r.details ? `<div class="oa-det">${oaEsc(r.details)}</div>` : ''}
+    ${files.length ? `<div class="oa-files">${files.map(f => f.type === 'pdf' ? `<a href="${oaEsc(f.url)}" target="_blank" rel="noopener" class="oa-fpdf"><i class="fa-solid fa-file-pdf"></i></a>` : `<a href="${oaEsc(f.url)}" target="_blank" rel="noopener"><img src="${oaEsc(f.url)}" alt=""></a>`).join('')}</div>` : ''}
+    ${reply}</div>`;
+}
 function oaInner(o){
-  const mode = oaMode(o.status), reqs = window._oaCache[o.id] || [];
-  const list = reqs.map(r => { const s = OA_ST[r.status] || OA_ST.open;
-    return `<div class="oa-item"><span class="oa-st" style="background:${s[1]};color:${s[2]}">${s[0]}</span><b>${r.kind === 'report' ? 'রিপোর্ট' : 'বাতিলের অনুরোধ'}</b> — ${oaEsc(r.reason)}${r.admin_note ? `<div class="oa-note"><b>আমাদের উত্তর:</b> ${oaEsc(r.admin_note)}</div>` : ''}</div>`; }).join('');
-  const pend = reqs.some(r => r.kind === 'cancel_request' && (r.status === 'open' || r.status === 'in_progress'));
+  const mode = oaMode(o.status);
+  const reqs = (window._oaCache[o.id] || []).filter(r => r.kind !== 'self_cancel');
+  const list = reqs.map(oaItem).join('');
+  const openOf = k => reqs.some(r => r.kind === k && (r.status === 'open' || r.status === 'in_progress'));
+  const lastRep = reqs.find(r => r.kind === 'report');   // সবচেয়ে নতুন আগে
+  const pend = openOf('cancel_request');
   let btn = '';
   if (mode === 'cancel') btn = `<button class="oa-btn oa-danger" onclick="oaOpen('${o.id}','cancel')"><i class="fa-solid fa-ban"></i> অর্ডার বাতিল করুন</button><div class="oa-hint">আমরা কনফার্ম করার আগে পর্যন্ত আপনি নিজেই অর্ডার বাতিল করতে পারবেন।</div>`;
-  else if (mode === 'request' && !pend) btn = `<button class="oa-btn oa-danger" onclick="oaOpen('${o.id}','request')"><i class="fa-solid fa-hand"></i> বাতিলের অনুরোধ করুন</button><div class="oa-hint">অর্ডার কনফার্ম হয়ে গেছে। আপনার অনুরোধ আমাদের টিম দেখে সিদ্ধান্ত জানাবে।</div>`;
-  else if (mode === 'report') btn = `<button class="oa-btn oa-warn" onclick="oaOpen('${o.id}','report')"><i class="fa-solid fa-flag"></i> সমস্যা রিপোর্ট করুন</button><div class="oa-hint">পণ্য, ডেলিভারি বা অর্ডার নিয়ে কোনো সমস্যা হলে জানান।</div>`;
-  return (list || btn) ? `<div class="oa-box"><div class="oa-title"><i class="fa-solid fa-headset"></i>সহায়তা</div>${list}${btn}</div>` : '';
+  else if (mode === 'request' && !pend) btn = `<button class="oa-btn oa-danger" onclick="oaOpen('${o.id}','request')"><i class="fa-solid fa-hand"></i> ${reqs.some(r => r.kind === 'cancel_request') ? 'আবার বাতিলের অনুরোধ করুন' : 'বাতিলের অনুরোধ করুন'}</button><div class="oa-hint">অর্ডার কনফার্ম হয়ে গেছে। আপনার অনুরোধ আমাদের টিম দেখে সিদ্ধান্ত জানাবে।</div>`;
+  else if (mode === 'report') {
+    if (openOf('report')) btn = `<div class="oa-hint"><i class="fa-solid fa-circle-info"></i> আপনার রিপোর্টটি আমরা দেখছি। উত্তর এলে এই পেজেই দেখতে পাবেন (নিজে থেকেই আপডেট হয়)।</div>`;
+    else if (lastRep) btn = `<button class="oa-btn oa-warn" onclick="oaOpen('${o.id}','report')"><i class="fa-solid fa-rotate-right"></i> সমাধান হয়নি? আবার রিপোর্ট করুন</button><div class="oa-hint">আগের রিপোর্টের উত্তরে সন্তুষ্ট না হলে নতুন করে জানান — আমরা আবার দেখব।</div>`;
+    else btn = `<button class="oa-btn oa-warn" onclick="oaOpen('${o.id}','report')"><i class="fa-solid fa-flag"></i> সমস্যা রিপোর্ট করুন</button><div class="oa-hint">পণ্য, ডেলিভারি বা অর্ডার নিয়ে কোনো সমস্যা হলে জানান।</div>`;
+  }
+  const err = (window._oaErr || {})[o.id] && !reqs.length ? `<div class="oa-hint" style="color:#B91C1C"><i class="fa-solid fa-triangle-exclamation"></i> রিপোর্টের আপডেট এই মুহূর্তে লোড করা যাচ্ছে না। একটু পরে আবার দেখুন।</div>` : '';
+  return (list || btn || err) ? `<div class="oa-box"><div class="oa-title"><i class="fa-solid fa-headset"></i>সহায়তা</div>${list}${err}${btn}</div>` : '';
 }
 function oaWrap(o){ if (!o || !o.id) return ''; window._oaOrders[o.id] = o; setTimeout(() => oaRefresh(o), 0); return `<div class="oa-wrap" data-oid="${o.id}">${oaInner(o)}</div>`; }
 function oaPaint(oid){ const o = window._oaOrders[oid]; if (!o) return; document.querySelectorAll('.oa-wrap[data-oid="' + oid + '"]').forEach(w => { w.innerHTML = oaInner(o); }); }
@@ -20996,11 +21059,27 @@ async function oaRefresh(o, force, tries){
   if (!document.querySelector('.oa-wrap[data-oid="' + o.id + '"]')) { if (tries < 8) setTimeout(() => oaRefresh(o, force, tries + 1), 400); return; }
   if (!force && Date.now() - (window._oaTs[o.id] || 0) < 5000) return;
   window._oaTs[o.id] = Date.now();
+  window._oaErr = window._oaErr || {};
   try {
-    const { data, error } = await sb.rpc('customer_order_requests', { p_order_id: o.id });
-    if (error) { console.warn('[customer_order_requests]', error.message); return; }
-    const next = data || [];
-    if (JSON.stringify(window._oaCache[o.id] || null) !== JSON.stringify(next)) { window._oaCache[o.id] = next; oaPaint(o.id); }
+    let { data, error } = await sb.rpc('customer_order_requests', { p_order_id: String(o.id) });
+    if (error) {
+      console.warn('[customer_order_requests]', error.message);
+      /* RPC না থাকলে/ব্যর্থ হলে সরাসরি টেবিল থেকে চেষ্টা */
+      const fb = await sb.from('order_requests').select('*').eq('order_id', o.id).order('created_at', { ascending: false });
+      if (!fb.error) { data = fb.data; error = null; }
+    }
+    if (error) { window._oaErr[o.id] = true; oaPaint(o.id); return; }
+    window._oaErr[o.id] = false;
+    const next = (data || []).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const prev = window._oaCache[o.id];
+    if (JSON.stringify(prev || null) !== JSON.stringify(next)) {
+      /* অ্যাডমিন নতুন উত্তর/স্ট্যাটাস দিলে গ্রাহককে জানানো */
+      if (prev) {
+        const changed = next.some(r => { const p = prev.find(q => q.id === r.id); return p && (p.admin_note !== r.admin_note || p.status !== r.status); });
+        if (changed) { try { toast('আপনার রিপোর্টে আপডেট এসেছে', 'নিচে সহায়তা বক্সে উত্তর দেখুন', 's'); } catch (e) {} }
+      }
+      window._oaCache[o.id] = next; oaPaint(o.id);
+    } else if (!prev) { window._oaCache[o.id] = next; oaPaint(o.id); }
   } catch (e) { console.warn('[oaRefresh]', e); }
 }
 /* অর্ডার পেজ খোলা থাকলে অ্যাডমিনের আপডেট নিজে থেকেই চলে আসবে */
@@ -21042,7 +21121,9 @@ function oaOpen(oid, mode){
   let h;
   if (mode === 'report') {
     const names = (o.items || []).map(i => i.name).filter(Boolean);
-    h = `<h3>সমস্যা রিপোর্ট করুন</h3><p>অর্ডার ${oaEsc(o.order_number || '')}</p>
+    const prevRep = (window._oaCache[oid] || []).find(r => r.kind === 'report');
+    const fu = !!(prevRep && (prevRep.status === 'resolved' || prevRep.status === 'rejected'));
+    h = `<h3>${fu ? 'আবার রিপোর্ট করুন' : 'সমস্যা রিপোর্ট করুন'}</h3><p>অর্ডার ${oaEsc(o.order_number || '')}${fu ? ' — আগের রিপোর্টে সমাধান না হলে এবার কী সমস্যা রয়ে গেছে তা বিস্তারিত লিখুন।' : ''}</p>
       <select id="oaType" onchange="document.getElementById('oaProdWrap').style.display=this.value==='product'?'block':'none'">${Object.keys(OA_RTYPES).map(k => `<option value="${k}">${OA_RTYPES[k]}</option>`).join('')}</select>
       <div id="oaProdWrap"><select id="oaProd"><option value="">কোন পণ্য? (বেছে নিন)</option>${names.map(n => `<option>${oaEsc(n)}</option>`).join('')}</select></div>
       <textarea id="oaTxt" maxlength="1500" placeholder="সমস্যাটি বিস্তারিত লিখুন..."></textarea>
@@ -21085,7 +21166,7 @@ async function oaSubmit(){
   }
   const res = mode === 'cancel'
     ? await sb.rpc('customer_cancel_order', { p_order_id: oid, p_reason: txt ? reason + ' — ' + txt : reason })
-    : await sb.rpc('customer_submit_order_request', { p_order_id: oid, p_kind: mode === 'report' ? 'report' : 'cancel_request', p_report_type: rtype, p_product_name: pname, p_reason: reason, p_details: txt });
+    : await sb.rpc('customer_submit_order_request', { p_order_id: String(oid), p_kind: mode === 'report' ? 'report' : 'cancel_request', p_report_type: rtype, p_product_name: pname, p_reason: reason, p_details: txt });
   btn.disabled = false;
   if (res.error) {
     const m = res.error.message || '';
@@ -21105,7 +21186,7 @@ async function oaSubmit(){
     o.status = 'cancelled'; if (window._tpOrderMap && window._tpOrderMap[oid]) window._tpOrderMap[oid].order.status = 'cancelled';
     toast('অর্ডার বাতিল হয়েছে', 'আপনার অর্ডারটি বাতিল করা হয়েছে', 's');
     try { _refreshOrderDetailPageNow(oid); } catch (e) {}
-  } else toast(mode === 'report' ? 'রিপোর্ট পাঠানো হয়েছে' : 'অনুরোধ পাঠানো হয়েছে', 'আমাদের টিম শীঘ্রই জানাবে', 's');
+  } else toast(mode === 'report' ? 'রিপোর্ট পাঠানো হয়েছে' : 'অনুরোধ পাঠানো হয়েছে', 'উত্তর এলে এই অর্ডার পেজেই দেখতে পাবেন', 's');
   oaPaint(oid); oaRefresh(o, true);
 }
 </script>
