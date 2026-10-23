@@ -9735,6 +9735,8 @@ function abRemove(id) { _abIds = _abIds.filter(x => x !== String(id)); abRender(
 ══════════════════════════════════════════════════ */
 const SP = {
   sel: new Set(), orig: null, editing: '',
+  list(p){ return String(p&&p.sub_category||'').split(/[,،]/).map(x=>x.trim()).filter(Boolean); },
+  has(p,name){ const k=this._key(name); return this.list(p).some(x=>this._key(x)===k); },
   _key(s){ return String(s||'').normalize('NFC').replace(/\s+/g,' ').trim().toLowerCase(); },
   _name(){ return String(document.getElementById('spName').value||'').normalize('NFC').replace(/\s+/g,' ').trim(); },
   async load(){
@@ -9743,7 +9745,7 @@ const SP = {
   },
   groups(){
     const m = new Map();
-    allProducts.forEach(p => { const n = String(p.sub_category||'').trim(); if (!n) return; const k = this._key(n); if (!m.has(k)) m.set(k,{name:n,ids:[]}); m.get(k).ids.push(p.id); });
+    allProducts.forEach(p => { this.list(p).forEach(n => { const k = this._key(n); if (!m.has(k)) m.set(k,{name:n,ids:[]}); m.get(k).ids.push(p.id); }); });
     return [...m.values()].sort((a,b)=>a.name.localeCompare(b.name));
   },
   url(name){ return 'https://' + SEO_HOST + '/subcategory/' + encodeURIComponent(name); },
@@ -9766,7 +9768,7 @@ const SP = {
   open(name){
     const k=this._key(name);
     this.editing=name;
-    this.orig=new Set(allProducts.filter(p=>this._key(p.sub_category)===k).map(p=>String(p.id)));
+    this.orig=new Set(allProducts.filter(p=>this.has(p,name)).map(p=>String(p.id)));
     this.sel=new Set(this.orig);
     document.getElementById('spName').value=name;
     this.afterOpen();
@@ -9786,7 +9788,7 @@ const SP = {
     return allProducts.filter(p=>{
       if (q && !this._key([p.name,p.author,p.brand,p.publisher].join(' ')).includes(q)) return false;
       if (f==='sel' && !this.sel.has(String(p.id))) return false;
-      if (f==='none' && String(p.sub_category||'').trim()) return false;
+      if (f==='none' && this.list(p).length) return false;
       return true;
     });
   },
@@ -9794,13 +9796,13 @@ const SP = {
     if (!this.orig) { this.orig=new Set(); }
     const list=this.shown().slice(0,300);
     document.getElementById('spBooks').innerHTML = list.length ? list.map(p=>{
-      const sc=String(p.sub_category||'').trim(), mine=sc && this._key(sc)===this._key(this.editing);
+      const others=this.list(p).filter(x=>this._key(x)!==this._key(this.editing)), sc=others.join(', '), mine=false;
       return `<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;${p.is_active===false?'opacity:.55':''}">
         <input type="checkbox" ${this.sel.has(String(p.id))?'checked':''} onchange="SP.toggle('${String(p.id).replace(/'/g,"\\'")}',this.checked)">
         ${p.image_url?`<img src="${escHtml(p.image_url)}" loading="lazy" style="width:34px;height:44px;object-fit:contain;border-radius:4px;background:#f8f9fa;border:1px solid var(--border)">`:'<div style="width:34px;height:44px;background:var(--bg3);border-radius:4px"></div>'}
         <div style="flex:1;min-width:0"><div style="font-size:0.83rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(p.name||'')}</div>
         <div style="font-size:0.7rem;color:var(--text3)">${escHtml(p.author||p.brand||'')}${p.category?' · '+escHtml(p.category):''}</div></div>
-        ${sc && !mine?`<span style="font-size:0.66rem;background:var(--bg3);color:var(--text3);padding:2px 8px;border-radius:100px;white-space:nowrap;font-family:var(--font-bn)">এখন: ${escHtml(sc)}</span>`:''}
+        ${sc?`<span style="font-size:0.66rem;background:var(--bg3);color:var(--text3);padding:2px 8px;border-radius:100px;white-space:nowrap;font-family:var(--font-bn)">আছে: ${escHtml(sc)}</span>`:''}
       </label>`; }).join('') + (this.shown().length>300?'<div style="padding:10px;text-align:center;font-size:0.75rem;color:var(--text3);font-family:var(--font-bn)">আরও আছে — সার্চ করে খুঁজুন</div>':'')
       : '<div style="padding:24px;text-align:center;color:var(--text3);font-family:var(--font-bn);font-size:0.8rem">কোনো বই পাওয়া যায়নি</div>';
     this.updCount();
@@ -9812,18 +9814,23 @@ const SP = {
     if (!sb) return;
     const nk=this._key(name), ek=this._key(this.editing);
     const byId=new Map(allProducts.map(p=>[String(p.id),p]));
-    const toSet=[...this.sel].filter(id=>{ const p=byId.get(id); return p && String(p.sub_category||'').trim()!==name; });
-    const toClear=[...this.orig].filter(id=>!this.sel.has(id));
-    const overwrite=toSet.filter(id=>{ const c=String(byId.get(id).sub_category||'').trim(); return c && this._key(c)!==nk && this._key(c)!==ek; });
+    // প্রতিটি বইয়ের নতুন তালিকা: পুরনো নাম (rename হলে) বাদ, নতুন নাম যোগ — অন্য সাব-ক্যাটাগরি অক্ষত
+    const ids=new Set([...this.sel,...this.orig]);
+    const changes=[];
+    ids.forEach(id=>{ const p=byId.get(id); if(!p) return;
+      let l=this.list(p).filter(x=>{ const k=this._key(x); return k!==ek && k!==nk; });
+      if (this.sel.has(id)) l.push(name);
+      const val=l.length?l.join(', '):null;
+      if ((val||'')!==String(p.sub_category||'').trim()) changes.push({id:p.id,val});
+    });
     if (!this.editing && this.groups().some(g=>this._key(g.name)===nk) && !confirm('"'+name+'" নামে পেজ আগে থেকেই আছে। বাছাই করা বইগুলো ওই পেজে যোগ হবে। চালিয়ে যাবেন?')) return;
-    if (overwrite.length && !confirm(overwrite.length+'টি বইয়ের আগের সাব-ক্যাটাগরি বদলে "'+name+'" হবে (একটি বইয়ের একটাই সাব-ক্যাটাগরি থাকে)। চালিয়ে যাবেন?')) return;
-    if (!toSet.length && !toClear.length) return toast('কোনো পরিবর্তন নেই','','warning');
+    if (!changes.length) return toast('কোনো পরিবর্তন নেই','','warning');
+    const toSet={length:changes.filter(c=>c.val&&this.sel.size).length}, toClear={length:0};
     const btn=document.getElementById('spSaveBtn'); btn.disabled=true;
     try {
-      const run=async(ids,val)=>{ for(let i=0;i<ids.length;i+=100){ const part=ids.slice(i,i+100).map(id=>byId.get(id).id);
-        const {error}=await sb.from('products').update({sub_category:val}).in('id',part); if(error) throw error; } };
-      await run(toSet,name); await run(toClear,null);
-      toast('সেভ হয়েছে', toSet.length+'টি যোগ, '+toClear.length+'টি বাদ','success');
+      const groups=new Map(); changes.forEach(c=>{ const k=c.val===null?'\u0000':c.val; if(!groups.has(k)) groups.set(k,{val:c.val,ids:[]}); groups.get(k).ids.push(c.id); });
+      for (const g of groups.values()) for(let i=0;i<g.ids.length;i+=100){ const {error}=await sb.from('products').update({sub_category:g.val}).in('id',g.ids.slice(i,i+100)); if(error) throw error; }
+      toast('সেভ হয়েছে', changes.length+'টি বই আপডেট','success');
       await loadProducts();
       this.open(name);
     } catch(e){ toast('ত্রুটি', e.message||'সেভ হয়নি','error'); }
@@ -9831,10 +9838,12 @@ const SP = {
   },
   async removePage(){
     if (!this.editing || !sb) return;
-    const ids=[...this.orig].map(id=>allProducts.find(p=>String(p.id)===id)).filter(Boolean).map(p=>p.id);
-    if (!confirm('"'+this.editing+'" পেজ মুছবেন? '+ids.length+'টি বইয়ের সাব-ক্যাটাগরি ফাঁকা হবে (বই মুছবে না)।')) return;
+    const ek=this._key(this.editing);
+    const changes=allProducts.filter(p=>this.has(p,this.editing)).map(p=>{ const l=this.list(p).filter(x=>this._key(x)!==ek); return {id:p.id,val:l.length?l.join(', '):null}; });
+    if (!confirm('"'+this.editing+'" পেজ মুছবেন? '+changes.length+'টি বই থেকে শুধু এই সাব-ক্যাটাগরিটা বাদ যাবে (বই বা অন্য সাব-ক্যাটাগরি মুছবে না)।')) return;
     try {
-      for(let i=0;i<ids.length;i+=100){ const {error}=await sb.from('products').update({sub_category:null}).in('id',ids.slice(i,i+100)); if(error) throw error; }
+      const groups=new Map(); changes.forEach(c=>{ const k=c.val===null?'\u0000':c.val; if(!groups.has(k)) groups.set(k,{val:c.val,ids:[]}); groups.get(k).ids.push(c.id); });
+      for (const g of groups.values()) for(let i=0;i<g.ids.length;i+=100){ const {error}=await sb.from('products').update({sub_category:g.val}).in('id',g.ids.slice(i,i+100)); if(error) throw error; }
       toast('পেজ মুছে গেছে','','success'); await loadProducts(); this.newPage();
     } catch(e){ toast('ত্রুটি', e.message||'মোছা যায়নি','error'); }
   }
