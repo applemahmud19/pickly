@@ -1395,8 +1395,6 @@ body {
 @media (max-width: 900px) {
   #dashRow { grid-template-columns: 1fr !important; }
   #dashRow .panel { margin-bottom: 14px; }
-  /* Top products + recent orders row */
-  #dashRow + div { grid-template-columns: 1fr !important; display: flex !important; flex-direction: column !important; gap: 14px; }
 }
 
 @media (max-width: 480px) {
@@ -1484,6 +1482,15 @@ body {
 /* ══════════════════════════════════════════════════════════════
    ANALYTICS SECTION — top products, visitor stats
 ══════════════════════════════════════════════════════════════ */
+.an-sec-title { display:flex; align-items:center; gap:9px; margin:6px 0 12px; font-family:var(--font-bn); font-size:0.9rem; font-weight:800; color:var(--text); }
+.an-sec-title i { width:26px; height:26px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem; background:var(--bg3); color:var(--text2); }
+.an-sec-sub { font-size:0.7rem; font-weight:500; color:var(--text3); }
+.an-sec-title::after { content:''; flex:1; height:1px; background:var(--border); margin-left:6px; }
+.an-cols-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; align-items:start; }
+.kpi-grid.an-kpi-3 { grid-template-columns:repeat(3,1fr); }
+.kpi-grid.an-kpi-2 { grid-template-columns:repeat(2,1fr); }
+@media (max-width: 900px) { .an-cols-2 { grid-template-columns:1fr; } }
+@media (max-width: 600px) { .kpi-grid.an-kpi-3 { grid-template-columns:1fr; } .an-sec-sub { display:none; } }
 
 @media (max-width: 480px) {
   .top-prod-row { gap: 8px; padding: 8px 0; }
@@ -2294,8 +2301,14 @@ body {
 
       <!-- ══ ANALYTICS ══ -->
       <div class="section" id="sec-analytics">
-        <!-- ═══ Overview KPIs (moved from Dashboard) ═══ -->
-        <div class="kpi-grid">
+        <!-- ═══════════════ ANALYTICS — সাজানো ক্রম ═══════════════
+             ১) সারসংক্ষেপ  ২) বিক্রয় ট্রেন্ড  ৩) ভিজিটর ও ট্রাফিক
+             ৪) পণ্য ও ক্যাটাগরি  ৫) এলাকা ও ফেরত
+        ═══════════════════════════════════════════════════════ -->
+
+        <!-- ১) সারসংক্ষেপ -->
+        <div class="an-sec-title"><i class="fa-solid fa-gauge-high"></i><span>সারসংক্ষেপ</span><span class="an-sec-sub">মোট বিক্রয়ের এক নজর</span></div>
+        <div class="kpi-grid" style="margin-bottom:14px">
           <div class="kpi-card">
             <div class="kpi-top">
               <div class="kpi-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
@@ -2303,6 +2316,14 @@ body {
             </div>
             <div class="kpi-val" id="kpi-revenue">—</div>
             <div class="kpi-label">মোট আয়</div>
+          </div>
+          <div class="kpi-card" style="cursor:default">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-fire-flame-curved"></i></div>
+              <span class="kpi-badge na">আজ</span>
+            </div>
+            <div class="kpi-val" id="kpi-today-revenue">—</div>
+            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের আয়</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-top">
@@ -2320,16 +2341,55 @@ body {
             <div class="kpi-val" id="kpi-products">—</div>
             <div class="kpi-label">পণ্য সংখ্যা</div>
           </div>
-          <div class="kpi-card" onclick="navToOrders('pending')" style="cursor:pointer" title="পেন্ডিং অর্ডার দেখুন">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-clock"></i></div>
-              <span class="kpi-badge dn" id="kpi-pending-badge">—</span>
+        </div>
+        <!-- অর্ডার পারফরম্যান্স (গড় অর্ডার / ডেলিভারি রেট / ক্যানসেল রেট) — JS দিয়ে ভরে -->
+        <div class="kpi-grid an-kpi-3" id="analyticsKPIs" style="margin-bottom:18px"></div>
+
+        <!-- ২) বিক্রয় ট্রেন্ড -->
+        <div class="an-sec-title"><i class="fa-solid fa-chart-line"></i><span>বিক্রয় ট্রেন্ড</span><span class="an-sec-sub">রেভিনিউ ও অর্ডার স্ট্যাটাস</span></div>
+        <!-- ═══ Revenue chart + Status breakdown (moved from Dashboard) ═══ -->
+        <!-- Dynamic Revenue Area Chart + Status Breakdown -->
+        <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-bottom:18px" id="dashRow">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-chart-area"></i></div>
+                <span id="revenueChartTitle" style="font-family:var(--font-bn)">আজকের রেভিনিউ</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="chartSummaryBadge" style="font-size:0.68rem;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(170,44,45,0.1);color:var(--blue)">—</div>
+                <div id="revenueCompareIndicator" style="display:none;font-size:0.7rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;display:flex;align-items:center;gap:4px"></div>
+                <div class="tf-dropdown-wrap" style="position:relative">
+                  <button class="tf-btn" id="tfBtn" onclick="toggleTfDropdown()" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-size:0.74rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all var(--t);font-family:var(--font)">
+                    <span id="tfLabel">আজ</span>
+                    <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;transition:transform 0.2s" id="tfChevron"></i>
+                  </button>
+                  <div id="tfDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:200;min-width:140px;overflow:hidden">
+                    <div class="tf-option active" data-tf="today" onclick="selectTimeframe(this)"><i class="fa-regular fa-clock"></i> আজ</div>
+                    <div class="tf-option" data-tf="7days" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-week"></i> শেষ ৭ দিন</div>
+                    <div class="tf-option" data-tf="30days" onclick="selectTimeframe(this)"><i class="fa-regular fa-calendar"></i> শেষ ৩০ দিন</div>
+                    <div class="tf-option" data-tf="year" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-days"></i> এই বছর</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="kpi-val" id="kpi-pending">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">পেন্ডিং অর্ডার <i class="fa-solid fa-arrow-right" style="font-size:0.55rem;opacity:0.5;margin-left:3px"></i></div>
+            <div style="padding:4px 16px 16px;position:relative;min-height:200px">
+              <canvas id="revenueChartCanvas" style="max-height:210px"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                <span style="font-family:var(--font-bn)">অর্ডার স্ট্যাটাস</span>
+              </div>
+            </div>
+            <div style="padding:16px 20px" id="statusBreakdown"></div>
           </div>
         </div>
 
+        <!-- ৩) ভিজিটর ও ট্রাফিক -->
+        <div class="an-sec-title"><i class="fa-solid fa-users"></i><span>ভিজিটর ও ট্রাফিক</span><span class="an-sec-sub">কতজন আসছে, কতজন কিনছে</span></div>
         <!-- Visitor KPI — Single Dynamic Card with Dropdown Filter -->
         <div style="margin-bottom:12px">
           <div class="kpi-card" id="visitorKPICard" style="cursor:default;border-color:rgba(50,173,230,0.35);background:linear-gradient(135deg,var(--surface) 0%,var(--surface) 100%);position:relative;overflow:visible">
@@ -2343,12 +2403,17 @@ body {
                   <i class="fa-solid fa-eye"></i>
                 </div>
                 <div>
-                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিটর</div>
+                  <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-family:var(--mono);margin-bottom:4px">মোট ভিজিট</div>
                   <div style="display:flex;align-items:baseline;gap:8px">
                     <div class="kpi-val" id="kpi-dynamic-visitors" style="font-size:2rem;line-height:1;color:var(--cyan)">—</div>
                     <span id="visitorKPITrend" class="kpi-badge na" style="font-size:0.62rem"></span>
                   </div>
                   <div id="visitorKPILabel" class="kpi-label" style="font-family:var(--font-bn);margin-top:4px;font-size:0.78rem">আজকের ভিজিটর</div>
+                  <div style="margin-top:8px;display:flex;align-items:center;gap:6px;font-family:var(--font-bn);font-size:0.78rem;color:var(--text3)" title="একই ব্যক্তি যতবারই আসুক, একবারই গোনা হয়">
+                    <i class="fa-solid fa-user-check" style="color:var(--green);font-size:0.75rem"></i>
+                    <span>ইউনিক ভিজিটর:</span>
+                    <b id="kpi-unique-visitors" style="font-family:var(--mono);font-size:0.95rem;color:var(--green)">—</b>
+                  </div>
                 </div>
               </div>
 
@@ -2403,8 +2468,7 @@ body {
         #visitorFilterBtn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(50,173,230,0.07); }
         </style>
 
-        <!-- Live + Conversion + Revenue row -->
-        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+        <div class="kpi-grid an-kpi-2" style="margin-bottom:14px">
           <!-- Live Active -->
           <div class="kpi-card" style="cursor:default;border-color:rgba(52,199,89,0.3)">
             <div class="kpi-top">
@@ -2423,75 +2487,8 @@ body {
             <div class="kpi-val" id="kpi-conv-rate">—</div>
             <div class="kpi-label" style="font-family:var(--font-bn)">Conversion Rate</div>
           </div>
-          <!-- Today Revenue -->
-          <div class="kpi-card" style="cursor:default">
-            <div class="kpi-top">
-              <div class="kpi-icon" style="background:rgba(255,159,10,0.1);color:var(--amber)"><i class="fa-solid fa-fire-flame-curved"></i></div>
-              <span class="kpi-badge na">আজ</span>
-            </div>
-            <div class="kpi-val" id="kpi-today-revenue">—</div>
-            <div class="kpi-label" style="font-family:var(--font-bn)">আজকের আয়</div>
-          </div>
         </div>
-
-        <!-- ═══ Revenue chart + Status breakdown (moved from Dashboard) ═══ -->
-        <!-- Dynamic Revenue Area Chart + Status Breakdown -->
-        <div style="display:grid;grid-template-columns:1.65fr 1fr;gap:16px;margin-bottom:18px" id="dashRow">
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-chart-area"></i></div>
-                <span id="revenueChartTitle" style="font-family:var(--font-bn)">আজকের রেভিনিউ</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div id="chartSummaryBadge" style="font-size:0.68rem;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(170,44,45,0.1);color:var(--blue)">—</div>
-                <div id="revenueCompareIndicator" style="display:none;font-size:0.7rem;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:100px;display:flex;align-items:center;gap:4px"></div>
-                <div class="tf-dropdown-wrap" style="position:relative">
-                  <button class="tf-btn" id="tfBtn" onclick="toggleTfDropdown()" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-size:0.74rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all var(--t);font-family:var(--font)">
-                    <span id="tfLabel">আজ</span>
-                    <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;transition:transform 0.2s" id="tfChevron"></i>
-                  </button>
-                  <div id="tfDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:200;min-width:140px;overflow:hidden">
-                    <div class="tf-option active" data-tf="today" onclick="selectTimeframe(this)"><i class="fa-regular fa-clock"></i> আজ</div>
-                    <div class="tf-option" data-tf="7days" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-week"></i> শেষ ৭ দিন</div>
-                    <div class="tf-option" data-tf="30days" onclick="selectTimeframe(this)"><i class="fa-regular fa-calendar"></i> শেষ ৩০ দিন</div>
-                    <div class="tf-option" data-tf="year" onclick="selectTimeframe(this)"><i class="fa-solid fa-calendar-days"></i> এই বছর</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style="padding:4px 16px 16px;position:relative;min-height:200px">
-              <canvas id="revenueChartCanvas" style="max-height:210px"></canvas>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-header">
-              <div class="panel-title">
-                <div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-circle-half-stroke"></i></div>
-                <span style="font-family:var(--font-bn)">অর্ডার স্ট্যাটাস</span>
-              </div>
-            </div>
-            <div style="padding:16px 20px" id="statusBreakdown"></div>
-          </div>
-        </div>
-
-        <!-- ফেরত ও রিটার্ন ট্র্যাকার -->
-        <div class="panel" id="returnPanel" style="margin-bottom:18px">
-          <div class="panel-header">
-            <div class="panel-title">
-              <div class="panel-title-icon" style="background:rgba(232,89,12,0.1);color:#E8590C"><i class="fa-solid fa-rotate-left"></i></div>
-              <span style="font-family:var(--font-bn)">ফেরত ও রিটার্ন ট্র্যাকার</span>
-            </div>
-            <span id="returnPanelNote" style="font-size:0.65rem;font-family:var(--font-bn);color:var(--text3)"></span>
-          </div>
-          <div style="padding:16px 20px" id="returnTracker"></div>
-        </div>
-
-        <!-- KPI Row -->
-        <div class="kpi-grid" id="analyticsKPIs" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px"></div>
-
-        <!-- Visitor Stats Row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div style="margin-bottom:18px">
           <div class="panel">
             <div class="panel-header">
               <div class="panel-title">
@@ -2504,29 +2501,46 @@ body {
               <div style="text-align:center;padding:20px"><div class="spinner" style="margin:auto"></div></div>
             </div>
           </div>
+        </div>
+
+        <!-- ৪) পণ্য ও ক্যাটাগরি -->
+        <div class="an-sec-title"><i class="fa-solid fa-box-open"></i><span>পণ্য ও ক্যাটাগরি</span><span class="an-sec-sub">কোনটা বেশি বিক্রি হচ্ছে</span></div>
+        <div class="an-cols-2">
           <div class="panel">
             <div class="panel-header">
               <div class="panel-title">
                 <div class="panel-title-icon" style="background:rgba(255,159,10,0.12);color:var(--amber)"><i class="fa-solid fa-trophy"></i></div>
-                <span style="font-family:var(--font-bn)">সেরা ৫ পণ্য</span>
+                <span style="font-family:var(--font-bn)">সেরা ১০ পণ্য</span>
               </div>
             </div>
             <div style="padding:10px 16px 16px" id="analyticsTopProducts">
               <div style="text-align:center;padding:20px"><div class="spinner" style="margin:auto"></div></div>
             </div>
           </div>
-        </div>
-
-        <!-- Category + District -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="panel">
             <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(170,44,45,0.1);color:var(--blue)"><i class="fa-solid fa-layer-group"></i></div><span style="font-family:var(--font-bn)">ক্যাটাগরি বিশ্লেষণ</span></div></div>
             <div style="padding:18px 20px" id="categoryBreakdown"></div>
           </div>
+        </div>
+
+        <!-- ৫) এলাকা ও ফেরত -->
+        <div class="an-sec-title"><i class="fa-solid fa-map-location-dot"></i><span>এলাকা ও ফেরত</span><span class="an-sec-sub">কোথায় বিক্রি, কত ফেরত</span></div>
+        <div style="margin-bottom:18px">
           <div class="panel">
             <div class="panel-header"><div class="panel-title"><div class="panel-title-icon" style="background:rgba(52,199,89,0.1);color:var(--green)"><i class="fa-solid fa-map-location-dot"></i></div><span style="font-family:var(--font-bn)">শীর্ষ জেলা</span></div></div>
             <div style="padding:18px 20px" id="districtBreakdown"></div>
           </div>
+        </div>
+        <!-- ফেরত ও রিটার্ন ট্র্যাকার -->
+        <div class="panel" id="returnPanel" style="margin-bottom:18px">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="panel-title-icon" style="background:rgba(232,89,12,0.1);color:#E8590C"><i class="fa-solid fa-rotate-left"></i></div>
+              <span style="font-family:var(--font-bn)">ফেরত ও রিটার্ন ট্র্যাকার</span>
+            </div>
+            <span id="returnPanelNote" style="font-size:0.65rem;font-family:var(--font-bn);color:var(--text3)"></span>
+          </div>
+          <div style="padding:16px 20px" id="returnTracker"></div>
         </div>
       </div>
 
@@ -2737,6 +2751,30 @@ begin
   alter publication supabase_realtime add table public.visitor_logs;
 exception when duplicate_object then null;
 end $$;
+
+-- ============================================================
+-- UNIQUE VISITOR SUPPORT (notun) — eta-o ekbar run koro
+-- ============================================================
+alter table public.visitor_logs add column if not exists visitor_id text;
+create index if not exists idx_vl_visitor on public.visitor_logs (visitor_id);
+
+-- visitor_id na thaka purono row-er jonno session_id-ke-i visitor dhora hoy
+create or replace function public.visitor_unique_stats(
+  p_today timestamptz, p_yesterday timestamptz, p_week timestamptz, p_month timestamptz
+) returns json
+language sql stable
+as $$
+  select json_build_object(
+    'today',     count(distinct coalesce(visitor_id, session_id)) filter (where created_at >= p_today),
+    'yesterday', count(distinct coalesce(visitor_id, session_id)) filter (where created_at >= p_yesterday and created_at < p_today),
+    'week',      count(distinct coalesce(visitor_id, session_id)) filter (where created_at >= p_week),
+    'month',     count(distinct coalesce(visitor_id, session_id)) filter (where created_at >= p_month),
+    'all',       count(distinct coalesce(visitor_id, session_id))
+  )
+  from public.visitor_logs;
+$$;
+
+grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, timestamptz, timestamptz) to anon, authenticated;
 </pre>
             </div>
           </div>
@@ -5401,7 +5439,7 @@ async function loadVisitorStats(retryCount = 0) {
     // Live = last_seen within the past 3 minutes
     const liveThreshold  = new Date(Date.now() - 3 * 60 * 1000).toISOString();
 
-    const [todayRes, yestRes, weekRes, monthRes, liveRes] = await Promise.all([
+    const [todayRes, yestRes, weekRes, monthRes, liveRes, uniqRes] = await Promise.all([
       // Today: unique sessions with created_at >= today midnight
       sb.from('visitor_logs')
         .select('session_id', { count: 'exact', head: true })
@@ -5424,6 +5462,10 @@ async function loadVisitorStats(retryCount = 0) {
         .select('session_id', { count: 'exact', head: true })
         .gte('last_seen', liveThreshold)
         .eq('is_active', true),
+      // Unique visitors (distinct visitor_id) — Supabase RPC; SQL না চালালে error দিবে, সেটা নিচে handle করা আছে
+      sb.rpc('visitor_unique_stats', {
+        p_today: todayStart, p_yesterday: yesterdayStart, p_week: weekStart, p_month: monthStart,
+      }),
     ]);
 
     // ── Graceful table-not-found handling ──
@@ -5432,7 +5474,7 @@ async function loadVisitorStats(retryCount = 0) {
       const msg = anyError.error.message || '';
       if (msg.includes('does not exist') || msg.includes('42P01') || msg.includes('column') || msg.includes('does not exist')) {
         // Table missing → show zeroes, don't spam retries
-        allVisitors = { today: 0, yesterday: 0, week: 0, month: 0, live: 0 };
+        allVisitors = { today: 0, yesterday: 0, week: 0, month: 0, live: 0, uniq: null };
         renderVisitorStats();
         return;
       }
@@ -5445,6 +5487,8 @@ async function loadVisitorStats(retryCount = 0) {
       week:      weekRes.count   || 0,
       month:     monthRes.count  || 0,
       live:      liveRes.count   || 0,
+      // uniq = null মানে RPC/SQL এখনো setup হয়নি → UI-তে "—" দেখাবে
+      uniq:      (uniqRes && !uniqRes.error && uniqRes.data) ? uniqRes.data : null,
     };
 
   } catch(e) {
@@ -5555,6 +5599,13 @@ function updateVisitorKPICard() {
   const periodMap = { today: v.today || 0, yesterday: v.yesterday || 0, week: v.week || 0, month: v.month || 0 };
   const count = periodMap[period] ?? 0;
 
+  // Unique visitors (একই মানুষ একবারই গোনা হবে)
+  const uniqEl = document.getElementById('kpi-unique-visitors');
+  if (uniqEl) {
+    const u = v.uniq && v.uniq[period];
+    uniqEl.textContent = (u === undefined || u === null) ? '—' : Number(u).toLocaleString('bn-BD');
+  }
+
   // Animate number change
   const valEl = document.getElementById('kpi-dynamic-visitors');
   if (valEl) {
@@ -5650,18 +5701,21 @@ function renderVisitorStats() {
   const vp = document.getElementById('visitorStatsPanel');
   if (!vp) return;
 
-  const maxV = Math.max(todayV, yesterdayV, weekV, monthV, 1);
+  const uq = v.uniq || null;
+  const uTodayV = uq ? (uq.today || 0) : 0, uYestV = uq ? (uq.yesterday || 0) : 0,
+        uWeekV  = uq ? (uq.week  || 0) : 0, uMonthV = uq ? (uq.month || 0) : 0, uAllV = uq ? (uq.all || 0) : 0;
+  const maxV = Math.max(todayV, yesterdayV, weekV, monthV, uTodayV, uYestV, uWeekV, uMonthV, 1);
 
-  const bar = (val, gradient, label, sublabel) => `
+  const bar = (val, color, label, sublabel) => `
     <div class="visitor-stat-row">
       <div style="min-width:110px">
         <div style="font-size:0.78rem;font-weight:600;font-family:var(--font-bn)">${label}</div>
         <div style="font-size:0.65rem;color:var(--text3);font-family:var(--mono)">${sublabel}</div>
       </div>
       <div class="visitor-bar-wrap">
-        <div class="visitor-bar-fill" style="width:${Math.round(val/maxV*100)}%;background:${gradient}"></div>
+        <div class="visitor-bar-fill" style="width:${Math.round(val/maxV*100)}%;background:${color}"></div>
       </div>
-      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);min-width:42px;text-align:right;color:${gradient.includes('cyan') ? 'var(--cyan)' : gradient.includes('purple') ? 'var(--purple)' : gradient.includes('52,199') ? 'var(--green)' : gradient.includes('0,122') ? 'var(--blue)' : 'var(--amber)'}">
+      <div style="font-size:0.82rem;font-weight:800;font-family:var(--mono);min-width:42px;text-align:right;color:${color}">
         ${val.toLocaleString()}
       </div>
     </div>`;
@@ -5686,11 +5740,28 @@ function renderVisitorStats() {
     </div>
 
     <!-- Time-filter bars -->
-    ${bar(todayV,     'linear-gradient(90deg,var(--cyan),var(--blue))',       'আজকের ভিজিটর',       'Today')}
-    ${bar(yesterdayV, 'linear-gradient(90deg,var(--purple),var(--blue))',     'গতকালের ভিজিটর',     'Yesterday')}
-    ${bar(weekV,      'linear-gradient(90deg,var(--blue),var(--cyan))',       'এই সপ্তাহের ভিজিটর', 'This Week')}
-    ${bar(monthV,     'linear-gradient(90deg,var(--green),var(--cyan))',      'এই মাসের ভিজিটর',    'This Month')}
-    ${bar(todayOrders,'linear-gradient(90deg,var(--amber),var(--red))',       'আজকের অর্ডার',       'Orders')}
+    ${bar(todayV,     'var(--cyan)',   'আজকের ভিজিটর',       'Today')}
+    ${bar(yesterdayV, 'var(--purple)', 'গতকালের ভিজিটর',     'Yesterday')}
+    ${bar(weekV,      'var(--blue)',   'এই সপ্তাহের ভিজিটর', 'This Week')}
+    ${bar(monthV,     'var(--green)',  'এই মাসের ভিজিটর',    'This Month')}
+    ${bar(todayOrders,'var(--amber)',  'আজকের অর্ডার',       'Orders')}
+
+    <!-- Unique visitors (একই মানুষ একবারই) -->
+    <div style="margin:14px 0 6px;padding-top:12px;border-top:1px dashed var(--border);font-size:0.72rem;font-weight:700;color:var(--text3);font-family:var(--font-bn)">
+      <i class="fa-solid fa-user-check" style="color:var(--green)"></i> ইউনিক ভিজিটর <span style="font-weight:400">(একই ব্যক্তি যতবারই আসুক, একবার)</span>
+    </div>
+    ${uq ? `
+      ${bar(uTodayV, 'var(--cyan)',   'আজ',        'Unique Today')}
+      ${bar(uYestV,  'var(--purple)', 'গতকাল',     'Unique Yesterday')}
+      ${bar(uWeekV,  'var(--blue)',   'এই সপ্তাহ',  'Unique Week')}
+      ${bar(uMonthV, 'var(--green)',  'এই মাস',    'Unique Month')}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;font-size:0.78rem;font-family:var(--font-bn)">
+        <span style="font-weight:600">এখন পর্যন্ত মোট ইউনিক</span>
+        <span style="font-family:var(--mono);font-weight:800;color:var(--green)">${uAllV.toLocaleString()}</span>
+      </div>`
+    : `<div style="font-size:0.72rem;color:var(--amber);font-family:var(--font-bn);padding:6px 0">
+         ⚠ ইউনিক ভিজিটর দেখাতে Settings-এর SQL বক্স থেকে নতুন SQL একবার Supabase-এ রান করো।
+       </div>`}
 
     <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--text3);font-family:var(--font-bn);display:flex;align-items:center;gap:6px">
       <i class="fa-solid fa-circle-info"></i>
@@ -5701,7 +5772,7 @@ function renderVisitorStats() {
 /* ══════════════════════════════════════
    TOP 5 SELLING PRODUCTS
 ══════════════════════════════════════ */
-function computeTopProducts() {
+function computeTopProducts(limit = 5) {
   const productSales = {};
   allOrders.forEach(o => {
     if (['cancelled','returned'].includes(o.status)) return;
@@ -5713,21 +5784,21 @@ function computeTopProducts() {
       productSales[key].revenue += Number(i.price || 0) * Number(i.qty || 1);
     });
   });
-  return Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, 5);
+  return Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, limit);
 }
 
-function renderTopProducts(containerId) {
-  const top = computeTopProducts();
+function renderTopProducts(containerId, limit = 5) {
+  const top = computeTopProducts(limit);
   const el = document.getElementById(containerId);
   if (!el) return;
   if (!top.length) {
     el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:0.8rem;font-family:var(--font-bn)">কোনো sales data নেই</div>`;
     return;
   }
-  const rankClass = ['r1','r2','r3','rn','rn'];
+  const rankClass = ['r1','r2','r3'];
   el.innerHTML = top.map((p, i) => `
     <div class="top-prod-row">
-      <div class="top-prod-rank ${rankClass[i]}">${i+1}</div>
+      <div class="top-prod-rank ${rankClass[i] || 'rn'}">${i+1}</div>
       <div class="top-prod-info">
         <div class="top-prod-name">${p.name}</div>
         <div class="top-prod-cat">${p.qty} units sold</div>
@@ -5975,8 +6046,6 @@ function renderDashboard() {
   document.getElementById('kpi-orders').textContent   = allOrders.length;
   document.getElementById('kpi-orders-badge').textContent = delivered + ' delivered';
   document.getElementById('kpi-products').textContent = activeProd;
-  document.getElementById('kpi-pending').textContent  = pending;
-  document.getElementById('kpi-pending-badge').textContent = pending ? pending + ' waiting' : 'All clear';
 
   // Order manager (dashboard)
   renderOrderManager();
@@ -6177,7 +6246,7 @@ function renderAnalytics() {
     <div class="kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(255,59,48,0.1);color:var(--red)"><i class="fa-solid fa-ban"></i></div><span class="kpi-badge dn">${crRate}%</span></div><div class="kpi-val">${crRate}%</div><div class="kpi-label" style="font-family:var(--font-bn)">ক্যান্সেলেশন রেট</div></div>`;
 
   // Top products in analytics
-  renderTopProducts('analyticsTopProducts');
+  renderTopProducts('analyticsTopProducts', 10);
   // Visitor stats in analytics
   renderVisitorStats();
 
@@ -6185,14 +6254,14 @@ function renderAnalytics() {
   allProducts.forEach(p => { if (p.category) cats[p.category] = (cats[p.category] || 0) + 1; });
   const maxC = Math.max(...Object.values(cats), 1);
   document.getElementById('categoryBreakdown').innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([c, n]) =>
-    `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${c}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxC*100)}%;background:linear-gradient(90deg,var(--blue),var(--cyan))"></div></div></div>`
+    `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name" style="font-family:var(--font-bn)">${c}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxC*100)}%;background:var(--blue)"></div></div></div>`
   ).join('') || '<p style="color:var(--text3);text-align:center;padding:16px;font-size:0.8rem;font-family:var(--font-bn)">কোনো data নেই</p>';
 
   const dists = {};
   allOrders.forEach(o => { if (o.customer_district) dists[o.customer_district] = (dists[o.customer_district] || 0) + 1; });
   const maxD = Math.max(...Object.values(dists), 1);
   document.getElementById('districtBreakdown').innerHTML = Object.entries(dists).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([d, n]) =>
-    `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name">${d}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxD*100)}%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div></div></div>`
+    `<div class="breakdown-row"><div class="breakdown-top"><span class="breakdown-name">${d}</span><span class="breakdown-val">${n}</span></div><div class="breakdown-bar"><div class="breakdown-fill" style="width:${Math.round(n/maxD*100)}%;background:var(--green)"></div></div></div>`
   ).join('') || '<p style="color:var(--text3);text-align:center;padding:16px;font-size:0.8rem;font-family:var(--font-bn)">কোনো data নেই</p>';
 }
 
