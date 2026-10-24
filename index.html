@@ -5,10 +5,9 @@
 <meta charset="UTF-8">
  <meta name="google-site-verification" content="P2XWZuS8iPIDv5kp_Hk_yV01WBikGrMAYTei1Et9Pvg" />  
 <!-- ── Favicon: static fallback (JS overrides after DB fetch) ── -->
-<link rel="icon"         type="image/png" sizes="32x32" id="fav32"      href="/favicon.png?v=1.1" />
-<link rel="icon"         type="image/png" sizes="16x16" id="fav16"      href="/favicon.png?v=1.1" />
-<link rel="apple-touch-icon"                            id="favApple"   href="/favicon.png?v=1.1" />
-<link rel="shortcut icon" type="image/png"              id="favShortcut" href="/favicon.png?v=1.1" />
+<link rel="icon"         type="image/png" id="fav32"      href="/icon-192.png" />
+<link rel="apple-touch-icon"                            id="favApple"   href="/apple-touch-icon.png" />
+<link rel="shortcut icon" type="image/png"              id="favShortcut" href="/icon-192.png" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- PWA -->
@@ -21,16 +20,16 @@
 <title>বুক গ্যালাক্সি - A Trusted Online Bookstore</title>
 <!--HOME-SEO-->
 <meta name="description" content="বুক গ্যালাক্সি — বাংলাদেশের বিশ্বস্ত অনলাইন বইয়ের দোকান। উপন্যাস, কবিতা, ইসলামী বই, একাডেমিক ও আরও হাজারো বই কম দামে, সারা দেশে হোম ডেলিভারি ও ক্যাশ অন ডেলিভারি।">
-<link rel="canonical" href="https://bookgalaxybd.shop/">
+<link rel="canonical" href="https://www.bookgalaxybd.shop/">
 <meta property="og:site_name" content="বুক গ্যালাক্সি">
 <meta property="og:type" content="website">
 <meta property="og:title" content="বুক গ্যালাক্সি - A Trusted Online Bookstore">
 <meta property="og:description" content="বাংলাদেশের বিশ্বস্ত অনলাইন বইয়ের দোকান। সেরা বই কম দামে, সারা দেশে ডেলিভারি।">
-<meta property="og:url" content="https://bookgalaxybd.shop/">
-<meta property="og:image" content="https://bookgalaxybd.shop/favicon.png">
+<meta property="og:url" content="https://www.bookgalaxybd.shop/">
+<meta property="og:image" content="https://www.bookgalaxybd.shop/icon-512.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://bookgalaxybd.shop/favicon.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"বুক গ্যালাক্সি","alternateName":"Book Galaxy","url":"https://bookgalaxybd.shop/","potentialAction":{"@type":"SearchAction","target":"https://bookgalaxybd.shop/search?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"Organization","name":"বুক গ্যালাক্সি","url":"https://bookgalaxybd.shop/","logo":"https://bookgalaxybd.shop/favicon.png"}]}</script>
+<meta name="twitter:image" content="https://www.bookgalaxybd.shop/icon-512.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"বুক গ্যালাক্সি","alternateName":"Book Galaxy","url":"https://www.bookgalaxybd.shop/","potentialAction":{"@type":"SearchAction","target":"https://www.bookgalaxybd.shop/search?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"Organization","name":"বুক গ্যালাক্সি","url":"https://www.bookgalaxybd.shop/","logo":"https://www.bookgalaxybd.shop/icon-512.png"}]}</script>
 <!--/HOME-SEO-->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@600;700&display=swap" rel="stylesheet">
 <!-- Primary Font Awesome CDN -->
@@ -8299,8 +8298,8 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // ══════════════════════════════════════════════════════════════════
 function setFaviconHref(url) {
   // Dynamic favicon: set all link tags + create if missing
-  const ids = ['fav32','fav16','favApple','favShortcut'];
-  const ts  = '?v=' + Date.now();
+  // Google favicon নিয়ম: URL স্থির থাকতে হবে — তাই প্রতি লোডে বদলানো টাইমস্ট্যাম্প নেই
+  const ids = ['fav32','favApple','favShortcut'];
   ids.forEach(id => {
     let el = document.getElementById(id);
     if (!el) {
@@ -8310,7 +8309,7 @@ function setFaviconHref(url) {
       el.type = 'image/png';
       document.head.appendChild(el);
     }
-    el.href = url + ts;
+    if (el.getAttribute('href') !== url) el.href = url;
   });
 }
 
@@ -11043,7 +11042,7 @@ function _ogMeta(prop) {
 }
 function _setOg(title, desc, image, urlPath) {
   if (!_ogDefaults) _ogDefaults = ['og:title', 'og:description', 'og:url', 'og:image'].map(k => [k, (document.querySelector('meta[property="' + k + '"]') || {}).content || '']);
-  const abs = u => /^https?:/i.test(u || '') ? u : location.origin + (u || '/favicon.png');
+  const abs = u => /^https?:/i.test(u || '') ? u : location.origin + (u || '/icon-512.png');
   _ogMeta('og:title').content = title; _ogMeta('og:description').content = desc;
   _ogMeta('og:url').content = location.origin + encodeURI(urlPath);
   if (image) _ogMeta('og:image').content = abs(image);
