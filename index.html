@@ -9583,7 +9583,7 @@ async function _refreshOrderDetailPageNow(orderId) {
             <i class="fa-regular fa-copy"></i> <span id="copyOrderIdTxt">Copy</span>
           </button>
         </div>
-        ${order.invoice_no ? `<div class="od-inv" style="margin-top:7px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.92"><i class="fa-solid fa-file-invoice" style="margin-right:5px"></i>ইনভয়েস কোড: <b style="font-family:'Sora',sans-serif;letter-spacing:.02em">${String(order.invoice_no).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</b></div>` : ''}
+        ${order.invoice_no ? `<div class="od-inv" style="margin-top:7px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.92"><i class="fa-solid fa-file-invoice" style="margin-right:5px"></i>Invoice: <b style="font-family:'Sora',sans-serif;letter-spacing:.02em">${String(order.invoice_no).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</b></div>` : ''}
       </div>
       <span class="order-status-badge ${badgeCls}" style="font-size:.8rem;padding:6px 14px">
         <i class="fa-solid ${statusIcon}"></i>${statusLabel}
@@ -18345,7 +18345,7 @@ async function openOrderDetailPage(orderData, historyData) {
             <i class="fa-regular fa-copy"></i> <span id="copyOrderIdTxt">Copy</span>
           </button>
         </div>
-        ${o.invoice_no ? `<div class="od-inv" style="margin-top:7px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.92"><i class="fa-solid fa-file-invoice" style="margin-right:5px"></i>ইনভয়েস কোড: <b style="font-family:'Sora',sans-serif;letter-spacing:.02em">${String(o.invoice_no).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</b></div>` : ''}
+        ${o.invoice_no ? `<div class="od-inv" style="margin-top:7px;font-family:'Hind Siliguri',sans-serif;font-size:.78rem;opacity:.92"><i class="fa-solid fa-file-invoice" style="margin-right:5px"></i>Invoice: <b style="font-family:'Sora',sans-serif;letter-spacing:.02em">${String(o.invoice_no).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</b></div>` : ''}
       </div>
       <span class="order-status-badge ${badgeCls}" style="font-size:.8rem;padding:6px 14px">
         <i class="fa-solid ${statusIcon}"></i>${statusLabel}
