@@ -1851,12 +1851,12 @@ body {
         .om-card.alert .ic::after{content:"";position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:#FF3B30;border:2px solid var(--surface);animation:livePulse 1.4s ease-in-out infinite}
         @media(max-width:1100px){.om-card{padding:10px 10px 14px;gap:8px}.om-card .ic{width:34px;height:34px;font-size:.88rem}.om-card .cnt{font-size:1.4rem}.om-card .pc{display:none}}
         @media(max-width:760px){.om-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.om-card:last-child:nth-child(odd){grid-column:1/-1}}
-        .om-tabs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)}
-        @media(max-width:1180px){.om-tabs{display:flex;overflow-x:auto;scrollbar-width:none}.om-tab{flex:0 0 138px!important}}
+        .om-tabs{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;padding:10px 14px;border-bottom:1px solid var(--border)}
+        @media(max-width:1280px){.om-tabs{display:flex;overflow-x:auto;scrollbar-width:none}.om-tab{flex:0 0 118px!important}}
         .om-tabs::-webkit-scrollbar{display:none}
-        .om-tab{position:relative;display:flex;align-items:center;gap:8px;padding:6px 8px 8px 7px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--t);min-width:0;overflow:hidden}
+        .om-tab{position:relative;display:flex;align-items:center;gap:6px;padding:6px 6px 8px 6px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;transition:all var(--t);min-width:0;overflow:hidden}
         .om-tab::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--omc);opacity:.35;transition:all var(--t)}
-        .om-tab .ic{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
+        .om-tab .ic{width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;background:color-mix(in srgb,var(--omc) 14%,transparent);color:var(--omc)}
         .om-tab .tx{display:flex;flex-direction:column;line-height:1.15;min-width:0}
         .om-tab .cnt{font-size:1.05rem;font-weight:800;color:var(--text);font-family:var(--mono)}
         .om-tab .lb{font-size:.72rem;font-weight:600;color:var(--text2);font-family:var(--font-bn);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1882,7 +1882,7 @@ body {
         .om-bulk{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 18px;background:rgba(170,44,45,.06);border-bottom:1px solid var(--border);font-size:.78rem;font-family:var(--font-bn)}
         .om-bulk.show{display:flex}
         .om-list{display:flex;flex-direction:column}
-        .om-head,.om-row{display:grid;grid-template-columns:34px minmax(0,1.1fr) minmax(0,1.5fr) 100px 150px minmax(0,1fr);column-gap:18px;align-items:center;padding:16px 22px}
+        .om-head,.om-row{display:grid;grid-template-columns:34px minmax(0,1.1fr) minmax(0,1.2fr) 130px 100px 150px minmax(0,1fr);column-gap:14px;align-items:center;padding:16px 22px}
 .om-row{min-height:68px}
         .om-head{font-size:.64rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);background:var(--bg3);border-bottom:1px solid var(--border)}
         .om-row{border-bottom:1px solid var(--border);transition:background var(--t);font-size:.8rem}
@@ -1892,11 +1892,12 @@ body {
         .om-no{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--blue);cursor:pointer}
         .om-sub{font-size:.68rem;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .om-cust{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.om-row>.c-cust{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
-.om-row>.c-cust>.om-cinfo{min-width:0;flex:1}
-.om-inv{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:7px;border:1px dashed var(--border);background:var(--bg3);color:var(--text2);font-size:.68rem;font-family:var(--mono);cursor:pointer;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
-.om-inv:hover{border-color:var(--blue);color:var(--blue)}
-.om-inv.has{border-style:solid;background:rgba(170,44,45,.07);color:var(--blue);font-weight:700}
+.om-invin{width:100%;box-sizing:border-box;padding:7px 9px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text);font-size:.72rem;font-family:var(--mono);outline:none;transition:border-color .15s,background .15s}
+.om-invin::placeholder{color:var(--text3);font-family:var(--mono)}
+.om-invin:focus{border-color:var(--blue);background:var(--surface)}
+.om-invin.has{color:var(--blue);font-weight:700;background:rgba(170,44,45,.06)}
+.om-invin.ok{border-color:#34C759!important}
+.om-invin.err{border-color:var(--red)!important}
         .om-cust a{color:var(--text3);font-family:var(--mono);font-size:.68rem;text-decoration:none;font-weight:400}
         .om-cust a:hover{color:var(--blue)}
         .om-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
@@ -1915,9 +1916,9 @@ body {
         .om-empty i{font-size:1.8rem;opacity:.4;display:block;margin-bottom:10px}
         @media(max-width:900px){
           .om-head{display:none}
-          .om-row{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"chk no total" ". cust cust" ". stat acts";row-gap:10px;column-gap:12px;padding:16px 14px}
+          .om-row{grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"chk no total" ". cust cust" ". inv inv" ". stat acts";row-gap:10px;column-gap:12px;padding:16px 14px}
           .om-row>.c-chk{grid-area:chk}.om-row>.c-no{grid-area:no}.om-row>.c-total{grid-area:total;justify-self:end;font-weight:800}
-          .om-row>.c-cust{grid-area:cust}.om-row>.c-stat{grid-area:stat}.om-row>.c-acts{grid-area:acts}
+          .om-row>.c-inv{grid-area:inv}.om-row>.c-cust{grid-area:cust}.om-row>.c-stat{grid-area:stat}.om-row>.c-acts{grid-area:acts}
           .om-btn{padding:9px 14px;font-size:.78rem}
         }
         </style>
@@ -1950,7 +1951,7 @@ body {
           <div class="om-list">
             <div class="om-head">
               <div><input type="checkbox" class="om-chk" id="omSelAll" onchange="omToggleAll(this.checked)" title="সব সিলেক্ট"></div>
-              <div>Order</div><div>Customer</div><div>Total</div><div>Status (বদলান)</div><div style="text-align:right">Action</div>
+              <div>Order</div><div>Customer</div><div>Invoice</div><div>Total</div><div>Status (বদলান)</div><div style="text-align:right">Action</div>
             </div>
             <div id="omList"></div>
           </div>
@@ -6148,7 +6149,8 @@ function renderOrderManager() {
       return `<div class="om-row ${omSelected.has(id) ? 'sel' : ''} ${omBusy.has(id) ? 'busy' : ''}">
         <div class="c-chk"><input type="checkbox" class="om-chk" ${omSelected.has(id) ? 'checked' : ''} onchange="omToggle('${id}', this.checked)"></div>
         <div class="c-no"><div class="om-no" onclick="viewOrder('${id}')">${omEsc(o.order_number || '—')}</div><div class="om-sub">${omAgo(o.created_at)}</div></div>
-        <div class="c-cust"><div class="om-cinfo"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}">${phone}</a>` : ''}</div><button type="button" class="om-inv ${o.invoice_no ? 'has' : ''}" onclick="setInvoiceNo('${id}')" title="Invoice কোড ${o.invoice_no ? 'বদলান' : 'যোগ করুন'}"><i class="fa-solid fa-file-invoice"></i> ${o.invoice_no ? omEsc(o.invoice_no) : 'Invoice'}</button></div>
+        <div class="c-cust"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}">${phone}</a>` : ''}</div>
+        <div class="c-inv"><input type="text" class="om-invin ${o.invoice_no ? 'has' : ''}" placeholder="Invoice" maxlength="60" value="${omEsc(o.invoice_no || '')}" onchange="saveInvoiceNo('${id}', this)" onkeydown="if(event.key==='Enter'){this.blur()}" onpaste="setTimeout(()=>this.blur(),0)" onclick="event.stopPropagation()"></div>
         <div class="c-total" style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</div>
         <div class="c-stat"><select class="om-sel" style="${getStatusSelectStyle(st)}" onchange="omAct('${id}', this.value)">${opts}</select></div>
         <div class="c-acts"><div class="om-acts">${acts}</div></div>
@@ -6165,30 +6167,33 @@ function renderOrderManager() {
   if (selAll) selAll.checked = rows.length > 0 && rows.every(o => omSelected.has(String(o.id)));
 }
 
-/* ── Invoice কোড: অ্যাডমিন হাতে বসায়, কাস্টমার ট্র্যাক পেজে দেখে ──
+/* ── Invoice কোড: ঘরে বসালেই অটো সেভ (Enter / ঘরের বাইরে ক্লিক / paste) ──
    একবার Supabase SQL Editor-এ চালান:
    ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS invoice_no text;  */
-async function setInvoiceNo(id) {
-  if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
+async function saveInvoiceNo(id, inp) {
   const o = allOrders.find(x => String(x.id) === String(id));
-  if (!o) return;
-  const v = prompt(`অর্ডার ${o.order_number || ''}-এর Invoice কোড লিখুন (মুছতে ফাঁকা রাখুন):`, o.invoice_no || '');
-  if (v === null) return;
-  const code = v.trim().slice(0, 60) || null;
+  if (!o || !inp) return;
+  if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
+  const code = inp.value.trim().slice(0, 60) || null;
+  if ((o.invoice_no || null) === code) return;
+  inp.disabled = true;
   try {
     const { data, error } = await sb.from('orders').update({ invoice_no: code }).eq('id', o.id).select();
     if (error) {
-      if (/invoice_no/i.test(error.message || '')) {
-        toast('আগে SQL চালান', 'Supabase → SQL Editor: ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS invoice_no text;', 'warning');
-      } else { toast('Save Failed', error.message, 'error'); }
-      return;
+      if (/invoice_no/i.test(error.message || '')) toast('আগে SQL চালান', 'Supabase → SQL Editor: ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS invoice_no text;', 'warning');
+      else toast('Save Failed', error.message, 'error');
+      inp.classList.add('err'); return;
     }
-    if (!data || !data.length) { toast('Save হয়নি', 'orders টেবিলে UPDATE policy চেক করুন', 'error'); return; }
+    if (!data || !data.length) { toast('Save হয়নি', 'orders টেবিলে UPDATE policy চেক করুন', 'error'); inp.classList.add('err'); return; }
     o.invoice_no = code;
-    toast('Invoice সেভ হয়েছে ✓', code || 'কোড মুছে ফেলা হয়েছে', 'success');
-    if (typeof renderOrderManager === 'function') renderOrderManager();
-    else if (typeof renderDashboard === 'function') renderDashboard();
-  } catch (e) { toast('Save Failed', e.message || 'Unknown error', 'error'); }
+    inp.value = code || '';
+    inp.classList.remove('err');
+    inp.classList.toggle('has', !!code);
+    inp.classList.add('ok');
+    setTimeout(() => inp.classList.remove('ok'), 1200);
+  } catch (e) {
+    toast('Save Failed', e.message || 'Unknown error', 'error'); inp.classList.add('err');
+  } finally { inp.disabled = false; }
 }
 
 function renderDashboard() {
