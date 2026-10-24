@@ -12290,8 +12290,7 @@ function renderCartItems() {
     </div>
     <div class="ci-price bn">৳${(getEffectiveSalePrice(item).displayPrice * item.qty).toLocaleString('en-US')}</div>
   </div>`;
-  }).join('') + '<div id="cartAlso" class="cart-also"></div>';
-  renderCartAlso();
+  }).join('');
   // Cart shows ONLY book subtotal (no delivery) — bulk-aware effective price ব্যবহার
   const sub = cart.reduce((s,x) => s + getEffectiveSalePrice(x).displayPrice * x.qty, 0);
   document.getElementById('cartTotal').textContent = `৳ ${sub.toLocaleString('en-US')}`;
