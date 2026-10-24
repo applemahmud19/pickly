@@ -7720,14 +7720,14 @@ body.page-blog-open .social-bar,body.page-blog-open .nav-cats,body.page-blog-ope
         <div class="tp-panel-head">
           <div class="tp-panel-head-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
           <div>
-            <div class="tp-panel-title">অর্ডার নম্বর দিয়ে খুঁজুন</div>
-            <div class="tp-panel-sub">Order ID লিখে সরাসরি ট্র্যাক করুন</div>
+            <div class="tp-panel-title">অর্ডার নম্বর / ইনভয়েস দিয়ে খুঁজুন</div>
+            <div class="tp-panel-sub">Order ID বা Invoice নম্বর লিখে সরাসরি ট্র্যাক করুন</div>
           </div>
         </div>
         <div class="tp-panel-body">
           <div class="tp-search-box">
             <input class="tp-search-inp" type="text" id="tpTrackInput"
-              placeholder="Order ID (যেমন: GM-2026-04812)"
+              placeholder="Order ID বা Invoice নম্বর (যেমন: GM-2026-04812)"
               onkeydown="if(event.key==='Enter')tpTrackOrder()">
             <button class="tp-search-btn bn" onclick="tpTrackOrder()">
               <i class="fa-solid fa-magnifying-glass"></i> ট্র্যাক করুন
@@ -13925,6 +13925,7 @@ function buildOrderCard(data, history) {
     <div class="order-info-card">
       <div class="oid-lbl">অর্ডার নম্বর</div>
       <div style="font-size:.95rem;font-weight:800;color:var(--blue);margin-bottom:3px;font-family:'Sora',sans-serif">${data.order_number}</div>
+      ${data.invoice_no ? `<div style="font-size:.7rem;color:var(--text-mid);margin-bottom:3px;font-family:'Hind Siliguri',sans-serif"><i class="fa-solid fa-file-invoice" style="margin-right:4px"></i>Invoice: <b style="font-family:'Sora',sans-serif">${_tpEsc(data.invoice_no)}</b></div>` : ''}
       <div class="oname bn">${_tpEsc(items.slice(0,55))}${items.length>55?'...':''}</div>
       <div class="oeta bn" style="margin-top:4px">
         <i class="fa-solid fa-location-dot" style="color:var(--blue);margin-right:3px"></i>${_tpEsc(data.customer_district||'—')}
@@ -13945,20 +13946,32 @@ function buildOrderCard(data, history) {
 }
 
 async function tpTrackOrder() {
-  const num = (document.getElementById('tpTrackInput')?.value || '').trim().replace(/\s+/g, '').toUpperCase();
-  if (!num) { toast('ত্রুটি', 'Order ID লিখুন', 'w'); return; }
+  const raw = (document.getElementById('tpTrackInput')?.value || '').trim();
+  const num = raw.replace(/\s+/g, '').toUpperCase();
+  if (!num) { toast('ত্রুটি', 'Order ID বা Invoice নম্বর লিখুন', 'w'); return; }
   const res = document.getElementById('tpSearchResult');
   res.innerHTML = '<div class="bn" style="text-align:center;padding:20px;color:var(--text-light)"><i class="fa-solid fa-spinner fa-spin" style="margin-right:7px"></i>খোঁজা হচ্ছে...</div>';
 
-  const { data, error } = await sbQuery(
-    () => sb.from('orders').select('*').eq('order_number', num).single(),
+  // ১) আগে Order ID দিয়ে খোঁজা
+  let { data, error } = await sbQuery(
+    () => sb.from('orders').select('*').eq('order_number', num).maybeSingle(),
     'অর্ডার খোঁজা'
   );
+  // ২) না পেলে Invoice নম্বর দিয়ে খোঁজা (case-insensitive, exact match)
+  if (!data) {
+    const inv = raw.replace(/\s+/g, ' ').replace(/[\\%_]/g, c => '\\' + c);
+    const r2 = await sbQuery(
+      () => sb.from('orders').select('*').ilike('invoice_no', inv).order('created_at', { ascending: false }).limit(1),
+      'ইনভয়েস খোঁজা'
+    );
+    data = (r2.data && r2.data[0]) || null;
+    error = data ? null : (r2.error || error);
+  }
   if (error || !data) {
     res.innerHTML = `<div style="text-align:center;padding:20px">
       <i class="fa-solid fa-circle-xmark" style="font-size:2rem;color:var(--red);opacity:.7;display:block;margin-bottom:10px"></i>
-      <div class="bn" style="font-size:.84rem;color:var(--red);font-weight:700">এই Order ID পাওয়া যায়নি</div>
-      <div class="bn" style="font-size:.74rem;color:var(--text-light);margin-top:5px">Order ID টি সঠিক কিনা দেখুন</div>
+      <div class="bn" style="font-size:.84rem;color:var(--red);font-weight:700">এই Order ID / Invoice নম্বরটি পাওয়া যায়নি</div>
+      <div class="bn" style="font-size:.74rem;color:var(--text-light);margin-top:5px">নম্বরটি সঠিক কিনা দেখুন</div>
     </div>`;
     return;
   }
@@ -16688,6 +16701,7 @@ const UPAZILA_EN = {
 
 // ডেলিভারি চার্জের নিয়ম (admin → site_settings.delivery_config); না পেলে নিচের ডিফল্ট
 const DC_DEFAULT = { inside:60, outside:75, extra_from:3, extra_inside:7, extra_outside:8, high_min:700, high_add:15,
+  low_max:0, low_qty:1, low_inside:0, low_outside:0,
   dhaka_districts:['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'] };
 let dcCfg = null;
 function dcGet() { return Object.assign({}, DC_DEFAULT, dcCfg || {}); }
@@ -16714,25 +16728,34 @@ function dcItemCustom(item, inside) {
   const n = Number(v); return isFinite(n) && n >= 0 ? n : null;
 }
 
+// কম দামের পণ্য চেকের জন্য কার্ট আইটেমের আসল (ছাড়সহ) দাম
+function dcPrice(x) { try { return Number(getEffectiveSalePrice(x).displayPrice); } catch(e) { return Number(x.price); } }
+
 function calcDeliveryCharge() {
   const district = document.getElementById('cDistrict')?.value || '';
   if (!district) return 0;
   if (fdIsFree()) return 0;   // ফ্রি ডেলিভারি রুল পূরণ হলে চার্জ ০
   const c = dcGet(), inside = isDhaka(district);
-  let custom = 0, stdQty = 0, hasStd = false, hasHigh = false;
+  let custom = 0, stdQty = 0, hasStd = false, hasHigh = false, allCheap = true;
+  const lowMax = Number(c.low_max) || 0;
   cart.forEach(x => {
     if (x.is_combo) {
       hasStd = true; stdQty += x.qty * x.books.length;
+      if (!x.books.every(b => Number(b.price) <= lowMax)) allCheap = false;
       if (x.books.some(b => b.price > c.high_min)) hasHigh = true;
       return;
     }
     const cv = dcItemCustom(x, inside);
     if (cv !== null) { custom += cv * x.qty; return; }   // নির্দিষ্ট চার্জওয়ালা পণ্য: প্রতি পিসে ওই চার্জ
     hasStd = true; stdQty += x.qty;
+    if (!(dcPrice(x) <= lowMax)) allCheap = false;
     if (x.price > c.high_min) hasHigh = true;
   });
   let charge = custom;
-  if (hasStd) {
+  if (hasStd && lowMax > 0 && allCheap && stdQty <= Math.max(1, Number(c.low_qty) || 1)) {
+    // কম দামের পণ্য (সীমার সমান/কম) + অল্প সংখ্যা → আলাদা চার্জ
+    charge += Number(inside ? c.low_inside : c.low_outside) || 0;
+  } else if (hasStd) {
     charge += inside ? c.inside : c.outside;
     // পরিমাণ: extra_from বা তার বেশি পণ্য হলে প্রতিটি বাড়তি পণ্যে বাড়তি চার্জ
     if (stdQty >= c.extra_from) charge += (stdQty - (c.extra_from - 1)) * (inside ? c.extra_inside : c.extra_outside);
