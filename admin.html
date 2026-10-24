@@ -1892,6 +1892,11 @@ body {
         .om-no{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--blue);cursor:pointer}
         .om-sub{font-size:.68rem;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .om-cust{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.om-row>.c-cust{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.om-row>.c-cust>.om-cinfo{min-width:0;flex:1}
+.om-inv{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:7px;border:1px dashed var(--border);background:var(--bg3);color:var(--text2);font-size:.68rem;font-family:var(--mono);cursor:pointer;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.om-inv:hover{border-color:var(--blue);color:var(--blue)}
+.om-inv.has{border-style:solid;background:rgba(170,44,45,.07);color:var(--blue);font-weight:700}
         .om-cust a{color:var(--text3);font-family:var(--mono);font-size:.68rem;text-decoration:none;font-weight:400}
         .om-cust a:hover{color:var(--blue)}
         .om-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
@@ -6143,7 +6148,7 @@ function renderOrderManager() {
       return `<div class="om-row ${omSelected.has(id) ? 'sel' : ''} ${omBusy.has(id) ? 'busy' : ''}">
         <div class="c-chk"><input type="checkbox" class="om-chk" ${omSelected.has(id) ? 'checked' : ''} onchange="omToggle('${id}', this.checked)"></div>
         <div class="c-no"><div class="om-no" onclick="viewOrder('${id}')">${omEsc(o.order_number || '—')}</div><div class="om-sub">${omAgo(o.created_at)}</div></div>
-        <div class="c-cust"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}">${phone}</a>` : ''}</div>
+        <div class="c-cust"><div class="om-cinfo"><div class="om-cust">${omEsc(o.customer_name || '—')}</div>${phone ? `<a href="tel:${phone}">${phone}</a>` : ''}</div><button type="button" class="om-inv ${o.invoice_no ? 'has' : ''}" onclick="setInvoiceNo('${id}')" title="Invoice কোড ${o.invoice_no ? 'বদলান' : 'যোগ করুন'}"><i class="fa-solid fa-file-invoice"></i> ${o.invoice_no ? omEsc(o.invoice_no) : 'Invoice'}</button></div>
         <div class="c-total" style="font-weight:700">৳${Number(o.total || 0).toLocaleString()}</div>
         <div class="c-stat"><select class="om-sel" style="${getStatusSelectStyle(st)}" onchange="omAct('${id}', this.value)">${opts}</select></div>
         <div class="c-acts"><div class="om-acts">${acts}</div></div>
@@ -6158,6 +6163,32 @@ function renderOrderManager() {
   if (bulk) { bulk.classList.toggle('show', omSelected.size > 0); document.getElementById('omBulkCount').textContent = omSelected.size; }
   const selAll = document.getElementById('omSelAll');
   if (selAll) selAll.checked = rows.length > 0 && rows.every(o => omSelected.has(String(o.id)));
+}
+
+/* ── Invoice কোড: অ্যাডমিন হাতে বসায়, কাস্টমার ট্র্যাক পেজে দেখে ──
+   একবার Supabase SQL Editor-এ চালান:
+   ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS invoice_no text;  */
+async function setInvoiceNo(id) {
+  if (!sb) { toast('Not Connected', 'Supabase কনফিগার করুন', 'error'); return; }
+  const o = allOrders.find(x => String(x.id) === String(id));
+  if (!o) return;
+  const v = prompt(`অর্ডার ${o.order_number || ''}-এর Invoice কোড লিখুন (মুছতে ফাঁকা রাখুন):`, o.invoice_no || '');
+  if (v === null) return;
+  const code = v.trim().slice(0, 60) || null;
+  try {
+    const { data, error } = await sb.from('orders').update({ invoice_no: code }).eq('id', o.id).select();
+    if (error) {
+      if (/invoice_no/i.test(error.message || '')) {
+        toast('আগে SQL চালান', 'Supabase → SQL Editor: ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS invoice_no text;', 'warning');
+      } else { toast('Save Failed', error.message, 'error'); }
+      return;
+    }
+    if (!data || !data.length) { toast('Save হয়নি', 'orders টেবিলে UPDATE policy চেক করুন', 'error'); return; }
+    o.invoice_no = code;
+    toast('Invoice সেভ হয়েছে ✓', code || 'কোড মুছে ফেলা হয়েছে', 'success');
+    if (typeof renderOrderManager === 'function') renderOrderManager();
+    else if (typeof renderDashboard === 'function') renderDashboard();
+  } catch (e) { toast('Save Failed', e.message || 'Unknown error', 'error'); }
 }
 
 function renderDashboard() {
