@@ -9,4 +9,4 @@ Disallow: /track-order
 Disallow: /order/
 Disallow: /search
 
-Sitemap: https://bookgalaxybd.vercel.app/sitemap.xml
+Sitemap: https://www.bookgalaxybd.shop/sitemap.xml
