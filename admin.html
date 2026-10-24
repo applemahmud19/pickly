@@ -1932,6 +1932,7 @@ body {
               <span style="font-family:var(--font-bn)" id="omTitle">অর্ডার ম্যানেজমেন্ট</span>
             </div>
             <div class="panel-actions">
+              <button class="btn btn-primary btn-sm" onclick="ANO.open()" style="font-family:var(--font-bn)"><i class="fa-solid fa-cart-plus"></i> নতুন অর্ডার</button>
               <div class="search-bar om-search" style="min-width:200px">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="omSearch" placeholder="Order #, নাম, ফোন..." oninput="omSetSearch(this.value)">
@@ -2044,6 +2045,7 @@ body {
               Order Management
             </div>
             <div class="panel-actions">
+              <button class="btn btn-primary btn-sm" onclick="ANO.open()" style="font-family:var(--font-bn)"><i class="fa-solid fa-cart-plus"></i> নতুন অর্ডার</button>
               <div class="search-bar" style="min-width:175px">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Search orders..." id="orderSearch" oninput="renderOrders()">
@@ -3064,6 +3066,14 @@ grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, 
             <div class="form-group"><label class="form-label">প্রতিটি বাড়তি পণ্যে — ঢাকার বাইরে (৳)</label><input class="form-inp" type="number" min="0" id="dcExtraOut"></div>
             <div class="form-group"><label class="form-label">দামি পণ্যের সীমা (৳ এর বেশি)</label><input class="form-inp" type="number" min="0" id="dcHighMin"></div>
             <div class="form-group"><label class="form-label">দামি পণ্যের বাড়তি চার্জ (৳)</label><input class="form-inp" type="number" min="0" id="dcHighAdd"></div>
+            <div style="grid-column:1/-1;margin-top:6px;padding-top:12px;border-top:1px dashed var(--border);font-family:var(--font-bn)">
+              <div style="font-weight:700;font-size:.86rem;color:var(--text)"><i class="fa-solid fa-tags" style="color:var(--blue);margin-right:6px"></i>কম দামের পণ্যের আলাদা ডেলিভারি চার্জ</div>
+              <div style="font-size:.76rem;color:var(--text2);margin-top:3px">কার্টের সব পণ্যের দাম "সীমা"-র সমান বা কম হলে এবং পণ্যের সংখ্যা "সর্বোচ্চ সংখ্যা"-র মধ্যে থাকলে, বেসিক + বাড়তি চার্জের বদলে নিচের চার্জ বসবে। সীমা ০ দিলে এই নিয়ম বন্ধ থাকবে। (ফ্রি ডেলিভারি রুল আগের মতোই সবার আগে কাজ করবে।)</div>
+            </div>
+            <div class="form-group"><label class="form-label">কম দামের সীমা (৳ বা তার কম) — ০ = বন্ধ</label><input class="form-inp" type="number" min="0" id="dcLowMax"></div>
+            <div class="form-group"><label class="form-label">সর্বোচ্চ কয়টি পণ্য কিনলে প্রযোজ্য</label><input class="form-inp" type="number" min="1" id="dcLowQty"></div>
+            <div class="form-group"><label class="form-label">কম দামের পণ্যে চার্জ — ঢাকায় (৳)</label><input class="form-inp" type="number" min="0" id="dcLowIn"></div>
+            <div class="form-group"><label class="form-label">কম দামের পণ্যে চার্জ — ঢাকার বাইরে (৳)</label><input class="form-inp" type="number" min="0" id="dcLowOut"></div>
             <div class="form-group" style="grid-column:1/-1"><label class="form-label">"ঢাকা" হিসেবে ধরা জেলা (কমা দিয়ে লিখুন)</label><textarea class="form-inp" id="dcDhaka" rows="2" style="font-family:var(--font-bn)"></textarea></div>
           </div>
         </div>
@@ -3930,6 +3940,63 @@ grant execute on function public.visitor_unique_stats(timestamptz, timestamptz, 
 <!-- ══════════════════════════════════════
      ORDER DETAIL MODAL (Advanced)
 ══════════════════════════════════════ -->
+<!-- ══ ADMIN: Customer-এর হয়ে নতুন অর্ডার (user_id সহ) ══ -->
+<div class="modal-overlay" id="adminNewOrderModal" onclick="if(event.target===this)closeModal('adminNewOrderModal')">
+  <div class="modal-box" style="max-width:860px">
+    <div class="modal-header" style="padding:14px 18px">
+      <div class="modal-title" style="font-size:0.92rem;font-family:var(--font-bn)"><i class="fa-solid fa-cart-plus" style="color:var(--blue);margin-right:6px"></i>কাস্টমারের হয়ে নতুন অর্ডার</div>
+      <button class="modal-close" onclick="closeModal('adminNewOrderModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding:14px 18px">
+
+      <!-- ১. কাস্টমার -->
+      <div class="form-group" style="margin-bottom:12px;position:relative">
+        <label class="form-label bn-label">১. কাস্টমার বেছে নিন <span class="required">*</span></label>
+        <div id="anoCustChip" style="display:none"></div>
+        <div id="anoCustSearchWrap">
+          <input type="text" class="form-inp" id="anoCustQ" placeholder="নাম / ফোন / ইমেইল দিয়ে খুঁজুন..." oninput="ANO.searchCust()" autocomplete="off">
+          <div id="anoCustResults" style="display:none;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:210px;overflow-y:auto;background:var(--surface)"></div>
+        </div>
+        <div style="font-size:0.68rem;color:var(--text3);font-family:var(--font-bn)">অর্ডারটি এই কাস্টমারের অ্যাকাউন্টে (আমার অর্ডার-এ) দেখাবে। শুধু যাদের অ্যাকাউন্ট আছে তারাই তালিকায় আসবে।</div>
+      </div>
+
+      <!-- ২. ডেলিভারি তথ্য -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group"><label class="form-label bn-label">নাম <span class="required">*</span></label><input class="form-inp" id="anoName" type="text"></div>
+        <div class="form-group"><label class="form-label bn-label">ফোন <span class="required">*</span></label><input class="form-inp" id="anoPhone" type="text" placeholder="01XXXXXXXXX"></div>
+        <div class="form-group"><label class="form-label bn-label">ইমেইল</label><input class="form-inp" id="anoEmail" type="text"></div>
+        <div class="form-group"><label class="form-label bn-label">জেলা / উপজেলা / এলাকা <span class="required">*</span></label><input class="form-inp" id="anoDistrict" type="text" placeholder="যেমন: ঢাকা > মিরপুর > পল্লবী"></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label bn-label">পূর্ণ ঠিকানা <span class="required">*</span></label><input class="form-inp" id="anoAddress" type="text"></div>
+      </div>
+
+      <!-- ৩. পণ্য -->
+      <div class="form-group" style="margin-bottom:8px;position:relative">
+        <label class="form-label bn-label">২. পণ্য যোগ করুন <span class="required">*</span></label>
+        <input type="text" class="form-inp" id="anoProdQ" placeholder="বইয়ের নাম লিখে খুঁজুন..." oninput="ANO.searchProd()" autocomplete="off">
+        <div id="anoProdResults" style="display:none;border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:230px;overflow-y:auto;background:var(--surface)"></div>
+      </div>
+      <div id="anoItems" style="margin-bottom:12px"></div>
+
+      <!-- ৪. হিসাব -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px">
+        <div class="form-group"><label class="form-label bn-label">ডেলিভারি চার্জ (৳)</label><input class="form-inp" id="anoDelivery" type="number" min="0" value="0" oninput="ANO.recalc()"></div>
+        <div class="form-group"><label class="form-label bn-label">ডিসকাউন্ট (৳)</label><input class="form-inp" id="anoDiscount" type="number" min="0" value="0" oninput="ANO.recalc()"></div>
+        <div class="form-group"><label class="form-label bn-label">স্ট্যাটাস</label>
+          <select class="form-inp" id="anoStatus"><option value="pending">Pending</option><option value="confirmed">Confirmed</option></select></div>
+        <div class="form-group"><label class="form-label bn-label">Invoice নম্বর (ঐচ্ছিক)</label><input class="form-inp" id="anoInvoice" type="text" maxlength="60"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px"><label class="form-label bn-label">অভ্যন্তরীণ নোট (ঐচ্ছিক — স্ট্যাটাস হিস্ট্রিতে থাকবে)</label><input class="form-inp" id="anoNote" type="text" placeholder="যেমন: ফোনে অর্ডার নেওয়া হয়েছে"></div>
+
+      <div id="anoTotals" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-family:var(--font-bn);font-size:0.82rem"></div>
+      <div id="anoErr" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(255,59,48,0.08);border:1px solid rgba(255,59,48,0.25);color:var(--red);font-size:0.76rem;white-space:pre-wrap"></div>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('adminNewOrderModal')">বাতিল</button>
+      <button class="btn btn-primary btn-sm" id="anoSubmit" onclick="ANO.submit()"><i class="fa-solid fa-check"></i> অর্ডার তৈরি করুন</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="orderModal" onclick="if(event.target===this)closeModal('orderModal')">
   <div class="modal-box" id="orderModalBox">
     <div class="modal-header">
@@ -9637,6 +9704,7 @@ function dcPayload() {
 }
 const DC = {
   def: { inside:60, outside:75, extra_from:3, extra_inside:7, extra_outside:8, high_min:700, high_add:15,
+         low_max:0, low_qty:1, low_inside:0, low_outside:0,
          dhaka_districts:['ঢাকা','গাজীপুর','নারায়ণগঞ্জ','মানিকগঞ্জ','মুন্সিগঞ্জ','নরসিংদী'] },
   cfg: null,
   g(id){ return document.getElementById(id); },
@@ -9656,14 +9724,17 @@ const DC = {
     this.g('dcInside').value = c.inside; this.g('dcOutside').value = c.outside; this.g('dcExtraFrom').value = c.extra_from;
     this.g('dcExtraIn').value = c.extra_inside; this.g('dcExtraOut').value = c.extra_outside;
     this.g('dcHighMin').value = c.high_min; this.g('dcHighAdd').value = c.high_add;
+    this.g('dcLowMax').value = c.low_max ?? 0; this.g('dcLowQty').value = c.low_qty ?? 1;
+    this.g('dcLowIn').value = c.low_inside ?? 0; this.g('dcLowOut').value = c.low_outside ?? 0;
     this.g('dcDhaka').value = (c.dhaka_districts || []).join(', ');
   },
   async save() {
     const num = id => Number(this.g(id).value);
     const cfg = { inside:num('dcInside'), outside:num('dcOutside'), extra_from:Math.max(1, Math.round(num('dcExtraFrom'))),
       extra_inside:num('dcExtraIn'), extra_outside:num('dcExtraOut'), high_min:num('dcHighMin'), high_add:num('dcHighAdd'),
+      low_max:num('dcLowMax'), low_qty:Math.max(1, Math.round(num('dcLowQty')) || 1), low_inside:num('dcLowIn'), low_outside:num('dcLowOut'),
       dhaka_districts: this.g('dcDhaka').value.split(/[,،\n]/).map(s => s.trim()).filter(Boolean) };
-    if ([cfg.inside, cfg.outside, cfg.extra_inside, cfg.extra_outside, cfg.high_min, cfg.high_add].some(v => !isFinite(v) || v < 0))
+    if ([cfg.inside, cfg.outside, cfg.extra_inside, cfg.extra_outside, cfg.high_min, cfg.high_add, cfg.low_max, cfg.low_inside, cfg.low_outside].some(v => !isFinite(v) || v < 0))
       return toast('সংখ্যা ঠিক নেই', 'সব ঘরে ০ বা তার বেশি সংখ্যা দিন', 'warning');
     const { data, error } = await sb.from('site_settings').update({ delivery_config: cfg }).eq('id',1).select('id');
     if (error) return toast('সেভ ব্যর্থ', error.message, 'error');
@@ -12611,6 +12682,7 @@ function renderUsers() {
             <i class="fa-solid fa-eye"></i> View
           </button>
           ${String(u.id).startsWith('order-') ? '' : `<button class="btn btn-ghost btn-xs" onclick="openUserEdit('${u.id}')" title="তথ্য এডিট করুন"><i class="fa-solid fa-pen"></i> Edit</button>`}
+          ${String(u.id).startsWith('order-') ? '' : `<button class="btn btn-primary btn-xs" onclick="ANO.open('${u.id}')" title="এই কাস্টমারের হয়ে অর্ডার করুন"><i class="fa-solid fa-cart-plus"></i> অর্ডার</button>`}
           ${u.synthetic
             ? `<span class="pill pill-pending" title="এই ইউজারের প্রোফাইল রো নেই — অর্ডারের তথ্য থেকে দেখানো হচ্ছে">অর্ডার থেকে</span>`
             : `<button class="btn ${blockBtnClass} btn-xs" onclick="quickToggleBlock('${u.id}')">
@@ -15421,6 +15493,177 @@ function bulkDownloadErrors(){
   new MutationObserver(()=>{ if(!raf) raf=requestAnimationFrame(run); }).observe(document.body,{childList:true,subtree:true});
   run();
 })();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   ADMIN → CUSTOMER-এর হয়ে অর্ডার (orders.user_id = কাস্টমারের অ্যাকাউন্ট)
+   Supabase-এ একবার এই SQL চালাতে হবে (orders INSERT-এ অ্যাডমিনের অনুমতি):
+     create policy "admin_insert_orders" on public.orders for insert to authenticated
+       with check (exists (select 1 from public.admin_users a where a.id = auth.uid()));
+   ══════════════════════════════════════════════════════════════ */
+const ANO = {
+  customer: null, items: [],
+  g(id) { return document.getElementById(id); },
+  esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  eligible() { return (allUsers || []).filter(u => u.id && !String(u.id).startsWith('order-') && !u.is_blocked); },
+
+  async open(userId) {
+    this.customer = null; this.items = [];
+    ['anoCustQ','anoName','anoPhone','anoEmail','anoDistrict','anoAddress','anoProdQ','anoInvoice','anoNote'].forEach(i => { this.g(i).value = ''; });
+    this.g('anoDelivery').value = 0; this.g('anoDiscount').value = 0; this.g('anoStatus').value = 'pending';
+    this.g('anoCustResults').style.display = 'none'; this.g('anoProdResults').style.display = 'none';
+    this.g('anoErr').style.display = 'none';
+    this.renderCust(); this.renderItems();
+    openModal('adminNewOrderModal');
+    try { if (!allUsers.length) await loadUsers(0, true); } catch (e) {}
+    try { if (!allProducts.length) await loadProducts(); } catch (e) {}
+    if (userId) this.pick(userId);
+  },
+
+  searchCust() {
+    const q = this.g('anoCustQ').value.trim().toLowerCase(), box = this.g('anoCustResults');
+    if (!q) { box.style.display = 'none'; return; }
+    const qd = _normPhone(q);
+    const list = this.eligible().filter(u =>
+      (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q) ||
+      (qd.length >= 3 && _normPhone(u.phone).includes(qd))).slice(0, 8);
+    box.innerHTML = list.length ? list.map(u => `
+      <div onclick="ANO.pick('${this.esc(u.id)}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:0.8rem">
+        <b>${this.esc(u.name || '—')}</b>
+        <span style="color:var(--text3);font-family:var(--mono);font-size:0.72rem"> ${this.esc(u.phone || '')}</span>
+        <div style="color:var(--text3);font-size:0.7rem">${this.esc(u.email || '')}</div>
+      </div>`).join('') : '<div style="padding:10px 12px;font-size:0.78rem;color:var(--text3)">কোনো কাস্টমার পাওয়া যায়নি (অ্যাকাউন্ট আছে কিনা দেখুন)</div>';
+    box.style.display = 'block';
+  },
+
+  pick(id) {
+    const u = (allUsers || []).find(x => String(x.id) === String(id));
+    if (!u) return;
+    this.customer = u;
+    const r = u.raw || {};
+    this.g('anoName').value = u.name && u.name !== 'Unknown' ? u.name : '';
+    this.g('anoPhone').value = u.phone || '';
+    this.g('anoEmail').value = u.email || '';
+    this.g('anoAddress').value = r.full_address || u.address || '';
+    this.g('anoDistrict').value = r.district ? [r.district, r.upazila, r.union_area].filter(Boolean).join(' > ') : (u.district || '');
+    this.g('anoCustResults').style.display = 'none';
+    this.g('anoCustQ').value = '';
+    this.renderCust();
+  },
+  renderCust() {
+    const chip = this.g('anoCustChip'), wrap = this.g('anoCustSearchWrap'), u = this.customer;
+    if (!u) { chip.style.display = 'none'; wrap.style.display = 'block'; return; }
+    wrap.style.display = 'none'; chip.style.display = 'block';
+    chip.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border:1.5px solid var(--blue);border-radius:9px;background:var(--blue-ll)">
+      <div style="font-size:0.82rem"><i class="fa-solid fa-circle-user" style="color:var(--blue);margin-right:6px"></i><b>${this.esc(u.name)}</b>
+        <span style="color:var(--text3);font-size:0.72rem;font-family:var(--mono)"> ${this.esc(u.phone || '')} · ${this.esc(u.email || '')}</span></div>
+      <button class="btn btn-ghost btn-xs" onclick="ANO.customer=null;ANO.renderCust()">বদলান</button></div>`;
+  },
+
+  searchProd() {
+    const q = this.g('anoProdQ').value.trim().toLowerCase(), box = this.g('anoProdResults');
+    if (!q) { box.style.display = 'none'; return; }
+    const list = (allProducts || []).filter(p => p.is_active !== false && (p.name || '').toLowerCase().includes(q)).slice(0, 8);
+    box.innerHTML = list.length ? list.map(p => `
+      <div onclick="ANO.addProd('${this.esc(p.id)}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:0.8rem;display:flex;justify-content:space-between;gap:10px">
+        <span>${this.esc(p.name)}</span>
+        <span style="color:var(--text3);font-size:0.72rem;white-space:nowrap">৳${Number(p.price || 0).toLocaleString()} · Stock: ${Number(p.stock || 0)}</span>
+      </div>`).join('') : '<div style="padding:10px 12px;font-size:0.78rem;color:var(--text3)">কোনো পণ্য পাওয়া যায়নি</div>';
+    box.style.display = 'block';
+  },
+  addProd(id) {
+    const p = (allProducts || []).find(x => String(x.id) === String(id));
+    if (!p) return;
+    const ex = this.items.find(i => String(i.id) === String(p.id));
+    if (ex) ex.qty++;
+    else this.items.push({ id: p.id, name: p.name, price: Number(p.price) || 0, qty: 1, stock: Number(p.stock || 0) });
+    this.g('anoProdQ').value = ''; this.g('anoProdResults').style.display = 'none';
+    this.renderItems();
+  },
+  setItem(i, k, v) { v = Number(v); this.items[i][k] = k === 'qty' ? Math.max(1, Math.floor(v) || 1) : Math.max(0, v || 0); this.recalc(); },
+  rmItem(i) { this.items.splice(i, 1); this.renderItems(); },
+  renderItems() {
+    const box = this.g('anoItems');
+    if (!this.items.length) { box.innerHTML = '<div style="padding:14px;text-align:center;font-size:0.78rem;color:var(--text3);border:1px dashed var(--border);border-radius:8px;font-family:var(--font-bn)">এখনো কোনো পণ্য যোগ করা হয়নি</div>'; this.recalc(); return; }
+    box.innerHTML = this.items.map((it, i) => `
+      <div style="display:grid;grid-template-columns:1fr 84px 70px 30px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:0.8rem">${this.esc(it.name)}${it.stock < it.qty ? ' <span style="color:var(--red);font-size:0.66rem">(স্টক: ' + it.stock + ')</span>' : ''}</div>
+        <input class="form-inp" type="number" min="0" value="${it.price}" title="দাম (৳)" style="padding:5px 8px" oninput="ANO.setItem(${i},'price',this.value)">
+        <input class="form-inp" type="number" min="1" value="${it.qty}" title="পরিমাণ" style="padding:5px 8px" oninput="ANO.setItem(${i},'qty',this.value)">
+        <button class="btn btn-danger btn-xs" onclick="ANO.rmItem(${i})" title="সরান"><i class="fa-solid fa-xmark"></i></button>
+      </div>`).join('');
+    this.recalc();
+  },
+  sums() {
+    const sub = this.items.reduce((s, i) => s + i.price * i.qty, 0);
+    const del = Math.max(0, Number(this.g('anoDelivery').value) || 0);
+    const dis = Math.max(0, Number(this.g('anoDiscount').value) || 0);
+    return { sub, del, dis, total: Math.max(0, sub + del - dis) };
+  },
+  recalc() {
+    const s = this.sums(), f = n => '৳' + n.toLocaleString();
+    this.g('anoTotals').innerHTML = `সাবটোটাল: <b>${f(s.sub)}</b> &nbsp;+&nbsp; ডেলিভারি: <b>${f(s.del)}</b> &nbsp;−&nbsp; ডিসকাউন্ট: <b>${f(s.dis)}</b> &nbsp;=&nbsp; মোট: <b style="color:var(--blue);font-size:0.95rem">${f(s.total)}</b>`;
+  },
+
+  fail(msg) { const e = this.g('anoErr'); e.textContent = msg; e.style.display = 'block'; e.scrollIntoView({ block: 'nearest' }); },
+
+  async submit() {
+    this.g('anoErr').style.display = 'none';
+    if (!this.customer) return this.fail('আগে কাস্টমার বেছে নিন।');
+    const name = this.g('anoName').value.trim();
+    const phone = _normPhone(this.g('anoPhone').value);
+    const address = this.g('anoAddress').value.trim();
+    const district = this.g('anoDistrict').value.trim();
+    if (name.length < 2) return this.fail('নাম লিখুন।');
+    if (!/^01[3-9]\d{8}$/.test(phone)) return this.fail('সঠিক ফোন নম্বর দিন (01XXXXXXXXX)।');
+    if (!address || !district) return this.fail('ঠিকানা ও জেলা/এলাকা দিন।');
+    if (!this.items.length) return this.fail('অন্তত একটি পণ্য যোগ করুন।');
+    const s = this.sums();
+    if (s.dis > s.sub + s.del) return this.fail('ডিসকাউন্ট মোটের চেয়ে বেশি হতে পারে না।');
+
+    const btn = this.g('anoSubmit'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> তৈরি হচ্ছে...';
+    const status = this.g('anoStatus').value, invoice = this.g('anoInvoice').value.trim();
+    const row = {
+      order_number: '', user_id: this.customer.id,
+      customer_name: name, customer_phone: phone, customer_address: address, customer_district: district,
+      customer_email: this.g('anoEmail').value.trim(),
+      items: this.items.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, bulk_discount_percentage: 0 })),
+      subtotal: s.sub, delivery_fee: s.del, discount: s.dis, total: s.total, status
+    };
+    if (invoice) row.invoice_no = invoice;
+
+    let data = null, error = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      row.order_number = 'GM-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 99999)).padStart(5, '0');
+      ({ data, error } = await sb.from('orders').insert(row).select().single());
+      if (error && /invoice_no/i.test(error.message || '') && row.invoice_no) { delete row.invoice_no; ({ data, error } = await sb.from('orders').insert(row).select().single()); }
+      if (!error || !(error.code === '23505' || /duplicate key/i.test(error.message || ''))) break;   // শুধু নম্বর মিলে গেলে আবার চেষ্টা
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> অর্ডার তৈরি করুন';
+
+    if (error) {
+      const m = error.message || '';
+      if (/row-level security|policy|permission/i.test(m + (error.code || ''))) return this.fail('অর্ডার সেভ হয়নি — orders টেবিলে অ্যাডমিনের INSERT অনুমতি নেই।\nSupabase → SQL Editor-এ এটি চালান:\n\ncreate policy "admin_insert_orders" on public.orders for insert to authenticated\n  with check (exists (select 1 from public.admin_users a where a.id = auth.uid()));');
+      if (/BLOCKED_CUSTOMER/.test(m)) return this.fail('এই ফোন/ঠিকানা ব্ল্যাকলিস্টে আছে, তাই অর্ডার ব্লক হয়েছে।');
+      return this.fail('অর্ডার তৈরি হয়নি: ' + m);
+    }
+
+    let who = 'অ্যাডমিন';
+    try { const u = await sb.auth.getUser(); if (u.data && u.data.user && u.data.user.email) who = u.data.user.email; } catch (e) {}
+    const extra = this.g('anoNote').value.trim();
+    sb.from('order_status_history').insert({ order_id: data.id, status, note: 'অ্যাডমিন (' + who + ') কর্তৃক তৈরি' + (extra ? ' — ' + extra : '') })
+      .then(r => { if (r.error) console.warn('[ANO] history insert failed:', r.error.message); });
+
+    closeModal('adminNewOrderModal');
+    toast('অর্ডার তৈরি হয়েছে', data.order_number + ' — ' + name + '-এর অ্যাকাউন্টে যুক্ত', 'success');
+    try { await loadOrders(); } catch (e) {}
+  }
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('#anoCustSearchWrap')) { const b = document.getElementById('anoCustResults'); if (b) b.style.display = 'none'; }
+  if (!e.target.closest('#anoProdQ') && !e.target.closest('#anoProdResults')) { const b = document.getElementById('anoProdResults'); if (b) b.style.display = 'none'; }
+});
 </script>
 
 </body>
